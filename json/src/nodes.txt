@@ -1,0 +1,13 @@
+null bool number string
+
+lbrace rbrace
+
+lbrack rbrack
+
+comma colon
+
+object array primitive
+
+field
+
+file

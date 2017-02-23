@@ -1,0 +1,69 @@
+use std::ops::Index;
+use builder::PreNode;
+
+use super::{File, NodeType, TextRange};
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct NodeId(u32);
+
+pub struct Node {
+    pub ty: NodeType,
+    pub parent: Option<NodeId>,
+    pub children: Vec<NodeId>,
+    pub range: TextRange,
+}
+
+impl Index<NodeId> for File {
+    type Output = Node;
+    fn index(&self, index: NodeId) -> &Self::Output {
+        &self.nodes[index.0 as usize]
+    }
+}
+
+pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
+    fn go(parent: NodeId, node: &PreNode, nodes: &mut Vec<Node>) -> NodeId {
+        let id = NodeId(nodes.len() as u32);
+        nodes.push(Node {
+            ty: node.ty,
+            parent: Some(parent),
+            children: vec![],
+            range: node.range,
+        });
+
+        let mut children = vec![];
+        for child in node.children.iter() {
+            children.push(go(id, child, nodes));
+        }
+        nodes[id.0 as usize].children = children;
+        id
+    }
+
+    let mut nodes = vec![Node {
+        ty: ty,
+        parent: None,
+        children: vec![],
+        range: TextRange { start: 0, end: 0 },
+    }];
+
+    let mut root_children: Vec<NodeId> = vec![];
+    let mut range = TextRange { start: 0, end: 0 };
+    for child in children {
+        range = chain(range, child.range);
+        let c = go(NodeId(0), &child, &mut nodes);
+        root_children.push(c);
+    }
+    nodes[0].range = range;
+    nodes[0].children = root_children;
+
+    File {
+        text: text,
+        root: NodeId(0),
+        nodes: nodes,
+    }
+}
+
+
+fn chain(l: TextRange, r: TextRange) -> TextRange {
+    assert_eq!(l.end, r.start);
+    TextRange { start: l.start, end: r.end }
+}

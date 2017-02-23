@@ -1,0 +1,11 @@
+[package]
+name = "fall"
+version = "0.1.0"
+authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
+
+[workspace]
+members = ["json"]
+
+[dependencies]
+regex = "0.2"
+lazy_static = "0.2"
