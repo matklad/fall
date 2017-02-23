@@ -81,12 +81,7 @@ impl TreeBuilder {
 
         if t.ty == ty {
             self.bump();
-            while let Some(t) = self.current() {
-                if !self.is_skip(t.ty) {
-                    break;
-                }
-                self.bump();
-            }
+            self.do_skip();
             true
         } else {
             false
@@ -103,7 +98,8 @@ impl TreeBuilder {
         }
     }
 
-    pub fn next_is(&self, ty: NodeType) -> bool {
+    pub fn next_is(&mut self, ty: NodeType) -> bool {
+        self.do_skip();
         if let Some(t) = self.current() {
             t.ty == ty
         } else {
@@ -115,13 +111,15 @@ impl TreeBuilder {
 
     fn new(text: String, file_type: NodeType, tokens: Vec<Token>) -> TreeBuilder {
         let skip = &[::WHITESPACE];
-        TreeBuilder {
+        let mut result = TreeBuilder {
             text: text,
             skip: skip.iter().cloned().collect(),
             tokens: tokens,
             pending: vec![Frame { ty: file_type, children: vec![], start_token: 0 }],
             current_token: 0,
-        }
+        };
+        result.do_skip();
+        result
     }
 
     fn top(&mut self) -> &mut Frame {
@@ -136,6 +134,15 @@ impl TreeBuilder {
             range: t.range,
             children: vec![],
         })
+    }
+
+    fn do_skip(&mut self) {
+        while let Some(t) = self.current() {
+            if !self.is_skip(t.ty) {
+                break;
+            }
+            self.bump();
+        }
     }
 
     fn current(&self) -> Option<Token> {
