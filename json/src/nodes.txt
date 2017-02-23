@@ -1,13 +1,21 @@
-null bool number string
+nodes = {
+  null bool number string
+  lbrace rbrace
+  lbrack rbrack
+  comma colon
+  object array primitive
+  field
+  file
+}
 
-lbrace rbrace
-
-lbrack rbrack
-
-comma colon
-
-object array primitive
-
-field
-
-file
+tokenizer = {
+  whitespace r"\s+"
+  lbrace     r"\{"
+  rbrace     r"\}"
+  lbrack     r"\["
+  rbrack     r"\]"
+  colon      r":"
+  comma      r","
+  string     r#""[^"]*""#
+  number     r"\d+"
+}

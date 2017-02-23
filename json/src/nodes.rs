@@ -1,4 +1,5 @@
 use fall::{NodeType, NodeTypeInfo};
+use fall::builder::Rule;
 pub use fall::{ERROR, WHITESPACE};
 
 pub const NULL      : NodeType = NodeType(100);
@@ -33,4 +34,16 @@ pub fn register_node_types() {    NULL.register(NodeTypeInfo { name: "NULL" });
     FIELD.register(NodeTypeInfo { name: "FIELD" });
     FILE.register(NodeTypeInfo { name: "FILE" });
 }
+
+pub const TOKENIZER: &'static [Rule] = &[
+    Rule { ty: WHITESPACE, re: r"\s+" },
+    Rule { ty: LBRACE, re: r"\{" },
+    Rule { ty: RBRACE, re: r"\}" },
+    Rule { ty: LBRACK, re: r"\[" },
+    Rule { ty: RBRACK, re: r"\]" },
+    Rule { ty: COLON, re: r":" },
+    Rule { ty: COMMA, re: r"," },
+    Rule { ty: STRING, re: r#""[^"]*""# },
+    Rule { ty: NUMBER, re: r"\d+" },
+];
 

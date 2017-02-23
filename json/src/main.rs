@@ -1,6 +1,6 @@
 extern crate fall;
 
-use fall::builder::{Rule, TreeBuilder};
+use fall::builder::TreeBuilder;
 
 mod nodes;
 
@@ -12,15 +12,7 @@ fn main() {
     let file = fall::builder::parse(
         r#"{}   "#.to_owned(),
         nodes::FILE,
-        &[
-            Rule { ty: WHITESPACE, re: r"\s+" },
-            Rule { ty: LBRACE, re: r"\{" }, Rule { ty: RBRACE, re: "}" },
-            Rule { ty: LBRACK, re: r"\[" }, Rule { ty: RBRACK, re: "]" },
-            Rule { ty: COLON, re: r":" },
-            Rule { ty: COMMA, re: r"," },
-            Rule { ty: STRING, re: r#""[^"]*""# },
-            Rule { ty: NUMBER, re: r"\d+" },
-        ],
+        nodes::TOKENIZER,
         &|builder| {
             parse_file(builder);
         }
