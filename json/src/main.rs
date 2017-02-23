@@ -2,17 +2,17 @@ extern crate fall;
 
 use fall::builder::TreeBuilder;
 
-mod nodes;
+mod grammar;
 
-use nodes::*;
+use grammar::*;
 
 fn main() {
     register_node_types();
 
     let file = fall::builder::parse(
         r#"{}   "#.to_owned(),
-        nodes::FILE,
-        nodes::TOKENIZER,
+        grammar::FILE,
+        grammar::TOKENIZER,
         &|builder| {
             parse_file(builder);
         }
