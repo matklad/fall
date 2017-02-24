@@ -9,7 +9,7 @@ pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
 
 pub mod builder;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TextRange {
     pub start: u32,
     pub end: u32,

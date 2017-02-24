@@ -75,6 +75,9 @@ pub fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
         }
 
         for child in node.children() {
+            if child.range() == node.range() {
+                break;
+            }
             if let Some(n) = go(child, range) {
                 return Some(n);
             }
