@@ -9,7 +9,7 @@ pub struct Rule {
     pub re: &'static str
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token {
     pub ty: NodeType,
     pub range: TextRange,
@@ -205,6 +205,7 @@ fn tokenize(text: &str, tokenizer: &[Rule]) -> Vec<Token> {
             range: TextRange { start: offset as u32, end: (offset + bad_char_len) as u32 }
         });
         offset += bad_char_len;
+        rest = &rest[bad_char_len..];
     }
 
     result
