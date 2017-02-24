@@ -10,18 +10,7 @@ fn main() {
     register_node_types();
 
     let file = fall::builder::parse(
-        r#" {"menu": {
-  "id": "file",
-  "value": "File",
-  "popup": {
-    "menuitem": [
-      {"value": "New", "onclick": "CreateNewDoc()"},
-      {"value": "Open", "onclick": "OpenDoc()"},
-      {"value": "Close", "onclick": "CloseDoc()"}
-    ]
-  }
-}}
- "#.to_owned(),
+        r#"{1 "hello": 1}"#.to_owned(),
         grammar::FILE,
         grammar::TOKENIZER,
         &|builder| {
@@ -74,6 +63,7 @@ fn parse_field(b: &mut TreeBuilder) -> bool {
         b.rollback(FIELD);
         return false
     }
+    println!("B");
     if !(b.try_eat(COLON) && parse_value(b)) {
         b.error();
     }

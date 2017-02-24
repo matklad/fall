@@ -58,13 +58,13 @@ impl TreeBuilder {
         let first_token = self.tokens[top.start_token];
         let last_token = self.tokens[self.current_token - 1];
         assert!(!self.is_skip(first_token.ty) && !self.is_skip(last_token.ty));
-
         let range = TextRange {
             start: first_token.range.start,
             end: last_token.range.end,
         };
         let node = PreNode { ty: top.ty, range: range, children: top.children };
         self.top().children.push(node);
+        self.do_skip();
     }
 
     pub fn rollback(&mut self, ty: NodeType) {
