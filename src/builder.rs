@@ -88,7 +88,25 @@ impl TreeBuilder {
         }
     }
 
-    pub fn skip_until(&mut self, _tys: &[NodeType]) {}
+    pub fn skip_until(&mut self, tys: &[NodeType]) {
+        self.do_skip();
+        self.start(::ERROR);
+        let mut skipped = false;
+        while let Some(t) = self.current() {
+            if tys.contains(&t.ty) {
+                break;
+            }
+            if !self.is_skip(t.ty) {
+                skipped = true;
+            }
+            self.bump();
+        }
+        if skipped {
+            self.finish(::ERROR);
+        } else {
+            self.rollback(::ERROR);
+        }
+    }
 
     pub fn parse_many(&mut self, f: &Fn(&mut TreeBuilder) -> bool) {
         loop {
