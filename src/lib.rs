@@ -9,11 +9,16 @@ pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
 
 pub mod builder;
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct TextRange {
-    start: u32,
-    end: u32,
+    pub start: u32,
+    pub end: u32,
+}
+
+impl TextRange {
+    fn is_subrange_of(self, other: TextRange) -> bool {
+        other.start <= self.start && self.end <= other.end
+    }
 }
 
 impl ::std::ops::Index<TextRange> for str {
@@ -40,7 +45,7 @@ impl<'f> Node<'f> {
         self.raw().parent.map(|id| self.file.node(id))
     }
 
-    pub fn children(&self) -> NodeChildren {
+    pub fn children<'n>(&'n self) -> NodeChildren<'n, 'f> {
         NodeChildren {
             file: self.file,
             inner: self.raw().children.iter(),
@@ -73,6 +78,10 @@ pub struct File {
 impl File {
     pub fn root(&self) -> Node {
         self.node(self.root)
+    }
+
+    pub fn node_containing_range(&self, range: TextRange) -> Node {
+        imp::node_containing_range(self.root(), range)
     }
 
     pub fn dump(&self) -> String {
@@ -109,12 +118,12 @@ impl File {
 
 mod imp;
 
-pub struct NodeChildren<'f> {
+pub struct NodeChildren<'n, 'f: 'n> {
     file: &'f File,
-    inner: std::slice::Iter<'f, imp::NodeId>,
+    inner: std::slice::Iter<'n, imp::NodeId>,
 }
 
-impl<'f> Iterator for NodeChildren<'f> {
+impl<'n, 'f: 'n> Iterator for NodeChildren<'n, 'f> {
     type Item = Node<'f>;
 
     fn next(&mut self) -> Option<Node<'f>> {

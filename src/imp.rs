@@ -67,3 +67,21 @@ fn chain(l: TextRange, r: TextRange) -> TextRange {
     assert_eq!(l.end, r.start);
     TextRange { start: l.start, end: r.end }
 }
+
+pub fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
+    fn go<'f>(node: ::Node<'f>, range: TextRange) -> Option<::Node<'f>> {
+        if !range.is_subrange_of(node.range()) {
+            return None
+        }
+
+        for child in node.children() {
+            if let Some(n) = go(child, range) {
+                return Some(n);
+            }
+        }
+        return Some(node)
+    }
+
+    assert!(range.is_subrange_of(node.range()));
+    go(node, range).unwrap()
+}

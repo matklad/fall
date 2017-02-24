@@ -1,24 +1,25 @@
 extern crate fall;
 
+use std::sync::{Once, ONCE_INIT};
 use fall::builder::TreeBuilder;
 
 mod grammar;
 
 use grammar::*;
 
-fn main() {
-    register_node_types();
+static  REGISTER_TOKENS: Once = ONCE_INIT;
 
-    let file = fall::builder::parse(
-        r#"{1 "hello": 1}"#.to_owned(),
+pub fn parse(text: String) -> fall::File {
+    REGISTER_TOKENS.call_once(register_node_types);
+
+    fall::builder::parse(
+        text,
         grammar::FILE,
         grammar::TOKENIZER,
         &|builder| {
             parse_file(builder);
         }
-    );
-
-    println!("{}", file.dump());
+    )
 }
 
 fn parse_file(b: &mut TreeBuilder) {
@@ -63,7 +64,6 @@ fn parse_field(b: &mut TreeBuilder) -> bool {
         b.rollback(FIELD);
         return false
     }
-    println!("B");
     if !(b.try_eat(COLON) && parse_value(b)) {
         b.error();
     }
