@@ -90,10 +90,6 @@ impl File {
         return buf;
 
         fn go(level: usize, n: Node, text: &str, buf: &mut String) {
-            if n.ty() == WHITESPACE {
-                return
-            }
-
             for _ in 0..level {
                 buf.push_str("  ")
             }
