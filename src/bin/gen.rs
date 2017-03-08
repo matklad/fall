@@ -32,6 +32,7 @@ fn read_stdin() -> Result<String, io::Error> {
 
 fn generate(g: &Grammar) -> String {
     let mut result = String::new();
+    result.push_str("use std::sync::{Once, ONCE_INIT};\n");
     result.push_str("use fall::{NodeType, NodeTypeInfo};\n");
     result.push_str("use fall::builder::Rule;\n");
     result.push_str("pub use fall::{ERROR, WHITESPACE};\n\n");
@@ -40,11 +41,14 @@ fn generate(g: &Grammar) -> String {
             .unwrap();
     }
 
-    result.push_str("\npub fn register_node_types() {");
+    result.push_str("\npub fn register_node_types() {\n");
+    result.push_str("    static REGISTER: Once = ONCE_INIT;\n");
+    result.push_str("    REGISTER.call_once(||{\n");
     for t in g.node_types.iter() {
-        writeln!(result, "    {}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t))
+        writeln!(result, "        {}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t))
             .unwrap();
     }
+    result.push_str("    });\n");
     result.push_str("}\n");
 
     result.push_str("\npub const TOKENIZER: &'static [Rule] = &[\n");

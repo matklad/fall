@@ -1,0 +1,13 @@
+nodes = {
+  atom
+  lparen rparen
+  file
+  list
+}
+
+tokenizer = {
+  whitespace r"\s+"
+  lparen     r"\("
+  rparen     r"\)"
+  atom       r"\w+"
+}
