@@ -13,7 +13,7 @@ use std::fs::File;
 
 fn main() {
     let mathces = App::new("Fall parser generator")
-        .arg(Arg::with_name("file").index(1))
+        .arg(Arg::with_name("file").index(1).required(true))
         .get_matches();
 
     let file = Path::new(mathces.value_of("file").unwrap());
