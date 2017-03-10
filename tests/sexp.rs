@@ -1,18 +1,10 @@
 extern crate lang;
 
-use lang::sexp;
+use lang::{sexp, match_ast};
 
 
 fn ast(code: &str) -> String {
     sexp::parse(code.to_owned()).dump()
-}
-
-fn match_ast(actual: &str, expected: &str) {
-    let actual = actual.trim();
-    let expected = expected.trim();
-    if actual != expected {
-        panic!("Actual:\n{}\nExpected:\n{}\n", actual, expected)
-    }
 }
 
 #[test]

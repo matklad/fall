@@ -1,0 +1,10 @@
+nodes = {
+  atom
+  file
+  empty
+}
+
+tokenizer = {
+  whitespace r"\s+"
+  atom r"\w+"
+}

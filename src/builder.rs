@@ -70,15 +70,13 @@ impl TreeBuilder {
     }
 
     fn to_prenode(&self, frame: Frame) -> PreNode {
-        let range = if self.tokens.is_empty() {
-            TextRange::empty()
+        let range = if frame.children.is_empty() {
+            let start = self.tokens.get(frame.start_token).map(|t| t.range.start()).unwrap_or(0);
+            TextRange::from_to(start, start)
         } else {
-            let first_token = self.tokens[frame.start_token];
-            let last_token = self.tokens[self.current_token - 1];
-            TextRange::from_to(
-                first_token.range.start(),
-                last_token.range.end()
-            )
+            let first = frame.children.first().unwrap();
+            let last = frame.children.last().unwrap();
+            TextRange::from_to(first.range.start(), last.range.end())
         };
 
         PreNode { ty: frame.ty, range: range, children: frame.children }
