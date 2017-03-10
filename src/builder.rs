@@ -54,17 +54,32 @@ impl TreeBuilder {
             top.children.pop();
             self.current_token -= 1;
         }
+        let node = self.to_prenode(top);
 
-        let first_token = self.tokens[top.start_token];
-        let last_token = self.tokens[self.current_token - 1];
-        assert!(!self.is_skip(first_token.ty) && !self.is_skip(last_token.ty));
-        let range = TextRange::from_to(
-            first_token.range.start(),
-            last_token.range.end()
-        );
-        let node = PreNode { ty: top.ty, range: range, children: top.children };
+        if let Some(t) = node.children.first() {
+            assert!(!self.is_skip(t.ty));
+        }
+        if let Some(t) = node.children.last() {
+            assert!(!self.is_skip(t.ty));
+        }
+
         self.top().children.push(node);
         self.do_skip();
+    }
+
+    fn to_prenode(&self, frame: Frame) -> PreNode {
+        let range = if self.tokens.is_empty() {
+            TextRange::empty()
+        } else {
+            let first_token = self.tokens[frame.start_token];
+            let last_token = self.tokens[self.current_token - 1];
+            TextRange::from_to(
+                first_token.range.start(),
+                last_token.range.end()
+            )
+        };
+
+        PreNode { ty: frame.ty, range: range, children: frame.children }
     }
 
     pub fn rollback(&mut self, ty: NodeType) {
@@ -173,7 +188,8 @@ impl TreeBuilder {
         }
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
-        ::node::imp::build_file(self.text, top.ty, top.children)
+        let root = self.to_prenode(top);
+        ::node::imp::build_file(self.text, root)
     }
 
     fn is_skip(&self, ty: NodeType) -> bool {

@@ -20,7 +20,7 @@ impl Index<NodeId> for File {
     }
 }
 
-pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
+pub fn build_file(text: String, root: PreNode) -> File {
     fn go(parent: NodeId, node: &PreNode, nodes: &mut Vec<RawNode>) -> NodeId {
         let id = NodeId(nodes.len() as u32);
         nodes.push(RawNode {
@@ -39,7 +39,7 @@ pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
     }
 
     let mut nodes = vec![RawNode {
-        ty: ty,
+        ty: root.ty,
         parent: None,
         children: vec![],
         range: TextRange::empty(),
@@ -47,7 +47,7 @@ pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
 
     let mut root_children: Vec<NodeId> = vec![];
     let mut range = TextRange::empty();
-    for child in children {
+    for child in root.children.iter() {
         range = range.glue(child.range);
         let c = go(NodeId(0), &child, &mut nodes);
         root_children.push(c);
