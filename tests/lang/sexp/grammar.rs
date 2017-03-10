@@ -26,4 +26,3 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: RPAREN, re: r"\)" },
     Rule { ty: ATOM, re: r"\w+" },
 ];
-

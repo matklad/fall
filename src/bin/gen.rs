@@ -1,12 +1,24 @@
+extern crate clap;
+
+use clap::{App, Arg};
+
 use std::error::Error;
-use std::io;
 use std::io::prelude::*;
+use std::io::Write;
+use std::fmt::Write as FmtWrite;
 use std::iter::FromIterator;
-use std::fmt::Write;
 use std::ascii::AsciiExt;
+use std::path::Path;
+use std::fs::File;
 
 fn main() {
-    let return_code = if let Err(e) = main_inner() {
+    let mathces = App::new("Fall parser generator")
+        .arg(Arg::with_name("file").index(1))
+        .get_matches();
+
+    let file = Path::new(mathces.value_of("file").unwrap());
+
+    let return_code = if let Err(e) = main_inner(file) {
         println!("Error occurred: {}", e);
         101
     } else {
@@ -16,18 +28,20 @@ fn main() {
     std::process::exit(return_code)
 }
 
-fn main_inner() -> Result<(), Box<Error>> {
-    let input = read_stdin()?;
+fn main_inner(file: &Path) -> Result<(), Box<Error>> {
+    let input = {
+        let mut file = File::open(file)?;
+        let mut buff = String::new();
+        file.read_to_string(&mut buff)?;
+        buff
+    };
+
     let grammar = parse(&input);
     let result = generate(&grammar);
-    println!("{}", result);
-    Ok(())
-}
 
-fn read_stdin() -> Result<String, io::Error> {
-    let mut buf = String::new();
-    io::stdin().read_to_string(&mut buf)?;
-    Ok(buf)
+    let mut out_file = File::create(file.with_extension("rs"))?;
+    write!(out_file, "{}", result)?;
+    Ok(())
 }
 
 fn generate(g: &Grammar) -> String {

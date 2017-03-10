@@ -9,6 +9,7 @@ members = ["json"]
 [dependencies]
 regex = "0.2"
 lazy_static = "0.2"
+clap = "2.20"
 
 [dev-dependencies]
 lang = { path = "tests/lang" }
