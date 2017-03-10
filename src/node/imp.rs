@@ -6,7 +6,7 @@ use {File, NodeType, TextRange};
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct NodeId(u32);
 
-pub struct Node {
+pub struct RawNode {
     pub ty: NodeType,
     pub parent: Option<NodeId>,
     pub children: Vec<NodeId>,
@@ -14,16 +14,16 @@ pub struct Node {
 }
 
 impl Index<NodeId> for File {
-    type Output = Node;
+    type Output = RawNode;
     fn index(&self, index: NodeId) -> &Self::Output {
         &self.nodes[index.0 as usize]
     }
 }
 
 pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
-    fn go(parent: NodeId, node: &PreNode, nodes: &mut Vec<Node>) -> NodeId {
+    fn go(parent: NodeId, node: &PreNode, nodes: &mut Vec<RawNode>) -> NodeId {
         let id = NodeId(nodes.len() as u32);
-        nodes.push(Node {
+        nodes.push(RawNode {
             ty: node.ty,
             parent: Some(parent),
             children: vec![],
@@ -38,7 +38,7 @@ pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
         id
     }
 
-    let mut nodes = vec![Node {
+    let mut nodes = vec![RawNode {
         ty: ty,
         parent: None,
         children: vec![],

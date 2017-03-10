@@ -5,7 +5,7 @@ use {TextRange, NodeType};
 pub struct File {
     text: String,
     root: imp::NodeId,
-    nodes: Vec<imp::Node>,
+    nodes: Vec<imp::RawNode>,
 }
 
 impl File {
@@ -33,8 +33,8 @@ impl File {
             } else {
                 write!(buf, "{}\n", n.ty().name())
                     .unwrap();
-                for c in n.children() {
-                    go(level + 1, c, text, buf);
+                for child in n.children() {
+                    go(level + 1, child, text, buf);
                 }
             }
         }
@@ -80,7 +80,7 @@ impl<'f> Node<'f> {
         unimplemented!()
     }
 
-    fn raw(&self) -> &imp::Node {
+    fn raw(&self) -> &imp::RawNode {
         &self.file[self.id]
     }
 }
