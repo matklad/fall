@@ -1,0 +1,24 @@
+nodes = {
+  nodes
+  tokenizer_kw
+
+  eq
+  lbrace rbrace
+  ident
+  string
+
+  file
+  nodes_def
+  tokenizer_def
+}
+
+tokenizer = {
+    whitespace r"\s+"
+    eq "="
+    lbrace r"\{"
+    rbrace r"\}"
+    string r#"r?"[^"]*""#
+    nodes "nodes"
+    tokenizer_kw "tokenizer_kw"
+    ident r"\w+"
+}

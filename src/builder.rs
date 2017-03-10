@@ -206,6 +206,16 @@ impl TreeBuilder {
     }
 }
 
+impl ::std::fmt::Debug for TreeBuilder {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TreeBuilder {")?;
+        let pending = self.pending.iter().map(|f| f.ty.name()).collect::<String>();
+        f.write_str(&format!("  pending = {}", pending))?;
+        f.write_str("}")?;
+        Ok(())
+    }
+}
+
 pub fn parse(
     text: String,
     file_type: NodeType,
