@@ -173,7 +173,7 @@ impl TreeBuilder {
         }
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
-        ::imp::build_file(self.text, top.ty, top.children)
+        ::node::imp::build_file(self.text, top.ty, top.children)
     }
 
     fn is_skip(&self, ty: NodeType) -> bool {

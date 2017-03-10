@@ -1,7 +1,7 @@
 use std::ops::Index;
 use builder::PreNode;
 
-use super::{File, NodeType, TextRange};
+use {File, NodeType, TextRange};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct NodeId(u32);
