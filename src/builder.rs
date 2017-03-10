@@ -58,10 +58,10 @@ impl TreeBuilder {
         let first_token = self.tokens[top.start_token];
         let last_token = self.tokens[self.current_token - 1];
         assert!(!self.is_skip(first_token.ty) && !self.is_skip(last_token.ty));
-        let range = TextRange {
-            start: first_token.range.start,
-            end: last_token.range.end,
-        };
+        let range = TextRange::from_to(
+            first_token.range.start(),
+            last_token.range.end()
+        );
         let node = PreNode { ty: top.ty, range: range, children: top.children };
         self.top().children.push(node);
         self.do_skip();
@@ -210,7 +210,7 @@ fn tokenize(text: &str, tokenizer: &[Rule]) -> Vec<Token> {
                 assert!(m.end() > 0);
                 result.push(Token {
                     ty: ty,
-                    range: TextRange { start: offset as u32, end: (offset + m.end()) as u32 },
+                    range: TextRange::from_to(offset as u32, (offset + m.end()) as u32),
                 });
                 offset += m.end();
                 rest = &rest[m.end()..];
@@ -220,7 +220,7 @@ fn tokenize(text: &str, tokenizer: &[Rule]) -> Vec<Token> {
         let bad_char_len = rest.chars().next().unwrap().len_utf8();
         result.push(Token {
             ty: ::ERROR,
-            range: TextRange { start: offset as u32, end: (offset + bad_char_len) as u32 }
+            range: TextRange::from_to(offset as u32, (offset + bad_char_len) as u32)
         });
         offset += bad_char_len;
         rest = &rest[bad_char_len..];

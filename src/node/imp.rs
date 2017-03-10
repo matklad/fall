@@ -42,13 +42,13 @@ pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
         ty: ty,
         parent: None,
         children: vec![],
-        range: TextRange { start: 0, end: 0 },
+        range: TextRange::empty(),
     }];
 
     let mut root_children: Vec<NodeId> = vec![];
-    let mut range = TextRange { start: 0, end: 0 };
+    let mut range = TextRange::empty();
     for child in children {
-        range = chain(range, child.range);
+        range = range.glue(child.range);
         let c = go(NodeId(0), &child, &mut nodes);
         root_children.push(c);
     }
@@ -62,11 +62,6 @@ pub fn build_file(text: String, ty: NodeType, children: Vec<PreNode>) -> File {
     }
 }
 
-
-fn chain(l: TextRange, r: TextRange) -> TextRange {
-    assert_eq!(l.end, r.start);
-    TextRange { start: l.start, end: r.end }
-}
 
 pub fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
     fn go<'f>(node: ::Node<'f>, range: TextRange) -> Option<::Node<'f>> {
