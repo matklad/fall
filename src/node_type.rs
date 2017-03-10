@@ -8,7 +8,6 @@ pub struct NodeType(pub u32);
 pub const ERROR: NodeType = NodeType(0);
 pub const WHITESPACE: NodeType = NodeType(1);
 
-
 #[derive(Clone, Copy)]
 pub struct NodeTypeInfo {
     pub name: &'static str
@@ -16,7 +15,8 @@ pub struct NodeTypeInfo {
 
 impl NodeType {
     pub fn register(self, info: NodeTypeInfo) {
-        NODE_INFO.lock().unwrap().insert(self, info);
+        let prev = NODE_INFO.lock().unwrap().insert(self, info);
+        assert!(prev.is_none(), "Node already registered: {:?}", self);
     }
 
     pub fn name(self) -> &'static str {
