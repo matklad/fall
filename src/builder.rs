@@ -1,8 +1,10 @@
 use std::iter::FromIterator;
 use std::collections::HashSet;
 
-use {TextRange, NodeType, File};
 use regex::Regex;
+
+use {TextRange, NodeType, File};
+use node::imp::{FileBuilder, NodeId};
 
 pub struct Rule {
     pub ty: NodeType,
@@ -189,7 +191,16 @@ impl TreeBuilder {
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
         let root = self.to_prenode(top);
-        ::node::imp::build_file(self.text, root)
+        let mut builder = ::node::imp::FileBuilder::new();
+        go(&mut builder, None, root);
+        return builder.build(self.text);
+
+        fn go(builder: &mut FileBuilder, parent: Option<NodeId>, node: PreNode) {
+            let id = builder.node(parent, node.ty, node.range);
+            for child in node.children {
+                go(builder, Some(id), child)
+            }
+        }
     }
 
     fn is_skip(&self, ty: NodeType) -> bool {

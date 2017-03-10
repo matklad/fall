@@ -20,48 +20,39 @@ impl Index<NodeId> for File {
     }
 }
 
-pub fn build_file(text: String, root: PreNode) -> File {
-    fn go(parent: NodeId, node: &PreNode, nodes: &mut Vec<RawNode>) -> NodeId {
-        let id = NodeId(nodes.len() as u32);
-        nodes.push(RawNode {
-            ty: node.ty,
-            parent: Some(parent),
-            children: vec![],
-            range: node.range,
-        });
+pub struct FileBuilder {
+    nodes: Vec<RawNode>,
+}
 
-        let mut children = vec![];
-        for child in node.children.iter() {
-            children.push(go(id, child, nodes));
+impl FileBuilder {
+    pub fn new() -> FileBuilder {
+        FileBuilder { nodes: vec![] }
+    }
+
+    pub fn node(&mut self, parent: Option<NodeId>, ty: NodeType, range: TextRange) -> NodeId {
+        let id = NodeId(self.nodes.len() as u32);
+        self.nodes.push(RawNode {
+            ty: ty,
+            parent: parent,
+            children: vec![],
+            range: range,
+        });
+        if let Some(parent) = parent {
+            self.nodes[parent.0 as usize].children.push(id)
         }
-        nodes[id.0 as usize].children = children;
+
         id
     }
 
-    let mut nodes = vec![RawNode {
-        ty: root.ty,
-        parent: None,
-        children: vec![],
-        range: TextRange::empty(),
-    }];
-
-    let mut root_children: Vec<NodeId> = vec![];
-    let mut range = TextRange::empty();
-    for child in root.children.iter() {
-        range = range.glue(child.range);
-        let c = go(NodeId(0), &child, &mut nodes);
-        root_children.push(c);
-    }
-    nodes[0].range = range;
-    nodes[0].children = root_children;
-
-    File {
-        text: text,
-        root: NodeId(0),
-        nodes: nodes,
+    pub fn build(self, text: String) -> File {
+        assert!(!self.nodes.is_empty());
+        File {
+            text: text,
+            root: NodeId(0),
+            nodes: self.nodes,
+        }
     }
 }
-
 
 pub fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
     fn go<'f>(node: ::Node<'f>, range: TextRange) -> Option<::Node<'f>> {
