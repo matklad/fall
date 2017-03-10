@@ -1,0 +1,26 @@
+nodes = {
+  lparen rparen
+  lbrace rbrace
+
+  pub
+  struct
+  fn
+
+  ident
+
+  file
+  struct_def
+  fn_def
+}
+
+tokenizer = {
+  whitespace r"\s+"
+  lparen r"\("
+  rparen r"\)"
+  lbrace r"\{"
+  rbrace r"\}"
+  pub "pub"
+  struct "struct"
+  fn "fn"
+  ident r"\w+"
+}
