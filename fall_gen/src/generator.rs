@@ -3,7 +3,7 @@ use std::ascii::AsciiExt;
 
 pub struct Grammar {
     pub node_types: Vec<String>,
-    pub tokenizer_rules: Vec<(String, String)>,
+    pub tokenizer_rules: Vec<(String, String, Option<String>)>,
 }
 
 impl Grammar {
@@ -29,9 +29,13 @@ impl Grammar {
         result.push_str("}\n");
 
         result.push_str("\npub const TOKENIZER: &'static [Rule] = &[\n");
-        for &(ref ty, ref re) in self.tokenizer_rules.iter() {
+        for &(ref ty, ref re, ref f) in self.tokenizer_rules.iter() {
             result.push_str("    ");
-            result.push_str(&format!("Rule {{ ty: {}, re: {} }},", scream(ty), re));
+            let f = match *f {
+                None => "None".to_owned(),
+                Some(ref f) => format!("Some({})", f)
+            };
+            result.push_str(&format!("Rule {{ ty: {}, re: {}, f: {} }},", scream(ty), re, f));
             result.push_str("\n");
         }
         result.push_str("];\n");

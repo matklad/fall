@@ -1,3 +1,4 @@
+use std::sync::{Once, ONCE_INIT};
 use fall::{NodeType, NodeTypeInfo};
 use fall::builder::Rule;
 pub use fall::{ERROR, WHITESPACE};
@@ -18,32 +19,35 @@ pub const PRIMITIVE : NodeType = NodeType(112);
 pub const FIELD     : NodeType = NodeType(113);
 pub const FILE      : NodeType = NodeType(114);
 
-pub fn register_node_types() {    NULL.register(NodeTypeInfo { name: "NULL" });
-    BOOL.register(NodeTypeInfo { name: "BOOL" });
-    NUMBER.register(NodeTypeInfo { name: "NUMBER" });
-    STRING.register(NodeTypeInfo { name: "STRING" });
-    LBRACE.register(NodeTypeInfo { name: "LBRACE" });
-    RBRACE.register(NodeTypeInfo { name: "RBRACE" });
-    LBRACK.register(NodeTypeInfo { name: "LBRACK" });
-    RBRACK.register(NodeTypeInfo { name: "RBRACK" });
-    COMMA.register(NodeTypeInfo { name: "COMMA" });
-    COLON.register(NodeTypeInfo { name: "COLON" });
-    OBJECT.register(NodeTypeInfo { name: "OBJECT" });
-    ARRAY.register(NodeTypeInfo { name: "ARRAY" });
-    PRIMITIVE.register(NodeTypeInfo { name: "PRIMITIVE" });
-    FIELD.register(NodeTypeInfo { name: "FIELD" });
-    FILE.register(NodeTypeInfo { name: "FILE" });
+pub fn register_node_types() {
+    static REGISTER: Once = ONCE_INIT;
+    REGISTER.call_once(||{
+        NULL.register(NodeTypeInfo { name: "NULL" });
+        BOOL.register(NodeTypeInfo { name: "BOOL" });
+        NUMBER.register(NodeTypeInfo { name: "NUMBER" });
+        STRING.register(NodeTypeInfo { name: "STRING" });
+        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
+        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
+        LBRACK.register(NodeTypeInfo { name: "LBRACK" });
+        RBRACK.register(NodeTypeInfo { name: "RBRACK" });
+        COMMA.register(NodeTypeInfo { name: "COMMA" });
+        COLON.register(NodeTypeInfo { name: "COLON" });
+        OBJECT.register(NodeTypeInfo { name: "OBJECT" });
+        ARRAY.register(NodeTypeInfo { name: "ARRAY" });
+        PRIMITIVE.register(NodeTypeInfo { name: "PRIMITIVE" });
+        FIELD.register(NodeTypeInfo { name: "FIELD" });
+        FILE.register(NodeTypeInfo { name: "FILE" });
+    });
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+" },
-    Rule { ty: LBRACE, re: r"\{" },
-    Rule { ty: RBRACE, re: r"\}" },
-    Rule { ty: LBRACK, re: r"\[" },
-    Rule { ty: RBRACK, re: r"\]" },
-    Rule { ty: COLON, re: r":" },
-    Rule { ty: COMMA, re: r"," },
-    Rule { ty: STRING, re: r#""[^"]*""# },
-    Rule { ty: NUMBER, re: r"\d+" },
+    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: LBRACE, re: r"\{", f: None },
+    Rule { ty: RBRACE, re: r"\}", f: None },
+    Rule { ty: LBRACK, re: r"\[", f: None },
+    Rule { ty: RBRACK, re: r"\]", f: None },
+    Rule { ty: COLON, re: r":", f: None },
+    Rule { ty: COMMA, re: r",", f: None },
+    Rule { ty: STRING, re: r#""[^"]*""#, f: None },
+    Rule { ty: NUMBER, re: r"\d+", f: None },
 ];
-

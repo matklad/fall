@@ -1,10 +1,12 @@
 nodes = {
   atom
+  raw_string
   file
   empty
 }
 
 tokenizer = {
   whitespace r"\s+"
+  raw_string "r#+\"" super::parse_raw_string
   atom r"\w+"
 }

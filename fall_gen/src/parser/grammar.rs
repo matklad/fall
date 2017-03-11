@@ -33,12 +33,12 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+" },
-    Rule { ty: EQ, re: "=" },
-    Rule { ty: LBRACE, re: r"\{" },
-    Rule { ty: RBRACE, re: r"\}" },
-    Rule { ty: STRING, re: r#"r?"[^"]*""# },
-    Rule { ty: NODES, re: "nodes" },
-    Rule { ty: TOKENIZER_KW, re: "tokenizer" },
-    Rule { ty: IDENT, re: r"\w+" },
+    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: EQ, re: "=", f: None },
+    Rule { ty: LBRACE, re: r"\{", f: None },
+    Rule { ty: RBRACE, re: r"\}", f: None },
+    Rule { ty: STRING, re: r#"r?"[^"]*""#, f: None },
+    Rule { ty: NODES, re: "nodes", f: None },
+    Rule { ty: TOKENIZER_KW, re: "tokenizer", f: None },
+    Rule { ty: IDENT, re: r"\w+", f: None },
 ];

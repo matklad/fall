@@ -21,8 +21,8 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+" },
-    Rule { ty: LPAREN, re: r"\(" },
-    Rule { ty: RPAREN, re: r"\)" },
-    Rule { ty: ATOM, re: r"\w+" },
+    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: LPAREN, re: r"\(", f: None },
+    Rule { ty: RPAREN, re: r"\)", f: None },
+    Rule { ty: ATOM, re: r"\w+", f: None },
 ];

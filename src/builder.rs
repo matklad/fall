@@ -8,7 +8,8 @@ use node::imp::{FileBuilder, NodeId};
 
 pub struct Rule {
     pub ty: NodeType,
-    pub re: &'static str
+    pub re: &'static str,
+    pub f: Option<fn(&str) -> Option<usize>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -232,23 +233,30 @@ fn tokenize(text: &str, tokenizer: &[Rule]) -> Vec<Token> {
     let mut result = vec![];
 
     let rules = Vec::from_iter(
-        tokenizer.iter().map(|r| (r.ty, Regex::new(&format!("^{}", r.re)).unwrap()))
+        tokenizer.iter().map(|r| (r.ty, Regex::new(&format!("^{}", r.re)).unwrap(), r.f))
     );
 
     let mut offset = 0;
     let mut rest = text;
 
     'l: while rest.len() > 0 {
-        for &(ty, ref re) in rules.iter() {
+        for &(ty, ref re, f) in rules.iter() {
             if let Some(m) = re.find(rest) {
                 assert!(m.start() == 0);
                 assert!(m.end() > 0);
-                result.push(Token {
-                    ty: ty,
-                    range: TextRange::from_to(offset as u32, (offset + m.end()) as u32),
-                });
-                offset += m.end();
-                rest = &rest[m.end()..];
+                let end = if let Some(f) = f {
+                    if let Some(n) = f(rest) {
+                        n
+                    } else {
+                        continue
+                    }
+                } else {
+                    m.end()
+                };
+                let range = TextRange::from_to(offset as u32, (offset + end) as u32);
+                result.push(Token { ty: ty, range: range });
+                offset += end;
+                rest = &rest[end..];
                 continue 'l;
             }
         }

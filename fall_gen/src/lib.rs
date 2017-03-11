@@ -43,14 +43,15 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
 
     let rules = tokenizer
         .children().many_of_type(RULE)
-        .map(|rule| -> Result<(String, String), Error> {
+        .map(|rule| -> Result<(String, String, Option<String>), Error> {
             let id = rule.children().single_of_type(IDENT)
                 .ok_or(error("Missing name in rule"))?
                 .text().to_owned();
-            let pat = rule.children().single_of_type(STRING)
-                .ok_or(error(format!("Missing pattern in rule {:?}", rule.text())))?
-                .text().to_owned();
-            Ok((id, pat))
+            let mut pats = rule.children().many_of_type(STRING);
+            let pat = pats.next()
+                .ok_or(error(format!("Missing pattern in rule {:?}", rule.text())))?;
+            let f = pats.next().map(|n| n.text().to_owned());
+            Ok((id, pat.text().to_owned(), f))
         })
         .collect::<Result<Vec<_>, Error>>()?;
 

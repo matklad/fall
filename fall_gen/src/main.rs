@@ -35,8 +35,8 @@ fn main_inner(file: &Path) -> Result<(), Box<Error>> {
         buff
     };
 
-//    let result = parse(&input).generate();
-    let result = fall_gen::parse(&input)?.generate();
+    let result = parse(&input).generate();
+//    let result = fall_gen::parse(&input)?.generate();
 
     let mut out_file = File::create(file.with_extension("rs"))?;
     write!(out_file, "{}", result)?;
@@ -58,11 +58,8 @@ fn parse(text: &str) -> Grammar {
             .map(|line| line.trim())
             .map(|line| {
                 let words = Vec::from_iter(line.split_whitespace());
-                assert_eq!(words.len(), 2);
-                (words[0], words[1])
+                (words[0].to_owned(), words[1].to_owned(), words.get(2).map(|&s| s.to_owned()))
             })
-            .map(|(token, rule)| {
-                (token.to_owned(), rule.to_owned())
-            }).collect(),
+            .collect(),
     }
 }

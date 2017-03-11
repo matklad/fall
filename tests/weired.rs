@@ -18,3 +18,13 @@ FILE
   EMPTY ""
 "#)
 }
+
+#[test]
+fn external_rule() {
+    match_ast(&ast(r###" r##"f#"o"#o"## "###), r###"
+FILE
+  WHITESPACE " "
+  RAW_STRING "r##\"f#\"o\"#o\"##"
+  WHITESPACE " "
+"###)
+}
