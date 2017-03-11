@@ -46,7 +46,6 @@ fn do_test(grammar: &str, expected: &str) {
 }
 
 #[test]
-#[ignore]
 fn test_simple_grammar() {
     do_test(r###"
 nodes = {
@@ -114,15 +113,15 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+" },
-    Rule { ty: LBRACE, re: r"\{" },
-    Rule { ty: RBRACE, re: r"\}" },
-    Rule { ty: LBRACK, re: r"\[" },
-    Rule { ty: RBRACK, re: r"\]" },
-    Rule { ty: COLON, re: r":" },
-    Rule { ty: COMMA, re: r"," },
-    Rule { ty: STRING, re: r#""[^"]*""# },
-    Rule { ty: NUMBER, re: r"\d+" },
+    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: LBRACE, re: r"\{", f: None },
+    Rule { ty: RBRACE, re: r"\}", f: None },
+    Rule { ty: LBRACK, re: r"\[", f: None },
+    Rule { ty: RBRACK, re: r"\]", f: None },
+    Rule { ty: COLON, re: r":", f: None },
+    Rule { ty: COMMA, re: r",", f: None },
+    Rule { ty: STRING, re: r#""[^"]*""#, f: None },
+    Rule { ty: NUMBER, re: r"\d+", f: None },
 ];
 "###)
 }
