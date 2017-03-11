@@ -1,4 +1,4 @@
-mod grammar;
+pub mod grammar;
 
 use fall;
 use fall::builder::TreeBuilder;

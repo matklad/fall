@@ -82,4 +82,15 @@ impl<'n, 'f: 'n> Iterator for NodeChildren<'n, 'f> {
     }
 }
 
+impl<'n, 'f: 'n> NodeChildren<'n, 'f> {
+    pub fn single_of_type(mut self, ty: NodeType) -> Option<Node<'f>> {
+        self.find(|n| n.ty() == ty)
+    }
+
+    pub fn many_of_type(self, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'n> {
+        Box::new(self.filter(move |n| n.ty() == ty))
+    }
+}
+
+
 pub mod imp;
