@@ -19,7 +19,7 @@ fn main() {
         .get_matches();
     let file = Path::new(matches.value_of("file").unwrap());
     let return_code = if let Err(e) = main_inner(file) {
-        println!("Error occurred: {}", e);
+        writeln!(::std::io::stderr(), "Error occurred: {}", e).unwrap();
         101
     } else {
         0
@@ -35,7 +35,8 @@ fn main_inner(file: &Path) -> Result<(), Box<Error>> {
         buff
     };
 
-    let result = parse(&input).generate();
+//    let result = parse(&input).generate();
+    let result = fall_gen::parse(&input)?.generate();
 
     let mut out_file = File::create(file.with_extension("rs"))?;
     write!(out_file, "{}", result)?;

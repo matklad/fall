@@ -22,11 +22,15 @@ fn do_test(grammar: &str, expected: &str) {
         write!(f, "{}", grammar).unwrap();
     }
 
-    let status = process::Command::new(generator_path())
+    let output = process::Command::new(generator_path())
             .arg(&grammar_path)
-            .status()
+            .output()
             .expect("Failed to execute process");
-    assert!(status.success());
+    if !output.status.success() {
+        println!("{}", String::from_utf8_lossy(&output.stderr));
+        panic!("Generator exited with code {:?}", output.status.code())
+    }
+
     let actual = {
         let mut f = File::open(grammar_path.with_extension("rs"))
             .expect("Failed to find output file");
@@ -42,6 +46,7 @@ fn do_test(grammar: &str, expected: &str) {
 }
 
 #[test]
+#[ignore]
 fn test_simple_grammar() {
     do_test(r###"
 nodes = {

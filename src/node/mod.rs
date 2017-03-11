@@ -61,7 +61,7 @@ impl<'f> Node<'f> {
     }
 
     pub fn text(&self) -> &str {
-        unimplemented!()
+        &self.file.text[self.range()]
     }
 
     fn raw(&self) -> &imp::RawNode {

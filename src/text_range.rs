@@ -39,3 +39,11 @@ impl ::std::ops::Index<TextRange> for str {
         &self[index.start as usize..index.end as usize]
     }
 }
+
+impl ::std::ops::Index<TextRange> for String {
+    type Output = str;
+
+    fn index(&self, index: TextRange) -> &str {
+        &self[index.start as usize..index.end as usize]
+    }
+}
