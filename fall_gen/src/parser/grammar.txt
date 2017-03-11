@@ -5,9 +5,11 @@ nodes = {
   eq
   lbrace rbrace
   ident
-  string
+  simple_string
+  hash_string
 
   file
+  string
   nodes_def
   tokenizer_def
   rule
@@ -18,7 +20,8 @@ tokenizer = {
     eq "="
     lbrace r"\{"
     rbrace r"\}"
-    string r#"r?"[^"]*""#
+    simple_string r#"r?"[^"]*""#
+    hash_string "r#+\"" super::parse_raw_string
     nodes "nodes"
     tokenizer_kw "tokenizer"
     ident r"\w+"

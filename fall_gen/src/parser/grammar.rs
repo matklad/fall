@@ -9,11 +9,13 @@ pub const EQ        : NodeType = NodeType(102);
 pub const LBRACE    : NodeType = NodeType(103);
 pub const RBRACE    : NodeType = NodeType(104);
 pub const IDENT     : NodeType = NodeType(105);
-pub const STRING    : NodeType = NodeType(106);
-pub const FILE      : NodeType = NodeType(107);
-pub const NODES_DEF : NodeType = NodeType(108);
-pub const TOKENIZER_DEF: NodeType = NodeType(109);
-pub const RULE      : NodeType = NodeType(110);
+pub const SIMPLE_STRING: NodeType = NodeType(106);
+pub const HASH_STRING: NodeType = NodeType(107);
+pub const FILE      : NodeType = NodeType(108);
+pub const STRING    : NodeType = NodeType(109);
+pub const NODES_DEF : NodeType = NodeType(110);
+pub const TOKENIZER_DEF: NodeType = NodeType(111);
+pub const RULE      : NodeType = NodeType(112);
 
 pub fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
@@ -24,8 +26,10 @@ pub fn register_node_types() {
         LBRACE.register(NodeTypeInfo { name: "LBRACE" });
         RBRACE.register(NodeTypeInfo { name: "RBRACE" });
         IDENT.register(NodeTypeInfo { name: "IDENT" });
-        STRING.register(NodeTypeInfo { name: "STRING" });
+        SIMPLE_STRING.register(NodeTypeInfo { name: "SIMPLE_STRING" });
+        HASH_STRING.register(NodeTypeInfo { name: "HASH_STRING" });
         FILE.register(NodeTypeInfo { name: "FILE" });
+        STRING.register(NodeTypeInfo { name: "STRING" });
         NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
         TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
         RULE.register(NodeTypeInfo { name: "RULE" });
@@ -37,7 +41,8 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: EQ, re: "=", f: None },
     Rule { ty: LBRACE, re: r"\{", f: None },
     Rule { ty: RBRACE, re: r"\}", f: None },
-    Rule { ty: STRING, re: r#"r?"[^"]*""#, f: None },
+    Rule { ty: SIMPLE_STRING, re: r#"r?"[^"]*""#, f: None },
+    Rule { ty: HASH_STRING, re: "r#+\"", f: Some(super::parse_raw_string) },
     Rule { ty: NODES, re: "nodes", f: None },
     Rule { ty: TOKENIZER_KW, re: "tokenizer", f: None },
     Rule { ty: IDENT, re: r"\w+", f: None },

@@ -59,9 +59,26 @@ fn parse_rule(b: &mut TreeBuilder) -> bool {
         b.rollback(RULE);
         return false
     }
-    b.try_eat(STRING);
+    parse_string(b) && parse_string(b);
     b.finish(RULE);
     true
+}
+
+fn parse_string(b: &mut TreeBuilder) -> bool {
+    b.start(STRING);
+    if b.try_eat(SIMPLE_STRING) || b.try_eat(HASH_STRING) {
+        b.finish(STRING);
+        true
+    } else {
+        b.rollback(STRING);
+        false
+    }
+}
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    let closing = &"\"########################"[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
 #[cfg(test)]
@@ -101,7 +118,7 @@ FILE
 
     #[test]
     fn tokenizer() {
-        match_ast(&ast(r#"nodes={} tokenizer = { foo "foo" id r"\w+" }"#), r#"
+        match_ast(&ast(r#"nodes={} tokenizer = { foo "foo" id r"\w+" ext "ext" "super::ext"}"#), r#"
 FILE
   NODES_DEF
     NODES "nodes"
@@ -114,9 +131,17 @@ FILE
     LBRACE "{"
     RULE
       IDENT "foo"
-      STRING "\"foo\""
+      STRING
+        SIMPLE_STRING "\"foo\""
     RULE
       IDENT "id"
-      STRING "r\"\\w+\""
+      STRING
+        SIMPLE_STRING "r\"\\w+\""
+    RULE
+      IDENT "ext"
+      STRING
+        SIMPLE_STRING "\"ext\""
+      STRING
+        SIMPLE_STRING "\"super::ext\""
     RBRACE "}"
 "#) } }
