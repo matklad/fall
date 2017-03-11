@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use {TextRange, NodeType};
 
 
@@ -17,27 +16,12 @@ impl File {
         imp::node_containing_range(self.root(), range)
     }
 
+    pub fn dump_ws(&self) -> String {
+        imp::dump(self.root(), &self.text, true)
+    }
+
     pub fn dump(&self) -> String {
-        let mut buf = String::new();
-        go(0, self.root(), &self.text, &mut buf);
-        return buf;
-
-        fn go(level: usize, n: Node, text: &str, buf: &mut String) {
-            for _ in 0..level {
-                buf.push_str("  ")
-            }
-
-            if n.is_leaf() {
-                write!(buf, "{} {:?}\n", n.ty().name(), &text[n.range()])
-                    .unwrap();
-            } else {
-                write!(buf, "{}\n", n.ty().name())
-                    .unwrap();
-                for child in n.children() {
-                    go(level + 1, child, text, buf);
-                }
-            }
-        }
+        imp::dump(self.root(), &self.text, false)
     }
 
     fn node(&self, id: imp::NodeId) -> Node {

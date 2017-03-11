@@ -93,15 +93,10 @@ mod tests {
 FILE
   NODES_DEF
     NODES "nodes"
-    WHITESPACE " "
     EQ "="
-    WHITESPACE " "
     LBRACE "{"
-    WHITESPACE " "
     IDENT "foo"
-    WHITESPACE " "
     IDENT "bar"
-    WHITESPACE " "
     RBRACE "}"
 "#)
     }
@@ -115,23 +110,15 @@ FILE
     EQ "="
     LBRACE "{"
     RBRACE "}"
-  WHITESPACE " "
   TOKENIZER_DEF
     TOKENIZER_KW "tokenizer"
-    WHITESPACE " "
     EQ "="
-    WHITESPACE " "
     LBRACE "{"
-    WHITESPACE " "
     RULE
       IDENT "foo"
-      WHITESPACE " "
       STRING "\"foo\""
-    WHITESPACE " "
     RULE
       IDENT "id"
-      WHITESPACE " "
       STRING "r\"\\w+\""
-    WHITESPACE " "
     RBRACE "}"
 "#) } }

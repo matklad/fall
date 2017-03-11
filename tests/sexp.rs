@@ -4,7 +4,7 @@ use lang::{sexp, match_ast};
 
 
 fn ast(code: &str) -> String {
-    sexp::parse(code.to_owned()).dump()
+    sexp::parse(code.to_owned()).dump_ws()
 }
 
 #[test]

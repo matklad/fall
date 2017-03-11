@@ -1,6 +1,7 @@
 use std::ops::Index;
+use std::fmt::Write;
 
-use {File, NodeType, TextRange};
+use {File, NodeType, TextRange, Node, WHITESPACE};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct NodeId(u32);
@@ -72,4 +73,31 @@ pub fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
 
     assert!(range.is_subrange_of(node.range()));
     go(node, range).unwrap()
+}
+
+pub fn dump(root: Node, text: &str, include_whitespace: bool) -> String {
+    let mut buf = String::new();
+    go(0, root, text, &mut buf, include_whitespace);
+    return buf;
+
+    fn go(level: usize, n: Node, text: &str, buf: &mut String, include_whitespace: bool) {
+        if  n.ty() == WHITESPACE && !include_whitespace {
+            return
+        }
+
+        for _ in 0..level {
+            buf.push_str("  ")
+        }
+
+        if n.is_leaf() {
+            write!(buf, "{} {:?}\n", n.ty().name(), &text[n.range()])
+                .unwrap();
+        } else {
+            write!(buf, "{}\n", n.ty().name())
+                .unwrap();
+            for child in n.children() {
+                go(level + 1, child, text, buf, include_whitespace);
+            }
+        }
+    }
 }

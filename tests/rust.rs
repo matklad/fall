@@ -4,7 +4,7 @@ use lang::{rust, match_ast};
 
 
 fn ast(code: &str) -> String {
-    rust::parse(code.to_owned()).dump()
+    rust::parse(code.to_owned()).dump_ws()
 }
 
 #[test]
