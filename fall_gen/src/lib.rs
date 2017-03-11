@@ -1,7 +1,5 @@
 extern crate fall;
 
-use fall::Node;
-
 pub use generator::Grammar;
 
 mod parser;
