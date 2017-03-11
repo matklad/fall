@@ -13,6 +13,7 @@ pub const STRING    : NodeType = NodeType(106);
 pub const FILE      : NodeType = NodeType(107);
 pub const NODES_DEF : NodeType = NodeType(108);
 pub const TOKENIZER_DEF: NodeType = NodeType(109);
+pub const RULE      : NodeType = NodeType(110);
 
 pub fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
@@ -27,6 +28,7 @@ pub fn register_node_types() {
         FILE.register(NodeTypeInfo { name: "FILE" });
         NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
         TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
+        RULE.register(NodeTypeInfo { name: "RULE" });
     });
 }
 
@@ -37,6 +39,6 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: RBRACE, re: r"\}" },
     Rule { ty: STRING, re: r#"r?"[^"]*""# },
     Rule { ty: NODES, re: "nodes" },
-    Rule { ty: TOKENIZER_KW, re: "tokenizer_kw" },
+    Rule { ty: TOKENIZER_KW, re: "tokenizer" },
     Rule { ty: IDENT, re: r"\w+" },
 ];

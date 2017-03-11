@@ -10,6 +10,7 @@ nodes = {
   file
   nodes_def
   tokenizer_def
+  rule
 }
 
 tokenizer = {
@@ -19,6 +20,6 @@ tokenizer = {
     rbrace r"\}"
     string r#"r?"[^"]*""#
     nodes "nodes"
-    tokenizer_kw "tokenizer_kw"
+    tokenizer_kw "tokenizer"
     ident r"\w+"
 }

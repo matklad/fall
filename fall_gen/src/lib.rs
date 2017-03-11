@@ -18,6 +18,8 @@ pub fn parse(text: String) -> fall::File {
 
 fn parse_file(b: &mut TreeBuilder) {
     parse_nodes(b);
+    b.skip_until(&[TOKENIZER_KW]);
+    parse_tokenizer(b);
 }
 
 fn parse_nodes(b: &mut TreeBuilder) -> bool {
@@ -32,6 +34,35 @@ fn parse_nodes(b: &mut TreeBuilder) -> bool {
         b.try_eat(RBRACE);
     }
     b.finish(NODES_DEF);
+    true
+}
+
+fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
+    b.start(TOKENIZER_DEF);
+    if !b.try_eat(TOKENIZER_KW) {
+        b.rollback(TOKENIZER_DEF);
+        return false;
+    }
+    let r = b.try_eat(EQ) && b.try_eat(LBRACE);
+    if r {
+        b.parse_many(&|b| {
+            b.skip_until(&[RBRACE, IDENT]);
+            parse_rule(b)
+        });
+        b.try_eat(RBRACE);
+    }
+    b.finish(TOKENIZER_DEF);
+    true
+}
+
+fn parse_rule(b: &mut TreeBuilder) -> bool {
+    b.start(RULE);
+    if !b.try_eat(IDENT) {
+        b.rollback(RULE);
+        return false
+    }
+    b.try_eat(STRING);
+    b.finish(RULE);
     true
 }
 
@@ -75,8 +106,32 @@ FILE
 "#)
     }
 
-    //    #[test]
-    //    fn tokenizer() {
-    //        match_ast(&ast("tokenizer = {}"), r#"FILE """#)
-    //    }
-}
+    #[test]
+    fn tokenizer() {
+        match_ast(&ast(r#"nodes={} tokenizer = { foo "foo" id r"\w+" }"#), r#"
+FILE
+  NODES_DEF
+    NODES "nodes"
+    EQ "="
+    LBRACE "{"
+    RBRACE "}"
+  WHITESPACE " "
+  TOKENIZER_DEF
+    TOKENIZER_KW "tokenizer"
+    WHITESPACE " "
+    EQ "="
+    WHITESPACE " "
+    LBRACE "{"
+    WHITESPACE " "
+    RULE
+      IDENT "foo"
+      WHITESPACE " "
+      STRING "\"foo\""
+    WHITESPACE " "
+    RULE
+      IDENT "id"
+      WHITESPACE " "
+      STRING "r\"\\w+\""
+    WHITESPACE " "
+    RBRACE "}"
+"#) } }
