@@ -16,14 +16,14 @@ pub fn parse(text: String) -> fall::File {
 
 fn parse_file(b: &mut TreeBuilder) {
     parse_nodes(b);
-    b.skip_until(&[TOKENIZER_KW]);
+    b.skip_until(&[KW_TOKENIZER]);
     parse_tokenizer(b);
 }
 
 fn parse_nodes(b: &mut TreeBuilder) -> bool {
-    b.start(NODES_DEF);
-    if !b.try_eat(NODES) {
-        b.rollback(NODES_DEF);
+    b.start(DEF_NODES);
+    if !b.try_eat(KW_NODES) {
+        b.rollback(DEF_NODES);
         return false;
     }
     let r = b.try_eat(EQ) && b.try_eat(LBRACE);
@@ -31,14 +31,14 @@ fn parse_nodes(b: &mut TreeBuilder) -> bool {
         b.parse_many(&|b| b.try_eat(IDENT));
         b.try_eat(RBRACE);
     }
-    b.finish(NODES_DEF);
+    b.finish(DEF_NODES);
     true
 }
 
 fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
-    b.start(TOKENIZER_DEF);
-    if !b.try_eat(TOKENIZER_KW) {
-        b.rollback(TOKENIZER_DEF);
+    b.start(DEF_TOKENIZER);
+    if !b.try_eat(KW_TOKENIZER) {
+        b.rollback(DEF_TOKENIZER);
         return false;
     }
     let r = b.try_eat(EQ) && b.try_eat(LBRACE);
@@ -49,7 +49,7 @@ fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
         });
         b.try_eat(RBRACE);
     }
-    b.finish(TOKENIZER_DEF);
+    b.finish(DEF_TOKENIZER);
     true
 }
 
@@ -106,8 +106,8 @@ mod tests {
     fn nodes() {
         match_ast(&ast("nodes = { foo bar }"), r#"
 FILE
-  NODES_DEF
-    NODES "nodes"
+  DEF_NODES
+    KW_NODES "nodes"
     EQ "="
     LBRACE "{"
     IDENT "foo"
@@ -120,13 +120,13 @@ FILE
     fn tokenizer() {
         match_ast(&ast(r#"nodes={} tokenizer = { foo "foo" id r"\w+" ext "ext" "super::ext"}"#), r#"
 FILE
-  NODES_DEF
-    NODES "nodes"
+  DEF_NODES
+    KW_NODES "nodes"
     EQ "="
     LBRACE "{"
     RBRACE "}"
-  TOKENIZER_DEF
-    TOKENIZER_KW "tokenizer"
+  DEF_TOKENIZER
+    KW_TOKENIZER "tokenizer"
     EQ "="
     LBRACE "{"
     RULE

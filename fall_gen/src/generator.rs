@@ -1,6 +1,7 @@
 use std::fmt::Write;
 use std::ascii::AsciiExt;
 
+#[derive(Debug)]
 pub struct Grammar {
     pub node_types: Vec<String>,
     pub tokenizer_rules: Vec<(String, String, Option<String>)>,

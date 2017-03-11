@@ -1,6 +1,6 @@
 nodes = {
-  nodes
-  tokenizer_kw
+  kw_nodes
+  kw_tokenizer
 
   eq
   lbrace rbrace
@@ -10,8 +10,8 @@ nodes = {
 
   file
   string
-  nodes_def
-  tokenizer_def
+  def_nodes
+  def_tokenizer
   rule
 }
 
@@ -20,9 +20,9 @@ tokenizer = {
     eq "="
     lbrace r"\{"
     rbrace r"\}"
-    simple_string r#"r?"[^"]*""#
-    hash_string "r#+\"" super::parse_raw_string
-    nodes "nodes"
-    tokenizer_kw "tokenizer"
+    simple_string r#"r?"([^"\\]|\\.)*""#
+    hash_string "r#+" "super::parse_raw_string"
+    kw_nodes "nodes"
+    kw_tokenizer "tokenizer"
     ident r"\w+"
 }

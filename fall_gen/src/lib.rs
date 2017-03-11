@@ -30,10 +30,10 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     let file = parser::parse(text.to_owned());
     let root = file.root();
 
-    let nodes = root.children().single_of_type(NODES_DEF)
+    let nodes = root.children().single_of_type(DEF_NODES)
         .ok_or(error("No `nodes = {}`"))?;
 
-    let tokenizer = root.children().single_of_type(TOKENIZER_DEF)
+    let tokenizer = root.children().single_of_type(DEF_TOKENIZER)
         .ok_or(error("No `tokenizer = {}`"))?;
 
     let node_types = nodes
@@ -50,10 +50,14 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
             let mut pats = rule.children().many_of_type(STRING);
             let pat = pats.next()
                 .ok_or(error(format!("Missing pattern in rule {:?}", rule.text())))?;
-            let f = pats.next().map(|n| n.text().to_owned());
+            let f = pats.next().map(|n| {
+                let t = n.text();
+                t[1..t.len() - 1].to_owned()
+            });
             Ok((id, pat.text().to_owned(), f))
         })
         .collect::<Result<Vec<_>, Error>>()?;
+    let g = Grammar { node_types: node_types, tokenizer_rules: rules };
 
-    Ok(Grammar { node_types: node_types, tokenizer_rules: rules })
+    Ok(g)
 }
