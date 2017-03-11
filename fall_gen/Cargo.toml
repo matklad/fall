@@ -6,3 +6,7 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [dependencies]
 clap = "2.20"
 fall = { path = "../" }
+
+[dev-dependencies]
+tempdir = "0.3"
+difference = "0.4"

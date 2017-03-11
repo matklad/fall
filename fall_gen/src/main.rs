@@ -14,19 +14,16 @@ use clap::{App, Arg};
 use fall_gen::Grammar;
 
 fn main() {
-    let mathces = App::new("Fall parser generator")
+    let matches = App::new("Fall parser generator")
         .arg(Arg::with_name("file").index(1).required(true))
         .get_matches();
-
-    let file = Path::new(mathces.value_of("file").unwrap());
-
+    let file = Path::new(matches.value_of("file").unwrap());
     let return_code = if let Err(e) = main_inner(file) {
         println!("Error occurred: {}", e);
         101
     } else {
-        1
+        0
     };
-
     std::process::exit(return_code)
 }
 
