@@ -13,8 +13,8 @@ pub const SIMPLE_STRING: NodeType = NodeType(106);
 pub const HASH_STRING: NodeType = NodeType(107);
 pub const FILE      : NodeType = NodeType(108);
 pub const STRING    : NodeType = NodeType(109);
-pub const DEF_NODES : NodeType = NodeType(110);
-pub const DEF_TOKENIZER: NodeType = NodeType(111);
+pub const NODES_DEF : NodeType = NodeType(110);
+pub const TOKENIZER_DEF: NodeType = NodeType(111);
 pub const RULE      : NodeType = NodeType(112);
 
 pub fn register_node_types() {
@@ -30,8 +30,8 @@ pub fn register_node_types() {
         HASH_STRING.register(NodeTypeInfo { name: "HASH_STRING" });
         FILE.register(NodeTypeInfo { name: "FILE" });
         STRING.register(NodeTypeInfo { name: "STRING" });
-        DEF_NODES.register(NodeTypeInfo { name: "DEF_NODES" });
-        DEF_TOKENIZER.register(NodeTypeInfo { name: "DEF_TOKENIZER" });
+        NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
+        TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
         RULE.register(NodeTypeInfo { name: "RULE" });
     });
 }

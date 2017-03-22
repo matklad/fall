@@ -10,8 +10,8 @@ nodes = {
 
   file
   string
-  def_nodes
-  def_tokenizer
+  nodes_def
+  tokenizer_def
   rule
 }
 

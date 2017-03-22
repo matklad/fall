@@ -21,9 +21,9 @@ fn parse_file(b: &mut TreeBuilder) {
 }
 
 fn parse_nodes(b: &mut TreeBuilder) -> bool {
-    b.start(DEF_NODES);
+    b.start(NODES_DEF);
     if !b.try_eat(KW_NODES) {
-        b.rollback(DEF_NODES);
+        b.rollback(NODES_DEF);
         return false;
     }
     let r = b.try_eat(EQ) && b.try_eat(LBRACE);
@@ -31,14 +31,14 @@ fn parse_nodes(b: &mut TreeBuilder) -> bool {
         b.parse_many(&|b| b.try_eat(IDENT));
         b.try_eat(RBRACE);
     }
-    b.finish(DEF_NODES);
+    b.finish(NODES_DEF);
     true
 }
 
 fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
-    b.start(DEF_TOKENIZER);
+    b.start(TOKENIZER_DEF);
     if !b.try_eat(KW_TOKENIZER) {
-        b.rollback(DEF_TOKENIZER);
+        b.rollback(TOKENIZER_DEF);
         return false;
     }
     let r = b.try_eat(EQ) && b.try_eat(LBRACE);
@@ -49,7 +49,7 @@ fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
         });
         b.try_eat(RBRACE);
     }
-    b.finish(DEF_TOKENIZER);
+    b.finish(TOKENIZER_DEF);
     true
 }
 
@@ -106,7 +106,7 @@ mod tests {
     fn nodes() {
         match_ast(&ast("nodes = { foo bar }"), r#"
 FILE
-  DEF_NODES
+  NODES_DEF
     KW_NODES "nodes"
     EQ "="
     LBRACE "{"
@@ -120,12 +120,12 @@ FILE
     fn tokenizer() {
         match_ast(&ast(r#"nodes={} tokenizer = { foo "foo" id r"\w+" ext "ext" "super::ext"}"#), r#"
 FILE
-  DEF_NODES
+  NODES_DEF
     KW_NODES "nodes"
     EQ "="
     LBRACE "{"
     RBRACE "}"
-  DEF_TOKENIZER
+  TOKENIZER_DEF
     KW_TOKENIZER "tokenizer"
     EQ "="
     LBRACE "{"

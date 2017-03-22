@@ -30,10 +30,10 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     let file = parser::parse(text.to_owned());
     let root = file.root();
 
-    let nodes = root.children().single_of_type(DEF_NODES)
+    let nodes = root.children().single_of_type(NODES_DEF)
         .ok_or(error("No `nodes = {}`"))?;
 
-    let tokenizer = root.children().single_of_type(DEF_TOKENIZER)
+    let tokenizer = root.children().single_of_type(TOKENIZER_DEF)
         .ok_or(error("No `tokenizer = {}`"))?;
 
     let node_types = nodes
