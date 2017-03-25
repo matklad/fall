@@ -1,0 +1,45 @@
+nodes = {
+  null bool number string
+  lbrace rbrace
+  lbrack rbrack
+  comma colon
+  object array primitive
+  field
+  file
+}
+
+tokenizer = {
+  whitespace r"\s+"
+  lbrace     r"\{"
+  rbrace     r"\}"
+  lbrack     r"\["
+  rbrack     r"\]"
+  colon      r":"
+  comma      r","
+  string     r#""[^"]*""#
+  number     r"\d+"
+}
+
+rule file {
+  object | array
+}
+
+rule object {
+  lbrace <commit>
+    ( field comma )*
+  rbrace
+}
+
+rule field {
+  string <commit> colon value
+}
+
+rule array {
+  lbrack <commit>
+    ( value comma )*
+  rbrack
+}
+
+rule value { primitive | object | array }
+
+rule primitive { null | number | string | bool }
