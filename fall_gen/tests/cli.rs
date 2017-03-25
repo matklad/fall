@@ -1,8 +1,7 @@
+extern crate file;
 extern crate tempdir;
 extern crate difference;
 
-use std::io::{Write, Read};
-use std::fs::File;
 use std::process;
 use std::env;
 use std::path::PathBuf;
@@ -17,10 +16,7 @@ fn generator_path() -> PathBuf {
 fn do_test(grammar: &str, expected: &str) {
     let dir = TempDir::new("gen-tests").unwrap();
     let grammar_path = dir.path().join("grammar.txt");
-    {
-        let mut f = File::create(&grammar_path).unwrap();
-        write!(f, "{}", grammar).unwrap();
-    }
+    file::put_text(&grammar_path, grammar).unwrap();
 
     let output = process::Command::new(generator_path())
             .arg(&grammar_path)
@@ -33,13 +29,7 @@ fn do_test(grammar: &str, expected: &str) {
         panic!("Generator exited with code {:?}", output.status.code())
     }
 
-    let actual = {
-        let mut f = File::open(grammar_path.with_extension("rs"))
-            .expect("Failed to find output file");
-        let mut buff = String::new();
-        f.read_to_string(&mut buff).unwrap();
-        buff
-    };
+    let actual = file::get_text(grammar_path.with_extension("rs")).unwrap();
 
     if expected.trim() != actual.trim() {
         difference::print_diff(&actual, &expected, "\n");
@@ -211,4 +201,17 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: IDENT, re: r"\w+", f: None },
 ];
 "###)
+}
+
+
+#[test]
+fn test_grammars_are_fresh() {
+    let cwd = ::std::env::current_dir().unwrap();
+    let tests = cwd.parent().unwrap().join("tests");
+    for lang in ["sexp", "rust", "weird"].into_iter() {
+        let raw = tests.join("lang").join(lang).join("grammar.txt");
+        let grammar = file::get_text(&raw).unwrap();
+        let expected = file::get_text(raw.with_extension("rs")).unwrap();
+        do_test(&grammar, &expected);
+    }
 }
