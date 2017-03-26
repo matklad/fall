@@ -43,7 +43,7 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
         .collect();
 
     let rules = tokenizer
-        .children().many_of_type(RULE)
+        .children().many_of_type(TOKEN_DEF)
         .map(|rule| -> Result<(String, String, Option<String>), Error> {
             let id = rule.children().single_of_type(IDENT)
                 .ok_or(error("Missing name in rule"))?

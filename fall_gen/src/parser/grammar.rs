@@ -18,8 +18,9 @@ pub const FILE      : NodeType = NodeType(111);
 pub const STRING    : NodeType = NodeType(112);
 pub const NODES_DEF : NodeType = NodeType(113);
 pub const TOKENIZER_DEF: NodeType = NodeType(114);
-pub const RULE_DEF  : NodeType = NodeType(115);
-pub const RULE      : NodeType = NodeType(116);
+pub const TOKEN_DEF : NodeType = NodeType(115);
+pub const RULE_DEF  : NodeType = NodeType(116);
+pub const ALT       : NodeType = NodeType(117);
 
 pub fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
@@ -39,21 +40,23 @@ pub fn register_node_types() {
         STRING.register(NodeTypeInfo { name: "STRING" });
         NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
         TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
+        TOKEN_DEF.register(NodeTypeInfo { name: "TOKEN_DEF" });
         RULE_DEF.register(NodeTypeInfo { name: "RULE_DEF" });
-        RULE.register(NodeTypeInfo { name: "RULE" });
+        ALT.register(NodeTypeInfo { name: "ALT" });
     });
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: WHITESPACE, re: r"\s+", f: None },
     Rule { ty: EQ, re: "=", f: None },
-    Rule { ty: PIPE, re: "*", f: None },
-    Rule { ty: START, re: "*", f: None },
+    Rule { ty: PIPE, re: r"\|", f: None },
+    Rule { ty: START, re: r"\*", f: None },
     Rule { ty: LBRACE, re: r"\{", f: None },
     Rule { ty: RBRACE, re: r"\}", f: None },
     Rule { ty: SIMPLE_STRING, re: r#"r?"([^"\\]|\\.)*""#, f: None },
     Rule { ty: HASH_STRING, re: "r#+", f: Some(super::parse_raw_string) },
     Rule { ty: KW_NODES, re: "nodes", f: None },
     Rule { ty: KW_TOKENIZER, re: "tokenizer", f: None },
+    Rule { ty: KW_RULE, re: "rule", f: None },
     Rule { ty: IDENT, re: r"\w+", f: None },
 ];

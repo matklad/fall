@@ -115,7 +115,7 @@ mod core {
         }
 
         fn bump_raw(&mut self) {
-            let t = self.current().unwrap();
+            let t = self.current().expect("EOF reached");
             self.current_token += 1;
             self.top().children.push(PreNode {
                 ty: t.ty,

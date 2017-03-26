@@ -18,6 +18,8 @@ fn parse_file(b: &mut TreeBuilder) {
     parse_nodes(b);
     b.skip_until(&[KW_TOKENIZER]);
     parse_tokenizer(b);
+
+    b.parse_many(&parse_syn_rule)
 }
 
 fn parse_nodes(b: &mut TreeBuilder) -> bool {
@@ -43,7 +45,7 @@ fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
     if b.try_eat(LBRACE) {
         b.parse_many(&|b| {
             b.skip_until(&[RBRACE, IDENT]);
-            parse_rule(b)
+            parse_lex_rule(b)
         });
         b.try_eat(RBRACE);
     }
@@ -51,16 +53,41 @@ fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
     true
 }
 
-fn parse_rule(b: &mut TreeBuilder) -> bool {
-    b.start(RULE);
+fn parse_lex_rule(b: &mut TreeBuilder) -> bool {
+    b.start(TOKEN_DEF);
     if !b.try_eat(IDENT) {
-        b.rollback(RULE);
+        b.rollback(TOKEN_DEF);
         return false
     }
     parse_string(b) && parse_string(b);
-    b.finish(RULE);
+    b.finish(TOKEN_DEF);
     true
 }
+
+fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
+    b.start(RULE_DEF);
+    if !b.try_eat(KW_RULE) {
+        b.rollback(RULE_DEF);
+        return false;
+    }
+    let r = b.try_eat(IDENT) && b.try_eat(LBRACE);
+    if r {
+        b.start(ALT);
+        b.parse_many(&|b| {
+            if b.next_is(RBRACE) || b.current().is_none() {
+                false
+            } else  {
+                b.bump();
+                true
+            }
+        });
+        b.finish(ALT);
+        b.try_eat(RBRACE);
+    }
+    b.finish(RULE_DEF);
+    true
+}
+
 
 fn parse_string(b: &mut TreeBuilder) -> bool {
     b.start(STRING);
@@ -124,19 +151,62 @@ FILE
   TOKENIZER_DEF
     KW_TOKENIZER "tokenizer"
     LBRACE "{"
-    RULE
+    TOKEN_DEF
       IDENT "foo"
       STRING
         SIMPLE_STRING "\"foo\""
-    RULE
+    TOKEN_DEF
       IDENT "id"
       STRING
         SIMPLE_STRING "r\"\\w+\""
-    RULE
+    TOKEN_DEF
       IDENT "ext"
       STRING
         SIMPLE_STRING "\"ext\""
       STRING
         SIMPLE_STRING "\"super::ext\""
     RBRACE "}"
-"#) } }
+"#)
+    }
+
+    #[test]
+    fn rules() {
+        match_ast(&ast(r#"nodes {} tokenizer {}
+rule f { foo <commit> ( bar )* }
+
+rule b { foo | bar }"#), r#"
+FILE
+  NODES_DEF
+    KW_NODES "nodes"
+    LBRACE "{"
+    RBRACE "}"
+  TOKENIZER_DEF
+    KW_TOKENIZER "tokenizer"
+    LBRACE "{"
+    RBRACE "}"
+  RULE_DEF
+    KW_RULE "rule"
+    IDENT "f"
+    LBRACE "{"
+    ALT
+      IDENT "foo"
+      ERROR "<"
+      IDENT "commit"
+      ERROR ">"
+      ERROR "("
+      IDENT "bar"
+      ERROR ")"
+      START "*"
+    RBRACE "}"
+  RULE_DEF
+    KW_RULE "rule"
+    IDENT "b"
+    LBRACE "{"
+    ALT
+      IDENT "foo"
+      PIPE "|"
+      IDENT "bar"
+    RBRACE "}"
+"#)
+    }
+}

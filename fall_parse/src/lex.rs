@@ -51,7 +51,7 @@ impl<'t> Iterator for TokenIter<'t> {
             None => return Some(self.bad_char()),
         };
 
-        assert!(len > 0);
+        assert!(len > 0, "Empty Token {:?}", ty);
 
         let token = match custom_rule {
             None => self.token(ty, len),

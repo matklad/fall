@@ -13,20 +13,22 @@ nodes {
   string
   nodes_def
   tokenizer_def
+  token_def
   rule_def
-  rule
+  alt
 }
 
 tokenizer {
     whitespace r"\s+"
     eq "="
-    pipe "*"
-    start "*"
+    pipe r"\|"
+    start r"\*"
     lbrace r"\{"
     rbrace r"\}"
     simple_string r#"r?"([^"\\]|\\.)*""#
     hash_string "r#+" "super::parse_raw_string"
     kw_nodes "nodes"
     kw_tokenizer "tokenizer"
+    kw_rule "rule"
     ident r"\w+"
 }
