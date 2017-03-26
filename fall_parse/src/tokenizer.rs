@@ -1,5 +1,5 @@
 use regex::Regex;
-use fall_tree::{NodeType, TextRange};
+use fall_tree::{NodeType, TextRange, ERROR};
 
 pub type CustomRule = fn(&str) -> Option<usize>;
 
@@ -69,7 +69,7 @@ impl<'t> Iterator for TokenIter<'t> {
 impl<'t> TokenIter<'t> {
     fn bad_char(&mut self) -> Token {
         let char_len = self.rest.chars().next().unwrap().len_utf8();
-        self.token(::ERROR, char_len)
+        self.token(ERROR, char_len)
     }
 
     fn token(&mut self, ty: NodeType, len: usize) -> Token {
@@ -83,7 +83,7 @@ impl<'t> TokenIter<'t> {
 #[test]
 fn tokenize_longest_first_wins() {
     let rules = &[
-        Rule { ty: ::WHITESPACE, re: r"\s+", f: None },
+        Rule { ty: ::fall_tree::WHITESPACE, re: r"\s+", f: None },
         Rule { ty: NodeType(10), re: "foo", f: None },
         Rule { ty: NodeType(11), re: r"\w+", f: None },
         Rule { ty: NodeType(12), re: "foobar", f: None },
