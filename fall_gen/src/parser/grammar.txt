@@ -1,6 +1,7 @@
 nodes {
   kw_nodes
   kw_tokenizer
+  kw_rule
 
   eq pipe start
   lbrace rbrace
@@ -12,6 +13,7 @@ nodes {
   string
   nodes_def
   tokenizer_def
+  rule_def
   rule
 }
 

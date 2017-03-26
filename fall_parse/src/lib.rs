@@ -4,6 +4,7 @@ extern crate fall_tree;
 use fall_tree::{NodeType, ERROR};
 
 mod lex;
+pub mod syn;
 
 pub use lex::Rule;
 pub use core::{TreeBuilder, parse};
