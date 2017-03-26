@@ -2,22 +2,13 @@ extern crate regex;
 extern crate fall_tree;
 use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, ERROR, WHITESPACE};
 
-use std::iter::FromIterator;
 use std::collections::HashSet;
 
-use regex::Regex;
+mod tokenizer;
+pub use tokenizer::Rule;
 
-pub struct Rule {
-    pub ty: NodeType,
-    pub re: &'static str,
-    pub f: Option<fn(&str) -> Option<usize>>,
-}
+use tokenizer::{tokenize, Token};
 
-#[derive(Debug, Clone, Copy)]
-pub struct Token {
-    pub ty: NodeType,
-    pub range: TextRange,
-}
 
 pub struct TreeBuilder {
     text: String,
@@ -224,68 +215,9 @@ pub fn parse(
     tokenizer: &[Rule],
     parser: &Fn(&mut TreeBuilder)
 ) -> File {
-    let tokens = tokenize(&text, tokenizer);
+    let tokens = tokenize(&text, tokenizer).collect();
     let mut builder = TreeBuilder::new(text, file_type, tokens);
     parser(&mut builder);
     builder.into_file()
 }
 
-fn tokenize(text: &str, tokenizer: &[Rule]) -> Vec<Token> {
-    let mut result = vec![];
-
-    let rules = Vec::from_iter(
-        tokenizer.iter().map(|r| (r.ty, Regex::new(&format!("^{}", r.re)).unwrap(), r.f))
-    );
-
-    let mut offset = 0;
-    let mut rest = text;
-
-    'l: while rest.len() > 0 {
-        let matches: Vec<_> = rules.iter()
-            .filter_map(|&(ty, ref re, f)| {
-                re.find(rest).map(|m| (m.end(), (ty, f)))
-            })
-            .collect();
-
-        let bad_char = (::ERROR, rest.chars().next().unwrap().len_utf8());
-        let (ty, end) = if matches.is_empty() {
-            bad_char
-        } else {
-            let longest_match = matches.iter().map(|&(l, _)| l).max().unwrap();
-            let &(l, (ty, f)) = matches.iter().find(|&&(l, _)| l == longest_match).unwrap();
-            assert!(l > 0);
-            if let Some(f) = f {
-                if let Some(n) = f(rest) {
-                    (ty, n)
-                } else {
-                    bad_char
-                }
-            } else {
-                (ty, l)
-            }
-        };
-
-        let range = TextRange::from_to(offset as u32, (offset + end) as u32);
-        result.push(Token { ty: ty, range: range });
-        offset += end;
-        rest = &rest[end..];
-    }
-
-    result
-}
-
-#[test]
-fn tokenize_longest_first_wins() {
-    let rules = &[
-        Rule { ty: ::WHITESPACE, re: r"\s+", f: None },
-        Rule { ty: NodeType(10), re: "foo", f: None },
-        Rule { ty: NodeType(11), re: r"\w+", f: None },
-        Rule { ty: NodeType(12), re: "foobar", f: None },
-    ];
-
-    let tokens: Vec<_> = tokenize("foo foob foobar", rules)
-        .into_iter()
-        .map(|t| t.ty.0)
-        .collect();
-    assert_eq!(tokens, vec![10, 1, 11, 1, 11]);
-}
