@@ -7,6 +7,7 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 clap = "2.20"
 fall-tree = { path = "../fall_tree" }
 fall-parse = { path = "../fall_parse" }
+fall-watch = { path = "../fall_watch" }
 file = { git = "https://github.com/matklad/rust-file", branch = "text" }
 
 [dev-dependencies]

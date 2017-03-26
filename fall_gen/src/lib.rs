@@ -27,6 +27,10 @@ impl ::std::fmt::Display for Error {
 
 fn error<S: Into<String>>(msg: S) -> Error { Error(msg.into()) }
 
+pub fn debug(text: &str) -> String {
+    parser::parse(text.to_owned()).dump()
+}
+
 pub fn parse(text: &str) -> Result<Grammar, Error> {
     let file = parser::parse(text.to_owned());
     let root = file.root();

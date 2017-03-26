@@ -82,6 +82,7 @@ fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
                 true
             }
         });
+        b.try_eat(RBRACE);
     }
     b.finish(RULE_DEF);
     true
@@ -183,7 +184,6 @@ FILE
     }
 
     #[test]
-    #[ignore]
     fn rules() {
         match_ast(&ast(r#"nodes {} tokenizer {}
 rule f { foo <commit> ( bar )* }

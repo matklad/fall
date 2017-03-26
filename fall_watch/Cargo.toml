@@ -1,0 +1,8 @@
+[package]
+name = "fall-watch"
+version = "0.1.0"
+authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
+
+[dependencies]
+notify = "4.0.0"
+file = { git = "https://github.com/matklad/rust-file", branch = "text" }
