@@ -108,13 +108,13 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
+    extern crate difference;
     use super::*;
 
     fn match_ast(actual: &str, expected: &str) {
-        let actual = actual.trim();
-        let expected = expected.trim();
-        if actual != expected {
-            panic!("Actual:\n{}\nExpected:\n{}\n", actual, expected)
+        if expected.trim() != actual.trim() {
+            difference::print_diff(&actual, &expected, "\n");
+            panic!("Mismatch!")
         }
     }
 
