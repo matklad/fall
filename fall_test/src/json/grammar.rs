@@ -54,4 +54,10 @@ pub const TOKENIZER: &'static [Rule] = &[
 ];
 
 pub const PARSER: &'static[syn::Rule] = &[
+    syn::Rule { name: "file", alts: &[] },
+    syn::Rule { name: "object", alts: &[] },
+    syn::Rule { name: "field", alts: &[] },
+    syn::Rule { name: "array", alts: &[] },
+    syn::Rule { name: "value", alts: &[] },
+    syn::Rule { name: "primitive", alts: &[] },
 ];

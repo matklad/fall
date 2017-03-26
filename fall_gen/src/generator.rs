@@ -72,7 +72,12 @@ fn scream(word: &str) -> String {
     word.chars().map(|c| c.to_ascii_uppercase()).collect()
 }
 
-fn generate_syn_rules(_rules: &[SynRule], buff: &mut String) {
+fn generate_syn_rules(rules: &[SynRule], buff: &mut String) {
     buff.push_str("\npub const PARSER: &'static[syn::Rule] = &[\n");
+    for rule in rules {
+        buff.push_str("    ");
+        buff.push_str(&format!(r#"syn::Rule {{ name: "{}", alts: &[] }},"#, rule.name));
+        buff.push_str("\n");
+    }
     buff.push_str("];\n");
 }
