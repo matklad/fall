@@ -4,7 +4,14 @@ use std::ascii::AsciiExt;
 #[derive(Debug)]
 pub struct Grammar {
     pub node_types: Vec<String>,
-    pub tokenizer_rules: Vec<(String, String, Option<String>)>,
+    pub lex_rules: Vec<LexRule>,
+}
+
+#[derive(Debug)]
+pub struct LexRule {
+    pub ty: String,
+    pub re: String,
+    pub f: Option<String>,
 }
 
 impl Grammar {
@@ -30,7 +37,7 @@ impl Grammar {
         result.push_str("}\n");
 
         result.push_str("\npub const TOKENIZER: &'static [Rule] = &[\n");
-        for &(ref ty, ref re, ref f) in self.tokenizer_rules.iter() {
+        for &LexRule { ref ty, ref re, ref f } in self.lex_rules.iter() {
             result.push_str("    ");
             let f = match *f {
                 None => "None".to_owned(),

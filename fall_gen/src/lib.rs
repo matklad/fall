@@ -1,7 +1,7 @@
 extern crate fall_tree;
 extern crate fall_parse;
 
-pub use generator::Grammar;
+pub use generator::{Grammar, LexRule};
 
 mod parser;
 
@@ -48,21 +48,21 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
 
     let rules = tokenizer
         .children().many_of_type(TOKEN_DEF)
-        .map(|rule| -> Result<(String, String, Option<String>), Error> {
-            let id = rule.children().single_of_type(IDENT)
+        .map(|rule| -> Result<LexRule, Error> {
+            let ty = rule.children().single_of_type(IDENT)
                 .ok_or(error("Missing name in rule"))?
                 .text().to_owned();
             let mut pats = rule.children().many_of_type(STRING);
-            let pat = pats.next()
+            let re = pats.next()
                 .ok_or(error(format!("Missing pattern in rule {:?}", rule.text())))?;
             let f = pats.next().map(|n| {
                 let t = n.text();
                 t[1..t.len() - 1].to_owned()
             });
-            Ok((id, pat.text().to_owned(), f))
+            Ok(LexRule { ty: ty, re: re.text().to_owned(), f: f })
         })
         .collect::<Result<Vec<_>, Error>>()?;
-    let g = Grammar { node_types: node_types, tokenizer_rules: rules };
+    let g = Grammar { node_types: node_types, lex_rules: rules };
 
     Ok(g)
 }
