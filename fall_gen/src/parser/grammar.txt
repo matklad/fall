@@ -3,8 +3,10 @@ nodes {
   kw_tokenizer
   kw_rule
 
-  eq pipe start
+  eq pipe star
   lbrace rbrace
+  langle rangle
+  lparen rparen
   ident
   simple_string
   hash_string
@@ -16,15 +18,20 @@ nodes {
   token_def
   rule_def
   alt
+  part
 }
 
 tokenizer {
     whitespace r"\s+"
     eq "="
     pipe r"\|"
-    start r"\*"
+    star r"\*"
     lbrace r"\{"
     rbrace r"\}"
+    langle "<"
+    rangle ">"
+    lparen r"\("
+    rparen r"\)"
     simple_string r#"r?"([^"\\]|\\.)*""#
     hash_string "r#+" "super::parse_raw_string"
     kw_nodes "nodes"

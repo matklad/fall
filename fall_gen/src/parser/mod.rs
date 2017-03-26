@@ -91,14 +91,31 @@ fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
 fn parse_alt(b: &mut TreeBuilder) {
     b.start(ALT);
     b.parse_many(&|b| {
-        if b.current().is_none() || b.next_is(RBRACE) || b.next_is(PIPE) {
+        b.skip_until(&[RBRACE, PIPE, IDENT, LANGLE, LPAREN, RPAREN]);
+        if b.current().is_none() || b.next_is(RBRACE) || b.next_is(RPAREN) || b.next_is(PIPE) {
             false
         } else {
-            b.bump();
+            parse_part(b);
             true
         }
     });
     b.finish(ALT)
+}
+
+fn parse_part(b: &mut TreeBuilder) {
+    b.start(PART);
+    if b.try_eat(IDENT) {
+
+    } else if b.try_eat(LANGLE) {
+        b.try_eat(IDENT) && b.try_eat(RANGLE);
+    } else if b.try_eat(LPAREN) {
+        parse_alt(b);
+        b.try_eat(RPAREN) && b.try_eat(STAR);
+    } else {
+        unreachable!()
+    }
+
+    b.finish(PART);
 }
 
 
@@ -203,24 +220,31 @@ FILE
     IDENT "f"
     LBRACE "{"
     ALT
-      IDENT "foo"
-      ERROR "<"
-      IDENT "commit"
-      ERROR ">"
-      ERROR "("
-      IDENT "bar"
-      ERROR ")"
-      START "*"
+      PART
+        IDENT "foo"
+      PART
+        LANGLE "<"
+        IDENT "commit"
+        RANGLE ">"
+      PART
+        LPAREN "("
+        ALT
+          PART
+            IDENT "bar"
+        RPAREN ")"
+        STAR "*"
     RBRACE "}"
   RULE_DEF
     KW_RULE "rule"
     IDENT "b"
     LBRACE "{"
     ALT
-      IDENT "foo"
+      PART
+        IDENT "foo"
     PIPE "|"
     ALT
-      IDENT "bar"
+      PART
+        IDENT "bar"
     RBRACE "}"
 "#)
     }
