@@ -1,4 +1,4 @@
-nodes = {
+nodes {
   lparen rparen
   lbrace rbrace
 
@@ -13,7 +13,7 @@ nodes = {
   fn_def
 }
 
-tokenizer = {
+tokenizer {
   whitespace r"\s+"
   lparen r"\("
   rparen r"\)"

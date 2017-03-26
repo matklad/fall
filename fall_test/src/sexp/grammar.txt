@@ -1,11 +1,11 @@
-nodes = {
+nodes {
   atom
   lparen rparen
   file
   list
 }
 
-tokenizer = {
+tokenizer {
   whitespace r"\s+"
   lparen     r"\("
   rparen     r"\)"

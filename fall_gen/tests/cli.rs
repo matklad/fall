@@ -40,7 +40,7 @@ fn do_test(grammar: &str, expected: &str) {
 #[test]
 fn test_simple_grammar() {
     do_test(r###"
-nodes = {
+nodes {
   null bool number string
   lbrace rbrace
   lbrack rbrack
@@ -50,7 +50,7 @@ nodes = {
   file
 }
 
-tokenizer = {
+tokenizer {
   whitespace r"\s+"
   lbrace     r"\{"
   rbrace     r"\}"
@@ -122,7 +122,7 @@ pub const TOKENIZER: &'static [Rule] = &[
 #[test]
 fn test_self_grammar() {
     do_test(r###"
-nodes = {
+nodes {
   kw_nodes
   kw_tokenizer
 
@@ -139,7 +139,7 @@ nodes = {
   rule
 }
 
-tokenizer = {
+tokenizer {
     whitespace r"\s+"
     eq "="
     lbrace r"\{"
@@ -208,6 +208,7 @@ pub const TOKENIZER: &'static [Rule] = &[
 fn test_grammars_are_fresh() {
     let cwd = ::std::env::current_dir().unwrap();
     let tests = cwd.parent().unwrap().join("fall_test/src");
+    // TODO: add oneself
     for lang in ["sexp", "rust", "weird"].into_iter() {
         let raw = tests.join(lang).join("grammar.txt");
         println!("{:?}", raw);
