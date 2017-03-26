@@ -3,15 +3,15 @@ extern crate fall_tree;
 
 use fall_tree::{NodeType, ERROR};
 
-mod tokenizer;
+mod lex;
 
-pub use tokenizer::Rule;
+pub use lex::Rule;
 pub use core::{TreeBuilder, parse};
 
 mod core {
     use std::collections::HashSet;
     use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
-    use tokenizer::{Token, Rule, tokenize};
+    use lex::{Token, Rule, tokenize};
 
 
     pub struct TreeBuilder {
