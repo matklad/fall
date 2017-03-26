@@ -23,9 +23,15 @@ pub struct SynRule {
 impl Grammar {
     pub fn generate(&self) -> String {
         let mut result = String::new();
+        let has_syn_rules = !self.syn_rules.is_empty();
+
         result.push_str("use std::sync::{Once, ONCE_INIT};\n");
         result.push_str("use fall_tree::{NodeType, NodeTypeInfo};\n");
         result.push_str("use fall_parse::Rule;\n");
+        if has_syn_rules {
+            result.push_str("use fall_parse::syn;\n");
+        }
+
         result.push_str("pub use fall_tree::{ERROR, WHITESPACE};\n\n");
         for (i, t) in self.node_types.iter().enumerate() {
             writeln!(result, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i)
@@ -54,10 +60,19 @@ impl Grammar {
         }
         result.push_str("];\n");
 
+        if has_syn_rules {
+            generate_syn_rules(&self.syn_rules, &mut result);
+        }
+
         result
     }
 }
 
 fn scream(word: &str) -> String {
     word.chars().map(|c| c.to_ascii_uppercase()).collect()
+}
+
+fn generate_syn_rules(_rules: &[SynRule], buff: &mut String) {
+    buff.push_str("\npub const PARSER: &'static[syn::Rule] = &[\n");
+    buff.push_str("];\n");
 }
