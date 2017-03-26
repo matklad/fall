@@ -2,7 +2,7 @@ nodes {
   kw_nodes
   kw_tokenizer
 
-  eq
+  eq pipe start
   lbrace rbrace
   ident
   simple_string
@@ -18,6 +18,8 @@ nodes {
 tokenizer {
     whitespace r"\s+"
     eq "="
+    pipe "*"
+    start "*"
     lbrace r"\{"
     rbrace r"\}"
     simple_string r#"r?"([^"\\]|\\.)*""#

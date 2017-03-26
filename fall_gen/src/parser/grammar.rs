@@ -6,16 +6,18 @@ pub use fall_tree::{ERROR, WHITESPACE};
 pub const KW_NODES  : NodeType = NodeType(100);
 pub const KW_TOKENIZER: NodeType = NodeType(101);
 pub const EQ        : NodeType = NodeType(102);
-pub const LBRACE    : NodeType = NodeType(103);
-pub const RBRACE    : NodeType = NodeType(104);
-pub const IDENT     : NodeType = NodeType(105);
-pub const SIMPLE_STRING: NodeType = NodeType(106);
-pub const HASH_STRING: NodeType = NodeType(107);
-pub const FILE      : NodeType = NodeType(108);
-pub const STRING    : NodeType = NodeType(109);
-pub const NODES_DEF : NodeType = NodeType(110);
-pub const TOKENIZER_DEF: NodeType = NodeType(111);
-pub const RULE      : NodeType = NodeType(112);
+pub const PIPE      : NodeType = NodeType(103);
+pub const START     : NodeType = NodeType(104);
+pub const LBRACE    : NodeType = NodeType(105);
+pub const RBRACE    : NodeType = NodeType(106);
+pub const IDENT     : NodeType = NodeType(107);
+pub const SIMPLE_STRING: NodeType = NodeType(108);
+pub const HASH_STRING: NodeType = NodeType(109);
+pub const FILE      : NodeType = NodeType(110);
+pub const STRING    : NodeType = NodeType(111);
+pub const NODES_DEF : NodeType = NodeType(112);
+pub const TOKENIZER_DEF: NodeType = NodeType(113);
+pub const RULE      : NodeType = NodeType(114);
 
 pub fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
@@ -23,6 +25,8 @@ pub fn register_node_types() {
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
         KW_TOKENIZER.register(NodeTypeInfo { name: "KW_TOKENIZER" });
         EQ.register(NodeTypeInfo { name: "EQ" });
+        PIPE.register(NodeTypeInfo { name: "PIPE" });
+        START.register(NodeTypeInfo { name: "START" });
         LBRACE.register(NodeTypeInfo { name: "LBRACE" });
         RBRACE.register(NodeTypeInfo { name: "RBRACE" });
         IDENT.register(NodeTypeInfo { name: "IDENT" });
@@ -39,6 +43,8 @@ pub fn register_node_types() {
 pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: WHITESPACE, re: r"\s+", f: None },
     Rule { ty: EQ, re: "=", f: None },
+    Rule { ty: PIPE, re: "*", f: None },
+    Rule { ty: START, re: "*", f: None },
     Rule { ty: LBRACE, re: r"\{", f: None },
     Rule { ty: RBRACE, re: r"\}", f: None },
     Rule { ty: SIMPLE_STRING, re: r#"r?"([^"\\]|\\.)*""#, f: None },
