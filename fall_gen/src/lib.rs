@@ -1,13 +1,13 @@
 extern crate fall_tree;
 extern crate fall_parse;
 
-pub use generator::{Grammar, LexRule};
+use fall_tree::{Node, NodeType};
 
 mod parser;
+use self::parser::grammar::*;
 
 mod generator;
-
-use self::parser::grammar::*;
+pub use generator::{Grammar, LexRule, SynRule};
 
 #[derive(Debug)]
 pub struct Error(String);
@@ -35,18 +35,17 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     let file = parser::parse(text.to_owned());
     let root = file.root();
 
-    let nodes = root.children().single_of_type(NODES_DEF)
-        .ok_or(error("No `nodes = {}`"))?;
+    let nodes = child(root, NODES_DEF);
+    let tokenizer = child(root, TOKENIZER_DEF);
 
-    let tokenizer = root.children().single_of_type(TOKENIZER_DEF)
-        .ok_or(error("No `tokenizer = {}`"))?;
+    let syn_rules = root.children().many_of_type(RULE_DEF);
 
     let node_types = nodes
         .children().many_of_type(IDENT)
         .map(|n| n.text().to_owned())
         .collect();
 
-    let rules = tokenizer
+    let lex_rules = tokenizer
         .children().many_of_type(TOKEN_DEF)
         .map(|rule| -> Result<LexRule, Error> {
             let ty = rule.children().single_of_type(IDENT)
@@ -62,7 +61,22 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
             Ok(LexRule { ty: ty, re: re.text().to_owned(), f: f })
         })
         .collect::<Result<Vec<_>, Error>>()?;
-    let g = Grammar { node_types: node_types, lex_rules: rules };
+
+    let syn_rules = syn_rules.map(|rule| {
+        SynRule { name: child(rule, IDENT).text().to_string() }
+    }).collect();
+
+    let g = Grammar {
+        node_types: node_types,
+        lex_rules: lex_rules,
+        syn_rules: syn_rules
+    };
 
     Ok(g)
+}
+
+fn child(node: Node, ty: NodeType) -> Node {
+    node.children().single_of_type(ty)
+        .unwrap_or_else(|| panic!("No child of type {:?} for {:?}\n{}",
+                                  ty, node.ty(), node.text()))
 }

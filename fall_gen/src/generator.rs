@@ -5,6 +5,7 @@ use std::ascii::AsciiExt;
 pub struct Grammar {
     pub node_types: Vec<String>,
     pub lex_rules: Vec<LexRule>,
+    pub syn_rules: Vec<SynRule>,
 }
 
 #[derive(Debug)]
@@ -12,6 +13,11 @@ pub struct LexRule {
     pub ty: String,
     pub re: String,
     pub f: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct SynRule {
+    pub name: String,
 }
 
 impl Grammar {
