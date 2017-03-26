@@ -1,7 +1,9 @@
-extern crate fall;
+extern crate fall_parse;
+extern crate fall_tree;
 
 use std::sync::{Once, ONCE_INIT};
-use fall::builder::TreeBuilder;
+use fall_tree::File;
+use fall_parse::TreeBuilder;
 
 mod grammar;
 
@@ -9,10 +11,10 @@ use grammar::*;
 
 static  REGISTER_TOKENS: Once = ONCE_INIT;
 
-pub fn parse(text: String) -> fall::File {
+pub fn parse(text: String) -> File {
     REGISTER_TOKENS.call_once(register_node_types);
 
-    fall::builder::parse(
+    fall_parse::parse(
         text,
         grammar::FILE,
         grammar::TOKENIZER,

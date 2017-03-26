@@ -1,6 +1,6 @@
-extern crate lang;
+extern crate fall_test;
 
-use lang::{rust, match_ast};
+use fall_test::{rust, match_ast};
 
 
 fn ast(code: &str) -> String {

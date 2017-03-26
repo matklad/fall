@@ -1,10 +1,11 @@
+extern crate regex;
+extern crate fall_tree;
+use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, ERROR, WHITESPACE};
+
 use std::iter::FromIterator;
 use std::collections::HashSet;
 
 use regex::Regex;
-
-use {TextRange, NodeType, File};
-use node::imp::{FileBuilder, NodeId};
 
 pub struct Rule {
     pub ty: NodeType,
@@ -190,11 +191,11 @@ impl TreeBuilder {
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
         let root = self.to_prenode(top);
-        let mut builder = ::node::imp::FileBuilder::new();
+        let mut builder = FileBuilder::new();
         go(&mut builder, None, root);
         return builder.build(self.text);
 
-        fn go(builder: &mut FileBuilder, parent: Option<NodeId>, node: PreNode) {
+        fn go(builder: &mut FileBuilder, parent: Option<NodeBuilder>, node: PreNode) {
             let id = builder.node(parent, node.ty, node.range);
             for child in node.children {
                 go(builder, Some(id), child)

@@ -1,12 +1,12 @@
 pub mod grammar;
 
-use fall;
-use fall::builder::TreeBuilder;
+use fall_tree::File;
+use fall_parse::{self, TreeBuilder};
 use self::grammar::*;
 
-pub fn parse(text: String) -> fall::File {
+pub fn parse(text: String) -> File {
     register_node_types();
-    fall::builder::parse(
+    fall_parse::parse(
         text,
         grammar::FILE,
         grammar::TOKENIZER,

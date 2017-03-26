@@ -1,6 +1,6 @@
-extern crate lang;
+extern crate fall_test;
 
-use lang::{sexp, match_ast};
+use fall_test::{sexp, match_ast};
 
 
 fn ast(code: &str) -> String {

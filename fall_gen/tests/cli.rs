@@ -63,9 +63,9 @@ tokenizer = {
 }
         "###, r###"
 use std::sync::{Once, ONCE_INIT};
-use fall::{NodeType, NodeTypeInfo};
-use fall::builder::Rule;
-pub use fall::{ERROR, WHITESPACE};
+use fall_tree::{NodeType, NodeTypeInfo};
+use fall_parse::Rule;
+pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const NULL      : NodeType = NodeType(100);
 pub const BOOL      : NodeType = NodeType(101);
@@ -152,9 +152,9 @@ tokenizer = {
 }
         "###, r###"
 use std::sync::{Once, ONCE_INIT};
-use fall::{NodeType, NodeTypeInfo};
-use fall::builder::Rule;
-pub use fall::{ERROR, WHITESPACE};
+use fall_tree::{NodeType, NodeTypeInfo};
+use fall_parse::Rule;
+pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const KW_NODES  : NodeType = NodeType(100);
 pub const KW_TOKENIZER: NodeType = NodeType(101);
@@ -207,9 +207,10 @@ pub const TOKENIZER: &'static [Rule] = &[
 #[test]
 fn test_grammars_are_fresh() {
     let cwd = ::std::env::current_dir().unwrap();
-    let tests = cwd.parent().unwrap().join("tests");
+    let tests = cwd.parent().unwrap().join("fall_test/src");
     for lang in ["sexp", "rust", "weird"].into_iter() {
-        let raw = tests.join("lang").join(lang).join("grammar.txt");
+        let raw = tests.join(lang).join("grammar.txt");
+        println!("{:?}", raw);
         let grammar = file::get_text(&raw).unwrap();
         let expected = file::get_text(raw.with_extension("rs")).unwrap();
         do_test(&grammar, &expected);

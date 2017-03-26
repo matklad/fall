@@ -1,14 +1,8 @@
 [package]
-name = "fall-gen"
+name = "fall-test"
 version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
-clap = "2.20"
 fall-tree = { path = "../fall_tree" }
 fall-parse = { path = "../fall_parse" }
-file = { git = "https://github.com/matklad/rust-file", branch = "text" }
-
-[dev-dependencies]
-tempdir = "0.3"
-difference = "0.4"

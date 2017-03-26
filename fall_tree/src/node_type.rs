@@ -14,13 +14,13 @@ pub struct NodeTypeInfo {
 }
 
 impl NodeType {
+    pub fn name(self) -> &'static str {
+        self.info().name
+    }
+
     pub fn register(self, info: NodeTypeInfo) {
         let prev = NODE_INFO.lock().unwrap().insert(self, info);
         assert!(prev.is_none(), "Node already registered: {:?}", self);
-    }
-
-    pub fn name(self) -> &'static str {
-        self.info().name
     }
 
     fn info(self, ) -> NodeTypeInfo {

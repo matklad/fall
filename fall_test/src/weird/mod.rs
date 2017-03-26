@@ -1,5 +1,5 @@
-use fall;
-use fall::builder::TreeBuilder;
+use fall_tree::File;
+use fall_parse::{self, TreeBuilder};
 use self::grammar::*;
 
 mod grammar;
@@ -11,9 +11,9 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-pub fn parse(text: String) -> fall::File {
+pub fn parse(text: String) -> File {
     register_node_types();
-    fall::builder::parse(
+    fall_parse::parse(
         text,
         grammar::FILE,
         grammar::TOKENIZER,

@@ -1,4 +1,5 @@
-extern crate fall;
+extern crate fall_tree;
+extern crate fall_parse;
 
 pub use generator::Grammar;
 

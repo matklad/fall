@@ -1,6 +1,5 @@
-extern crate fall;
-
-pub fn foo() {}
+extern crate fall_parse;
+extern crate fall_tree;
 
 pub mod sexp;
 pub mod weird;

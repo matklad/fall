@@ -11,9 +11,9 @@ impl Grammar {
     pub fn generate(&self) -> String {
         let mut result = String::new();
         result.push_str("use std::sync::{Once, ONCE_INIT};\n");
-        result.push_str("use fall::{NodeType, NodeTypeInfo};\n");
-        result.push_str("use fall::builder::Rule;\n");
-        result.push_str("pub use fall::{ERROR, WHITESPACE};\n\n");
+        result.push_str("use fall_tree::{NodeType, NodeTypeInfo};\n");
+        result.push_str("use fall_parse::Rule;\n");
+        result.push_str("pub use fall_tree::{ERROR, WHITESPACE};\n\n");
         for (i, t) in self.node_types.iter().enumerate() {
             writeln!(result, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i)
                 .unwrap();

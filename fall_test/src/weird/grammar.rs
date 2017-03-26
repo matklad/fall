@@ -1,7 +1,7 @@
 use std::sync::{Once, ONCE_INIT};
-use fall::{NodeType, NodeTypeInfo};
-use fall::builder::Rule;
-pub use fall::{ERROR, WHITESPACE};
+use fall_tree::{NodeType, NodeTypeInfo};
+use fall_parse::Rule;
+pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const ATOM      : NodeType = NodeType(100);
 pub const RAW_STRING: NodeType = NodeType(101);
