@@ -4,7 +4,7 @@ extern crate difference;
 
 use std::process;
 use std::env;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 use tempdir::TempDir;
 
@@ -13,15 +13,22 @@ fn generator_path() -> PathBuf {
     test_exe.parent().unwrap().parent().unwrap().join("fall-gen")
 }
 
+fn check_by_path<T: AsRef<Path>>(grammar: T) {
+    let grammar = grammar.as_ref();
+    let input = file::get_text(grammar).unwrap();
+    let expected = file::get_text(grammar.with_extension("rs")).unwrap();
+    do_test(&input, &expected);
+}
+
 fn do_test(grammar: &str, expected: &str) {
     let dir = TempDir::new("gen-tests").unwrap();
     let grammar_path = dir.path().join("grammar.txt");
     file::put_text(&grammar_path, grammar).unwrap();
 
     let output = process::Command::new(generator_path())
-            .arg(&grammar_path)
-            .output()
-            .expect("Failed to execute process");
+        .arg(&grammar_path)
+        .output()
+        .expect("Failed to execute process");
     println!("{}", String::from_utf8_lossy(&output.stdout));
     println!("{}", String::from_utf8_lossy(&output.stderr));
 
@@ -206,14 +213,8 @@ pub const TOKENIZER: &'static [Rule] = &[
 
 #[test]
 fn test_grammars_are_fresh() {
-    let cwd = ::std::env::current_dir().unwrap();
-    let tests = cwd.parent().unwrap().join("fall_test/src");
-    // TODO: add oneself
-    for lang in ["sexp", "rust", "weird"].into_iter() {
-        let raw = tests.join(lang).join("grammar.txt");
-        println!("{:?}", raw);
-        let grammar = file::get_text(&raw).unwrap();
-        let expected = file::get_text(raw.with_extension("rs")).unwrap();
-        do_test(&grammar, &expected);
-    }
+    check_by_path("../fall_test/src/sexp/grammar.txt");
+    check_by_path("../fall_test/src/rust/grammar.txt");
+    check_by_path("../fall_test/src/weird/grammar.txt");
+    check_by_path("./src/parser/grammar.txt");
 }

@@ -1,4 +1,4 @@
-nodes = {
+nodes {
   kw_nodes
   kw_tokenizer
 
@@ -15,7 +15,7 @@ nodes = {
   rule
 }
 
-tokenizer = {
+tokenizer {
     whitespace r"\s+"
     eq "="
     lbrace r"\{"
