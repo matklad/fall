@@ -19,24 +19,13 @@ mod core {
         file: &'f File,
     }
 
-    pub struct FileBuilder {
-        nodes: Vec<RawNode>,
-    }
-
-    #[derive(Clone, Copy)]
-    pub struct NodeBuilder(NodeId);
-
     impl File {
         pub fn root(&self) -> Node {
-            self.node(self.root)
+            Node { id: self.root, file: self }
         }
 
         pub fn text(&self) -> &str {
             &self.text
-        }
-
-        fn node(&self, id: NodeId) -> Node {
-            Node { id: id, file: self }
         }
     }
 
@@ -54,20 +43,54 @@ mod core {
         }
 
         pub fn parent(&self) -> Option<Node> {
-            self.raw().parent.map(|id| self.file.node(id))
+            self.raw().parent.map(|id| Node { id: id, file: self.file })
         }
 
-        pub fn children<'n>(&'n self) -> NodeChildren<'n, 'f> {
-            NodeChildren {
-                file: self.file,
-                inner: self.raw().children.iter(),
-            }
+        pub fn children(&self) -> NodeChildren<'f> {
+            NodeChildren { file: self.file, inner: self.raw().children.iter() }
         }
 
-        fn raw(&self) -> &RawNode {
+        fn raw(&self) -> &'f RawNode {
             &self.file[self.id]
         }
     }
+
+    pub struct NodeChildren<'f> {
+        file: &'f File,
+        inner: ::std::slice::Iter<'f, NodeId>,
+    }
+
+    impl<'f> Iterator for NodeChildren<'f> {
+        type Item = Node<'f>;
+
+        fn next(&mut self) -> Option<Node<'f>> {
+            self.inner.next().map(|&id| Node { id: id, file: self.file })
+        }
+    }
+
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    struct NodeId(u32);
+
+    struct RawNode {
+        ty: NodeType,
+        parent: Option<NodeId>,
+        children: Vec<NodeId>,
+        range: TextRange,
+    }
+
+    impl Index<NodeId> for File {
+        type Output = RawNode;
+        fn index(&self, index: NodeId) -> &Self::Output {
+            &self.nodes[index.0 as usize]
+        }
+    }
+
+    pub struct FileBuilder {
+        nodes: Vec<RawNode>,
+    }
+
+    #[derive(Clone, Copy)]
+    pub struct NodeBuilder(NodeId);
 
     impl FileBuilder {
         pub fn new() -> FileBuilder {
@@ -104,36 +127,6 @@ mod core {
             }
         }
     }
-
-    pub struct NodeChildren<'n, 'f: 'n> {
-        file: &'f File,
-        inner: ::std::slice::Iter<'n, NodeId>,
-    }
-
-    impl<'n, 'f: 'n> Iterator for NodeChildren<'n, 'f> {
-        type Item = Node<'f>;
-
-        fn next(&mut self) -> Option<Node<'f>> {
-            self.inner.next().map(|&id| self.file.node(id))
-        }
-    }
-
-    #[derive(Clone, Copy, PartialEq, Eq)]
-    struct NodeId(u32);
-
-    struct RawNode {
-        ty: NodeType,
-        parent: Option<NodeId>,
-        children: Vec<NodeId>,
-        range: TextRange,
-    }
-
-    impl Index<NodeId> for File {
-        type Output = RawNode;
-        fn index(&self, index: NodeId) -> &Self::Output {
-            &self.nodes[index.0 as usize]
-        }
-    }
 }
 
 impl File {
@@ -157,12 +150,12 @@ impl<'f> Node<'f> {
 }
 
 
-impl<'n, 'f: 'n> NodeChildren<'n, 'f> {
+impl<'f> NodeChildren<'f> {
     pub fn single_of_type(mut self, ty: NodeType) -> Option<Node<'f>> {
         self.find(|n| n.ty() == ty)
     }
 
-    pub fn many_of_type(self, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'n> {
+    pub fn many_of_type(self, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
         Box::new(self.filter(move |n| n.ty() == ty))
     }
 }
