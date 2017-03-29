@@ -14,10 +14,6 @@ impl File {
     pub fn text(&self) -> &str {
         self.0.text()
     }
-
-    pub fn node_containing_range(&self, range: TextRange) -> Node {
-        node_containing_range(self.root(), range)
-    }
 }
 
 #[derive(Clone, Copy)]
@@ -42,10 +38,6 @@ impl<'f> Node<'f> {
 
     pub fn children(&self) -> NodeChildren<'f> {
         self.0.children()
-    }
-
-    pub fn is_leaf(&self) -> bool {
-        self.children().next().is_none()
     }
 }
 
@@ -78,27 +70,4 @@ impl FileBuilder {
     pub fn build(self) -> File {
         self.0.build()
     }
-}
-
-
-
-fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
-    fn go<'f>(node: ::Node<'f>, range: TextRange) -> Option<::Node<'f>> {
-        if !range.is_subrange_of(node.range()) {
-            return None
-        }
-
-        for child in node.children() {
-            if child.range() == node.range() {
-                break;
-            }
-            if let Some(n) = go(child, range) {
-                return Some(n);
-            }
-        }
-        return Some(node)
-    }
-
-    assert!(range.is_subrange_of(node.range()));
-    go(node, range).unwrap()
 }

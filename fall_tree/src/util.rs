@@ -24,7 +24,7 @@ fn dump(root: Node, text: &str, include_whitespace: bool) -> String {
             buf.push_str("  ")
         }
 
-        if n.is_leaf() {
+        if n.children().next().is_none() {
             write!(buf, "{} {:?}\n", n.ty().name(), &text[n.range()])
                 .unwrap();
         } else {
