@@ -1,6 +1,4 @@
-use {TextRange, NodeType, WHITESPACE};
-
-use std::fmt::Write;
+use {TextRange, NodeType};
 
 mod imp;
 
@@ -19,14 +17,6 @@ impl File {
 
     pub fn node_containing_range(&self, range: TextRange) -> Node {
         node_containing_range(self.root(), range)
-    }
-
-    pub fn dump_ws(&self) -> String {
-        dump(self.root(), &self.text(), true)
-    }
-
-    pub fn dump(&self) -> String {
-        dump(self.root(), &self.text(), false)
     }
 }
 
@@ -91,32 +81,6 @@ impl FileBuilder {
 }
 
 
-fn dump(root: Node, text: &str, include_whitespace: bool) -> String {
-    let mut buf = String::new();
-    go(0, root, text, &mut buf, include_whitespace);
-    return buf;
-
-    fn go(level: usize, n: Node, text: &str, buf: &mut String, include_whitespace: bool) {
-        if n.ty() == WHITESPACE && !include_whitespace {
-            return
-        }
-
-        for _ in 0..level {
-            buf.push_str("  ")
-        }
-
-        if n.is_leaf() {
-            write!(buf, "{} {:?}\n", n.ty().name(), &text[n.range()])
-                .unwrap();
-        } else {
-            write!(buf, "{}\n", n.ty().name())
-                .unwrap();
-            for child in n.children() {
-                go(level + 1, child, text, buf, include_whitespace);
-            }
-        }
-    }
-}
 
 fn node_containing_range(node: ::Node, range: TextRange) -> ::Node {
     fn go<'f>(node: ::Node<'f>, range: TextRange) -> Option<::Node<'f>> {

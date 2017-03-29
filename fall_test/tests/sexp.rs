@@ -1,10 +1,12 @@
 extern crate fall_test;
+extern crate fall_tree;
 
 use fall_test::{sexp, match_ast};
+use fall_tree::dump_file_ws;
 
 
 fn ast(code: &str) -> String {
-    sexp::parse(code.to_owned()).dump_ws()
+    dump_file_ws(&sexp::parse(code.to_owned()))
 }
 
 #[test]

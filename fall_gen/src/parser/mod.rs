@@ -139,6 +139,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     extern crate difference;
+    use fall_tree::dump_file;
 
     use super::*;
 
@@ -150,7 +151,7 @@ mod tests {
     }
 
     fn ast(code: &str) -> String {
-        parse(code.to_owned()).dump()
+        dump_file(&parse(code.to_owned()))
     }
 
     #[test]

@@ -1,10 +1,12 @@
 extern crate fall_test;
+extern crate fall_tree;
 
 use fall_test::{rust, match_ast};
+use fall_tree::dump_file_ws;
 
 
 fn ast(code: &str) -> String {
-    rust::parse(code.to_owned()).dump_ws()
+    dump_file_ws(&rust::parse(code.to_owned()))
 }
 
 #[test]

@@ -1,7 +1,7 @@
 extern crate fall_tree;
 extern crate fall_parse;
 
-use fall_tree::{Node, NodeType};
+use fall_tree::{Node, NodeType, dump_file};
 
 mod parser;
 use self::parser::grammar::*;
@@ -28,7 +28,7 @@ impl ::std::fmt::Display for Error {
 fn error<S: Into<String>>(msg: S) -> Error { Error(msg.into()) }
 
 pub fn debug(text: &str) -> String {
-    parser::parse(text.to_owned()).dump()
+    dump_file(&parser::parse(text.to_owned()))
 }
 
 pub fn parse(text: &str) -> Result<Grammar, Error> {
