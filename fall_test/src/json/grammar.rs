@@ -51,6 +51,8 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: COMMA, re: r",", f: None },
     Rule { ty: STRING, re: r#""[^"]*""#, f: None },
     Rule { ty: NUMBER, re: r"\d+", f: None },
+    Rule { ty: NULL, re: r"null", f: None },
+    Rule { ty: BOOL, re: r"true|false", f: None },
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[
@@ -59,5 +61,5 @@ pub const PARSER: &'static [syn::Rule] = &[
     syn::Rule { name: "field", ty: Some(FIELD), alts: &[syn::Alt { parts: &[syn::Part::Token(STRING), syn::Part::Token(COLON), syn::Part::Rule("value")], commit: Some(1) }] },
     syn::Rule { name: "array", ty: Some(ARRAY), alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACK), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule("value"), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACK)], commit: Some(1) }] },
     syn::Rule { name: "value", ty: None, alts: &[syn::Alt { parts: &[syn::Part::Rule("primitive")], commit: None }, syn::Alt { parts: &[syn::Part::Rule("object")], commit: None }, syn::Alt { parts: &[syn::Part::Rule("array")], commit: None }] },
-    syn::Rule { name: "primitive", ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Rule("null")], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Rule("bool")], commit: None }] },
+    syn::Rule { name: "primitive", ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }] },
 ];

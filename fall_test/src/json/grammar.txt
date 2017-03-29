@@ -18,6 +18,8 @@ tokenizer {
   comma      r","
   string     r#""[^"]*""#
   number     r"\d+"
+  null       r"null"
+  bool       r"true|false"
 }
 
 rule file {

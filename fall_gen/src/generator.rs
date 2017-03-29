@@ -1,4 +1,4 @@
-     use std::fmt::Write;
+use std::fmt::Write;
 use std::ascii::AsciiExt;
 
 #[derive(Debug)]

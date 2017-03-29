@@ -18,16 +18,16 @@ pub enum Part {
     Rep(Alt)
 }
 
-struct Parser<'r> {
+pub struct Parser<'r> {
     rules: &'r [Rule],
 }
 
 impl<'r> Parser<'r> {
-    fn get_rule(&self, name: &str) -> &Rule {
-        self.rules.iter().find(|r| r.name == name).unwrap()
+    pub fn new(rules: &[Rule]) -> Parser {
+        Parser { rules: rules }
     }
 
-    fn parse(&self, b: &mut TreeBuilder) {
+    pub fn parse(&self, b: &mut TreeBuilder) {
         let main_rule = &self.rules[0];
         for alt in main_rule.alts {
             if self.parse_alt(alt, b) {
@@ -35,6 +35,13 @@ impl<'r> Parser<'r> {
             }
         }
     }
+
+    fn get_rule(&self, name: &str) -> &Rule {
+        self.rules.iter().find(|r| r.name == name).unwrap_or_else(|| {
+            panic!("unknown rule {:?}", name)
+        })
+    }
+
 
     fn parse_alt(&self, alt: &Alt, b: &mut TreeBuilder) -> bool {
         let commit = alt.commit.unwrap_or(alt.parts.len());
