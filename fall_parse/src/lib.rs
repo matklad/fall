@@ -140,9 +140,9 @@ mod core {
             let top = self.pending.pop().unwrap();
             assert!(self.pending.is_empty());
             let root = self.to_prenode(top);
-            let mut builder = FileBuilder::new();
+            let mut builder = FileBuilder::new(self.text);
             go(&mut builder, None, root);
-            return builder.build(self.text);
+            return builder.build();
 
             fn go(builder: &mut FileBuilder, parent: Option<NodeBuilder>, node: PreNode) {
                 let id = builder.node(parent, node.ty, node.range);
