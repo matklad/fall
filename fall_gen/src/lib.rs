@@ -1,14 +1,16 @@
 extern crate fall_tree;
 extern crate fall_parse;
 
-use fall_tree::{dump_file};
+use fall_tree::{dump_file, Node};
 use fall_tree::search::{child_of_type, child_of_type_exn, children_of_type};
 
 mod parser;
+
 use self::parser::grammar::*;
 
 mod generator;
-pub use generator::{Grammar, LexRule, SynRule};
+
+pub use generator::{Grammar, LexRule, SynRule, Alt, Part};
 
 #[derive(Debug)]
 pub struct Error(String);
@@ -60,9 +62,7 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
         })
         .collect::<Result<Vec<_>, Error>>()?;
 
-    let syn_rules = syn_rules.map(|rule| {
-        SynRule { name: child_of_type_exn(rule, IDENT).text().to_string() }
-    }).collect();
+    let syn_rules = syn_rules.map(parse_syn_rule).collect();
 
     let g = Grammar {
         node_types: node_types,
@@ -71,4 +71,30 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     };
 
     Ok(g)
+}
+
+
+fn parse_syn_rule(rule: Node) -> SynRule {
+    SynRule {
+        name: child_of_type_exn(rule, IDENT).text().to_string(),
+        alts: children_of_type(rule, ALT).map(parse_alt).collect(),
+    }
+}
+
+fn parse_alt(alt: Node) -> Alt {
+    Alt {
+        parts: children_of_type(alt, PART)
+            .filter(|n| n.text() != "<commit>")
+            .map(parse_part).collect(),
+        commit: children_of_type(alt, PART).position(|n| n.text() == "<commit>"),
+    }
+}
+
+fn parse_part(node: Node) -> Part {
+    if let Some(id) = child_of_type(node, IDENT) {
+        Part::Rule(id.text().to_owned())
+    } else {
+        Part::Rep(parse_alt(child_of_type_exn(node, ALT)))
+    }
+
 }

@@ -1,4 +1,4 @@
-use std::fmt::Write;
+     use std::fmt::Write;
 use std::ascii::AsciiExt;
 
 #[derive(Debug)]
@@ -18,6 +18,19 @@ pub struct LexRule {
 #[derive(Debug)]
 pub struct SynRule {
     pub name: String,
+    pub alts: Vec<Alt>,
+}
+
+#[derive(Debug)]
+pub struct Alt {
+    pub parts: Vec<Part>,
+    pub commit: Option<usize>,
+}
+
+#[derive(Debug)]
+pub enum Part {
+    Rule(String),
+    Rep(Alt)
 }
 
 impl Grammar {
@@ -61,23 +74,51 @@ impl Grammar {
         result.push_str("];\n");
 
         if has_syn_rules {
-            generate_syn_rules(&self.syn_rules, &mut result);
+            self.generate_syn_rules(&mut result);
         }
 
         result
     }
+
+    fn generate_syn_rules(&self, buff: &mut String) {
+        buff.push_str("\npub const PARSER: &'static [syn::Rule] = &[\n");
+        for rule in self.syn_rules.iter() {
+            buff.push_str("    ");
+            let ty = if self.node_types.contains(&rule.name) {
+                format!("Some({})", scream(&rule.name))
+            } else {
+                "None".to_owned()
+            };
+            let alts = rule.alts.iter().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
+            buff.push_str(&format!(r#"syn::Rule {{ name: "{}", ty: {}, alts: &[{}] }},"#,
+                                   rule.name, ty, alts.join(", ")));
+            buff.push_str("\n");
+        }
+        buff.push_str("];\n");
+    }
+
+    fn generate_alt(&self, alt: &Alt) -> String {
+        let parts = alt.parts.iter().map(|p| self.generate_part(p)).collect::<Vec<_>>();
+        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), alt.commit)
+    }
+
+    fn generate_part(&self, part: &Part) -> String {
+        match *part {
+            Part::Rule(ref name) => {
+                if self.lex_rules.iter().any(|l| &l.ty == name) {
+                    format!("syn::Part::Token({})", scream(name))
+                } else {
+                    format!("syn::Part::Rule({:?})", name)
+                }
+            }
+            Part::Rep(ref a) => format!("syn::Part::Rep({})", self.generate_alt(a)),
+        }
+    }
 }
+
 
 fn scream(word: &str) -> String {
     word.chars().map(|c| c.to_ascii_uppercase()).collect()
 }
 
-fn generate_syn_rules(rules: &[SynRule], buff: &mut String) {
-    buff.push_str("\npub const PARSER: &'static[syn::Rule] = &[\n");
-    for rule in rules {
-        buff.push_str("    ");
-        buff.push_str(&format!(r#"syn::Rule {{ name: "{}", alts: &[] }},"#, rule.name));
-        buff.push_str("\n");
-    }
-    buff.push_str("];\n");
-}
+
