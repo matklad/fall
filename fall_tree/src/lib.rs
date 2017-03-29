@@ -5,6 +5,7 @@ mod text_range;
 mod node_type;
 mod node;
 mod util;
+pub mod search;
 
 pub use text_range::TextRange;
 pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};

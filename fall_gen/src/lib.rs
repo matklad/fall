@@ -1,7 +1,8 @@
 extern crate fall_tree;
 extern crate fall_parse;
 
-use fall_tree::{Node, NodeType, dump_file};
+use fall_tree::{dump_file};
+use fall_tree::search::{child_of_type, child_of_type_exn, children_of_type};
 
 mod parser;
 use self::parser::grammar::*;
@@ -35,23 +36,20 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     let file = parser::parse(text.to_owned());
     let root = file.root();
 
-    let nodes = child(root, NODES_DEF);
-    let tokenizer = child(root, TOKENIZER_DEF);
+    let nodes = child_of_type_exn(root, NODES_DEF);
+    let tokenizer = child_of_type_exn(root, TOKENIZER_DEF);
+    let syn_rules = children_of_type(root, RULE_DEF);
 
-    let syn_rules = root.children().many_of_type(RULE_DEF);
-
-    let node_types = nodes
-        .children().many_of_type(IDENT)
+    let node_types = children_of_type(nodes, IDENT)
         .map(|n| n.text().to_owned())
         .collect();
 
-    let lex_rules = tokenizer
-        .children().many_of_type(TOKEN_DEF)
+    let lex_rules = children_of_type(tokenizer, TOKEN_DEF)
         .map(|rule| -> Result<LexRule, Error> {
-            let ty = rule.children().single_of_type(IDENT)
+            let ty = child_of_type(rule, IDENT)
                 .ok_or(error("Missing name in rule"))?
                 .text().to_owned();
-            let mut pats = rule.children().many_of_type(STRING);
+            let mut pats = children_of_type(rule, STRING);
             let re = pats.next()
                 .ok_or(error(format!("Missing pattern in rule {:?}", rule.text())))?;
             let f = pats.next().map(|n| {
@@ -63,7 +61,7 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
         .collect::<Result<Vec<_>, Error>>()?;
 
     let syn_rules = syn_rules.map(|rule| {
-        SynRule { name: child(rule, IDENT).text().to_string() }
+        SynRule { name: child_of_type_exn(rule, IDENT).text().to_string() }
     }).collect();
 
     let g = Grammar {
@@ -73,10 +71,4 @@ pub fn parse(text: &str) -> Result<Grammar, Error> {
     };
 
     Ok(g)
-}
-
-fn child(node: Node, ty: NodeType) -> Node {
-    node.children().single_of_type(ty)
-        .unwrap_or_else(|| panic!("No child of type {:?} for {:?}\n{}",
-                                  ty, node.ty(), node.text()))
 }

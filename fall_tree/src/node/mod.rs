@@ -41,17 +41,6 @@ impl<'f> Node<'f> {
     }
 }
 
-impl<'f> NodeChildren<'f> {
-    pub fn single_of_type(mut self, ty: NodeType) -> Option<Node<'f>> {
-        self.find(|n| n.ty() == ty)
-    }
-
-    pub fn many_of_type(self, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
-        Box::new(self.filter(move |n| n.ty() == ty))
-    }
-}
-
-
 pub struct FileBuilder(imp::FileBuilderImpl);
 
 #[derive(Clone, Copy)]
