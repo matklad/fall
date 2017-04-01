@@ -5,12 +5,13 @@ use fall_tree::{dump_file, Node};
 use fall_tree::search::{child_of_type, child_of_type_exn, children_of_type};
 
 mod syntax;
+mod ast;
 
 use self::syntax::grammar::*;
 
 mod generator;
 
-pub use generator::{Grammar, LexRule, SynRule, Alt, Part};
+pub use ast::{Grammar, LexRule, SynRule, Alt, Part};
 
 #[derive(Debug)]
 pub struct Error(String);
