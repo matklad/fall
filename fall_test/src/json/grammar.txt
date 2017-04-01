@@ -28,9 +28,11 @@ rule file {
 
 rule object {
   lbrace <commit>
-    <rep field comma>
+    object_body
   rbrace
 }
+
+rule object_body { <rep field comma> }
 
 rule field {
   string <commit> colon value
