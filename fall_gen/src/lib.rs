@@ -4,9 +4,9 @@ extern crate fall_parse;
 use fall_tree::{dump_file, Node};
 use fall_tree::search::{child_of_type, child_of_type_exn, children_of_type};
 
-mod parser;
+mod syntax;
 
-use self::parser::grammar::*;
+use self::syntax::grammar::*;
 
 mod generator;
 
@@ -31,11 +31,11 @@ impl ::std::fmt::Display for Error {
 fn error<S: Into<String>>(msg: S) -> Error { Error(msg.into()) }
 
 pub fn debug(text: &str) -> String {
-    dump_file(&parser::parse(text.to_owned()))
+    dump_file(&syntax::parse(text.to_owned()))
 }
 
 pub fn parse(text: &str) -> Result<Grammar, Error> {
-    let file = parser::parse(text.to_owned());
+    let file = syntax::parse(text.to_owned());
     let root = file.root();
 
     let nodes = child_of_type_exn(root, NODES_DEF);
