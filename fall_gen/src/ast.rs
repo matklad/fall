@@ -26,13 +26,12 @@ pub struct SynRule {
 #[derive(Debug)]
 pub struct Alt {
     pub parts: Vec<Part>,
-    pub commit: Option<usize>,
 }
 
 #[derive(Debug)]
 pub enum Part {
     Rule(String),
-    Rep(Alt)
+    Call(String, Vec<Alt>)
 }
 
 
@@ -109,20 +108,19 @@ fn lift_syn_rule(node: Node) -> Result<SynRule> {
 }
 
 fn lift_alt(node: Node) -> Alt {
-    Alt {
-        parts: children_of_type(node, PART)
-            .filter(|n| n.text() != "<commit>")
-            .map(lift_part).collect(),
-        commit: children_of_type(node, PART).position(|n| n.text() == "<commit>"),
-    }
+    Alt { parts: children_of_type(node, PART).map(lift_part).collect() }
 }
 
 fn lift_part(node: Node) -> Part {
-    if let Some(id) = child_of_type(node, IDENT) {
-        Part::Rule(node_text(id))
-    } else {
-        Part::Rep(lift_alt(child_of_type_exn(node, ALT)))
+    let mut children = node.children();
+    let first_child = children.next().unwrap();
+    if first_child.ty() == IDENT {
+        assert!(children.next().is_none());
+        return Part::Rule(node_text(first_child));
     }
+    assert!(first_child.ty() == LANGLE);
+    let op = node_text(child_of_type_exn(node, IDENT));
+    Part::Call(op, children_of_type(node, ALT).map(lift_alt).collect())
 }
 
 fn node_text(node: Node) -> String {

@@ -71,28 +71,30 @@ fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
         return false;
     }
     if b.try_eat(IDENT) && b.try_eat(LBRACE) {
-        b.parse_many(&|b| {
-            if b.next_is(RBRACE) || b.current().is_none() {
-                false
-            } else {
-                parse_alt(b);
-                if !b.next_is(RBRACE) {
-                    b.try_eat(PIPE);
-                }
-                true
-            }
-        });
+        parse_syn_rule_body(b);
         b.try_eat(RBRACE);
     }
     b.finish(SYN_RULE);
     true
 }
 
+fn parse_syn_rule_body(b: &mut TreeBuilder) {
+    loop {
+        if b.next_is(RBRACE) || b.next_is(RANGLE) || b.current().is_none() {
+            return;
+        }
+        parse_alt(b);
+        if !(b.next_is(RBRACE) || b.next_is(RANGLE)) {
+            b.try_eat(PIPE);
+        }
+    }
+}
+
 fn parse_alt(b: &mut TreeBuilder) {
     b.start(ALT);
     b.parse_many(&|b| {
-        b.skip_until(&[RBRACE, PIPE, IDENT, LANGLE, LPAREN, RPAREN]);
-        if b.current().is_none() || b.next_is(RBRACE) || b.next_is(RPAREN) || b.next_is(PIPE) {
+        b.skip_until(&[RBRACE, PIPE, IDENT, LANGLE, LPAREN, RPAREN, RANGLE]);
+        if b.current().is_none() || b.next_is(RBRACE) || b.next_is(RPAREN) || b.next_is(PIPE) || b.next_is(RANGLE) {
             false
         } else {
             parse_part(b);
@@ -105,12 +107,13 @@ fn parse_alt(b: &mut TreeBuilder) {
 fn parse_part(b: &mut TreeBuilder) {
     b.start(PART);
     if b.try_eat(IDENT) {
-
+        // NOP
     } else if b.try_eat(LANGLE) {
-        b.try_eat(IDENT) && b.try_eat(RANGLE);
-    } else if b.try_eat(LPAREN) {
-        parse_alt(b);
-        b.try_eat(RPAREN) && b.try_eat(STAR);
+        if b.try_eat(IDENT) {
+            parse_syn_rule_body(b)
+        }
+        b.skip_until(&[RANGLE]);
+        b.try_eat(RANGLE);
     } else {
         unreachable!()
     }
@@ -134,119 +137,4 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     let quote_start = s.find('"').unwrap();
     let closing = &"\"########################"[..quote_start];
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
-}
-
-#[cfg(test)]
-mod tests {
-    extern crate difference;
-    use fall_tree::dump_file;
-
-    use super::*;
-
-    fn match_ast(actual: &str, expected: &str) {
-        if expected.trim() != actual.trim() {
-            difference::print_diff(&actual, &expected, "\n");
-            panic!("Mismatch!")
-        }
-    }
-
-    fn ast(code: &str) -> String {
-        dump_file(&parse(code.to_owned()))
-    }
-
-    #[test]
-    fn empty_file() {
-        match_ast(&ast(""), r#"FILE """#)
-    }
-
-    #[test]
-    fn nodes() {
-        match_ast(&ast("nodes { foo bar }"), r#"
-FILE
-  NODES_DEF
-    KW_NODES "nodes"
-    LBRACE "{"
-    IDENT "foo"
-    IDENT "bar"
-    RBRACE "}"
-"#)
-    }
-
-    #[test]
-    fn tokenizer() {
-        match_ast(&ast(r#"nodes {} tokenizer { foo "foo" id r"\w+" ext "ext" "super::ext"}"#), r#"
-FILE
-  NODES_DEF
-    KW_NODES "nodes"
-    LBRACE "{"
-    RBRACE "}"
-  TOKENIZER_DEF
-    KW_TOKENIZER "tokenizer"
-    LBRACE "{"
-    LEX_RULE
-      IDENT "foo"
-      STRING
-        SIMPLE_STRING "\"foo\""
-    LEX_RULE
-      IDENT "id"
-      STRING
-        SIMPLE_STRING "r\"\\w+\""
-    LEX_RULE
-      IDENT "ext"
-      STRING
-        SIMPLE_STRING "\"ext\""
-      STRING
-        SIMPLE_STRING "\"super::ext\""
-    RBRACE "}"
-"#)
-    }
-
-    #[test]
-    fn rules() {
-        match_ast(&ast(r#"nodes {} tokenizer {}
-rule f { foo <commit> ( bar )* }
-
-rule b { foo | bar }"#), r#"
-FILE
-  NODES_DEF
-    KW_NODES "nodes"
-    LBRACE "{"
-    RBRACE "}"
-  TOKENIZER_DEF
-    KW_TOKENIZER "tokenizer"
-    LBRACE "{"
-    RBRACE "}"
-  SYN_RULE
-    KW_RULE "rule"
-    IDENT "f"
-    LBRACE "{"
-    ALT
-      PART
-        IDENT "foo"
-      PART
-        LANGLE "<"
-        IDENT "commit"
-        RANGLE ">"
-      PART
-        LPAREN "("
-        ALT
-          PART
-            IDENT "bar"
-        RPAREN ")"
-        STAR "*"
-    RBRACE "}"
-  SYN_RULE
-    KW_RULE "rule"
-    IDENT "b"
-    LBRACE "{"
-    ALT
-      PART
-        IDENT "foo"
-    PIPE "|"
-    ALT
-      PART
-        IDENT "bar"
-    RBRACE "}"
-"#)
-    }
 }

@@ -81,8 +81,19 @@ impl Grammar {
     }
 
     fn generate_alt(&self, alt: &Alt) -> String {
-        let parts = alt.parts.iter().map(|p| self.generate_part(p)).collect::<Vec<_>>();
-        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), alt.commit)
+        fn is_commit(part: &Part) -> bool {
+            match *part {
+                Part::Rule(..) => false,
+                Part::Call(ref op, _) => op == "commit"
+            }
+        }
+        let commit = alt.parts.iter().position(is_commit);
+
+        let parts = alt.parts.iter()
+            .filter(|p| !is_commit(p))
+            .map(|p| self.generate_part(p))
+            .collect::<Vec<_>>();
+        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
     }
 
     fn generate_part(&self, part: &Part) -> String {
@@ -92,11 +103,15 @@ impl Grammar {
                     format!("syn::Part::Token({})", scream(name))
                 } else {
                     let id = self.syn_rules.iter().position(|r| r.name == name.as_ref())
-                        .expect("Not a rule or token");
+                        .expect(&format!("Not a rule or token {}", name));
                     format!("syn::Part::Rule({:?})", id)
                 }
             }
-            Part::Rep(ref a) => format!("syn::Part::Rep({})", self.generate_alt(a)),
+            Part::Call(_, ref alts) => {
+                //                assert_eq!(op, "rep");
+                //                assert_eq!(alts.len(), 1);
+                format!("syn::Part::Rep({})", self.generate_alt(&alts[0]))
+            }
         }
     }
 }
