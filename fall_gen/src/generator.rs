@@ -74,8 +74,7 @@ impl Grammar {
                 "None".to_owned()
             };
             let alts = rule.alts.iter().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
-            line!(buff, r#"syn::Rule {{ name: "{}", ty: {}, alts: &[{}] }},"#,
-                                   rule.name, ty, alts.join(", "));
+            line!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
         }
         buff.dedent();
         buff.line("];");
@@ -92,7 +91,9 @@ impl Grammar {
                 if self.lex_rules.iter().any(|l| &l.ty == name) {
                     format!("syn::Part::Token({})", scream(name))
                 } else {
-                    format!("syn::Part::Rule({:?})", name)
+                    let id = self.syn_rules.iter().position(|r| r.name == name.as_ref())
+                        .expect("Not a rule or token");
+                    format!("syn::Part::Rule({:?})", id)
                 }
             }
             Part::Rep(ref a) => format!("syn::Part::Rep({})", self.generate_alt(a)),

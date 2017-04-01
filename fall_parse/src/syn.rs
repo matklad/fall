@@ -1,8 +1,11 @@
 use fall_tree::NodeType;
 use TreeBuilder;
 
+pub struct Parser<'r> {
+    rules: &'r [Rule],
+}
+
 pub struct Rule {
-    pub name: &'static str,
     pub ty: Option<NodeType>,
     pub alts: &'static [Alt],
 }
@@ -13,13 +16,9 @@ pub struct Alt {
 }
 
 pub enum Part {
-    Rule(&'static str),
+    Rule(usize),
     Token(NodeType),
     Rep(Alt)
-}
-
-pub struct Parser<'r> {
-    rules: &'r [Rule],
 }
 
 impl<'r> Parser<'r> {
@@ -36,13 +35,6 @@ impl<'r> Parser<'r> {
         }
     }
 
-    fn get_rule(&self, name: &str) -> &Rule {
-        self.rules.iter().find(|r| r.name == name).unwrap_or_else(|| {
-            panic!("unknown rule {:?}", name)
-        })
-    }
-
-
     fn parse_alt(&self, alt: &Alt, b: &mut TreeBuilder) -> bool {
         let commit = alt.commit.unwrap_or(alt.parts.len());
         for (i, p) in alt.parts.iter().enumerate() {
@@ -56,7 +48,7 @@ impl<'r> Parser<'r> {
     fn parse_part(&self, part: &Part, b: &mut TreeBuilder) -> bool {
         match *part {
             Part::Token(ty) => b.try_eat(ty),
-            Part::Rule(name) => self.parse_rule(self.get_rule(name), b),
+            Part::Rule(id) => self.parse_rule(&self.rules[id], b),
             Part::Rep(ref a) => {
                 while self.parse_alt(a, b) {}
                 true

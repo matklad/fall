@@ -56,10 +56,10 @@ pub const TOKENIZER: &'static [Rule] = &[
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[
-    syn::Rule { name: "file", ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule("object")], commit: None }, syn::Alt { parts: &[syn::Part::Rule("array")], commit: None }] },
-    syn::Rule { name: "object", ty: Some(OBJECT), alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule("field"), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
-    syn::Rule { name: "field", ty: Some(FIELD), alts: &[syn::Alt { parts: &[syn::Part::Token(STRING), syn::Part::Token(COLON), syn::Part::Rule("value")], commit: Some(1) }] },
-    syn::Rule { name: "array", ty: Some(ARRAY), alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACK), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule("value"), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACK)], commit: Some(1) }] },
-    syn::Rule { name: "value", ty: None, alts: &[syn::Alt { parts: &[syn::Part::Rule("primitive")], commit: None }, syn::Alt { parts: &[syn::Part::Rule("object")], commit: None }, syn::Alt { parts: &[syn::Part::Rule("array")], commit: None }] },
-    syn::Rule { name: "primitive", ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }] },
+    syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }] },
+    syn::Rule { ty: Some(OBJECT), alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(2), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
+    syn::Rule { ty: Some(FIELD), alts: &[syn::Alt { parts: &[syn::Part::Token(STRING), syn::Part::Token(COLON), syn::Part::Rule(4)], commit: Some(1) }] },
+    syn::Rule { ty: Some(ARRAY), alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACK), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACK)], commit: Some(1) }] },
+    syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Rule(5)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }] },
+    syn::Rule { ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }] },
 ];
