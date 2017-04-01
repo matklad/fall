@@ -1,8 +1,8 @@
-pub mod grammar;
+mod grammar;
 
 use fall_tree::File;
 use fall_parse::{self, TreeBuilder};
-use self::grammar::*;
+pub use self::grammar::*;
 
 pub fn parse(text: String) -> File {
     register_node_types();

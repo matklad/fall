@@ -7,7 +7,7 @@ use fall_tree::search::{child_of_type, child_of_type_exn, children_of_type};
 mod syntax;
 mod ast;
 
-use self::syntax::grammar::*;
+use self::syntax::*;
 
 mod generator;
 
