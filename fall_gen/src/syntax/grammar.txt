@@ -16,7 +16,7 @@ nodes {
   nodes_def
   tokenizer_def
   token_def
-  rule_def
+  syn_rule
   alt
   part
 }

@@ -23,7 +23,7 @@ pub const STRING    : NodeType = NodeType(116);
 pub const NODES_DEF : NodeType = NodeType(117);
 pub const TOKENIZER_DEF: NodeType = NodeType(118);
 pub const TOKEN_DEF : NodeType = NodeType(119);
-pub const RULE_DEF  : NodeType = NodeType(120);
+pub const SYN_RULE  : NodeType = NodeType(120);
 pub const ALT       : NodeType = NodeType(121);
 pub const PART      : NodeType = NodeType(122);
 
@@ -50,7 +50,7 @@ pub fn register_node_types() {
         NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
         TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
         TOKEN_DEF.register(NodeTypeInfo { name: "TOKEN_DEF" });
-        RULE_DEF.register(NodeTypeInfo { name: "RULE_DEF" });
+        SYN_RULE.register(NodeTypeInfo { name: "SYN_RULE" });
         ALT.register(NodeTypeInfo { name: "ALT" });
         PART.register(NodeTypeInfo { name: "PART" });
     });

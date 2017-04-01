@@ -65,9 +65,9 @@ fn parse_lex_rule(b: &mut TreeBuilder) -> bool {
 }
 
 fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
-    b.start(RULE_DEF);
+    b.start(SYN_RULE);
     if !b.try_eat(KW_RULE) {
-        b.rollback(RULE_DEF);
+        b.rollback(SYN_RULE);
         return false;
     }
     if b.try_eat(IDENT) && b.try_eat(LBRACE) {
@@ -84,7 +84,7 @@ fn parse_syn_rule(b: &mut TreeBuilder) -> bool {
         });
         b.try_eat(RBRACE);
     }
-    b.finish(RULE_DEF);
+    b.finish(SYN_RULE);
     true
 }
 
@@ -216,7 +216,7 @@ FILE
     KW_TOKENIZER "tokenizer"
     LBRACE "{"
     RBRACE "}"
-  RULE_DEF
+  SYN_RULE
     KW_RULE "rule"
     IDENT "f"
     LBRACE "{"
@@ -235,7 +235,7 @@ FILE
         RPAREN ")"
         STAR "*"
     RBRACE "}"
-  RULE_DEF
+  SYN_RULE
     KW_RULE "rule"
     IDENT "b"
     LBRACE "{"

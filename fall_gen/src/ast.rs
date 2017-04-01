@@ -60,7 +60,7 @@ type Result<T> = ::std::result::Result<T, LiftError>;
 pub fn lift(node: Node) -> Result<Grammar> {
     let node_types = child_of_type_exn(node, NODES_DEF);
     let lex_rules = child_of_type_exn(node, TOKENIZER_DEF);
-    let syn_rules = children_of_type(node, RULE_DEF);
+    let syn_rules = children_of_type(node, SYN_RULE);
 
     let g = Grammar {
         node_types: lift_node_types(node_types)?,
