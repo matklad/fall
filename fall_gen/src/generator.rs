@@ -1,71 +1,84 @@
-use std::fmt::Write;
 use std::ascii::AsciiExt;
 
 use ast::*;
 
+macro_rules! line {
+    ($name:ident, $($e:expr),*) => { $name.line(&format!($($e),*)) };
+}
 
 impl Grammar {
     pub fn generate(&self) -> String {
-        let mut result = String::new();
+        let mut buff = Buff::new();
         let has_syn_rules = !self.syn_rules.is_empty();
 
-        result.push_str("use std::sync::{Once, ONCE_INIT};\n");
-        result.push_str("use fall_tree::{NodeType, NodeTypeInfo};\n");
-        result.push_str("use fall_parse::Rule;\n");
+        buff.line("use std::sync::{Once, ONCE_INIT};");
+        buff.line("use fall_tree::{NodeType, NodeTypeInfo};");
+        buff.line("use fall_parse::Rule;");
         if has_syn_rules {
-            result.push_str("use fall_parse::syn;\n");
+            buff.line("use fall_parse::syn;");
         }
+        buff.line("pub use fall_tree::{ERROR, WHITESPACE};");
+        buff.blank_line();
 
-        result.push_str("pub use fall_tree::{ERROR, WHITESPACE};\n\n");
         for (i, t) in self.node_types.iter().enumerate() {
-            writeln!(result, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i)
-                .unwrap();
+            line!(buff, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i);
         }
+        buff.blank_line();
 
-        result.push_str("\npub fn register_node_types() {\n");
-        result.push_str("    static REGISTER: Once = ONCE_INIT;\n");
-        result.push_str("    REGISTER.call_once(||{\n");
-        for t in self.node_types.iter() {
-            writeln!(result, "        {}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t))
-                .unwrap();
+        buff.line("pub fn register_node_types() {");
+        {
+            buff.indent();
+            buff.line("static REGISTER: Once = ONCE_INIT;");
+            buff.line("REGISTER.call_once(||{");
+            buff.indent();
+            for t in self.node_types.iter() {
+                line!(buff, "{}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t));
+            }
+            buff.dedent();
+            buff.line("});");
+            buff.dedent();
         }
-        result.push_str("    });\n");
-        result.push_str("}\n");
+        buff.line("}");
+        buff.blank_line();
 
-        result.push_str("\npub const TOKENIZER: &'static [Rule] = &[\n");
-        for &LexRule { ref ty, ref re, ref f } in self.lex_rules.iter() {
-            result.push_str("    ");
-            let f = match *f {
-                None => "None".to_owned(),
-                Some(ref f) => format!("Some({})", f)
-            };
-            result.push_str(&format!("Rule {{ ty: {}, re: {}, f: {} }},", scream(ty), re, f));
-            result.push_str("\n");
+        buff.line("pub const TOKENIZER: &'static [Rule] = &[");
+        {
+            buff.indent();
+            for rule in self.lex_rules.iter() {
+                let f = match rule.f {
+                    None => "None".to_owned(),
+                    Some(ref f) => format!("Some({})", f)
+                };
+                line!(buff, "Rule {{ ty: {}, re: {}, f: {} }},", scream(&rule.ty), rule.re, f);
+            }
+            buff.dedent();
         }
-        result.push_str("];\n");
+        buff.line("];");
+
 
         if has_syn_rules {
-            self.generate_syn_rules(&mut result);
+            buff.blank_line();
+            self.generate_syn_rules(&mut buff);
         }
 
-        result
+        buff.done()
     }
 
-    fn generate_syn_rules(&self, buff: &mut String) {
-        buff.push_str("\npub const PARSER: &'static [syn::Rule] = &[\n");
+    fn generate_syn_rules(&self, buff: &mut Buff) {
+        buff.line("pub const PARSER: &'static [syn::Rule] = &[");
+        buff.indent();
         for rule in self.syn_rules.iter() {
-            buff.push_str("    ");
             let ty = if self.node_types.contains(&rule.name) {
                 format!("Some({})", scream(&rule.name))
             } else {
                 "None".to_owned()
             };
             let alts = rule.alts.iter().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
-            buff.push_str(&format!(r#"syn::Rule {{ name: "{}", ty: {}, alts: &[{}] }},"#,
-                                   rule.name, ty, alts.join(", ")));
-            buff.push_str("\n");
+            line!(buff, r#"syn::Rule {{ name: "{}", ty: {}, alts: &[{}] }},"#,
+                                   rule.name, ty, alts.join(", "));
         }
-        buff.push_str("];\n");
+        buff.dedent();
+        buff.line("];");
     }
 
     fn generate_alt(&self, alt: &Alt) -> String {
@@ -93,3 +106,37 @@ fn scream(word: &str) -> String {
 }
 
 
+struct Buff {
+    inner: String,
+    indent: usize
+}
+
+impl Buff {
+    fn new() -> Buff {
+        Buff { inner: String::new(), indent: 0 }
+    }
+
+    fn line(&mut self, line: &str) {
+        for _ in 0..self.indent {
+            self.inner.push_str("    ");
+        }
+        self.inner.push_str(line);
+        self.inner.push('\n');
+    }
+
+    fn blank_line(&mut self) {
+        self.inner.push('\n');
+    }
+
+    fn indent(&mut self) {
+        self.indent += 1;
+    }
+
+    fn dedent(&mut self) {
+        self.indent -= 1;
+    }
+
+    fn done(self) -> String {
+        self.inner
+    }
+}
