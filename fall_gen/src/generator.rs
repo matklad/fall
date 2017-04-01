@@ -59,6 +59,13 @@ impl Grammar {
         if has_syn_rules {
             buff.blank_line();
             self.generate_syn_rules(&mut buff);
+            buff.blank_line();
+            buff.line("pub fn parse(text: String) -> ::fall_tree::File {");
+            buff.indent();
+            buff.line("register_node_types();");
+            buff.line("::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))");
+            buff.dedent();
+            buff.line("}")
         }
 
         buff.done()

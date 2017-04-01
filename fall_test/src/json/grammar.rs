@@ -64,3 +64,8 @@ pub const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }] },
     syn::Rule { ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }] },
 ];
+
+pub fn parse(text: String) -> ::fall_tree::File {
+    register_node_types();
+    ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+}
