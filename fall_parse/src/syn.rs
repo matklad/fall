@@ -1,4 +1,4 @@
-use fall_tree::{File, NodeType};
+use fall_tree::NodeType;
 use TreeBuilder;
 
 pub struct Rule {
