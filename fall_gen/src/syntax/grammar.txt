@@ -15,7 +15,7 @@ nodes {
   string
   nodes_def
   tokenizer_def
-  token_def
+  lex_rule
   syn_rule
   alt
   part

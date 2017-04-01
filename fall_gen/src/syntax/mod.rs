@@ -54,13 +54,13 @@ fn parse_tokenizer(b: &mut TreeBuilder) -> bool {
 }
 
 fn parse_lex_rule(b: &mut TreeBuilder) -> bool {
-    b.start(TOKEN_DEF);
+    b.start(LEX_RULE);
     if !b.try_eat(IDENT) {
-        b.rollback(TOKEN_DEF);
+        b.rollback(LEX_RULE);
         return false
     }
     parse_string(b) && parse_string(b);
-    b.finish(TOKEN_DEF);
+    b.finish(LEX_RULE);
     true
 }
 
@@ -183,15 +183,15 @@ FILE
   TOKENIZER_DEF
     KW_TOKENIZER "tokenizer"
     LBRACE "{"
-    TOKEN_DEF
+    LEX_RULE
       IDENT "foo"
       STRING
         SIMPLE_STRING "\"foo\""
-    TOKEN_DEF
+    LEX_RULE
       IDENT "id"
       STRING
         SIMPLE_STRING "r\"\\w+\""
-    TOKEN_DEF
+    LEX_RULE
       IDENT "ext"
       STRING
         SIMPLE_STRING "\"ext\""

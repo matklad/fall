@@ -78,7 +78,7 @@ fn lift_node_types(node: Node) -> Result<Vec<String>> {
 }
 
 fn lift_lex_rules(node: Node) -> Result<Vec<LexRule>> {
-    children_of_type(node, TOKEN_DEF)
+    children_of_type(node, LEX_RULE)
         .map(lift_lex_rule)
         .collect()
 }
