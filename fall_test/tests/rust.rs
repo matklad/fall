@@ -10,7 +10,7 @@ fn ast(code: &str) -> String {
 }
 
 #[test]
-fn empty_nodes() {
+fn opt_pub() {
     match_ast(&ast("\
 struct Foo {}
 fn bar() {}
