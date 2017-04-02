@@ -22,7 +22,7 @@ fn check_by_path<T: AsRef<Path>>(grammar: T) {
 
 fn do_test(grammar: &str, expected: &str) {
     let dir = TempDir::new("gen-tests").unwrap();
-    let grammar_path = dir.path().join("grammar.txt");
+    let grammar_path = dir.path().join("grammar.fall");
     file::put_text(&grammar_path, grammar).unwrap();
 
     let output = process::Command::new(generator_path())
@@ -47,7 +47,7 @@ fn do_test(grammar: &str, expected: &str) {
 fn test_grammars_are_fresh() {
     check_by_path("../fall_test/src/sexp.txt");
     check_by_path("../fall_test/src/rust.txt");
-    check_by_path("../fall_test/src/weird/grammar.txt");
+    check_by_path("../fall_test/src/weird/grammar.fall");
     check_by_path("../fall_test/src/json.txt");
     check_by_path("./src/syntax.txt");
 }

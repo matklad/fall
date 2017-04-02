@@ -10,3 +10,11 @@ tokenizer {
   raw_string r#"r#+""# 'super::parse_raw_string'
   atom r"\w+"
 }
+
+rule file {
+  raw_string | empty atom empty
+}
+
+rule empty { <opt none> }
+
+rule none { }
