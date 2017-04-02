@@ -6,9 +6,9 @@ nodes {
 }
 
 tokenizer {
+  lparen     '('
+  rparen     ')'
   whitespace r"\s+"
-  lparen     r"\("
-  rparen     r"\)"
   atom       r"\w+"
 }
 

@@ -9,17 +9,18 @@ nodes {
 }
 
 tokenizer {
+  lbrace     '{'
+  rbrace     '}'
+  lbrack     '['
+  rbrack     ']'
+  colon      ':'
+  comma      ','
+  null       'null'
+
   whitespace r"\s+"
-  lbrace     "{"
-  rbrace     "}"
-  lbrack     "["
-  rbrack     "]"
-  colon      ":"
-  comma      ","
+  bool       r"true|false"
   string     r#""[^"]*""#
   number     r"\d+"
-  null       "null"
-  bool       r"true|false"
 }
 
 rule file {

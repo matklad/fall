@@ -24,7 +24,6 @@ nodes {
 }
 
 tokenizer {
-    whitespace r"\s+"
     eq '='
     pipe '|'
     star '*'
@@ -34,12 +33,14 @@ tokenizer {
     rangle '>'
     lparen '('
     rparen ')'
-    simple_string r#"("([^"\\]|\\.)*")|('([^'\\]|\\.)*')"#
-    hash_string r"r#*" "parse_raw_string"
-    kw_nodes "nodes"
-    kw_tokenizer "tokenizer"
-    kw_rule "rule"
-    kw_verbatim "verbatim"
+    kw_nodes 'nodes'
+    kw_tokenizer 'tokenizer'
+    kw_rule 'rule'
+    kw_verbatim 'verbatim'
+
+    whitespace r"\s+"
+    simple_string r#"'([^'\\]|\\.)*'"#
+    hash_string r"r#*" 'parse_raw_string'
     ident r"\w+"
 }
 

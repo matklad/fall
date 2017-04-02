@@ -14,14 +14,14 @@ nodes {
 }
 
 tokenizer {
+  lparen '('
+  rparen ')'
+  lbrace '{'
+  rbrace '}'
+  pub 'pub'
+  struct 'struct'
+  fn 'fn'
   whitespace r"\s+"
-  lparen "("
-  rparen ")"
-  lbrace "{"
-  rbrace "}"
-  pub "pub"
-  struct "struct"
-  fn "fn"
   ident r"\w+"
 }
 

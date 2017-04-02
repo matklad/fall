@@ -42,17 +42,17 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: "\\s+", f: None },
     Rule { ty: LBRACE, re: "\\{", f: None },
     Rule { ty: RBRACE, re: "\\}", f: None },
     Rule { ty: LBRACK, re: "\\[", f: None },
     Rule { ty: RBRACK, re: "\\]", f: None },
     Rule { ty: COLON, re: ":", f: None },
     Rule { ty: COMMA, re: ",", f: None },
+    Rule { ty: NULL, re: "null", f: None },
+    Rule { ty: WHITESPACE, re: "\\s+", f: None },
+    Rule { ty: BOOL, re: "true|false", f: None },
     Rule { ty: STRING, re: "\"[^\"]*\"", f: None },
     Rule { ty: NUMBER, re: "\\d+", f: None },
-    Rule { ty: NULL, re: "null", f: None },
-    Rule { ty: BOOL, re: "true|false", f: None },
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[
