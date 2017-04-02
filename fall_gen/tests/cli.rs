@@ -29,8 +29,6 @@ fn do_test(grammar: &str, expected: &str) {
         .arg(&grammar_path)
         .output()
         .expect("Failed to execute process");
-    println!("{}", String::from_utf8_lossy(&output.stdout));
-    println!("{}", String::from_utf8_lossy(&output.stderr));
 
     if !output.status.success() {
         panic!("Generator exited with code {:?}", output.status.code())

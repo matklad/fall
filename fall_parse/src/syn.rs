@@ -18,7 +18,8 @@ pub struct Alt {
 pub enum Part {
     Rule(usize),
     Token(NodeType),
-    Rep(Alt)
+    Rep(Alt),
+    Opt(Alt)
 }
 
 impl<'r> Parser<'r> {
@@ -51,6 +52,10 @@ impl<'r> Parser<'r> {
             Part::Rule(id) => self.parse_rule(&self.rules[id], b),
             Part::Rep(ref a) => {
                 while self.parse_alt(a, b) {}
+                true
+            }
+            Part::Opt(ref a) => {
+                self.parse_alt(a, b);
                 true
             }
         }

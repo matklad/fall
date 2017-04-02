@@ -2,7 +2,7 @@ use std::ascii::AsciiExt;
 
 use ast::*;
 
-macro_rules! line {
+macro_rules! ln {
     ($name:ident, $($e:expr),*) => { $name.line(&format!($($e),*)) };
 }
 
@@ -21,7 +21,7 @@ impl Grammar {
         buff.blank_line();
 
         for (i, t) in self.node_types.iter().enumerate() {
-            line!(buff, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i);
+            ln!(buff, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i);
         }
         buff.blank_line();
 
@@ -32,7 +32,7 @@ impl Grammar {
             buff.line("REGISTER.call_once(||{");
             buff.indent();
             for t in self.node_types.iter() {
-                line!(buff, "{}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t));
+                ln!(buff, "{}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t));
             }
             buff.dedent();
             buff.line("});");
@@ -49,7 +49,7 @@ impl Grammar {
                     None => "None".to_owned(),
                     Some(ref f) => format!("Some({})", f)
                 };
-                line!(buff, "Rule {{ ty: {}, re: {}, f: {} }},", scream(&rule.ty), rule.re, f);
+                ln!(buff, "Rule {{ ty: {}, re: {}, f: {} }},", scream(&rule.ty), rule.re, f);
             }
             buff.dedent();
         }
@@ -81,7 +81,7 @@ impl Grammar {
                 "None".to_owned()
             };
             let alts = rule.alts.iter().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
-            line!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
+            ln!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
         }
         buff.dedent();
         buff.line("];");
@@ -114,10 +114,13 @@ impl Grammar {
                     format!("syn::Part::Rule({:?})", id)
                 }
             }
-            Part::Call(_, ref alts) => {
-                //                assert_eq!(op, "rep");
-                //                assert_eq!(alts.len(), 1);
-                format!("syn::Part::Rep({})", self.generate_alt(&alts[0]))
+            Part::Call(ref op, ref alts) => {
+                let o = match op.as_ref() {
+                    "rep" => "Rep",
+                    "opt" => "Opt",
+                    _ => unimplemented!(),
+                };
+                format!("syn::Part::{}({})", o, self.generate_alt(&alts[0]))
             }
         }
     }
