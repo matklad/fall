@@ -4,7 +4,7 @@ extern crate fall_parse;
 
 use fall_tree::dump_file;
 
-mod syntax;
+pub mod syntax;
 mod ast;
 
 mod generator;

@@ -28,7 +28,7 @@ impl<'f> Node<'f> {
         self.0.range()
     }
 
-    pub fn text(&self) -> &str {
+    pub fn text(&self) -> &'f str {
         self.0.text()
     }
 

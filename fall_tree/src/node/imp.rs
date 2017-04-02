@@ -34,7 +34,7 @@ impl<'f> NodeImpl<'f> {
         self.data().range
     }
 
-    pub fn text(&self) -> &str {
+    pub fn text(&self) -> &'f str {
         &self.file.text[self.range()]
     }
 
