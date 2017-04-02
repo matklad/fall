@@ -31,7 +31,8 @@ fn do_test(grammar: &str, expected: &str) {
         .expect("Failed to execute process");
 
     if !output.status.success() {
-        panic!("Generator exited with code {:?}", output.status.code())
+        panic!("Generator exited with code {:?}\n----\n{}\n----\n",
+               output.status.code(), std::str::from_utf8(&output.stderr).unwrap())
     }
 
     let actual = file::get_text(grammar_path.with_extension("rs")).unwrap();

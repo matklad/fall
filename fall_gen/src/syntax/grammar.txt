@@ -39,3 +39,20 @@ tokenizer {
     kw_rule "rule"
     ident r"\w+"
 }
+
+rule file { nodes_def tokenizer_def <rep syn_rule> }
+
+rule nodes_def { kw_nodes <commit> lbrace <rep ident> rbrace }
+
+rule tokenizer_def { kw_tokenizer <commit> lbrace <rep lex_rule> rbrace }
+
+rule lex_rule { ident <commit> string <opt string> }
+
+rule syn_rule { kw_rule <commit> ident lbrace syn_rule_body rbrace}
+rule syn_rule_body { <opt alt> <rep pipe alt> }
+
+rule alt { <rep part> }
+
+rule part { ident | langle ident syn_rule_body rangle }
+
+rule string { simple_string | hash_string }
