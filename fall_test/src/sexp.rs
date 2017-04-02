@@ -22,10 +22,10 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+", f: None },
-    Rule { ty: LPAREN, re: r"\(", f: None },
-    Rule { ty: RPAREN, re: r"\)", f: None },
-    Rule { ty: ATOM, re: r"\w+", f: None },
+    Rule { ty: WHITESPACE, re: "\\s+", f: None },
+    Rule { ty: LPAREN, re: "\\(", f: None },
+    Rule { ty: RPAREN, re: "\\)", f: None },
+    Rule { ty: ATOM, re: "\\w+", f: None },
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[

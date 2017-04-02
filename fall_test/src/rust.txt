@@ -15,10 +15,10 @@ nodes {
 
 tokenizer {
   whitespace r"\s+"
-  lparen r"\("
-  rparen r"\)"
-  lbrace r"\{"
-  rbrace r"\}"
+  lparen "("
+  rparen ")"
+  lbrace "{"
+  rbrace "}"
   pub "pub"
   struct "struct"
   fn "fn"

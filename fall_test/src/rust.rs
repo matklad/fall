@@ -34,15 +34,15 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+", f: None },
-    Rule { ty: LPAREN, re: r"\(", f: None },
-    Rule { ty: RPAREN, re: r"\)", f: None },
-    Rule { ty: LBRACE, re: r"\{", f: None },
-    Rule { ty: RBRACE, re: r"\}", f: None },
+    Rule { ty: WHITESPACE, re: "\\s+", f: None },
+    Rule { ty: LPAREN, re: "\\(", f: None },
+    Rule { ty: RPAREN, re: "\\)", f: None },
+    Rule { ty: LBRACE, re: "\\{", f: None },
+    Rule { ty: RBRACE, re: "\\}", f: None },
     Rule { ty: PUB, re: "pub", f: None },
     Rule { ty: STRUCT, re: "struct", f: None },
     Rule { ty: FN, re: "fn", f: None },
-    Rule { ty: IDENT, re: r"\w+", f: None },
+    Rule { ty: IDENT, re: "\\w+", f: None },
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[

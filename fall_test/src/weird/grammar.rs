@@ -19,7 +19,7 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: WHITESPACE, re: "\\s+", f: None },
     Rule { ty: RAW_STRING, re: "r#+\"", f: Some(super::parse_raw_string) },
-    Rule { ty: ATOM, re: r"\w+", f: None },
+    Rule { ty: ATOM, re: "\\w+", f: None },
 ];

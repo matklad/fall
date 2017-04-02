@@ -1,3 +1,4 @@
+extern crate regex;
 extern crate fall_tree;
 extern crate fall_parse;
 

@@ -5,6 +5,7 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 clap = "2.20"
+regex = "0.2"
 fall-tree = { path = "../fall_tree" }
 fall-parse = { path = "../fall_parse" }
 fall-watch = { path = "../fall_watch" }

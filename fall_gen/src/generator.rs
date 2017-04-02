@@ -49,7 +49,7 @@ impl Grammar {
                     None => "None".to_owned(),
                     Some(ref f) => format!("Some({})", f)
                 };
-                ln!(buff, "Rule {{ ty: {}, re: {}, f: {} }},", scream(&rule.ty), rule.re, f);
+                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},", scream(&rule.ty), rule.re, f);
             }
             buff.dedent();
         }

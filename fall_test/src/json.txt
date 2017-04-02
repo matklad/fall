@@ -10,15 +10,15 @@ nodes {
 
 tokenizer {
   whitespace r"\s+"
-  lbrace     r"\{"
-  rbrace     r"\}"
-  lbrack     r"\["
-  rbrack     r"\]"
-  colon      r":"
-  comma      r","
+  lbrace     "{"
+  rbrace     "}"
+  lbrack     "["
+  rbrack     "]"
+  colon      ":"
+  comma      ","
   string     r#""[^"]*""#
   number     r"\d+"
-  null       r"null"
+  null       "null"
   bool       r"true|false"
 }
 

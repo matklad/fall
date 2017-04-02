@@ -99,17 +99,31 @@ fn lift_lex_rule(node: Node) -> Result<LexRule> {
         child_of_type(node, IDENT).ok_or(error("Missing name in rule"))?
     );
 
-    let mut pats = children_of_type(node, STRING);
-    let re = node_text(
-        pats.next().ok_or(error(format!("Missing pattern in rule {:?}", node.text())))?
-    );
-    let f = pats.next().map(|n| {
-        let t = n.text();
-        assert!(t.starts_with("\"") && t.ends_with("\""));
-        t[1..t.len() - 1].to_owned()
+    let (re, f) = {
+        let mut ss = children_of_type(node, STRING);
+        let re = ss.next().ok_or(error(format!("Missing pattern in rule {:?}", node.text())))?;
+        let f = ss.next();
+        assert!(ss.next().is_none());
+        (re, f)
+    };
+
+    let re = if re.text().starts_with('r') {
+        lit_body(re.text()).to_owned()
+    } else {
+        ::regex::escape(lit_body(re.text()))
+    };
+
+    return Ok(LexRule {
+        ty: ty,
+        re: re,
+        f: f.map(|f| lit_body(f.text()).to_owned())
     });
-    assert!(pats.next().is_none());
-    Ok(LexRule { ty: ty, re: re, f: f })
+
+    fn lit_body(lit: &str) -> &str {
+        let s = lit.find('"').unwrap();
+        let e = lit.rfind('"').unwrap();
+        &lit[s + 1..e]
+    }
 }
 
 fn lift_syn_rule(node: Node) -> Result<SynRule> {

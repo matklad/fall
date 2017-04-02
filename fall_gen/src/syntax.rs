@@ -62,23 +62,23 @@ pub fn register_node_types() {
 }
 
 pub const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: r"\s+", f: None },
+    Rule { ty: WHITESPACE, re: "\\s+", f: None },
     Rule { ty: EQ, re: "=", f: None },
-    Rule { ty: PIPE, re: r"\|", f: None },
-    Rule { ty: STAR, re: r"\*", f: None },
-    Rule { ty: LBRACE, re: r"\{", f: None },
-    Rule { ty: RBRACE, re: r"\}", f: None },
+    Rule { ty: PIPE, re: "\\|", f: None },
+    Rule { ty: STAR, re: "\\*", f: None },
+    Rule { ty: LBRACE, re: "\\{", f: None },
+    Rule { ty: RBRACE, re: "\\}", f: None },
     Rule { ty: LANGLE, re: "<", f: None },
     Rule { ty: RANGLE, re: ">", f: None },
-    Rule { ty: LPAREN, re: r"\(", f: None },
-    Rule { ty: RPAREN, re: r"\)", f: None },
-    Rule { ty: SIMPLE_STRING, re: r#"r?"([^"\\]|\\.)*""#, f: None },
+    Rule { ty: LPAREN, re: "\\(", f: None },
+    Rule { ty: RPAREN, re: "\\)", f: None },
+    Rule { ty: SIMPLE_STRING, re: "r?\"([^\"\\\\]|\\\\.)*\"", f: None },
     Rule { ty: HASH_STRING, re: "r#+", f: Some(parse_raw_string) },
     Rule { ty: KW_NODES, re: "nodes", f: None },
     Rule { ty: KW_TOKENIZER, re: "tokenizer", f: None },
     Rule { ty: KW_RULE, re: "rule", f: None },
     Rule { ty: KW_VERBATIM, re: "verbatim", f: None },
-    Rule { ty: IDENT, re: r"\w+", f: None },
+    Rule { ty: IDENT, re: "\\w+", f: None },
 ];
 
 pub const PARSER: &'static [syn::Rule] = &[
