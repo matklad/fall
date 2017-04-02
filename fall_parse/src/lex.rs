@@ -20,7 +20,7 @@ pub fn tokenize<'t>(text: &'t str, tokenizer: &[Rule]) -> TokenIter<'t> {
         rest: text,
         offset: 0,
         rules: tokenizer.iter().map(|r| {
-            (r.ty, Regex::new(&format!("^{}", r.re)).unwrap(), r.f)
+            (r.ty, Regex::new(&format!("^({})", r.re)).unwrap(), r.f)
         }).collect(),
     }
 }
