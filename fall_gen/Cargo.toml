@@ -6,6 +6,10 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [dependencies]
 clap = "2.20"
 regex = "0.2"
+serde = "*"
+serde_derive = "*"
+jsonrpc-core = { git = "https://github.com/paritytech/jsonrpc" }
+jsonrpc-minihttp-server = { git = "https://github.com/paritytech/jsonrpc" }
 fall-tree = { path = "../fall_tree" }
 fall-parse = { path = "../fall_parse" }
 fall-watch = { path = "../fall_watch" }
