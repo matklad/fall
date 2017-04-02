@@ -28,7 +28,7 @@ impl Grammar {
         }
         buff.blank_line();
 
-        buff.line("pub fn register_node_types() {");
+        buff.line("fn register_node_types() {");
         {
             buff.indent();
             buff.line("static REGISTER: Once = ONCE_INIT;");
@@ -44,7 +44,7 @@ impl Grammar {
         buff.line("}");
         buff.blank_line();
 
-        buff.line("pub const TOKENIZER: &'static [Rule] = &[");
+        buff.line("const TOKENIZER: &'static [Rule] = &[");
         {
             buff.indent();
             for rule in self.lex_rules.iter() {
@@ -80,7 +80,7 @@ impl Grammar {
     }
 
     fn generate_syn_rules(&self, buff: &mut Buff) {
-        buff.line("pub const PARSER: &'static [syn::Rule] = &[");
+        buff.line("const PARSER: &'static [syn::Rule] = &[");
         buff.indent();
         for rule in self.syn_rules.iter() {
             let ty = if self.node_types.contains(&rule.name) {

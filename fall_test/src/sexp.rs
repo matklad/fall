@@ -10,7 +10,7 @@ pub const RPAREN    : NodeType = NodeType(102);
 pub const FILE      : NodeType = NodeType(103);
 pub const LIST      : NodeType = NodeType(104);
 
-pub fn register_node_types() {
+fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
     REGISTER.call_once(||{
         ATOM.register(NodeTypeInfo { name: "ATOM" });
@@ -21,14 +21,14 @@ pub fn register_node_types() {
     });
 }
 
-pub const TOKENIZER: &'static [Rule] = &[
+const TOKENIZER: &'static [Rule] = &[
     Rule { ty: LPAREN, re: "\\(", f: None },
     Rule { ty: RPAREN, re: "\\)", f: None },
     Rule { ty: WHITESPACE, re: "\\s+", f: None },
     Rule { ty: ATOM, re: "\\w+", f: None },
 ];
 
-pub const PARSER: &'static [syn::Rule] = &[
+const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None })], commit: None }] },
     syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Token(ATOM)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(2)], commit: None }] },
     syn::Rule { ty: Some(LIST), alts: &[syn::Alt { parts: &[syn::Part::Token(LPAREN), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }), syn::Part::Token(RPAREN)], commit: None }] },

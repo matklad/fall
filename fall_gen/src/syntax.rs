@@ -30,7 +30,7 @@ pub const SYN_RULE  : NodeType = NodeType(122);
 pub const ALT       : NodeType = NodeType(123);
 pub const PART      : NodeType = NodeType(124);
 
-pub fn register_node_types() {
+fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
     REGISTER.call_once(||{
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
@@ -61,7 +61,7 @@ pub fn register_node_types() {
     });
 }
 
-pub const TOKENIZER: &'static [Rule] = &[
+const TOKENIZER: &'static [Rule] = &[
     Rule { ty: EQ, re: "=", f: None },
     Rule { ty: PIPE, re: "\\|", f: None },
     Rule { ty: STAR, re: "\\*", f: None },
@@ -81,7 +81,7 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: IDENT, re: "\\w+", f: None },
 ];
 
-pub const PARSER: &'static [syn::Rule] = &[
+const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Rule(9)], commit: None }] },
     syn::Rule { ty: Some(NODES_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_NODES), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
     syn::Rule { ty: Some(TOKENIZER_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_TOKENIZER), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },

@@ -16,7 +16,7 @@ pub const FILE      : NodeType = NodeType(108);
 pub const STRUCT_DEF: NodeType = NodeType(109);
 pub const FN_DEF    : NodeType = NodeType(110);
 
-pub fn register_node_types() {
+fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
     REGISTER.call_once(||{
         LPAREN.register(NodeTypeInfo { name: "LPAREN" });
@@ -33,7 +33,7 @@ pub fn register_node_types() {
     });
 }
 
-pub const TOKENIZER: &'static [Rule] = &[
+const TOKENIZER: &'static [Rule] = &[
     Rule { ty: LPAREN, re: "\\(", f: None },
     Rule { ty: RPAREN, re: "\\)", f: None },
     Rule { ty: LBRACE, re: "\\{", f: None },
@@ -45,7 +45,7 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: IDENT, re: "\\w+", f: None },
 ];
 
-pub const PARSER: &'static [syn::Rule] = &[
+const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None })], commit: None }] },
     syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Rule(2)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }] },
     syn::Rule { ty: Some(FN_DEF), alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Token(PUB)], commit: None }), syn::Part::Token(FN), syn::Part::Token(IDENT), syn::Part::Token(LPAREN), syn::Part::Token(RPAREN), syn::Part::Token(LBRACE), syn::Part::Token(RBRACE)], commit: None }] },
