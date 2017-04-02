@@ -43,9 +43,8 @@ FILE
       WHITESPACE " "
       ATOM "world"
       WHITESPACE " "
-      ERROR
-        RPAREN ")"
-        WHITESPACE "  "
-        RPAREN ")"
+      RPAREN ")"
+    WHITESPACE "  "
+    RPAREN ")"
 "#)
 }
