@@ -34,7 +34,7 @@ tokenizer {
     rangle ">"
     lparen "("
     rparen ")"
-    simple_string r#"r?"([^"\\]|\\.)*""#
+    simple_string r#""([^"\\]|\\.)*""#
     hash_string r"r#*" "parse_raw_string"
     kw_nodes "nodes"
     kw_tokenizer "tokenizer"

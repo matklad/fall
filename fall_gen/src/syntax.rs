@@ -72,7 +72,7 @@ pub const TOKENIZER: &'static [Rule] = &[
     Rule { ty: RANGLE, re: ">", f: None },
     Rule { ty: LPAREN, re: "\\(", f: None },
     Rule { ty: RPAREN, re: "\\)", f: None },
-    Rule { ty: SIMPLE_STRING, re: "r?\"([^\"\\\\]|\\\\.)*\"", f: None },
+    Rule { ty: SIMPLE_STRING, re: "\"([^\"\\\\]|\\\\.)*\"", f: None },
     Rule { ty: HASH_STRING, re: "r#*", f: Some(parse_raw_string) },
     Rule { ty: KW_NODES, re: "nodes", f: None },
     Rule { ty: KW_TOKENIZER, re: "tokenizer", f: None },
