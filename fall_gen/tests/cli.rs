@@ -49,5 +49,5 @@ fn test_grammars_are_fresh() {
     check_by_path("../fall_test/src/rust.txt");
     check_by_path("../fall_test/src/weird/grammar.txt");
     check_by_path("../fall_test/src/json.txt");
-//    check_by_path("./src/syntax.txt");
+    check_by_path("./src/syntax.txt");
 }

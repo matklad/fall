@@ -35,7 +35,7 @@ tokenizer {
     lparen "("
     rparen ")"
     simple_string r#"r?"([^"\\]|\\.)*""#
-    hash_string r"r#+" "parse_raw_string"
+    hash_string r"r#*" "parse_raw_string"
     kw_nodes "nodes"
     kw_tokenizer "tokenizer"
     kw_rule "rule"
