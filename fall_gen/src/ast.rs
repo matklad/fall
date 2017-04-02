@@ -120,8 +120,9 @@ fn lift_lex_rule(node: Node) -> Result<LexRule> {
     });
 
     fn lit_body(lit: &str) -> &str {
-        let s = lit.find('"').unwrap();
-        let e = lit.rfind('"').unwrap();
+        let q = if lit.starts_with('\'') { '\'' } else { '"' };
+        let s = lit.find(q).unwrap();
+        let e = lit.rfind(q).unwrap();
         &lit[s + 1..e]
     }
 }

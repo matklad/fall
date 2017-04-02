@@ -25,16 +25,16 @@ nodes {
 
 tokenizer {
     whitespace r"\s+"
-    eq "="
-    pipe "|"
-    star "*"
-    lbrace "{"
-    rbrace "}"
-    langle "<"
-    rangle ">"
-    lparen "("
-    rparen ")"
-    simple_string r#"("([^"\\]|\\.)*")"#
+    eq '='
+    pipe '|'
+    star '*'
+    lbrace '{'
+    rbrace '}'
+    langle '<'
+    rangle '>'
+    lparen '('
+    rparen ')'
+    simple_string r#"("([^"\\]|\\.)*")|('([^'\\]|\\.)*')"#
     hash_string r"r#*" "parse_raw_string"
     kw_nodes "nodes"
     kw_tokenizer "tokenizer"
