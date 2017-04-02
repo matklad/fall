@@ -15,4 +15,4 @@ tokenizer {
 rule file { <rep sexp> }
 
 rule sexp { atom | list }
-rule list { lparen <rep sexp> rparen }
+rule list { '(' <rep sexp> ')' }

@@ -14,6 +14,7 @@ pub struct Grammar {
 #[derive(Debug)]
 pub struct LexRule {
     pub ty: String,
+    pub name: Option<String>,
     pub re: String,
     pub f: Option<String>,
 }
@@ -107,16 +108,15 @@ fn lift_lex_rule(node: Node) -> Result<LexRule> {
         (re, f)
     };
 
-    let re = if re.text().starts_with('r') {
-        lit_body(re.text()).to_owned()
-    } else {
-        ::regex::escape(lit_body(re.text()))
-    };
-
     return Ok(LexRule {
         ty: ty,
-        re: re,
-        f: f.map(|f| lit_body(f.text()).to_owned())
+        name: if re.text().starts_with('\'') { Some(node_text(re)) } else { None },
+        re: if re.text().starts_with('r') {
+            lit_body(re.text()).to_owned()
+        } else {
+            ::regex::escape(lit_body(re.text()))
+        },
+        f: f.map(|f| lit_body(f.text()).to_owned()),
     });
 
     fn lit_body(lit: &str) -> &str {
@@ -141,7 +141,7 @@ fn lift_alt(node: Node) -> Alt {
 fn lift_part(node: Node) -> Part {
     let mut children = node.children();
     let first_child = children.next().unwrap();
-    if first_child.ty() == IDENT {
+    if first_child.ty() == IDENT || first_child.ty() == SIMPLE_STRING {
         assert!(children.next().is_none());
         return Part::Rule(node_text(first_child));
     }

@@ -6,6 +6,12 @@ macro_rules! ln {
     ($name:ident, $($e:expr),*) => { $name.line(&format!($($e),*)) };
 }
 
+impl LexRule {
+    fn name(&self) -> &str {
+        self.name.as_ref().unwrap_or(&self.ty)
+    }
+}
+
 impl Grammar {
     pub fn generate(&self) -> String {
         let mut buff = Buff::new();
@@ -113,11 +119,11 @@ impl Grammar {
     fn generate_part(&self, part: &Part) -> String {
         match *part {
             Part::Rule(ref name) => {
-                if self.lex_rules.iter().any(|l| &l.ty == name) {
-                    format!("syn::Part::Token({})", scream(name))
+                if let Some(r) = self.find_lex_rule(name) {
+                    format!("syn::Part::Token({})", scream(&r.ty))
                 } else {
                     let id = self.syn_rules.iter().position(|r| r.name == name.as_ref())
-                        .expect(&format!("Not a rule or token {}", name));
+                        .expect(&format!("Not a rule or token: `{}`", name));
                     format!("syn::Part::Rule({:?})", id)
                 }
             }
@@ -130,6 +136,10 @@ impl Grammar {
                 format!("syn::Part::{}({})", o, self.generate_alt(&alts[0]))
             }
         }
+    }
+
+    fn find_lex_rule(&self, name: &str) -> Option<&LexRule> {
+        self.lex_rules.iter().find(|r| r.name() == name)
     }
 }
 

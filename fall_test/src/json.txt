@@ -28,23 +28,23 @@ rule file {
 }
 
 rule object {
-  lbrace <commit>
+  '{' <commit>
     object_body
-  rbrace
+  '}'
 }
 
-rule object_body { <rep field comma> }
+rule object_body { <rep field ','> }
 
 rule field {
-  string <commit> colon value
+  string <commit> ':' value
 }
 
 rule array {
-  lbrack <commit>
-    <rep value comma>
-  rbrack
+  '[' <commit>
+    <rep value ','>
+  ']'
 }
 
 rule value { primitive | object | array }
 
-rule primitive { null | number | string | bool }
+rule primitive { 'null' | number | string | bool }

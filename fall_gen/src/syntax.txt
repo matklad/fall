@@ -46,22 +46,28 @@ tokenizer {
 
 rule file { nodes_def tokenizer_def <rep syn_rule> verbatim_def }
 
-rule nodes_def { kw_nodes <commit> lbrace <rep ident> rbrace }
+rule nodes_def {
+  'nodes' <commit> '{' <rep ident> '}'
+}
 
-rule tokenizer_def { kw_tokenizer <commit> lbrace <rep lex_rule> rbrace }
+rule tokenizer_def {
+  'tokenizer' <commit> '{' <rep lex_rule> '}'
+}
 
 rule lex_rule { ident <commit> string <opt string> }
 
-rule syn_rule { kw_rule <commit> ident lbrace syn_rule_body rbrace}
-rule syn_rule_body { <opt alt> <rep pipe alt> }
+rule syn_rule {
+  'rule' <commit> ident '{' syn_rule_body '}'
+}
+rule syn_rule_body { <opt alt> <rep '|' alt> }
 
 rule alt { <rep part> }
 
-rule part { ident | langle ident syn_rule_body rangle }
+rule part { ident | simple_string | '<' ident syn_rule_body '>' }
 
 rule string { simple_string | hash_string }
 
-rule verbatim_def { kw_verbatim hash_string }
+rule verbatim_def { 'verbatim' hash_string }
 
 verbatim r#########"
 

@@ -89,7 +89,7 @@ pub const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(SYN_RULE), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_RULE), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rule(5), syn::Part::Token(RBRACE)], commit: Some(1) }] },
     syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(PIPE), syn::Part::Rule(6)], commit: None })], commit: None }] },
     syn::Rule { ty: Some(ALT), alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(7)], commit: None })], commit: None }] },
-    syn::Rule { ty: Some(PART), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }] },
+    syn::Rule { ty: Some(PART), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }] },
     syn::Rule { ty: Some(STRING), alts: &[syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(HASH_STRING)], commit: None }] },
     syn::Rule { ty: Some(VERBATIM_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_VERBATIM), syn::Part::Token(HASH_STRING)], commit: None }] },
 ];
