@@ -24,3 +24,16 @@ tokenizer {
   fn "fn"
   ident r"\w+"
 }
+
+rule file { <rep fn_or_struct > }
+rule fn_or_struct { fn_def | struct_def }
+
+rule fn_def {
+  <opt pub> fn ident
+  lparen rparen lbrace rbrace
+}
+
+rule struct_def {
+  <opt pub> struct ident
+  lbrace rbrace
+}
