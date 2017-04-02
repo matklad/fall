@@ -8,6 +8,7 @@ pub struct Grammar {
     pub node_types: Vec<String>,
     pub lex_rules: Vec<LexRule>,
     pub syn_rules: Vec<SynRule>,
+    pub verbatim: Option<String>,
 }
 
 #[derive(Debug)]
@@ -60,11 +61,22 @@ pub fn lift(node: Node) -> Result<Grammar> {
     let node_types = child_of_type_exn(node, NODES_DEF);
     let lex_rules = child_of_type_exn(node, TOKENIZER_DEF);
     let syn_rules = children_of_type(node, SYN_RULE);
+    let verbatim = match child_of_type(node, VERBATIM_DEF) {
+        None => None,
+        Some(n) => {
+            let hash = child_of_type_exn(n, HASH_STRING);
+            let t = hash.text();
+            let start = t.find('"').unwrap();
+            let end = t.rfind('"').unwrap();
+            Some(t[start + 1..end].to_owned())
+        }
+    };
 
     let g = Grammar {
         node_types: lift_node_types(node_types)?,
         lex_rules: lift_lex_rules(lex_rules)?,
-        syn_rules: syn_rules.map(lift_syn_rule).collect::<::std::result::Result<Vec<_>, _>>()?
+        syn_rules: syn_rules.map(lift_syn_rule).collect::<::std::result::Result<Vec<_>, _>>()?,
+        verbatim: verbatim,
     };
 
     Ok(g)

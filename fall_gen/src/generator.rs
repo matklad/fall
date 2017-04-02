@@ -68,6 +68,13 @@ impl Grammar {
             buff.line("}")
         }
 
+        if let Some(ref s) = self.verbatim {
+            buff.blank_line();
+            for l in s.trim().lines() {
+                buff.line(l)
+            }
+        }
+
         buff.done()
     }
 

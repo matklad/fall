@@ -2,6 +2,7 @@ nodes {
   kw_nodes
   kw_tokenizer
   kw_rule
+  kw_verbatim
 
   eq pipe star
   lbrace rbrace
@@ -13,6 +14,7 @@ nodes {
 
   file
   string
+  verbatim_def
   nodes_def
   tokenizer_def
   lex_rule
@@ -33,14 +35,15 @@ tokenizer {
     lparen r"\("
     rparen r"\)"
     simple_string r#"r?"([^"\\]|\\.)*""#
-    hash_string "r#+" "super::parse_raw_string"
+    hash_string "r#+" "parse_raw_string"
     kw_nodes "nodes"
     kw_tokenizer "tokenizer"
     kw_rule "rule"
+    kw_verbatim "verbatim"
     ident r"\w+"
 }
 
-rule file { nodes_def tokenizer_def <rep syn_rule> }
+rule file { nodes_def tokenizer_def <rep syn_rule> verbatim_def }
 
 rule nodes_def { kw_nodes <commit> lbrace <rep ident> rbrace }
 
@@ -56,3 +59,16 @@ rule alt { <rep part> }
 rule part { ident | langle ident syn_rule_body rangle }
 
 rule string { simple_string | hash_string }
+
+rule verbatim_def { kw_verbatim hash_string }
+
+verbatim r#########"
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
+    let closing = &q_hashes[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
+}
+
+"#########
