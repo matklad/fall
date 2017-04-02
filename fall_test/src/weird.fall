@@ -1,0 +1,31 @@
+nodes {
+  atom
+  raw_string
+  file
+  empty
+}
+
+tokenizer {
+  whitespace r"\s+"
+  raw_string r#"r#+""# 'parse_raw_string'
+  atom r"\w+"
+}
+
+rule file {
+  raw_string | empty atom empty
+}
+
+rule empty { <opt none> }
+
+rule none { }
+
+verbatim r#########"
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
+    let closing = &q_hashes[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
+}
+
+"#########

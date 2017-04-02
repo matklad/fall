@@ -21,7 +21,7 @@ fn register_node_types() {
 
 const TOKENIZER: &'static [Rule] = &[
     Rule { ty: WHITESPACE, re: "\\s+", f: None },
-    Rule { ty: RAW_STRING, re: "r#+\"", f: Some(super::parse_raw_string) },
+    Rule { ty: RAW_STRING, re: "r#+\"", f: Some(parse_raw_string) },
     Rule { ty: ATOM, re: "\\w+", f: None },
 ];
 
@@ -34,4 +34,11 @@ const PARSER: &'static [syn::Rule] = &[
 pub fn parse(text: String) -> ::fall_tree::File {
     register_node_types();
     ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+}
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
+    let closing = &q_hashes[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
