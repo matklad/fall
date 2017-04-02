@@ -15,14 +15,11 @@ impl LexRule {
 impl Grammar {
     pub fn generate(&self) -> String {
         let mut buff = Buff::new();
-        let has_syn_rules = !self.syn_rules.is_empty();
 
         buff.line("use std::sync::{Once, ONCE_INIT};");
         buff.line("use fall_tree::{NodeType, NodeTypeInfo};");
         buff.line("use fall_parse::Rule;");
-        if has_syn_rules {
-            buff.line("use fall_parse::syn;");
-        }
+        buff.line("use fall_parse::syn;");
         buff.line("pub use fall_tree::{ERROR, WHITESPACE};");
         buff.blank_line();
 
@@ -62,17 +59,15 @@ impl Grammar {
         buff.line("];");
 
 
-        if has_syn_rules {
-            buff.blank_line();
-            self.generate_syn_rules(&mut buff);
-            buff.blank_line();
-            buff.line("pub fn parse(text: String) -> ::fall_tree::File {");
-            buff.indent();
-            buff.line("register_node_types();");
-            buff.line("::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))");
-            buff.dedent();
-            buff.line("}")
-        }
+        buff.blank_line();
+        self.generate_syn_rules(&mut buff);
+        buff.blank_line();
+        buff.line("pub fn parse(text: String) -> ::fall_tree::File {");
+        buff.indent();
+        buff.line("register_node_types();");
+        buff.line("::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))");
+        buff.dedent();
+        buff.line("}");
 
         if let Some(ref s) = self.verbatim {
             buff.blank_line();

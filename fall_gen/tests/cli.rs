@@ -45,9 +45,9 @@ fn do_test(grammar: &str, expected: &str) {
 
 #[test]
 fn test_grammars_are_fresh() {
-    check_by_path("../fall_test/src/sexp.txt");
-    check_by_path("../fall_test/src/rust.txt");
+    check_by_path("../fall_test/src/sexp.fall");
+    check_by_path("../fall_test/src/rust.fall");
     check_by_path("../fall_test/src/weird/grammar.fall");
-    check_by_path("../fall_test/src/json.txt");
-    check_by_path("./src/syntax.txt");
+    check_by_path("../fall_test/src/json.fall");
+    check_by_path("./src/syntax.fall");
 }
