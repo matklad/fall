@@ -2,6 +2,7 @@ file {
   nodes_def nodes_def
   tokenizer_def tokenizer_def
   syn_rules syn_rule*
+  verbatim_def verbatim_def?
 }
 
 nodes_def {
@@ -13,10 +14,11 @@ tokenizer_def {
 }
 
 lex_rule {
-
+  node_type IDENT.text
 }
 
 syn_rule {
+  name IDENT.text
   alts alt
 }
 
@@ -26,4 +28,8 @@ alt {
 
 part {
 
+}
+
+verbatim_def {
+  verbatim HASH_STRING.text
 }

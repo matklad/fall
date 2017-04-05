@@ -7,7 +7,7 @@ nodes {
 
 tokenizer {
   whitespace r"\s+"
-  ident r"(\w|\*)+"
+  ident r"(\w|\*|\.|_|\?)+"
   lbrace '{'
   rbrace '}'
 }

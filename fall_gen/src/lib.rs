@@ -12,6 +12,7 @@ mod old_ast;
 pub mod gast;
 
 mod generator;
+mod gen2;
 
 pub use old_ast::{Grammar, LexRule, SynRule, Alt, Part, LiftError};
 

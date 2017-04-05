@@ -25,7 +25,7 @@ fn register_node_types() {
 
 const TOKENIZER: &'static [Rule] = &[
     Rule { ty: WHITESPACE, re: "\\s+", f: None },
-    Rule { ty: IDENT, re: "(\\w|\\*)+", f: None },
+    Rule { ty: IDENT, re: "(\\w|\\*|\\.|_|\\?)+", f: None },
     Rule { ty: LBRACE, re: "\\{", f: None },
     Rule { ty: RBRACE, re: "\\}", f: None },
 ];

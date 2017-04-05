@@ -17,7 +17,7 @@ pub fn generate(text: &str) -> String {
     for node in children_of_type(root, NODE) {
         let name = child_of_type_exn(node, IDENT);
         let sn = snake(name.text());
-        ln!(buff, "struct {}<'f> {{ node: Node<'f> }}", sn);
+        ln!(buff, "pub struct {}<'f> {{ node: Node<'f> }}", sn);
         ln!(buff, "impl<'f> AstNode<'f> for {}<'f> {{", sn);
         buff.indent();
         ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(name.text()));
@@ -41,22 +41,38 @@ pub fn generate(text: &str) -> String {
                 let mut ids = children_of_type(method, IDENT);
                 let name = ids.next().unwrap().text();
                 let node_type = ids.next().unwrap().text();
-                let (node_type, many) = if node_type.ends_with("*") {
-                    (&node_type[..node_type.len() - 1], true)
+                let (suffix, kind) = if node_type.ends_with("*") {
+                    ("*", MethodKind::Many)
+                } else if node_type.ends_with("?") {
+                    ("?", MethodKind::Opt)
+                } else if node_type.ends_with(".text") {
+                    (".text", MethodKind::Text)
                 } else {
-                    (node_type, false)
+                    ("", MethodKind::Single)
                 };
-                let ret_type = if many {
-                    format!("AstChildren<{}>", snake(node_type))
-                } else {
-                    snake(node_type)
+                let node_type = &node_type[..node_type.len() - suffix.len()];
+                let ret_type = match kind {
+                    MethodKind::Single => snake(node_type),
+                    MethodKind::Opt => format!("Option<{}>", snake(node_type)),
+                    MethodKind::Many => format!("AstChildren<{}>", snake(node_type)),
+                    MethodKind::Text => "&'f str".to_owned(),
                 };
-                ln!(buff, "fn {}(&self) -> {} {{", name, ret_type);
+
+                ln!(buff, "pub fn {}(&self) -> {} {{", name, ret_type);
                 buff.indent();
-                if many {
-                    ln!(buff, "AstChildren::new(self.node.children())")
-                } else {
-                    ln!(buff, "AstChildren::new(self.node.children()).next().unwrap()")
+                match kind {
+                    MethodKind::Single => {
+                        ln!(buff, "AstChildren::new(self.node.children()).next().unwrap()")
+                    }
+                    MethodKind::Opt => {
+                        ln!(buff, "AstChildren::new(self.node.children()).next()")
+                    }
+                    MethodKind::Many => {
+                        ln!(buff, "AstChildren::new(self.node.children())")
+                    }
+                    MethodKind::Text => {
+                        ln!(buff, "child_of_type_exn(self.node, {}).text()", node_type)
+                    }
                 }
                 buff.dedent();
                 buff.line("}");
@@ -67,4 +83,11 @@ pub fn generate(text: &str) -> String {
         buff.blank_line();
     }
     buff.done()
+}
+
+enum MethodKind {
+    Single,
+    Opt,
+    Many,
+    Text,
 }
