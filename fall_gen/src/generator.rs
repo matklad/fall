@@ -1,10 +1,5 @@
-use std::ascii::AsciiExt;
-
-use ast::*;
-
-macro_rules! ln {
-    ($name:ident, $($e:expr),*) => { $name.line(&format!($($e),*)) };
-}
+use old_ast::*;
+use util::{Buff, scream};
 
 impl LexRule {
     fn name(&self) -> &str {
@@ -135,46 +130,5 @@ impl Grammar {
 
     fn find_lex_rule(&self, name: &str) -> Option<&LexRule> {
         self.lex_rules.iter().find(|r| r.name() == name)
-    }
-}
-
-
-fn scream(word: &str) -> String {
-    word.chars().map(|c| c.to_ascii_uppercase()).collect()
-}
-
-
-struct Buff {
-    inner: String,
-    indent: usize
-}
-
-impl Buff {
-    fn new() -> Buff {
-        Buff { inner: String::new(), indent: 0 }
-    }
-
-    fn line(&mut self, line: &str) {
-        for _ in 0..self.indent {
-            self.inner.push_str("    ");
-        }
-        self.inner.push_str(line);
-        self.inner.push('\n');
-    }
-
-    fn blank_line(&mut self) {
-        self.inner.push('\n');
-    }
-
-    fn indent(&mut self) {
-        self.indent += 1;
-    }
-
-    fn dedent(&mut self) {
-        self.indent -= 1;
-    }
-
-    fn done(self) -> String {
-        self.inner
     }
 }

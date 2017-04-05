@@ -2,7 +2,7 @@ use {TextRange, NodeType};
 
 mod imp;
 
-use self::imp::NodeChildren;
+pub use self::imp::NodeChildren;
 
 pub struct File(imp::FileImpl);
 

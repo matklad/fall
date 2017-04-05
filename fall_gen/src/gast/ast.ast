@@ -1,0 +1,29 @@
+file {
+  nodes_def nodes_def
+  tokenizer_def tokenizer_def
+  syn_rules syn_rule*
+}
+
+nodes_def {
+
+}
+
+tokenizer_def {
+  lex_rules lex_rule*
+}
+
+lex_rule {
+
+}
+
+syn_rule {
+  alts alt
+}
+
+alt {
+  parts part
+}
+
+part {
+
+}

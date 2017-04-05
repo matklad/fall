@@ -1,0 +1,17 @@
+nodes {
+  ident lbrace rbrace
+  file
+  node
+  method
+}
+
+tokenizer {
+  whitespace r"\s+"
+  ident r"(\w|\*)+"
+  lbrace '{'
+  rbrace '}'
+}
+
+rule file { <rep node> }
+rule node { ident '{' <rep method> '}' }
+rule method { ident ident }
