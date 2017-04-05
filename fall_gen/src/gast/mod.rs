@@ -1,7 +1,6 @@
 use fall_tree::search::{children_of_type, child_of_type_exn};
 
 mod syntax;
-mod ast;
 
 use self::syntax::*;
 use util::{Buff, scream, snake};

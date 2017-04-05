@@ -7,6 +7,7 @@ use fall_tree::dump_file;
 #[macro_use]
 mod util;
 pub mod syntax;
+mod ast;
 mod old_ast;
 pub mod gast;
 
