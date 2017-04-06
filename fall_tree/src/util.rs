@@ -9,6 +9,17 @@ pub fn dump_file_ws(f: &File) -> String {
     dump(f.root(), f.text(), true)
 }
 
+pub fn walk_tree<F: FnMut(Node)>(node: Node, mut f: F) {
+    go(node, &mut f);
+
+    fn go<F: FnMut(Node)>(node: Node, f: &mut F) {
+        f(node);
+        for child in node.children() {
+            go(child, f)
+        }
+    }
+}
+
 
 fn dump(root: Node, text: &str, include_whitespace: bool) -> String {
     let mut buf = String::new();

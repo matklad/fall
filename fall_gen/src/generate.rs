@@ -34,7 +34,7 @@ impl<'f> LexRule<'f> {
 }
 
 impl<'f> NodesDef<'f> {
-    fn nodes(&self) -> Vec<&'f str> {
+    pub fn nodes(&self) -> Vec<&'f str> {
         children_of_type(self.node(), IDENT)
             .map(|n| n.text())
             .collect()
@@ -42,7 +42,7 @@ impl<'f> NodesDef<'f> {
 }
 
 impl<'f> Part<'f> {
-    fn name(&self) -> Option<&'f str> {
+    pub fn name(&self) -> Option<&'f str> {
         if child_of_type(self.node(), LANGLE).is_some() {
             return None
         }
@@ -54,7 +54,7 @@ impl<'f> Part<'f> {
         Some(child_of_type_exn(self.node(), IDENT).text())
     }
 
-    fn op(&self) -> Option<(&'f str, AstChildren<'f, Alt<'f>>)> {
+    pub fn op(&self) -> Option<(&'f str, AstChildren<'f, Alt<'f>>)> {
         if child_of_type(self.node(), LANGLE).is_none() {
             return None
         }

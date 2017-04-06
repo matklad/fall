@@ -1,28 +1,8 @@
 ;;; -*- lexical-binding: t -*-
 (require 'json-rpc)
-(defun json-rpc--request (connection version endpoint method params)
-  (let* ((id (cl-incf (json-rpc-id-counter connection)))
-         (request `(:method ,method :params ,params :id ,id))
-         (auth (json-rpc-auth connection))
-         (process (json-rpc-process (json-rpc-ensure connection)))
-         (encoded (if version
-                      (json-encode (nconc (list :jsonrpc version) request))
-                    (json-encode request))))
-    (with-current-buffer (process-buffer (json-rpc-process connection))
-      (erase-buffer))
-    (with-temp-buffer
-      (insert (format "POST %s HTTP/1.1\r\n" (url-encode-url endpoint)))
-      (when auth (insert "Authorization: Basic " auth "\r\n"))
-      (insert "Content-Type: application/json\r\n")
-      (insert (format "Content-Length: %d\r\n\r\n" (string-bytes encoded))
-              encoded)
-      (process-send-region process (point-min) (point-max)))
-    (json-rpc-wait connection)))
 
 (defvar fall-mode-hook nil)
 
-(defvar fall-peer)
-(defconst fall-server "/home/matklad/projects/fall/target/debug/epc")
 
 (add-to-list 'auto-mode-alist '("\\.fall\\'" . fall-mode))
 
@@ -31,7 +11,8 @@
   '(("keyword" . font-lock-keyword-face)
     ("token" . font-lock-constant-face)
     ("rule" . font-lock-type-face)
-    ("string" . font-lock-string-face)))
+    ("string" . font-lock-string-face)
+    ("builtin" . font-lock-builtin-face)))
 
 
 (defun fall-highlight-span (span)
@@ -44,7 +25,7 @@
      `(face ,face))))
 
 (defun fall-rehighlight (spans)
-  (remove-text-properties 1  (- (buffer-size) 1) '(face nil))
+  (remove-text-properties 1 (- (buffer-size) 1) '(face nil))
   (seq-doseq (span spans)
     (fall-highlight-span span)))
 
@@ -64,6 +45,7 @@
   (add-hook 'after-change-functions 'after-text-change nil 't)
   (setf fall-peer (json-rpc-connect "127.0.0.1" 9292 nil nil))
   (run-hooks 'fall-mode-hook)
+  (after-text-change 0 (buffer-size) 0)
   (message "Loaded Fall mode"))
 
 

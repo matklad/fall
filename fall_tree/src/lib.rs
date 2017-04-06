@@ -12,4 +12,4 @@ pub use text_range::TextRange;
 pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
 pub use node::{File, Node, FileBuilder, NodeBuilder};
 pub use ast::{AstNode, AstChildren};
-pub use util::{dump_file, dump_file_ws};
+pub use util::{dump_file, dump_file_ws, walk_tree};

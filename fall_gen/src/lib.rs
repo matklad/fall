@@ -21,7 +21,11 @@ impl FallFile {
         FallFile { file: syntax::parse(text) }
     }
 
+    pub fn ast(&self) -> ast::File {
+        ast::File::new(self.file.root())
+    }
+
     pub fn generate(&self) -> String {
-        ast::File::new(self.file.root()).generate()
+        self.ast().generate()
     }
 }
