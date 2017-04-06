@@ -25,10 +25,11 @@ struct Response {
 fn main() {
     let mut io = IoHandler::new();
     io.add_method("colors", |params: Params| {
+        println!("Req");
         let (text, ): (String, ) = params.parse().unwrap();
         let spans = ::std::panic::catch_unwind(|| colorize(text)).unwrap_or_default();
-        println!("spans = {:?}\n\n\n", spans);
         let r = to_value(Response { spans: spans }).unwrap();
+        println!("OK\n");
         Ok(r)
     });
 
@@ -45,6 +46,8 @@ fn main() {
 fn colorize(text: String) -> Spans {
     let file = fall_gen::FallFile::parse(text);
     let ast = file.ast();
+    println!("Lexing  = {}", file.lexing_time());
+    println!("Parsing = {}", file.parsing_time());
     let mut result = vec![];
     colorize_tokens(ast.node(), &mut result);
     colorize_file(ast, &mut result);

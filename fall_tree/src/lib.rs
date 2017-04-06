@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
+extern crate elapsed;
 
 mod text_range;
 mod node_type;

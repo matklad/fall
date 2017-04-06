@@ -1,7 +1,9 @@
+extern crate elapsed;
 extern crate regex;
 extern crate fall_tree;
 extern crate fall_parse;
 
+use elapsed::ElapsedDuration;
 use fall_tree::AstNode;
 
 #[macro_use]
@@ -27,5 +29,12 @@ impl FallFile {
 
     pub fn generate(&self) -> String {
         self.ast().generate()
+    }
+
+    pub fn lexing_time(&self) -> ElapsedDuration {
+        self.file.lexing_time()
+    }
+    pub fn parsing_time(&self) -> ElapsedDuration {
+        self.file.parsing_time()
     }
 }

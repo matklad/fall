@@ -1,3 +1,5 @@
+use elapsed::ElapsedDuration;
+
 use {TextRange, NodeType};
 
 mod imp;
@@ -13,6 +15,14 @@ impl File {
 
     pub fn text(&self) -> &str {
         self.0.text()
+    }
+
+    pub fn lexing_time(&self) -> ElapsedDuration {
+        self.0.lexing_time()
+    }
+
+    pub fn parsing_time(&self) -> ElapsedDuration {
+        self.0.parsing_time()
     }
 }
 
@@ -47,8 +57,8 @@ pub struct FileBuilder(imp::FileBuilderImpl);
 pub struct NodeBuilder(imp::NodeId);
 
 impl FileBuilder {
-    pub fn new(text: String) -> FileBuilder {
-        FileBuilder(imp::FileBuilderImpl::new(text))
+    pub fn new(text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilder {
+        FileBuilder(imp::FileBuilderImpl::new(text, lex_time, parse_time))
     }
 
     pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)

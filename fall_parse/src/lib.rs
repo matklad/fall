@@ -1,3 +1,4 @@
+extern crate elapsed;
 extern crate regex;
 extern crate fall_tree;
 
@@ -10,6 +11,8 @@ pub use lex::Rule;
 pub use core::{TreeBuilder, parse};
 
 mod core {
+    use elapsed::{measure_time, ElapsedDuration};
+
     use std::collections::HashSet;
     use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
     use lex::{Token, Rule, tokenize};
@@ -133,14 +136,14 @@ mod core {
             }
         }
 
-        fn into_file(mut self) -> File {
+        fn into_file(mut self, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> File {
             while self.current().is_some() {
                 self.bump();
             }
             let top = self.pending.pop().unwrap();
             assert!(self.pending.is_empty());
             let root = self.to_prenode(top);
-            let mut builder = FileBuilder::new(self.text);
+            let mut builder = FileBuilder::new(self.text, lex_time, parse_time);
             go(&mut builder, None, root);
             return builder.build();
 
@@ -173,10 +176,10 @@ mod core {
         tokenizer: &[Rule],
         parser: &Fn(&mut TreeBuilder)
     ) -> File {
-        let tokens = tokenize(&text, tokenizer).collect();
+        let (elapsed_lex, tokens) = measure_time(|| tokenize(&text, tokenizer).collect());
         let mut builder = TreeBuilder::new(text, file_type, tokens);
-        parser(&mut builder);
-        builder.into_file()
+        let (elapsed_parse, _) = measure_time(|| parser(&mut builder));
+        builder.into_file(elapsed_lex, elapsed_parse)
     }
 }
 

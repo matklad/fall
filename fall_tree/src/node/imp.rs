@@ -1,9 +1,12 @@
 use std::ops::Index;
+use elapsed::ElapsedDuration;
 
 use {TextRange, NodeType};
 use super::{File, Node, NodeBuilder};
 
 pub struct FileImpl {
+    lex_time: ElapsedDuration,
+    parse_time: ElapsedDuration,
     text: String,
     root: NodeId,
     nodes: Vec<NodeData>,
@@ -16,6 +19,14 @@ impl FileImpl {
 
     pub fn text(&self) -> &str {
         &self.text
+    }
+
+    pub fn lexing_time(&self) -> ElapsedDuration {
+        self.lex_time
+    }
+
+    pub fn parsing_time(&self) -> ElapsedDuration {
+        self.parse_time
     }
 }
 
@@ -83,13 +94,20 @@ pub struct NodeData {
 
 
 pub struct FileBuilderImpl {
+    lex_time: ElapsedDuration,
+    parse_time: ElapsedDuration,
     nodes: Vec<NodeData>,
     text: String,
 }
 
 impl FileBuilderImpl {
-    pub fn new(text: String) -> FileBuilderImpl {
-        FileBuilderImpl { nodes: vec![], text: text }
+    pub fn new(text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilderImpl {
+        FileBuilderImpl {
+            lex_time: lex_time,
+            parse_time: parse_time,
+            nodes: vec![],
+            text: text
+        }
     }
 
     pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)
@@ -112,6 +130,8 @@ impl FileBuilderImpl {
     pub fn build(self) -> File {
         assert!(!self.nodes.is_empty());
         File(FileImpl {
+            lex_time: self.lex_time,
+            parse_time: self.parse_time,
             text: self.text,
             root: NodeId(0),
             nodes: self.nodes,
