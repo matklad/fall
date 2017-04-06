@@ -17,4 +17,4 @@ file = { git = "https://github.com/matklad/rust-file", branch = "text" }
 
 [dev-dependencies]
 tempdir = "0.3"
-difference = "0.4"
+difference = "1.0.0"

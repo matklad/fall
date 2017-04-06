@@ -1,7 +1,6 @@
 extern crate clap;
 extern crate fall_gen;
 
-
 use std::error::Error;
 use std::io::prelude::*;
 use std::io::Write;
@@ -35,7 +34,8 @@ fn main_inner(file: &Path) -> Result<(), Box<Error>> {
     let result = if file.extension().unwrap() == "ast" {
         fall_gen::gast::generate(&input)
     } else {
-        fall_gen::parse(&input)?.generate()
+        let file = fall_gen::FallFile::parse(input);
+        file.generate()
     };
 
     let mut out_file = File::create(file.with_extension("rs"))?;

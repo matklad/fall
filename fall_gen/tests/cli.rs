@@ -37,8 +37,11 @@ fn do_test(grammar: &str, expected: &str) {
 
     let actual = file::get_text(grammar_path.with_extension("rs")).unwrap();
 
-    if expected.trim() != actual.trim() {
-        difference::print_diff(&actual, &expected, "\n");
+    let expected = expected.trim();
+    let actual = actual.trim();
+    if expected != actual {
+        let difference = difference::Changeset::new(expected, actual, "\n");
+        println!("{}", difference);
         panic!("Mismatch!")
     }
 }

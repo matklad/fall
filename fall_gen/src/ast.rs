@@ -1,7 +1,8 @@
 use fall_tree::{AstNode, AstChildren, Node, NodeType};
-use fall_tree::search::{child_of_type_exn, children_of_type};
+use fall_tree::search::child_of_type_exn;
 use syntax::*;
 
+#[derive(Clone, Copy)]
 pub struct File<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for File<'f> {
     fn ty() -> NodeType { FILE }
@@ -13,20 +14,21 @@ impl<'f> AstNode<'f> for File<'f> {
 }
 
 impl<'f> File<'f> {
-    pub fn nodes_def(&self) -> NodesDef {
+    pub fn nodes_def(&self) -> NodesDef<'f> {
         AstChildren::new(self.node.children()).next().unwrap()
     }
-    pub fn tokenizer_def(&self) -> TokenizerDef {
+    pub fn tokenizer_def(&self) -> TokenizerDef<'f> {
         AstChildren::new(self.node.children()).next().unwrap()
     }
-    pub fn syn_rules(&self) -> AstChildren<SynRule> {
+    pub fn syn_rules(&self) -> AstChildren<'f, SynRule<'f>> {
         AstChildren::new(self.node.children())
     }
-    pub fn verbatim_def(&self) -> Option<VerbatimDef> {
+    pub fn verbatim_def(&self) -> Option<VerbatimDef<'f>> {
         AstChildren::new(self.node.children()).next()
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct NodesDef<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for NodesDef<'f> {
     fn ty() -> NodeType { NODES_DEF }
@@ -38,6 +40,7 @@ impl<'f> AstNode<'f> for NodesDef<'f> {
 }
 
 
+#[derive(Clone, Copy)]
 pub struct TokenizerDef<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for TokenizerDef<'f> {
     fn ty() -> NodeType { TOKENIZER_DEF }
@@ -49,11 +52,12 @@ impl<'f> AstNode<'f> for TokenizerDef<'f> {
 }
 
 impl<'f> TokenizerDef<'f> {
-    pub fn lex_rules(&self) -> AstChildren<LexRule> {
+    pub fn lex_rules(&self) -> AstChildren<'f, LexRule<'f>> {
         AstChildren::new(self.node.children())
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct LexRule<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for LexRule<'f> {
     fn ty() -> NodeType { LEX_RULE }
@@ -70,6 +74,7 @@ impl<'f> LexRule<'f> {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct SynRule<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for SynRule<'f> {
     fn ty() -> NodeType { SYN_RULE }
@@ -84,11 +89,12 @@ impl<'f> SynRule<'f> {
     pub fn name(&self) -> &'f str {
         child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn alts(&self) -> Alt {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn alts(&self) -> AstChildren<'f, Alt<'f>> {
+        AstChildren::new(self.node.children())
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Alt<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for Alt<'f> {
     fn ty() -> NodeType { ALT }
@@ -100,11 +106,12 @@ impl<'f> AstNode<'f> for Alt<'f> {
 }
 
 impl<'f> Alt<'f> {
-    pub fn parts(&self) -> Part {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn parts(&self) -> AstChildren<'f, Part<'f>> {
+        AstChildren::new(self.node.children())
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Part<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for Part<'f> {
     fn ty() -> NodeType { PART }
@@ -116,6 +123,7 @@ impl<'f> AstNode<'f> for Part<'f> {
 }
 
 
+#[derive(Clone, Copy)]
 pub struct VerbatimDef<'f> { node: Node<'f> }
 impl<'f> AstNode<'f> for VerbatimDef<'f> {
     fn ty() -> NodeType { VERBATIM_DEF }

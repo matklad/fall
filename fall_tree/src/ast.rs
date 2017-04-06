@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use {Node, NodeType};
 use node::NodeChildren;
 
-pub trait AstNode<'f> {
+pub trait AstNode<'f>: Copy {
     fn ty() -> NodeType;
     fn new(node: Node<'f>) -> Self;
     fn node(&self) -> Node<'f>;

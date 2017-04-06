@@ -2,27 +2,26 @@ extern crate regex;
 extern crate fall_tree;
 extern crate fall_parse;
 
-use fall_tree::dump_file;
+use fall_tree::AstNode;
 
 #[macro_use]
 mod util;
 pub mod syntax;
-mod ast;
-mod old_ast;
+pub mod ast;
 pub mod gast;
 
-mod generator;
-mod gen2;
+mod generate;
 
-pub use old_ast::{Grammar, LexRule, SynRule, Alt, Part, LiftError};
-
-
-pub fn debug(text: &str) -> String {
-    dump_file(&syntax::parse(text.to_owned()))
+pub struct FallFile {
+    file: fall_tree::File,
 }
 
-pub fn parse(text: &str) -> Result<Grammar, LiftError> {
-    let file = syntax::parse(text.to_owned());
-    let root = file.root();
-    old_ast::lift(root)
+impl FallFile {
+    pub fn parse(text: String) -> Self {
+        FallFile { file: syntax::parse(text) }
+    }
+
+    pub fn generate(&self) -> String {
+        ast::File::new(self.file.root()).generate()
+    }
 }

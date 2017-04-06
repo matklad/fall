@@ -11,12 +11,13 @@ pub fn generate(text: &str) -> String {
 
     let mut buff = Buff::new();
     buff.line("use fall_tree::{AstNode, AstChildren, Node, NodeType};");
-    buff.line("use fall_tree::search::{child_of_type_exn, children_of_type};");
+    buff.line("use fall_tree::search::child_of_type_exn;");
     buff.line("use syntax::*;");
     buff.blank_line();
     for node in children_of_type(root, NODE) {
         let name = child_of_type_exn(node, IDENT);
         let sn = snake(name.text());
+        buff.line("#[derive(Clone, Copy)]");
         ln!(buff, "pub struct {}<'f> {{ node: Node<'f> }}", sn);
         ln!(buff, "impl<'f> AstNode<'f> for {}<'f> {{", sn);
         buff.indent();
@@ -52,9 +53,9 @@ pub fn generate(text: &str) -> String {
                 };
                 let node_type = &node_type[..node_type.len() - suffix.len()];
                 let ret_type = match kind {
-                    MethodKind::Single => snake(node_type),
-                    MethodKind::Opt => format!("Option<{}>", snake(node_type)),
-                    MethodKind::Many => format!("AstChildren<{}>", snake(node_type)),
+                    MethodKind::Single => format!("{}<'f>", snake(node_type)),
+                    MethodKind::Opt => format!("Option<{}<'f>>", snake(node_type)),
+                    MethodKind::Many => format!("AstChildren<'f, {}<'f>>", snake(node_type)),
                     MethodKind::Text => "&'f str".to_owned(),
                 };
 

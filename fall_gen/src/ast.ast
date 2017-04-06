@@ -19,11 +19,11 @@ lex_rule {
 
 syn_rule {
   name IDENT.text
-  alts alt
+  alts alt*
 }
 
 alt {
-  parts part
+  parts part*
 }
 
 part {

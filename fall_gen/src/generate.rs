@@ -1,13 +1,12 @@
-use regex;
-use fall_tree::AstNode;
-use fall_tree::search::{children_of_type, child_of_type_exn};
+use fall_tree::{AstNode, AstChildren};
+use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type};
 use ast::*;
 use syntax::*;
 use util::{Buff, scream};
 
 impl<'f> LexRule<'f> {
     fn re(&self) -> String {
-        let raw = children_of_type(self.node(), STRING).next().unwrap().text();
+        let raw = self.raw_re();
         if raw.starts_with('r') {
             lit_body(raw).to_owned()
         } else {
@@ -20,6 +19,18 @@ impl<'f> LexRule<'f> {
             lit_body(n.text())
         })
     }
+
+    fn name(&self) -> &'f str {
+        let r = self.raw_re();
+        if r.starts_with('\'') {
+            return r
+        }
+        self.node_type()
+    }
+
+    fn raw_re(&self) -> &'f str {
+        children_of_type(self.node(), STRING).next().unwrap().text()
+    }
 }
 
 impl<'f> NodesDef<'f> {
@@ -27,6 +38,31 @@ impl<'f> NodesDef<'f> {
         children_of_type(self.node(), IDENT)
             .map(|n| n.text())
             .collect()
+    }
+}
+
+impl<'f> Part<'f> {
+    fn name(&self) -> Option<&'f str> {
+        if child_of_type(self.node(), LANGLE).is_some() {
+            return None
+        }
+
+        if let Some(s) = child_of_type(self.node(), SIMPLE_STRING) {
+            return Some(s.text())
+        }
+
+        Some(child_of_type_exn(self.node(), IDENT).text())
+    }
+
+    fn op(&self) -> Option<(&'f str, AstChildren<'f, Alt<'f>>)> {
+        if child_of_type(self.node(), LANGLE).is_none() {
+            return None
+        }
+
+        Some((
+            child_of_type_exn(self.node(), IDENT).text(),
+            AstChildren::new(self.node().children())
+        ))
     }
 }
 
@@ -89,7 +125,7 @@ impl<'f> File<'f> {
 
         if let Some(v) = self.verbatim_def() {
             buff.blank_line();
-            for l in v.verbatim().lines() {
+            for l in lit_body(v.verbatim()).trim().lines() {
                 buff.line(l)
             }
         }
@@ -106,56 +142,49 @@ impl<'f> File<'f> {
             } else {
                 "None".to_owned()
             };
-            //            let alts = rule.alts.iter().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
-            //            ln!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
+            let alts = rule.alts().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
+            ln!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
         }
         buff.dedent();
         buff.line("];");
     }
+
+    fn generate_alt(&self, alt: Alt) -> String {
+        fn is_commit(part: Part) -> bool {
+            part.node().text() == "<commit>"
+        }
+        let commit = alt.parts().position(is_commit);
+
+        let parts = alt.parts()
+            .filter(|&p| !is_commit(p))
+            .map(|p| self.generate_part(p))
+            .collect::<Vec<_>>();
+        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
+    }
+
+    fn generate_part(&self, part: Part) -> String {
+        if let Some(name) = part.name() {
+            return if let Some(r) = self.find_lex_rule(name) {
+                format!("syn::Part::Token({})", scream(&r.node_type()))
+            } else {
+                let id = self.syn_rules().position(|r| r.name() == name)
+                    .expect(&format!("Not a rule or token: `{}`", name));
+                format!("syn::Part::Rule({:?})", id)
+            }
+        }
+        let (op, mut alts) = part.op().unwrap();
+        let o = match op {
+            "rep" => "Rep",
+            "opt" => "Opt",
+            _ => unimplemented!(),
+        };
+        format!("syn::Part::{}({})", o, self.generate_alt(alts.next().unwrap()))
+    }
+
+    fn find_lex_rule(&self, name: &str) -> Option<LexRule<'f>> {
+        self.tokenizer_def().lex_rules().find(|r| r.name() == name)
+    }
 }
-//
-//    fn generate_alt(&self, alt: &Alt) -> String {
-//        fn is_commit(part: &Part) -> bool {
-//            match *part {
-//                Part::Rule(..) => false,
-//                Part::Call(ref op, _) => op == "commit"
-//            }
-//        }
-//        let commit = alt.parts.iter().position(is_commit);
-//
-//        let parts = alt.parts.iter()
-//            .filter(|p| !is_commit(p))
-//            .map(|p| self.generate_part(p))
-//            .collect::<Vec<_>>();
-//        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
-//    }
-//
-//    fn generate_part(&self, part: &Part) -> String {
-//        match *part {
-//            Part::Rule(ref name) => {
-//                if let Some(r) = self.find_lex_rule(name) {
-//                    format!("syn::Part::Token({})", scream(&r.ty))
-//                } else {
-//                    let id = self.syn_rules.iter().position(|r| r.name == name.as_ref())
-//                        .expect(&format!("Not a rule or token: `{}`", name));
-//                    format!("syn::Part::Rule({:?})", id)
-//                }
-//            }
-//            Part::Call(ref op, ref alts) => {
-//                let o = match op.as_ref() {
-//                    "rep" => "Rep",
-//                    "opt" => "Opt",
-//                    _ => unimplemented!(),
-//                };
-//                format!("syn::Part::{}({})", o, self.generate_alt(&alts[0]))
-//            }
-//        }
-//    }
-//
-//    fn find_lex_rule(&self, name: &str) -> Option<&LexRule> {
-//        self.lex_rules.iter().find(|r| r.name() == name)
-//    }
-//}
 
 fn lit_body(lit: &str) -> &str {
     let q = if lit.starts_with('\'') { '\'' } else { '"' };
