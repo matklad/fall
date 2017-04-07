@@ -61,24 +61,20 @@ fn colorize(text: String) -> Spans {
                 colorize_node(node, "keyword", spans)
             })
             .visit::<NodesDef, _>(|spans, def| {
-                walk_tree(def.node(), |n| {
-                    if n.ty() == IDENT {
-                        let color = if token_names.contains(n.text()) { "token" } else { "rule" };
-                        colorize_node(n, color, spans);
-                    }
+                walk_tree(def.node(), |n| if n.ty() == IDENT {
+                    let color = if token_names.contains(n.text()) { "token" } else { "rule" };
+                    colorize_node(n, color, spans);
                 })
             })
             .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
             .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-            .visit::<Part, _>(|spans, part| {
-                match part.kind() {
-                    PartKind::Token(_) => colorize_node(part.node(), "token", spans),
-                    PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
-                    PartKind::Call { .. } => {
-                        colorize_child(part.node(), IDENT, "builtin", spans);
-                        colorize_child(part.node(), LANGLE, "builtin", spans);
-                        colorize_child(part.node(), RANGLE, "builtin", spans);
-                    }
+            .visit::<Part, _>(|spans, part| match part.kind() {
+                PartKind::Token(_) => colorize_node(part.node(), "token", spans),
+                PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
+                PartKind::Call { .. } => {
+                    colorize_child(part.node(), IDENT, "builtin", spans);
+                    colorize_child(part.node(), LANGLE, "builtin", spans);
+                    colorize_child(part.node(), RANGLE, "builtin", spans);
                 }
             })
             .walk_recursively_children_first(file.ast().node());
