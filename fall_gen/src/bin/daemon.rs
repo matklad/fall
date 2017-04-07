@@ -4,11 +4,14 @@ extern crate jsonrpc_core;
 extern crate jsonrpc_minihttp_server;
 extern crate fall_gen;
 extern crate fall_tree;
+extern crate elapsed;
 
 use std::collections::HashSet;
 
 use jsonrpc_core::{IoHandler, Params, to_value};
 use jsonrpc_minihttp_server::{ServerBuilder};
+
+use elapsed::measure_time;
 
 use fall_tree::{Node, NodeType, walk_tree, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
@@ -47,48 +50,45 @@ fn main() {
 
 fn colorize(text: String) -> Spans {
     let file = fall_gen::FallFile::parse(text);
-    let ast = file.ast();
-    println!("Lexing  = {}", file.lexing_time());
-    println!("Parsing = {}", file.parsing_time());
-    let mut spans = vec![];
-    colorize_tokens(ast.node(), &mut spans);
-    let token_names: HashSet<_> = file.ast().tokenizer_def().lex_rules().map(|r| r.node_type()).collect();
-    Visitor(&mut spans)
-        .visit::<NodesDef, _>(|spans, def| {
-            walk_tree(def.node(), |n| {
-                if n.ty() == IDENT {
-                    let color = if token_names.contains(n.text()) { "token" } else { "rule" };
-                    colorize_node(n, color, spans);
+    let (elapsed, spans) = measure_time(|| {
+        let mut spans = vec![];
+        let token_names: HashSet<_> = file.ast().tokenizer_def().lex_rules().map(|r| r.node_type()).collect();
+        Visitor(&mut spans)
+            .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
+                colorize_node(node, "string", spans)
+            })
+            .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER], |spans, node| {
+                colorize_node(node, "keyword", spans)
+            })
+            .visit::<NodesDef, _>(|spans, def| {
+                walk_tree(def.node(), |n| {
+                    if n.ty() == IDENT {
+                        let color = if token_names.contains(n.text()) { "token" } else { "rule" };
+                        colorize_node(n, color, spans);
+                    }
+                })
+            })
+            .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
+            .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
+            .visit::<Part, _>(|spans, part| {
+                match part.kind() {
+                    PartKind::Token(_) => colorize_node(part.node(), "token", spans),
+                    PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
+                    PartKind::Call { .. } => {
+                        colorize_child(part.node(), IDENT, "builtin", spans);
+                        colorize_child(part.node(), LANGLE, "builtin", spans);
+                        colorize_child(part.node(), RANGLE, "builtin", spans);
+                    }
                 }
             })
-        })
-        .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
-        .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-        .visit::<Part, _>(|spans, part| {
-            match part.kind() {
-                PartKind::Token(_) => colorize_node(part.node(), "token", spans),
-                PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
-                PartKind::Call { .. } => {
-                    colorize_child(part.node(), IDENT, "builtin", spans);
-                    colorize_child(part.node(), LANGLE, "builtin", spans);
-                    colorize_child(part.node(), RANGLE, "builtin", spans);
-                }
-            }
-        })
-        .walk_recursively_children_first(file.ast().node());
-    spans
-}
+            .walk_recursively_children_first(file.ast().node());
+        spans
+    });
+    println!("Lexing   = {}", file.lexing_time());
+    println!("Parsing  = {}", file.parsing_time());
+    println!("Coloring = {}", elapsed);
 
-fn colorize_tokens(node: Node, spans: &mut Spans) {
-    let keywords = [KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER];
-    walk_tree(node, |node| {
-        if keywords.contains(&node.ty()) {
-            colorize_node(node, "keyword", spans)
-        }
-        if [HASH_STRING, SIMPLE_STRING].contains(&node.ty()) {
-            colorize_node(node, "string", spans)
-        }
-    })
+    spans
 }
 
 fn colorize_node(node: Node, color: &'static str, spans: &mut Spans) {
