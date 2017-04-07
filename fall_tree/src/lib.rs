@@ -7,6 +7,7 @@ mod node_type;
 mod node;
 mod ast;
 mod util;
+pub mod visitor;
 pub mod search;
 
 pub use text_range::TextRange;
