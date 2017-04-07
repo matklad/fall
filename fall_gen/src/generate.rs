@@ -4,34 +4,6 @@ use ast::*;
 use syntax::*;
 use util::{Buff, scream};
 
-impl<'f> LexRule<'f> {
-    fn re(&self) -> String {
-        let raw = self.raw_re();
-        if raw.starts_with('r') {
-            lit_body(raw).to_owned()
-        } else {
-            ::regex::escape(lit_body(raw))
-        }
-    }
-
-    fn f(&self) -> Option<&'f str> {
-        children_of_type(self.node(), STRING).nth(1).map(|n| {
-            lit_body(n.text())
-        })
-    }
-
-    fn name(&self) -> &'f str {
-        let r = self.raw_re();
-        if r.starts_with('\'') {
-            return r
-        }
-        self.node_type()
-    }
-
-    fn raw_re(&self) -> &'f str {
-        children_of_type(self.node(), STRING).next().unwrap().text()
-    }
-}
 
 impl<'f> NodesDef<'f> {
     pub fn nodes(&self) -> Vec<&'f str> {
@@ -102,11 +74,12 @@ impl<'f> File<'f> {
         {
             buff.indent();
             for rule in self.tokenizer_def().lex_rules() {
-                let f = match rule.f() {
+                let f = match rule.extern_fn() {
                     None => "None".to_owned(),
                     Some(ref f) => format!("Some({})", f)
                 };
-                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},", scream(&rule.node_type()), rule.re(), f);
+                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},",
+                    scream(&rule.node_type()), rule.token_re(), f);
             }
             buff.dedent();
         }
@@ -182,7 +155,7 @@ impl<'f> File<'f> {
     }
 
     fn find_lex_rule(&self, name: &str) -> Option<LexRule<'f>> {
-        self.tokenizer_def().lex_rules().find(|r| r.name() == name)
+        self.tokenizer_def().lex_rules().find(|r| r.token_name() == name)
     }
 }
 
