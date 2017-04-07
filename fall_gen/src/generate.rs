@@ -1,42 +1,8 @@
-use fall_tree::{AstNode, AstChildren};
-use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type};
+use fall_tree::AstNode;
 use ast::*;
-use syntax::*;
+use ast_ext::PartKind;
 use util::{Buff, scream};
 
-
-impl<'f> NodesDef<'f> {
-    pub fn nodes(&self) -> Vec<&'f str> {
-        children_of_type(self.node(), IDENT)
-            .map(|n| n.text())
-            .collect()
-    }
-}
-
-impl<'f> Part<'f> {
-    pub fn name(&self) -> Option<&'f str> {
-        if child_of_type(self.node(), LANGLE).is_some() {
-            return None
-        }
-
-        if let Some(s) = child_of_type(self.node(), SIMPLE_STRING) {
-            return Some(s.text())
-        }
-
-        Some(child_of_type_exn(self.node(), IDENT).text())
-    }
-
-    pub fn op(&self) -> Option<(&'f str, AstChildren<'f, Alt<'f>>)> {
-        if child_of_type(self.node(), LANGLE).is_none() {
-            return None
-        }
-
-        Some((
-            child_of_type_exn(self.node(), IDENT).text(),
-            AstChildren::new(self.node().children())
-        ))
-    }
-}
 
 impl<'f> File<'f> {
     pub fn generate(&self) -> String {
@@ -98,7 +64,7 @@ impl<'f> File<'f> {
 
         if let Some(v) = self.verbatim_def() {
             buff.blank_line();
-            for l in lit_body(v.verbatim()).trim().lines() {
+            for l in v.contents().lines() {
                 buff.line(l)
             }
         }
@@ -110,7 +76,7 @@ impl<'f> File<'f> {
         buff.line("const PARSER: &'static [syn::Rule] = &[");
         buff.indent();
         for rule in self.syn_rules() {
-            let ty = if self.nodes_def().nodes().contains(&rule.name()) {
+            let ty = if rule.is_public() {
                 format!("Some({})", scream(&rule.name()))
             } else {
                 "None".to_owned()
@@ -136,32 +102,17 @@ impl<'f> File<'f> {
     }
 
     fn generate_part(&self, part: Part) -> String {
-        if let Some(name) = part.name() {
-            return if let Some(r) = self.find_lex_rule(name) {
-                format!("syn::Part::Token({})", scream(&r.node_type()))
-            } else {
-                let id = self.syn_rules().position(|r| r.name() == name)
-                    .expect(&format!("Not a rule or token: `{}`", name));
-                format!("syn::Part::Rule({:?})", id)
+        match part.kind() {
+            PartKind::Token(t) => format!("syn::Part::Token({})", scream(t)),
+            PartKind::RuleReference { idx } => format!("syn::Part::Rule({:?})", idx),
+            PartKind::Call { name, mut alts } => {
+                let op = match name {
+                    "rep" => "Rep",
+                    "opt" => "Opt",
+                    _ => unimplemented!(),
+                };
+                format!("syn::Part::{}({})", op, self.generate_alt(alts.next().unwrap()))
             }
         }
-        let (op, mut alts) = part.op().unwrap();
-        let o = match op {
-            "rep" => "Rep",
-            "opt" => "Opt",
-            _ => unimplemented!(),
-        };
-        format!("syn::Part::{}({})", o, self.generate_alt(alts.next().unwrap()))
     }
-
-    fn find_lex_rule(&self, name: &str) -> Option<LexRule<'f>> {
-        self.tokenizer_def().lex_rules().find(|r| r.token_name() == name)
-    }
-}
-
-fn lit_body(lit: &str) -> &str {
-    let q = if lit.starts_with('\'') { '\'' } else { '"' };
-    let s = lit.find(q).unwrap();
-    let e = lit.rfind(q).unwrap();
-    &lit[s + 1..e]
 }

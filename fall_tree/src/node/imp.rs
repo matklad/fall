@@ -49,7 +49,7 @@ impl<'f> NodeImpl<'f> {
         &self.file.text[self.range()]
     }
 
-    pub fn parent(&self) -> Option<Node> {
+    pub fn parent(&self) -> Option<Node<'f>> {
         self.data().parent.map(|id| Node(NodeImpl { id: id, file: self.file }))
     }
 

@@ -42,7 +42,7 @@ impl<'f> Node<'f> {
         self.0.text()
     }
 
-    pub fn parent(&self) -> Option<Node> {
+    pub fn parent(&self) -> Option<Node<'f>> {
         self.0.parent()
     }
 

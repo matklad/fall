@@ -1,4 +1,4 @@
-use {Node, NodeType};
+use {Node, NodeType, AstNode};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -15,4 +15,19 @@ pub fn child_of_type_exn(node: Node, ty: NodeType) -> Node {
                 {}\
                 ----", ty, node.ty(), node.text())
     })
+}
+
+pub fn ast_parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
+    ast_parent(node).unwrap()
+}
+
+pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
+    let mut curr = Some(node);
+    while let Some(node) = curr {
+        if node.ty() == T::ty() {
+            return Some(T::new(node));
+        }
+        curr = node.parent()
+    }
+    None
 }

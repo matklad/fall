@@ -14,6 +14,7 @@ use fall_tree::{Node, NodeType, walk_tree, AstNode};
 use fall_tree::search::{child_of_type};
 use fall_gen::syntax::*;
 use fall_gen::ast::*;
+use fall_gen::ast_ext::PartKind;
 
 type Spans = Vec<(u32, u32, &'static str)>;
 
@@ -92,32 +93,29 @@ fn colorize_file(file: File, spans: &mut Spans) {
     for rule in file.syn_rules() {
         colorize_child(rule.node(), IDENT, "rule", spans);
         for alt in rule.alts() {
-            colorize_alt(alt, &token_names, spans)
+            colorize_alt(alt, spans)
         }
     }
-
-    //    //    colorize_node_types(node_types);
-    //    //    colorize_lex_rules(lex_rules);
 }
 
-fn colorize_alt(alt: Alt, tokens: &HashSet<&str>, spans: &mut Spans) {
+fn colorize_alt(alt: Alt, spans: &mut Spans) {
     for part in alt.parts() {
-        colorize_part(part, tokens, spans)
+        colorize_part(part, spans)
     }
 }
 
-fn colorize_part(part: Part, tokens: &HashSet<&str>, spans: &mut Spans) {
+fn colorize_part(part: Part, spans: &mut Spans) {
     colorize_child(part.node(), SIMPLE_STRING, "token", spans);
-    if let Some(name) = part.name() {
-        let color = if tokens.contains(name) { "token" } else { "rule" };
-        colorize_child(part.node(), IDENT, color, spans);
-    }
-    if let Some((_, alts)) = part.op() {
-        colorize_child(part.node(), IDENT, "builtin", spans);
-        colorize_child(part.node(), LANGLE, "builtin", spans);
-        colorize_child(part.node(), RANGLE, "builtin", spans);
-        for alt in alts {
-            colorize_alt(alt, tokens, spans)
+    match part.kind() {
+        PartKind::Token(_) => colorize_node(part.node(), "token", spans),
+        PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
+        PartKind::Call { alts, .. } => {
+            colorize_child(part.node(), IDENT, "builtin", spans);
+            colorize_child(part.node(), LANGLE, "builtin", spans);
+            colorize_child(part.node(), RANGLE, "builtin", spans);
+            for alt in alts {
+                colorize_alt(alt, spans)
+            }
         }
     }
 }
