@@ -99,3 +99,37 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 }
 
 "#########
+
+ast {
+
+file {
+  nodes_def nodes_def
+  tokenizer_def tokenizer_def
+  syn_rules syn_rule*
+  verbatim_def verbatim_def?
+}
+
+nodes_def { }
+
+tokenizer_def {
+  lex_rules lex_rule*
+}
+
+lex_rule {
+  node_type IDENT.text
+}
+
+syn_rule {
+  name IDENT.text
+  alts alt*
+}
+
+alt {
+  parts part*
+}
+
+part { }
+
+verbatim_def { }
+
+}

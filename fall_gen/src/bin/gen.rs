@@ -31,12 +31,7 @@ fn main_inner(file: &Path) -> Result<(), Box<Error>> {
         buff
     };
 
-    let result = if file.extension().unwrap() == "ast" {
-        fall_gen::gast::generate(&input)
-    } else {
-        let file = fall_gen::FallFile::parse(input);
-        file.generate()
-    };
+    let result = fall_gen::FallFile::parse(input).generate();
 
     let mut out_file = File::create(file.with_extension("rs"))?;
     write!(out_file, "{}", result)?;

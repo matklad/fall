@@ -6,6 +6,18 @@
 
 (add-to-list 'auto-mode-alist '("\\.fall\\'" . fall-mode))
 
+(defun fall--rpc-colors ()
+  (plist-get (json-rpc fall-peer "colors" (buffer-string)) :spans))
+
+(defun fall--rpc-tree ()
+  (plist-get (json-rpc fall-peer "tree" (buffer-string)) :tree))
+
+(defun parse-tree ()
+  "Display parse tree of the current buffer"
+  (interactive)
+  (with-output-to-temp-buffer "tree"
+    (princ (fall--rpc-tree))))
+
 
 (defconst fall-faces
   '(("keyword" . font-lock-keyword-face)
@@ -30,8 +42,7 @@
     (fall-highlight-span span)))
 
 (defun do-after-text-change (start end old-len)
-  (let ((spans (plist-get (json-rpc fall-peer "colors" (buffer-string)) :spans)))
-    (fall-rehighlight spans)))
+  (fall-rehighlight (fall--rpc-colors)))
 
 (defun after-text-change (start end old-length)
   (do-after-text-change start end old-length))

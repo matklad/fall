@@ -17,7 +17,6 @@ use fall_tree::{Node, NodeType, walk_tree, AstNode  };
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type};
 use fall_gen::syntax::*;
-use fall_gen::ast::*;
 use fall_gen::ast_ext::PartKind;
 
 type Spans = Vec<(u32, u32, &'static str)>;

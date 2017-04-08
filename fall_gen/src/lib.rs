@@ -9,9 +9,7 @@ use fall_tree::AstNode;
 #[macro_use]
 mod util;
 pub mod syntax;
-pub mod ast;
 pub mod ast_ext;
-pub mod gast;
 
 mod generate;
 
@@ -24,8 +22,8 @@ impl FallFile {
         FallFile { file: syntax::parse(text) }
     }
 
-    pub fn ast(&self) -> ast::File {
-        ast::File::new(self.file.root())
+    pub fn ast(&self) -> syntax::File {
+        syntax::File::new(self.file.root())
     }
 
     pub fn tree_to_string(&self) -> String {

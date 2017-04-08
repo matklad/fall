@@ -1,8 +1,7 @@
 use fall_tree::{AstNode, AstChildren};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use syntax::{STRING, IDENT, SIMPLE_STRING, LANGLE};
-use ast::{LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef};
+use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef};
 
 impl<'f> NodesDef<'f> {
     pub fn nodes(&self) -> Vec<&'f str> {
@@ -82,7 +81,8 @@ impl<'f> Part<'f> {
 
 impl<'f> VerbatimDef<'f> {
     pub fn contents(&self) -> &'f str {
-        lit_body(self.verbatim()).trim()
+        let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
+        lit_body(literal_text).trim()
     }
 }
 
