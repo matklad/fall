@@ -1,8 +1,0 @@
-[package]
-name = "fall-json"
-version = "0.1.0"
-authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
-
-[dependencies]
-fall-parse = { path = "../fall_parse" }
-fall-tree = { path = "../fall_tree" }
