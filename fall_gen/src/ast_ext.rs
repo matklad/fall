@@ -1,7 +1,8 @@
-use fall_tree::{AstNode, AstChildren};
+use fall_tree::{AstNode, AstChildren, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef};
+use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
+             LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef, MethodDef};
 
 impl<'f> NodesDef<'f> {
     pub fn nodes(&self) -> Vec<&'f str> {
@@ -86,10 +87,37 @@ impl<'f> VerbatimDef<'f> {
     }
 }
 
+impl<'f> MethodDef<'f> {
+    pub fn selector_kind(&self) -> SelectorKind<'f> {
+        let selector = child_of_type_exn(self.node(), AST_SELECTOR);
+        let name = child_of_type_exn(selector, IDENT).text();
+        if has(selector, QUESTION) {
+            SelectorKind::Opt(name)
+        } else if has(selector, STAR) {
+            SelectorKind::Many(name)
+        } else if has(selector, DOT) {
+            SelectorKind::Text(name)
+        } else {
+            SelectorKind::Single(name)
+        }
+    }
+}
+
+pub enum SelectorKind<'f> {
+    Single(&'f str),
+    Opt(&'f str),
+    Many(&'f str),
+    Text(&'f str),
+}
+
 
 fn lit_body(lit: &str) -> &str {
     let q = if lit.starts_with('\'') { '\'' } else { '"' };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();
     &lit[s + 1..e]
+}
+
+fn has(node: Node, ty: NodeType) -> bool {
+    child_of_type(node, ty).is_some()
 }

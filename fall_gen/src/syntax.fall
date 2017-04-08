@@ -143,6 +143,5 @@ ast {
 
   method_def {
     name IDENT.text
-    selector AST_SELECTOR.text
   }
 }

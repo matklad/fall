@@ -1,5 +1,5 @@
 use fall_tree::AstNode;
-use ast_ext::PartKind;
+use ast_ext::{PartKind, SelectorKind};
 use util::{Buff, scream, snake};
 
 use syntax::{File, Alt, Part, AstDef};
@@ -128,13 +128,12 @@ fn generate_ast(ast: AstDef, buff: &mut Buff) {
     buff.line("use fall_tree::search::child_of_type_exn;");
     buff.blank_line();
     for node in ast.ast_nodes() {
-        let name = node.name();
-        let sn = snake(name);
+        let sn = snake(node.name());
         buff.line("#[derive(Clone, Copy)]");
         ln!(buff, "pub struct {}<'f> {{ node: Node<'f> }}", sn);
         ln!(buff, "impl<'f> AstNode<'f> for {}<'f> {{", sn);
         buff.indent();
-        ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(name));
+        ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(node.name()));
         buff.line("fn new(node: Node<'f>) -> Self {");
         buff.indent();
         buff.line("assert_eq!(node.ty(), Self::ty());");
@@ -146,44 +145,31 @@ fn generate_ast(ast: AstDef, buff: &mut Buff) {
         buff.line("}");
         buff.blank_line();
 
-        let has_methods = node.methods().count() > 0;
-        if has_methods {
+        if node.methods().count() > 0 {
             ln!(buff, "impl<'f> {}<'f> {{", sn);
             buff.indent();
             for method in node.methods() {
-                let name = method.name();
-                let selector = method.selector();
-                let (suffix, kind) = if selector.ends_with("*") {
-                    ("*", MethodKind::Many)
-                } else if selector.ends_with("?") {
-                    ("?", MethodKind::Opt)
-                } else if selector.ends_with(".text") {
-                    (".text", MethodKind::Text)
-                } else {
-                    ("", MethodKind::Single)
-                };
-                let node_type = &selector[..selector.len() - suffix.len()];
-                let ret_type = match kind {
-                    MethodKind::Single => format!("{}<'f>", snake(node_type)),
-                    MethodKind::Opt => format!("Option<{}<'f>>", snake(node_type)),
-                    MethodKind::Many => format!("AstChildren<'f, {}<'f>>", snake(node_type)),
-                    MethodKind::Text => "&'f str".to_owned(),
+                let ret_type = match method.selector_kind() {
+                    SelectorKind::Single(name) => format!("{}<'f>", snake(name)),
+                    SelectorKind::Opt(name) => format!("Option<{}<'f>>", snake(name)),
+                    SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", snake(name)),
+                    SelectorKind::Text(_) => "&'f str".to_owned(),
                 };
 
-                ln!(buff, "pub fn {}(&self) -> {} {{", name, ret_type);
+                ln!(buff, "pub fn {}(&self) -> {} {{", method.name(), ret_type);
                 buff.indent();
-                match kind {
-                    MethodKind::Single => {
+                match method.selector_kind() {
+                    SelectorKind::Single(_) => {
                         ln!(buff, "AstChildren::new(self.node.children()).next().unwrap()")
                     }
-                    MethodKind::Opt => {
+                    SelectorKind::Opt(_) => {
                         ln!(buff, "AstChildren::new(self.node.children()).next()")
                     }
-                    MethodKind::Many => {
+                    SelectorKind::Many(_) => {
                         ln!(buff, "AstChildren::new(self.node.children())")
                     }
-                    MethodKind::Text => {
-                        ln!(buff, "child_of_type_exn(self.node, {}).text()", node_type)
+                    SelectorKind::Text(name) => {
+                        ln!(buff, "child_of_type_exn(self.node, {}).text()", name)
                     }
                 }
                 buff.dedent();
@@ -194,11 +180,4 @@ fn generate_ast(ast: AstDef, buff: &mut Buff) {
         }
         buff.blank_line();
     }
-}
-
-enum MethodKind {
-    Single,
-    Opt,
-    Many,
-    Text,
 }

@@ -319,8 +319,5 @@ impl<'f> MethodDef<'f> {
     pub fn name(&self) -> &'f str {
         child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn selector(&self) -> &'f str {
-        child_of_type_exn(self.node, AST_SELECTOR).text()
-    }
 }
 
