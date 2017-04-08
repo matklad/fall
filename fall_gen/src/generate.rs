@@ -2,9 +2,7 @@ use fall_tree::AstNode;
 use ast_ext::PartKind;
 use util::{Buff, scream, snake};
 
-use fall_tree::Node;
-use fall_tree::search::{children_of_type, child_of_type, child_of_type_exn};
-use syntax::{AST_DEF, AST_NODE_DEF, AST_SELECTOR, METHOD_DEF, IDENT, File, Alt, Part};
+use syntax::{File, Alt, Part, AstDef};
 
 
 impl<'f> File<'f> {
@@ -72,7 +70,7 @@ impl<'f> File<'f> {
             }
         }
 
-        if let Some(ast_def) = child_of_type(self.node(), AST_DEF) {
+        if let Some(ast_def) = self.ast_def() {
             generate_ast(ast_def, &mut buff);
         }
 
@@ -124,19 +122,19 @@ impl<'f> File<'f> {
     }
 }
 
-fn generate_ast(root: Node, buff: &mut Buff) {
+fn generate_ast(ast: AstDef, buff: &mut Buff) {
     buff.blank_line();
     buff.line("use fall_tree::{AstNode, AstChildren, Node};");
     buff.line("use fall_tree::search::child_of_type_exn;");
     buff.blank_line();
-    for node in children_of_type(root, AST_NODE_DEF) {
-        let name = child_of_type_exn(node, IDENT);
-        let sn = snake(name.text());
+    for node in ast.ast_nodes() {
+        let name = node.name();
+        let sn = snake(name);
         buff.line("#[derive(Clone, Copy)]");
         ln!(buff, "pub struct {}<'f> {{ node: Node<'f> }}", sn);
         ln!(buff, "impl<'f> AstNode<'f> for {}<'f> {{", sn);
         buff.indent();
-        ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(name.text()));
+        ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(name));
         buff.line("fn new(node: Node<'f>) -> Self {");
         buff.indent();
         buff.line("assert_eq!(node.ty(), Self::ty());");
@@ -148,24 +146,23 @@ fn generate_ast(root: Node, buff: &mut Buff) {
         buff.line("}");
         buff.blank_line();
 
-        let has_methods = children_of_type(node, METHOD_DEF).count() > 0;
+        let has_methods = node.methods().count() > 0;
         if has_methods {
-            let methods = children_of_type(node, METHOD_DEF);
             ln!(buff, "impl<'f> {}<'f> {{", sn);
             buff.indent();
-            for method in methods {
-                let name = child_of_type_exn(method, IDENT).text();
-                let node_type = child_of_type_exn(method, AST_SELECTOR).text();
-                let (suffix, kind) = if node_type.ends_with("*") {
+            for method in node.methods() {
+                let name = method.name();
+                let selector = method.selector();
+                let (suffix, kind) = if selector.ends_with("*") {
                     ("*", MethodKind::Many)
-                } else if node_type.ends_with("?") {
+                } else if selector.ends_with("?") {
                     ("?", MethodKind::Opt)
-                } else if node_type.ends_with(".text") {
+                } else if selector.ends_with(".text") {
                     (".text", MethodKind::Text)
                 } else {
                     ("", MethodKind::Single)
                 };
-                let node_type = &node_type[..node_type.len() - suffix.len()];
+                let node_type = &selector[..selector.len() - suffix.len()];
                 let ret_type = match kind {
                     MethodKind::Single => format!("{}<'f>", snake(node_type)),
                     MethodKind::Opt => format!("Option<{}<'f>>", snake(node_type)),

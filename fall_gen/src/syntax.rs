@@ -155,6 +155,9 @@ impl<'f> File<'f> {
     pub fn verbatim_def(&self) -> Option<VerbatimDef<'f>> {
         AstChildren::new(self.node.children()).next()
     }
+    pub fn ast_def(&self) -> Option<AstDef<'f>> {
+        AstChildren::new(self.node.children()).next()
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -263,4 +266,61 @@ impl<'f> AstNode<'f> for VerbatimDef<'f> {
     fn node(&self) -> Node<'f> { self.node }
 }
 
+
+#[derive(Clone, Copy)]
+pub struct AstDef<'f> { node: Node<'f> }
+impl<'f> AstNode<'f> for AstDef<'f> {
+    fn ty() -> NodeType { AST_DEF }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        AstDef { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> AstDef<'f> {
+    pub fn ast_nodes(&self) -> AstChildren<'f, AstNodeDef<'f>> {
+        AstChildren::new(self.node.children())
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct AstNodeDef<'f> { node: Node<'f> }
+impl<'f> AstNode<'f> for AstNodeDef<'f> {
+    fn ty() -> NodeType { AST_NODE_DEF }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        AstNodeDef { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> AstNodeDef<'f> {
+    pub fn name(&self) -> &'f str {
+        child_of_type_exn(self.node, IDENT).text()
+    }
+    pub fn methods(&self) -> AstChildren<'f, MethodDef<'f>> {
+        AstChildren::new(self.node.children())
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct MethodDef<'f> { node: Node<'f> }
+impl<'f> AstNode<'f> for MethodDef<'f> {
+    fn ty() -> NodeType { METHOD_DEF }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        MethodDef { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> MethodDef<'f> {
+    pub fn name(&self) -> &'f str {
+        child_of_type_exn(self.node, IDENT).text()
+    }
+    pub fn selector(&self) -> &'f str {
+        child_of_type_exn(self.node, AST_SELECTOR).text()
+    }
+}
 

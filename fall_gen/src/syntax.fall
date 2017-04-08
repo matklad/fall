@@ -30,27 +30,27 @@ nodes {
 }
 
 tokenizer {
-    eq '='
-    pipe '|'
-    star '*'
-    question '?'
-    dot '.'
-    lbrace '{'
-    rbrace '}'
-    langle '<'
-    rangle '>'
-    lparen '('
-    rparen ')'
-    kw_nodes 'nodes'
-    kw_tokenizer 'tokenizer'
-    kw_rule 'rule'
-    kw_verbatim 'verbatim'
-    kw_ast 'ast'
+  eq '='
+  pipe '|'
+  star '*'
+  question '?'
+  dot '.'
+  lbrace '{'
+  rbrace '}'
+  langle '<'
+  rangle '>'
+  lparen '('
+  rparen ')'
+  kw_nodes 'nodes'
+  kw_tokenizer 'tokenizer'
+  kw_rule 'rule'
+  kw_verbatim 'verbatim'
+  kw_ast 'ast'
 
-    whitespace r"\s+"
-    simple_string r#"'([^'\\]|\\.)*'"#
-    hash_string r"r#*" 'parse_raw_string'
-    ident r"\w+"
+  whitespace r"\s+"
+  simple_string r#"'([^'\\]|\\.)*'"#
+  hash_string r"r#*" 'parse_raw_string'
+  ident r"\w+"
 }
 
 rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
@@ -81,7 +81,7 @@ rule verbatim_def { 'verbatim' hash_string }
 rule ast_def { 'ast' '{' <rep ast_node_def> '}' }
 
 rule ast_node_def {
-    ident '{' <rep method_def> '}'
+  ident '{' <rep method_def> '}'
 }
 
 rule method_def { ident ast_selector }
@@ -101,35 +101,48 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 "#########
 
 ast {
+  file {
+    nodes_def nodes_def
+    tokenizer_def tokenizer_def
+    syn_rules syn_rule*
+    verbatim_def verbatim_def?
+    ast_def ast_def?
+  }
 
-file {
-  nodes_def nodes_def
-  tokenizer_def tokenizer_def
-  syn_rules syn_rule*
-  verbatim_def verbatim_def?
-}
+  nodes_def { }
 
-nodes_def { }
+  tokenizer_def {
+    lex_rules lex_rule*
+  }
 
-tokenizer_def {
-  lex_rules lex_rule*
-}
+  lex_rule {
+    node_type IDENT.text
+  }
 
-lex_rule {
-  node_type IDENT.text
-}
+  syn_rule {
+    name IDENT.text
+    alts alt*
+  }
 
-syn_rule {
-  name IDENT.text
-  alts alt*
-}
+  alt {
+    parts part*
+  }
 
-alt {
-  parts part*
-}
+  part { }
 
-part { }
+  verbatim_def { }
 
-verbatim_def { }
+  ast_def {
+    ast_nodes ast_node_def*
+  }
 
+  ast_node_def {
+    name IDENT.text
+    methods method_def*
+  }
+
+  method_def {
+    name IDENT.text
+    selector AST_SELECTOR.text
+  }
 }
