@@ -2,7 +2,7 @@ extern crate elapsed;
 extern crate regex;
 extern crate fall_tree;
 
-use fall_tree::{NodeType, ERROR};
+use fall_tree::NodeType;
 
 mod lex;
 pub mod syn;
@@ -194,30 +194,5 @@ impl TreeBuilder {
 
     pub fn try_eat(&mut self, ty: NodeType) -> bool {
         self.next_is(ty) && { self.bump(); true }
-    }
-
-    pub fn parse_many(&mut self, f: &Fn(&mut TreeBuilder) -> bool) {
-        loop {
-            if !f(self) {
-                break
-            }
-        }
-    }
-
-    pub fn skip_until(&mut self, tys: &[NodeType]) {
-        self.start(ERROR);
-        let mut skipped = false;
-        while let Some(t) = self.current() {
-            if tys.contains(&t.ty) {
-                break;
-            }
-                skipped = true;
-            self.bump();
-        }
-        if skipped {
-            self.finish(ERROR);
-        } else {
-            self.rollback(ERROR);
-        }
     }
 }

@@ -1,2 +1,2 @@
 [workspace]
-members = ["json", "fall_gen", "fall_tree", "fall_parse", "fall_test", "fall_watch"]
+members = ["fall_gen", "fall_tree", "fall_parse", "fall_test", "fall_watch"]
