@@ -10,7 +10,7 @@ use tempdir::TempDir;
 
 fn generator_path() -> PathBuf {
     let test_exe = env::current_exe().unwrap();
-    test_exe.parent().unwrap().parent().unwrap().join("fall-gen")
+    test_exe.parent().unwrap().parent().unwrap().join("gen")
 }
 
 fn check_by_path<T: AsRef<Path>>(grammar: T) {
