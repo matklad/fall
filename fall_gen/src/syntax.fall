@@ -53,7 +53,7 @@ tokenizer {
     ident r"\w+"
 }
 
-rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> }
+rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
 
 rule nodes_def {
   'nodes' <commit> '{' <rep ident> '}'

@@ -28,6 +28,10 @@ impl FallFile {
         ast::File::new(self.file.root())
     }
 
+    pub fn tree_to_string(&self) -> String {
+        fall_tree::dump_file(&self.file)
+    }
+
     pub fn generate(&self) -> String {
         self.ast().generate()
     }

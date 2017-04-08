@@ -99,7 +99,7 @@ const TOKENIZER: &'static [Rule] = &[
 ];
 
 const PARSER: &'static [syn::Rule] = &[
-    syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(9)], commit: None })], commit: None }] },
+    syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(9)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(10)], commit: None })], commit: None }] },
     syn::Rule { ty: Some(NODES_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_NODES), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
     syn::Rule { ty: Some(TOKENIZER_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_TOKENIZER), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
     syn::Rule { ty: Some(LEX_RULE), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(8), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(8)], commit: None })], commit: Some(1) }] },

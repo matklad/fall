@@ -13,7 +13,7 @@ use jsonrpc_minihttp_server::{ServerBuilder};
 
 use elapsed::measure_time;
 
-use fall_tree::{Node, NodeType, walk_tree, AstNode};
+use fall_tree::{Node, NodeType, walk_tree, AstNode  };
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type};
 use fall_gen::syntax::*;
@@ -22,18 +22,28 @@ use fall_gen::ast_ext::PartKind;
 
 type Spans = Vec<(u32, u32, &'static str)>;
 
-#[derive(Serialize, Default)]
-struct Response {
-    spans: Spans
-}
 
 fn main() {
     let mut io = IoHandler::new();
     io.add_method("colors", |params: Params| {
-        println!("Req");
+        #[derive(Serialize, Default)]
+        struct Response { spans: Spans }
+
+        println!("colors");
         let (text, ): (String, ) = params.parse().unwrap();
         let spans = ::std::panic::catch_unwind(|| colorize(text)).unwrap_or_default();
         let r = to_value(Response { spans: spans }).unwrap();
+        println!("OK\n");
+        Ok(r)
+    });
+    io.add_method("tree", |params: Params| {
+        #[derive(Serialize, Default)]
+        struct Response { tree: String }
+
+        println!("tree");
+        let (text, ): (String, ) = params.parse().unwrap();
+        let file = fall_gen::FallFile::parse(text);
+        let r = to_value(Response { tree: file.tree_to_string() }).unwrap();
         println!("OK\n");
         Ok(r)
     });
@@ -43,7 +53,7 @@ fn main() {
         .start_http(&"127.0.0.1:9292".parse().unwrap())
         .unwrap();
 
-    println!("Starting");
+    println!("Starting server on 127.0.0.1:9292");
     server.wait().unwrap();
 }
 
