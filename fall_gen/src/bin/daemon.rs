@@ -66,7 +66,7 @@ fn colorize(text: String) -> Spans {
             .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
                 colorize_node(node, "string", spans)
             })
-            .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER], |spans, node| {
+            .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER, KW_AST], |spans, node| {
                 colorize_node(node, "keyword", spans)
             })
             .visit::<NodesDef, _>(|spans, def| {
@@ -77,6 +77,7 @@ fn colorize(text: String) -> Spans {
             })
             .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
             .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
+            .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
             .visit::<Part, _>(|spans, part| match part.kind() {
                 PartKind::Token(_) => colorize_node(part.node(), "token", spans),
                 PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
