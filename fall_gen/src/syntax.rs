@@ -4,35 +4,43 @@ use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
-pub const KW_NODES  : NodeType = NodeType(100);
-pub const KW_TOKENIZER: NodeType = NodeType(101);
-pub const KW_RULE   : NodeType = NodeType(102);
-pub const KW_VERBATIM: NodeType = NodeType(103);
-pub const EQ        : NodeType = NodeType(104);
-pub const PIPE      : NodeType = NodeType(105);
-pub const STAR      : NodeType = NodeType(106);
-pub const LBRACE    : NodeType = NodeType(107);
-pub const RBRACE    : NodeType = NodeType(108);
-pub const LANGLE    : NodeType = NodeType(109);
-pub const RANGLE    : NodeType = NodeType(110);
-pub const LPAREN    : NodeType = NodeType(111);
-pub const RPAREN    : NodeType = NodeType(112);
-pub const IDENT     : NodeType = NodeType(113);
-pub const SIMPLE_STRING: NodeType = NodeType(114);
-pub const HASH_STRING: NodeType = NodeType(115);
-pub const FILE      : NodeType = NodeType(116);
-pub const STRING    : NodeType = NodeType(117);
-pub const VERBATIM_DEF: NodeType = NodeType(118);
-pub const NODES_DEF : NodeType = NodeType(119);
-pub const TOKENIZER_DEF: NodeType = NodeType(120);
-pub const LEX_RULE  : NodeType = NodeType(121);
-pub const SYN_RULE  : NodeType = NodeType(122);
-pub const ALT       : NodeType = NodeType(123);
-pub const PART      : NodeType = NodeType(124);
+pub const KW_AST    : NodeType = NodeType(100);
+pub const KW_NODES  : NodeType = NodeType(101);
+pub const KW_TOKENIZER: NodeType = NodeType(102);
+pub const KW_RULE   : NodeType = NodeType(103);
+pub const KW_VERBATIM: NodeType = NodeType(104);
+pub const EQ        : NodeType = NodeType(105);
+pub const PIPE      : NodeType = NodeType(106);
+pub const STAR      : NodeType = NodeType(107);
+pub const QUESTION  : NodeType = NodeType(108);
+pub const DOT       : NodeType = NodeType(109);
+pub const LBRACE    : NodeType = NodeType(110);
+pub const RBRACE    : NodeType = NodeType(111);
+pub const LANGLE    : NodeType = NodeType(112);
+pub const RANGLE    : NodeType = NodeType(113);
+pub const LPAREN    : NodeType = NodeType(114);
+pub const RPAREN    : NodeType = NodeType(115);
+pub const IDENT     : NodeType = NodeType(116);
+pub const SIMPLE_STRING: NodeType = NodeType(117);
+pub const HASH_STRING: NodeType = NodeType(118);
+pub const FILE      : NodeType = NodeType(119);
+pub const STRING    : NodeType = NodeType(120);
+pub const VERBATIM_DEF: NodeType = NodeType(121);
+pub const NODES_DEF : NodeType = NodeType(122);
+pub const TOKENIZER_DEF: NodeType = NodeType(123);
+pub const LEX_RULE  : NodeType = NodeType(124);
+pub const SYN_RULE  : NodeType = NodeType(125);
+pub const ALT       : NodeType = NodeType(126);
+pub const PART      : NodeType = NodeType(127);
+pub const AST_DEF   : NodeType = NodeType(128);
+pub const AST_NODE_DEF: NodeType = NodeType(129);
+pub const METHOD_DEF: NodeType = NodeType(130);
+pub const AST_SELECTOR: NodeType = NodeType(131);
 
 fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
     REGISTER.call_once(||{
+        KW_AST.register(NodeTypeInfo { name: "KW_AST" });
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
         KW_TOKENIZER.register(NodeTypeInfo { name: "KW_TOKENIZER" });
         KW_RULE.register(NodeTypeInfo { name: "KW_RULE" });
@@ -40,6 +48,8 @@ fn register_node_types() {
         EQ.register(NodeTypeInfo { name: "EQ" });
         PIPE.register(NodeTypeInfo { name: "PIPE" });
         STAR.register(NodeTypeInfo { name: "STAR" });
+        QUESTION.register(NodeTypeInfo { name: "QUESTION" });
+        DOT.register(NodeTypeInfo { name: "DOT" });
         LBRACE.register(NodeTypeInfo { name: "LBRACE" });
         RBRACE.register(NodeTypeInfo { name: "RBRACE" });
         LANGLE.register(NodeTypeInfo { name: "LANGLE" });
@@ -58,6 +68,10 @@ fn register_node_types() {
         SYN_RULE.register(NodeTypeInfo { name: "SYN_RULE" });
         ALT.register(NodeTypeInfo { name: "ALT" });
         PART.register(NodeTypeInfo { name: "PART" });
+        AST_DEF.register(NodeTypeInfo { name: "AST_DEF" });
+        AST_NODE_DEF.register(NodeTypeInfo { name: "AST_NODE_DEF" });
+        METHOD_DEF.register(NodeTypeInfo { name: "METHOD_DEF" });
+        AST_SELECTOR.register(NodeTypeInfo { name: "AST_SELECTOR" });
     });
 }
 
@@ -65,6 +79,8 @@ const TOKENIZER: &'static [Rule] = &[
     Rule { ty: EQ, re: "=", f: None },
     Rule { ty: PIPE, re: "\\|", f: None },
     Rule { ty: STAR, re: "\\*", f: None },
+    Rule { ty: QUESTION, re: "\\?", f: None },
+    Rule { ty: DOT, re: "\\.", f: None },
     Rule { ty: LBRACE, re: "\\{", f: None },
     Rule { ty: RBRACE, re: "\\}", f: None },
     Rule { ty: LANGLE, re: "<", f: None },
@@ -75,6 +91,7 @@ const TOKENIZER: &'static [Rule] = &[
     Rule { ty: KW_TOKENIZER, re: "tokenizer", f: None },
     Rule { ty: KW_RULE, re: "rule", f: None },
     Rule { ty: KW_VERBATIM, re: "verbatim", f: None },
+    Rule { ty: KW_AST, re: "ast", f: None },
     Rule { ty: WHITESPACE, re: "\\s+", f: None },
     Rule { ty: SIMPLE_STRING, re: "\'([^\'\\\\]|\\\\.)*\'", f: None },
     Rule { ty: HASH_STRING, re: "r#*", f: Some(parse_raw_string) },
@@ -92,6 +109,11 @@ const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(PART), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }] },
     syn::Rule { ty: Some(STRING), alts: &[syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(HASH_STRING)], commit: None }] },
     syn::Rule { ty: Some(VERBATIM_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_VERBATIM), syn::Part::Token(HASH_STRING)], commit: None }] },
+    syn::Rule { ty: Some(AST_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_AST), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(11)], commit: None }), syn::Part::Token(RBRACE)], commit: None }] },
+    syn::Rule { ty: Some(AST_NODE_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(12)], commit: None }), syn::Part::Token(RBRACE)], commit: None }] },
+    syn::Rule { ty: Some(METHOD_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(13)], commit: None }] },
+    syn::Rule { ty: Some(AST_SELECTOR), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(14)], commit: None })], commit: None }] },
+    syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Token(STAR)], commit: None }, syn::Alt { parts: &[syn::Part::Token(QUESTION)], commit: None }, syn::Alt { parts: &[syn::Part::Token(DOT), syn::Part::Token(IDENT)], commit: None }] },
 ];
 
 pub fn parse(text: String) -> ::fall_tree::File {

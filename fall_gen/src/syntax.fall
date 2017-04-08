@@ -1,10 +1,11 @@
 nodes {
+  kw_ast
   kw_nodes
   kw_tokenizer
   kw_rule
   kw_verbatim
 
-  eq pipe star
+  eq pipe star question dot
   lbrace rbrace
   langle rangle
   lparen rparen
@@ -21,12 +22,19 @@ nodes {
   syn_rule
   alt
   part
+
+  ast_def
+  ast_node_def
+  method_def
+  ast_selector
 }
 
 tokenizer {
     eq '='
     pipe '|'
     star '*'
+    question '?'
+    dot '.'
     lbrace '{'
     rbrace '}'
     langle '<'
@@ -37,6 +45,7 @@ tokenizer {
     kw_tokenizer 'tokenizer'
     kw_rule 'rule'
     kw_verbatim 'verbatim'
+    kw_ast 'ast'
 
     whitespace r"\s+"
     simple_string r#"'([^'\\]|\\.)*'"#
@@ -68,6 +77,17 @@ rule part { ident | simple_string | '<' ident syn_rule_body '>' }
 rule string { simple_string | hash_string }
 
 rule verbatim_def { 'verbatim' hash_string }
+
+rule ast_def { 'ast' '{' <rep ast_node_def> '}' }
+
+rule ast_node_def {
+    ident '{' <rep method_def> '}'
+}
+
+rule method_def { ident ast_selector }
+rule ast_selector { ident <opt ast_selector_suffix> }
+rule ast_selector_suffix { '*' | '?' | '.' ident }
+
 
 verbatim r#########"
 
