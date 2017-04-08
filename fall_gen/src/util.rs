@@ -33,6 +33,10 @@ impl Buff {
         self.inner.push('\n');
     }
 
+    pub fn block(&mut self, block: &str) {
+        self.inner.push_str(block.trim())
+    }
+
     pub fn blank_line(&mut self) {
         self.inner.push('\n');
     }

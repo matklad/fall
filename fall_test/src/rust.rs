@@ -1,5 +1,5 @@
 use std::sync::{Once, ONCE_INIT};
-use fall_tree::{NodeType, NodeTypeInfo};
+use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
@@ -52,7 +52,16 @@ const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(STRUCT_DEF), alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Token(PUB)], commit: None }), syn::Part::Token(STRUCT), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Token(RBRACE)], commit: None }] },
 ];
 
-pub fn parse(text: String) -> ::fall_tree::File {
-    register_node_types();
-    ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+lazy_static! {
+    pub static ref LANG: Language = {
+        register_node_types();
+        struct Impl;
+        impl LanguageImpl for Impl {
+            fn parse(&self, text: String) -> ::fall_tree::File {
+                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+            }
+        }
+
+        Language::new(Impl)
+    };
 }

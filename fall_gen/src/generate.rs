@@ -9,7 +9,7 @@ impl<'f> File<'f> {
     pub fn generate(&self) -> String {
         let mut buff = Buff::new();
         buff.line("use std::sync::{Once, ONCE_INIT};");
-        buff.line("use fall_tree::{NodeType, NodeTypeInfo};");
+        buff.line("use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};");
         buff.line("use fall_parse::Rule;");
         buff.line("use fall_parse::syn;");
         buff.line("pub use fall_tree::{ERROR, WHITESPACE};");
@@ -56,12 +56,21 @@ impl<'f> File<'f> {
         buff.blank_line();
         self.generate_syn_rules(&mut buff);
         buff.blank_line();
-        buff.line("pub fn parse(text: String) -> ::fall_tree::File {");
-        buff.indent();
-        buff.line("register_node_types();");
-        buff.line("::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))");
-        buff.dedent();
-        buff.line("}");
+
+        buff.block(r##"
+lazy_static! {
+    pub static ref LANG: Language = {
+        register_node_types();
+        struct Impl;
+        impl LanguageImpl for Impl {
+            fn parse(&self, text: String) -> ::fall_tree::File {
+                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+            }
+        }
+
+        Language::new(Impl)
+    };
+}"##);
 
         if let Some(v) = self.verbatim_def() {
             buff.blank_line();

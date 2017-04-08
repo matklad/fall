@@ -6,7 +6,7 @@ use fall_tree::dump_file_ws;
 
 
 fn ast(code: &str) -> String {
-    dump_file_ws(&rust::parse(code.to_owned()))
+    dump_file_ws(&rust::LANG.parse(code.to_owned()))
 }
 
 #[test]

@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate lazy_static;
 extern crate elapsed;
 extern crate regex;
 extern crate fall_tree;
@@ -19,7 +21,7 @@ pub struct FallFile {
 
 impl FallFile {
     pub fn parse(text: String) -> Self {
-        FallFile { file: syntax::parse(text) }
+        FallFile { file: syntax::LANG.parse(text) }
     }
 
     pub fn ast(&self) -> syntax::File {

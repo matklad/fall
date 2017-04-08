@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
+lazy_static = "0.2"
 fall-tree = { path = "../fall_tree" }
 fall-parse = { path = "../fall_parse" }
