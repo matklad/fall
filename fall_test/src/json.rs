@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const NULL: NodeType = NodeType(100);
@@ -18,40 +17,9 @@ pub const PRIMITIVE: NodeType = NodeType(112);
 pub const FIELD: NodeType = NodeType(113);
 pub const FILE: NodeType = NodeType(114);
 
-const PARSER: &'static [syn::Rule] = &[
-    syn::Rule {
-        ty: Some(FILE),
-        alts: &[syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(OBJECT),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACE), syn::Part::Rule(2), syn::Part::Token(RBRACE)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3), syn::Part::Token(COMMA)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(FIELD),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(STRING), syn::Part::Token(COLON), syn::Part::Rule(5)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: Some(ARRAY),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(LBRACK), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(5), syn::Part::Token(COMMA)], commit: None }), syn::Part::Token(RBRACK)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(PRIMITIVE),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }],
-    },
-];
-
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::LexRule;
+        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
         NULL.register(NodeTypeInfo { name: "NULL" });
         BOOL.register(NodeTypeInfo { name: "BOOL" });
@@ -69,10 +37,41 @@ lazy_static! {
         FIELD.register(NodeTypeInfo { name: "FIELD" });
         FILE.register(NodeTypeInfo { name: "FILE" });
 
+        const PARSER: &'static [SynRule] = &[
+            SynRule {
+                ty: Some(FILE),
+                alts: &[Alt { parts: &[Part::Rule(1)], commit: None }, Alt { parts: &[Part::Rule(4)], commit: None }],
+            },
+            SynRule {
+                ty: Some(OBJECT),
+                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Rule(2), Part::Token(RBRACE)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(3), Part::Token(COMMA)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: Some(FIELD),
+                alts: &[Alt { parts: &[Part::Token(STRING), Part::Token(COLON), Part::Rule(5)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: Some(ARRAY),
+                alts: &[Alt { parts: &[Part::Token(LBRACK), Part::Rep(Alt { parts: &[Part::Rule(5), Part::Token(COMMA)], commit: None }), Part::Token(RBRACK)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Rule(6)], commit: None }, Alt { parts: &[Part::Rule(1)], commit: None }, Alt { parts: &[Part::Rule(4)], commit: None }],
+            },
+            SynRule {
+                ty: Some(PRIMITIVE),
+                alts: &[Alt { parts: &[Part::Token(NULL)], commit: None }, Alt { parts: &[Part::Token(NUMBER)], commit: None }, Alt { parts: &[Part::Token(STRING)], commit: None }, Alt { parts: &[Part::Token(BOOL)], commit: None }],
+            },
+        ];
+
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 

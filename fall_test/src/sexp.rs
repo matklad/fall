@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const ATOM: NodeType = NodeType(100);
@@ -8,24 +7,9 @@ pub const RPAREN: NodeType = NodeType(102);
 pub const FILE: NodeType = NodeType(103);
 pub const LIST: NodeType = NodeType(104);
 
-const PARSER: &'static [syn::Rule] = &[
-    syn::Rule {
-        ty: Some(FILE),
-        alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[syn::Part::Token(ATOM)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(2)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(LIST),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(LPAREN), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }), syn::Part::Token(RPAREN)], commit: None }],
-    },
-];
-
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::LexRule;
+        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
         ATOM.register(NodeTypeInfo { name: "ATOM" });
         LPAREN.register(NodeTypeInfo { name: "LPAREN" });
@@ -33,10 +17,25 @@ lazy_static! {
         FILE.register(NodeTypeInfo { name: "FILE" });
         LIST.register(NodeTypeInfo { name: "LIST" });
 
+        const PARSER: &'static [SynRule] = &[
+            SynRule {
+                ty: Some(FILE),
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Token(ATOM)], commit: None }, Alt { parts: &[Part::Rule(2)], commit: None }],
+            },
+            SynRule {
+                ty: Some(LIST),
+                alts: &[Alt { parts: &[Part::Token(LPAREN), Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None }), Part::Token(RPAREN)], commit: None }],
+            },
+        ];
+
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 

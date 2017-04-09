@@ -2,10 +2,10 @@ use fall_tree::NodeType;
 use TreeBuilder;
 
 pub struct Parser<'r> {
-    rules: &'r [Rule],
+    rules: &'r [SynRule],
 }
 
-pub struct Rule {
+pub struct SynRule {
     pub ty: Option<NodeType>,
     pub alts: &'static [Alt],
 }
@@ -23,7 +23,7 @@ pub enum Part {
 }
 
 impl<'r> Parser<'r> {
-    pub fn new(rules: &[Rule]) -> Parser {
+    pub fn new(rules: &[SynRule]) -> Parser {
         Parser { rules: rules }
     }
 
@@ -61,7 +61,7 @@ impl<'r> Parser<'r> {
         }
     }
 
-    fn parse_rule(&self, rule: &Rule, b: &mut TreeBuilder) -> bool {
+    fn parse_rule(&self, rule: &SynRule, b: &mut TreeBuilder) -> bool {
         if let Some(ty) = rule.ty {
             b.start(ty)
         }

@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const KW_AST: NodeType = NodeType(100);
@@ -35,72 +34,9 @@ pub const AST_NODE_DEF: NodeType = NodeType(129);
 pub const METHOD_DEF: NodeType = NodeType(130);
 pub const AST_SELECTOR: NodeType = NodeType(131);
 
-const PARSER: &'static [syn::Rule] = &[
-    syn::Rule {
-        ty: Some(FILE),
-        alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(9)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(10)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(NODES_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_NODES), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: Some(TOKENIZER_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_TOKENIZER), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: Some(LEX_RULE),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(8), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(8)], commit: None })], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: Some(SYN_RULE),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_RULE), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rule(5), syn::Part::Token(RBRACE)], commit: Some(1) }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(PIPE), syn::Part::Rule(6)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(ALT),
-        alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(7)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(PART),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(STRING),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(HASH_STRING)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(VERBATIM_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_VERBATIM), syn::Part::Token(HASH_STRING)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(AST_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_AST), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(11)], commit: None }), syn::Part::Token(RBRACE)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(AST_NODE_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(12)], commit: None }), syn::Part::Token(RBRACE)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(METHOD_DEF),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(13)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(AST_SELECTOR),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(14)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[syn::Part::Token(STAR)], commit: None }, syn::Alt { parts: &[syn::Part::Token(QUESTION)], commit: None }, syn::Alt { parts: &[syn::Part::Token(DOT), syn::Part::Token(IDENT)], commit: None }],
-    },
-];
-
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::LexRule;
+        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
         KW_AST.register(NodeTypeInfo { name: "KW_AST" });
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
@@ -135,10 +71,73 @@ lazy_static! {
         METHOD_DEF.register(NodeTypeInfo { name: "METHOD_DEF" });
         AST_SELECTOR.register(NodeTypeInfo { name: "AST_SELECTOR" });
 
+        const PARSER: &'static [SynRule] = &[
+            SynRule {
+                ty: Some(FILE),
+                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: Some(NODES_DEF),
+                alts: &[Alt { parts: &[Part::Token(KW_NODES), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Token(IDENT)], commit: None }), Part::Token(RBRACE)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: Some(TOKENIZER_DEF),
+                alts: &[Alt { parts: &[Part::Token(KW_TOKENIZER), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(3)], commit: None }), Part::Token(RBRACE)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: Some(LEX_RULE),
+                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Rule(8), Part::Opt(Alt { parts: &[Part::Rule(8)], commit: None })], commit: Some(1) }],
+            },
+            SynRule {
+                ty: Some(SYN_RULE),
+                alts: &[Alt { parts: &[Part::Token(KW_RULE), Part::Token(IDENT), Part::Token(LBRACE), Part::Rule(5), Part::Token(RBRACE)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: Some(ALT),
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(7)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: Some(PART),
+                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rule(5), Part::Token(RANGLE)], commit: None }],
+            },
+            SynRule {
+                ty: Some(STRING),
+                alts: &[Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(HASH_STRING)], commit: None }],
+            },
+            SynRule {
+                ty: Some(VERBATIM_DEF),
+                alts: &[Alt { parts: &[Part::Token(KW_VERBATIM), Part::Token(HASH_STRING)], commit: None }],
+            },
+            SynRule {
+                ty: Some(AST_DEF),
+                alts: &[Alt { parts: &[Part::Token(KW_AST), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(11)], commit: None }), Part::Token(RBRACE)], commit: None }],
+            },
+            SynRule {
+                ty: Some(AST_NODE_DEF),
+                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(12)], commit: None }), Part::Token(RBRACE)], commit: None }],
+            },
+            SynRule {
+                ty: Some(METHOD_DEF),
+                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Rule(13)], commit: None }],
+            },
+            SynRule {
+                ty: Some(AST_SELECTOR),
+                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Opt(Alt { parts: &[Part::Rule(14)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Token(STAR)], commit: None }, Alt { parts: &[Part::Token(QUESTION)], commit: None }, Alt { parts: &[Part::Token(DOT), Part::Token(IDENT)], commit: None }],
+            },
+        ];
+
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 

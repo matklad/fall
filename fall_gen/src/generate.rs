@@ -72,54 +72,53 @@ fn generate_alt(alt: Alt) -> String {
         .filter(|&p| !is_commit(p))
         .map(|p| generate_part(p))
         .collect::<Vec<_>>();
-    format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
+    format!("Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
 }
 
 fn generate_part(part: Part) -> String {
     match part.kind() {
-        PartKind::Token(t) => format!("syn::Part::Token({})", scream(t)),
-        PartKind::RuleReference { idx } => format!("syn::Part::Rule({:?})", idx),
+        PartKind::Token(t) => format!("Part::Token({})", scream(t)),
+        PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
         PartKind::Call { name, mut alts } => {
             let op = match name {
                 "rep" => "Rep",
                 "opt" => "Opt",
                 _ => unimplemented!(),
             };
-            format!("syn::Part::{}({})", op, generate_alt(alts.next().unwrap()))
+            format!("Part::{}({})", op, generate_alt(alts.next().unwrap()))
         }
     }
 }
 
 const TEMPLATE: &'static str = r#####"
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
 {% for node_type in node_types %}
 pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 {% endfor %}
 
-const PARSER: &'static [syn::Rule] = &[
-    {% for rule in syn_rules %}
-    syn::Rule {
-        ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
-        alts: &[{% for alt in rule.alts %}{% if loop.first %}{{ alt }}{% else %}, {{ alt }}{% endif %}{% endfor %}],
-    },
-    {% endfor %}
-];
-
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::LexRule;
+        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
         {% for node_type in node_types %}
         {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
         {% endfor %}
 
+        const PARSER: &'static [SynRule] = &[
+            {% for rule in syn_rules %}
+            SynRule {
+                ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
+                alts: &[{% for alt in rule.alts %}{% if loop.first %}{{ alt }}{% else %}, {{ alt }}{% endif %}{% endfor %}],
+            },
+            {% endfor %}
+        ];
+
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 

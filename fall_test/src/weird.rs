@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const ATOM: NodeType = NodeType(100);
@@ -7,34 +6,34 @@ pub const RAW_STRING: NodeType = NodeType(101);
 pub const FILE: NodeType = NodeType(102);
 pub const EMPTY: NodeType = NodeType(103);
 
-const PARSER: &'static [syn::Rule] = &[
-    syn::Rule {
-        ty: Some(FILE),
-        alts: &[syn::Alt { parts: &[syn::Part::Token(RAW_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Token(ATOM), syn::Part::Rule(1)], commit: None }],
-    },
-    syn::Rule {
-        ty: Some(EMPTY),
-        alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(2)], commit: None })], commit: None }],
-    },
-    syn::Rule {
-        ty: None,
-        alts: &[syn::Alt { parts: &[], commit: None }],
-    },
-];
-
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::LexRule;
+        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
         ATOM.register(NodeTypeInfo { name: "ATOM" });
         RAW_STRING.register(NodeTypeInfo { name: "RAW_STRING" });
         FILE.register(NodeTypeInfo { name: "FILE" });
         EMPTY.register(NodeTypeInfo { name: "EMPTY" });
 
+        const PARSER: &'static [SynRule] = &[
+            SynRule {
+                ty: Some(FILE),
+                alts: &[Alt { parts: &[Part::Token(RAW_STRING)], commit: None }, Alt { parts: &[Part::Rule(1), Part::Token(ATOM), Part::Rule(1)], commit: None }],
+            },
+            SynRule {
+                ty: Some(EMPTY),
+                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Rule(2)], commit: None })], commit: None }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[], commit: None }],
+            },
+        ];
+
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 
