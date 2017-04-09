@@ -1,4 +1,3 @@
-use std::sync::{Once, ONCE_INIT};
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 use fall_parse::Rule;
 use fall_parse::syn;
@@ -9,17 +8,6 @@ pub const LPAREN: NodeType = NodeType(101);
 pub const RPAREN: NodeType = NodeType(102);
 pub const FILE: NodeType = NodeType(103);
 pub const LIST: NodeType = NodeType(104);
-
-fn register_node_types() {
-    static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(|| {
-        ATOM.register(NodeTypeInfo { name: "ATOM" });
-        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
-        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        LIST.register(NodeTypeInfo { name: "LIST" });
-    });
-}
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule {
@@ -38,7 +26,12 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
-        register_node_types();
+        ATOM.register(NodeTypeInfo { name: "ATOM" });
+        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
+        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
+        FILE.register(NodeTypeInfo { name: "FILE" });
+        LIST.register(NodeTypeInfo { name: "LIST" });
+
         struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
@@ -56,3 +49,5 @@ lazy_static! {
         })
     };
 }
+
+

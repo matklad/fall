@@ -1,4 +1,3 @@
-use std::sync::{Once, ONCE_INIT};
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 use fall_parse::Rule;
 use fall_parse::syn;
@@ -8,16 +7,6 @@ pub const ATOM: NodeType = NodeType(100);
 pub const RAW_STRING: NodeType = NodeType(101);
 pub const FILE: NodeType = NodeType(102);
 pub const EMPTY: NodeType = NodeType(103);
-
-fn register_node_types() {
-    static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(|| {
-        ATOM.register(NodeTypeInfo { name: "ATOM" });
-        RAW_STRING.register(NodeTypeInfo { name: "RAW_STRING" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        EMPTY.register(NodeTypeInfo { name: "EMPTY" });
-    });
-}
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule {
@@ -36,7 +25,11 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
-        register_node_types();
+        ATOM.register(NodeTypeInfo { name: "ATOM" });
+        RAW_STRING.register(NodeTypeInfo { name: "RAW_STRING" });
+        FILE.register(NodeTypeInfo { name: "FILE" });
+        EMPTY.register(NodeTypeInfo { name: "EMPTY" });
+
         struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
@@ -59,3 +52,4 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     let closing = &q_hashes[..quote_start];
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
+

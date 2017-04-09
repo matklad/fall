@@ -91,7 +91,6 @@ fn generate_part(part: Part) -> String {
 }
 
 const TEMPLATE: &'static str = r#####"
-use std::sync::{Once, ONCE_INIT};
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 use fall_parse::Rule;
 use fall_parse::syn;
@@ -100,15 +99,6 @@ pub use fall_tree::{ERROR, WHITESPACE};
 {% for node_type in node_types %}
 pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 {% endfor %}
-
-fn register_node_types() {
-    static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(|| {
-        {% for node_type in node_types %}
-        {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
-        {% endfor %}
-    });
-}
 
 const PARSER: &'static [syn::Rule] = &[
     {% for rule in syn_rules %}
@@ -121,7 +111,10 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
-        register_node_types();
+        {% for node_type in node_types %}
+        {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
+        {% endfor %}
+
         struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {

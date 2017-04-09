@@ -1,4 +1,3 @@
-use std::sync::{Once, ONCE_INIT};
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 use fall_parse::Rule;
 use fall_parse::syn;
@@ -15,23 +14,6 @@ pub const IDENT: NodeType = NodeType(107);
 pub const FILE: NodeType = NodeType(108);
 pub const STRUCT_DEF: NodeType = NodeType(109);
 pub const FN_DEF: NodeType = NodeType(110);
-
-fn register_node_types() {
-    static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(|| {
-        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
-        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
-        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
-        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
-        PUB.register(NodeTypeInfo { name: "PUB" });
-        STRUCT.register(NodeTypeInfo { name: "STRUCT" });
-        FN.register(NodeTypeInfo { name: "FN" });
-        IDENT.register(NodeTypeInfo { name: "IDENT" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        STRUCT_DEF.register(NodeTypeInfo { name: "STRUCT_DEF" });
-        FN_DEF.register(NodeTypeInfo { name: "FN_DEF" });
-    });
-}
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule {
@@ -54,7 +36,18 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
-        register_node_types();
+        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
+        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
+        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
+        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
+        PUB.register(NodeTypeInfo { name: "PUB" });
+        STRUCT.register(NodeTypeInfo { name: "STRUCT" });
+        FN.register(NodeTypeInfo { name: "FN" });
+        IDENT.register(NodeTypeInfo { name: "IDENT" });
+        FILE.register(NodeTypeInfo { name: "FILE" });
+        STRUCT_DEF.register(NodeTypeInfo { name: "STRUCT_DEF" });
+        FN_DEF.register(NodeTypeInfo { name: "FN_DEF" });
+
         struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
@@ -77,3 +70,5 @@ lazy_static! {
         })
     };
 }
+
+
