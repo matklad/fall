@@ -3,10 +3,20 @@ use fall_tree::{NodeType, TextRange, ERROR};
 
 pub type CustomRule = fn(&str) -> Option<usize>;
 
-pub struct Rule {
+pub struct LexRule {
     pub ty: NodeType,
-    pub re: &'static str,
+    pub re: Regex,
     pub f: Option<CustomRule>,
+}
+
+impl LexRule {
+    pub fn new(ty: NodeType, re: &str, f: Option<CustomRule>) -> LexRule {
+        LexRule {
+            ty: ty,
+            re: Regex::new(&format!("^({})", re)).unwrap(),
+            f: f,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -15,23 +25,21 @@ pub struct Token {
     pub range: TextRange,
 }
 
-pub fn tokenize<'t>(text: &'t str, tokenizer: &[Rule]) -> TokenIter<'t> {
+pub fn tokenize<'t, 'r>(text: &'t str, tokenizer: &'r [LexRule]) -> TokenIter<'t, 'r> {
     TokenIter {
         rest: text,
         offset: 0,
-        rules: tokenizer.iter().map(|r| {
-            (r.ty, Regex::new(&format!("^({})", r.re)).unwrap(), r.f)
-        }).collect(),
+        rules: tokenizer,
     }
 }
 
-pub struct TokenIter<'t> {
+pub struct TokenIter<'t, 'r> {
     rest: &'t str,
     offset: usize,
-    rules: Vec<(NodeType, Regex, Option<CustomRule>)>,
+    rules: &'r [LexRule],
 }
 
-impl<'t> Iterator for TokenIter<'t> {
+impl<'t, 'r> Iterator for TokenIter<'t, 'r> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -40,8 +48,8 @@ impl<'t> Iterator for TokenIter<'t> {
         }
 
         let longest_match = self.rules.iter().rev()
-            .filter_map(|&(ty, ref re, f)| {
-                re.find(self.rest).map(|m| (m.end(), (ty, f)))
+            .filter_map(|rule| {
+                rule.re.find(self.rest).map(|m| (m.end(), (rule.ty, rule.f)))
             })
             .max_by_key(|&(len, _)| len);
 
@@ -66,7 +74,7 @@ impl<'t> Iterator for TokenIter<'t> {
     }
 }
 
-impl<'t> TokenIter<'t> {
+impl<'t, 'r> TokenIter<'t, 'r> {
     fn bad_char(&mut self) -> Token {
         let char_len = self.rest.chars().next().unwrap().len_utf8();
         self.token(ERROR, char_len)
@@ -83,10 +91,10 @@ impl<'t> TokenIter<'t> {
 #[test]
 fn tokenize_longest_first_wins() {
     let rules = &[
-        Rule { ty: ::fall_tree::WHITESPACE, re: r"\s+", f: None },
-        Rule { ty: NodeType(10), re: "foo", f: None },
-        Rule { ty: NodeType(11), re: r"\w+", f: None },
-        Rule { ty: NodeType(12), re: "foobar", f: None },
+        LexRule::new(::fall_tree::WHITESPACE, r"\s+", None),
+        LexRule::new(NodeType(10), "foo", None),
+        LexRule::new(NodeType(11), r"\w+", None),
+        LexRule::new(NodeType(12), "foobar", None),
     ];
 
     let tokens: Vec<_> = tokenize("foo foob foobar", rules)

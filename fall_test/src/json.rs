@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -52,6 +51,8 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
+        use fall_parse::LexRule;
+
         NULL.register(NodeTypeInfo { name: "NULL" });
         BOOL.register(NodeTypeInfo { name: "BOOL" });
         NUMBER.register(NodeTypeInfo { name: "NUMBER" });
@@ -68,7 +69,7 @@ lazy_static! {
         FIELD.register(NodeTypeInfo { name: "FIELD" });
         FILE.register(NodeTypeInfo { name: "FILE" });
 
-        struct Impl { tokenizer: Vec<Rule> };
+        struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
@@ -77,17 +78,17 @@ lazy_static! {
 
         Language::new(Impl {
             tokenizer: vec![
-                Rule { ty: LBRACE, re: "\\{", f: None },
-                Rule { ty: RBRACE, re: "\\}", f: None },
-                Rule { ty: LBRACK, re: "\\[", f: None },
-                Rule { ty: RBRACK, re: "\\]", f: None },
-                Rule { ty: COLON, re: ":", f: None },
-                Rule { ty: COMMA, re: ",", f: None },
-                Rule { ty: NULL, re: "null", f: None },
-                Rule { ty: WHITESPACE, re: "\\s+", f: None },
-                Rule { ty: BOOL, re: "true|false", f: None },
-                Rule { ty: STRING, re: "\"[^\"]*\"", f: None },
-                Rule { ty: NUMBER, re: "\\d+", f: None },
+                LexRule::new(LBRACE, "\\{", None),
+                LexRule::new(RBRACE, "\\}", None),
+                LexRule::new(LBRACK, "\\[", None),
+                LexRule::new(RBRACK, "\\]", None),
+                LexRule::new(COLON, ":", None),
+                LexRule::new(COMMA, ",", None),
+                LexRule::new(NULL, "null", None),
+                LexRule::new(WHITESPACE, "\\s+", None),
+                LexRule::new(BOOL, "true|false", None),
+                LexRule::new(STRING, "\"[^\"]*\"", None),
+                LexRule::new(NUMBER, "\\d+", None),
             ]
         })
     };

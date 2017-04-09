@@ -92,7 +92,6 @@ fn generate_part(part: Part) -> String {
 
 const TEMPLATE: &'static str = r#####"
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -111,11 +110,13 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
+        use fall_parse::LexRule;
+
         {% for node_type in node_types %}
         {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
         {% endfor %}
 
-        struct Impl { tokenizer: Vec<Rule> };
+        struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
@@ -125,7 +126,7 @@ lazy_static! {
         Language::new(Impl {
             tokenizer: vec![
                 {% for rule in lex_rules %}
-                Rule { ty: {{ rule.ty | upper }}, re: {{ rule.re }}, f: {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %} },
+                LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
                 {% endfor %}
             ]
         })

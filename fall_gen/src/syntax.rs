@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
-use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -101,6 +100,8 @@ const PARSER: &'static [syn::Rule] = &[
 
 lazy_static! {
     pub static ref LANG: Language = {
+        use fall_parse::LexRule;
+
         KW_AST.register(NodeTypeInfo { name: "KW_AST" });
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
         KW_TOKENIZER.register(NodeTypeInfo { name: "KW_TOKENIZER" });
@@ -134,7 +135,7 @@ lazy_static! {
         METHOD_DEF.register(NodeTypeInfo { name: "METHOD_DEF" });
         AST_SELECTOR.register(NodeTypeInfo { name: "AST_SELECTOR" });
 
-        struct Impl { tokenizer: Vec<Rule> };
+        struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
@@ -143,26 +144,26 @@ lazy_static! {
 
         Language::new(Impl {
             tokenizer: vec![
-                Rule { ty: EQ, re: "=", f: None },
-                Rule { ty: PIPE, re: "\\|", f: None },
-                Rule { ty: STAR, re: "\\*", f: None },
-                Rule { ty: QUESTION, re: "\\?", f: None },
-                Rule { ty: DOT, re: "\\.", f: None },
-                Rule { ty: LBRACE, re: "\\{", f: None },
-                Rule { ty: RBRACE, re: "\\}", f: None },
-                Rule { ty: LANGLE, re: "<", f: None },
-                Rule { ty: RANGLE, re: ">", f: None },
-                Rule { ty: LPAREN, re: "\\(", f: None },
-                Rule { ty: RPAREN, re: "\\)", f: None },
-                Rule { ty: KW_NODES, re: "nodes", f: None },
-                Rule { ty: KW_TOKENIZER, re: "tokenizer", f: None },
-                Rule { ty: KW_RULE, re: "rule", f: None },
-                Rule { ty: KW_VERBATIM, re: "verbatim", f: None },
-                Rule { ty: KW_AST, re: "ast", f: None },
-                Rule { ty: WHITESPACE, re: "\\s+", f: None },
-                Rule { ty: SIMPLE_STRING, re: "\'([^\'\\\\]|\\\\.)*\'", f: None },
-                Rule { ty: HASH_STRING, re: "r#*", f: Some(parse_raw_string) },
-                Rule { ty: IDENT, re: "\\w+", f: None },
+                LexRule::new(EQ, "=", None),
+                LexRule::new(PIPE, "\\|", None),
+                LexRule::new(STAR, "\\*", None),
+                LexRule::new(QUESTION, "\\?", None),
+                LexRule::new(DOT, "\\.", None),
+                LexRule::new(LBRACE, "\\{", None),
+                LexRule::new(RBRACE, "\\}", None),
+                LexRule::new(LANGLE, "<", None),
+                LexRule::new(RANGLE, ">", None),
+                LexRule::new(LPAREN, "\\(", None),
+                LexRule::new(RPAREN, "\\)", None),
+                LexRule::new(KW_NODES, "nodes", None),
+                LexRule::new(KW_TOKENIZER, "tokenizer", None),
+                LexRule::new(KW_RULE, "rule", None),
+                LexRule::new(KW_VERBATIM, "verbatim", None),
+                LexRule::new(KW_AST, "ast", None),
+                LexRule::new(WHITESPACE, "\\s+", None),
+                LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
+                LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
+                LexRule::new(IDENT, "\\w+", None),
             ]
         })
     };

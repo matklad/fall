@@ -7,7 +7,7 @@ use fall_tree::NodeType;
 mod lex;
 pub mod syn;
 
-pub use lex::Rule;
+pub use lex::{LexRule};
 pub use core::{TreeBuilder, parse};
 
 mod core {
@@ -15,7 +15,7 @@ mod core {
 
     use std::collections::HashSet;
     use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
-    use lex::{Token, Rule, tokenize};
+    use lex::{Token, tokenize, LexRule};
 
 
     pub struct TreeBuilder {
@@ -173,7 +173,7 @@ mod core {
     pub fn parse(
         text: String,
         file_type: NodeType,
-        tokenizer: &[Rule],
+        tokenizer: &[LexRule],
         parser: &Fn(&mut TreeBuilder)
     ) -> File {
         let (elapsed_lex, tokens) = measure_time(|| tokenize(&text, tokenizer).collect());
