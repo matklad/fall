@@ -1,28 +1,35 @@
 use elapsed::ElapsedDuration;
 
-use {TextRange, NodeType};
+use {TextRange, NodeType, Language};
 
 mod imp;
 
 pub use self::imp::NodeChildren;
 
-pub struct File(imp::FileImpl);
+pub struct File {
+    lang: Language,
+    imp: imp::FileImpl,
+}
 
 impl File {
+    pub fn language(&self) -> &Language {
+        &self.lang
+    }
+
     pub fn root(&self) -> Node {
-        self.0.root()
+        self.imp.root()
     }
 
     pub fn text(&self) -> &str {
-        self.0.text()
+        self.imp.text()
     }
 
     pub fn lexing_time(&self) -> ElapsedDuration {
-        self.0.lexing_time()
+        self.imp.lexing_time()
     }
 
     pub fn parsing_time(&self) -> ElapsedDuration {
-        self.0.parsing_time()
+        self.imp.parsing_time()
     }
 }
 
@@ -57,8 +64,8 @@ pub struct FileBuilder(imp::FileBuilderImpl);
 pub struct NodeBuilder(imp::NodeId);
 
 impl FileBuilder {
-    pub fn new(text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilder {
-        FileBuilder(imp::FileBuilderImpl::new(text, lex_time, parse_time))
+    pub fn new(lang: Language, text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilder {
+        FileBuilder(imp::FileBuilderImpl::new(lang, text, lex_time, parse_time))
     }
 
     pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)

@@ -50,8 +50,8 @@ lazy_static! {
 
         struct Impl { tokenizer: Vec<LexRule> };
         impl LanguageImpl for Impl {
-            fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
             }
         }
 

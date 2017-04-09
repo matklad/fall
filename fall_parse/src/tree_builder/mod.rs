@@ -1,6 +1,6 @@
 use elapsed::measure_time;
 
-use fall_tree::{NodeType, File};
+use fall_tree::{Language, NodeType, File};
 use lex::{Token, LexRule, tokenize};
 
 mod imp;
@@ -45,13 +45,14 @@ impl TreeBuilder {
 }
 
 pub fn parse(
+    lang: Language,
     text: String,
     file_type: NodeType,
     tokenizer: &[LexRule],
     parser: &Fn(&mut TreeBuilder)
 ) -> File {
     let (elapsed_lex, tokens) = measure_time(|| tokenize(&text, tokenizer).collect());
-    let mut builder = TreeBuilder(imp::TreeBuilderImpl::new(text, file_type, tokens));
+    let mut builder = TreeBuilder(imp::TreeBuilderImpl::new(lang, text, file_type, tokens));
     let (elapsed_parse, _) = measure_time(|| parser(&mut builder));
     builder.0.into_file(elapsed_lex, elapsed_parse)
 }

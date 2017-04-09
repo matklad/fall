@@ -2,11 +2,12 @@ use std::collections::HashSet;
 
 use elapsed::ElapsedDuration;
 
-use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
+use fall_tree::{Language, TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
 use lex::Token;
 
 
 pub struct TreeBuilderImpl {
+    lang: Language,
     text: String,
     skip: HashSet<NodeType>,
     tokens: Vec<Token>,
@@ -86,9 +87,10 @@ impl TreeBuilderImpl {
         PreNode { ty: frame.ty, range: range, children: frame.children }
     }
 
-    pub fn new(text: String, file_type: NodeType, tokens: Vec<Token>) -> TreeBuilderImpl {
+    pub fn new(lang: Language,text: String, file_type: NodeType, tokens: Vec<Token>) -> TreeBuilderImpl {
         let skip = &[WHITESPACE];
         let mut result = TreeBuilderImpl {
+            lang: lang,
             text: text,
             skip: skip.iter().cloned().collect(),
             tokens: tokens,
@@ -129,7 +131,7 @@ impl TreeBuilderImpl {
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
         let root = self.to_prenode(top);
-        let mut builder = FileBuilder::new(self.text, lex_time, parse_time);
+        let mut builder = FileBuilder::new(self.lang, self.text, lex_time, parse_time);
         go(&mut builder, None, root);
         return builder.build();
 

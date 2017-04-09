@@ -12,10 +12,10 @@ impl Language {
     }
 
     pub fn parse(&self, text: String) -> File {
-        self.imp.parse(text)
+        self.imp.parse(self.clone(), text)
     }
 }
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn parse(&self, text: String) -> File;
+    fn parse(&self, this: Language, text: String) -> File;
 }
