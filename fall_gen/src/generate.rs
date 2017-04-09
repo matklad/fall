@@ -1,48 +1,124 @@
 use fall_tree::AstNode;
 use ast_ext::{PartKind, SelectorKind};
-use util::{Buff, scream, snake};
+use util::{scream, snake};
+use tera::{Tera, Context};
 
-use syntax::{File, Alt, Part, AstDef};
+use syntax::{File, Alt, Part};
 
+pub fn generate(file: File) -> String {
 
-impl<'f> File<'f> {
-    pub fn generate(&self) -> String {
-        let mut buff = Buff::new();
-        buff.line("use std::sync::{Once, ONCE_INIT};");
-        buff.line("use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};");
-        buff.line("use fall_parse::Rule;");
-        buff.line("use fall_parse::syn;");
-        buff.line("pub use fall_tree::{ERROR, WHITESPACE};");
-        buff.blank_line();
+    #[derive(Serialize)]
+    struct CtxSynRule<'f> { is_public: bool, name: &'f str, alts: Vec<String> };
 
-        for (i, t) in self.nodes_def().nodes().iter().enumerate() {
-            ln!(buff, "pub const {:10}: NodeType = NodeType({});", scream(t), 100 + i);
+    #[derive(Serialize)]
+    struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
+
+    #[derive(Serialize)]
+    struct CtxAstNode<'f> { struct_name: String, node_type_name: String, methods: Vec<CtxMethod<'f>> }
+
+    #[derive(Serialize)]
+    struct CtxMethod<'f> { name: &'f str, ret_type: String, body: String }
+
+    let mut context = Context::new();
+    context.add("node_types", &file.nodes_def().nodes());
+    context.add("syn_rules", &file.syn_rules().map(|r| {
+        CtxSynRule {
+            is_public: r.is_public(),
+            name: r.name(),
+            alts: r.alts().map(generate_alt).collect()
         }
+    }).collect::<Vec<_>>());
+    context.add("lex_rules", &file.tokenizer_def().lex_rules().map(|r| {
+        CtxLexRule { ty: r.node_type(), re: format!("{:?}", r.token_re()), f: r.extern_fn() }
+    }).collect::<Vec<_>>());
+    context.add("verbatim", &file.verbatim_def().map(|v| v.contents()));
 
-        buff.blank_line();
-
-        buff.line("fn register_node_types() {");
-        {
-            buff.indent();
-            buff.line("static REGISTER: Once = ONCE_INIT;");
-            buff.line("REGISTER.call_once(||{");
-            buff.indent();
-            for t in self.nodes_def().nodes().iter() {
-                ln!(buff, "{}.register(NodeTypeInfo {{ name: {:?} }});", scream(t), scream(t));
+    if let Some(ast) = file.ast_def() {
+        context.add("ast_nodes", &ast.ast_nodes().map(|node| {
+            CtxAstNode {
+                struct_name: snake(node.name()),
+                node_type_name: scream(node.name()),
+                methods: node.methods().map(|method| {
+                    CtxMethod {
+                        name: method.name(),
+                        ret_type: match method.selector_kind() {
+                            SelectorKind::Single(name) => format!("{}<'f>", snake(name)),
+                            SelectorKind::Opt(name) => format!("Option<{}<'f>>", snake(name)),
+                            SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", snake(name)),
+                            SelectorKind::Text(_) => "&'f str".to_owned(),
+                        },
+                        body: match method.selector_kind() {
+                            SelectorKind::Single(_) => format!("AstChildren::new(self.node.children()).next().unwrap()"),
+                            SelectorKind::Opt(_) => format!("AstChildren::new(self.node.children()).next()"),
+                            SelectorKind::Many(_) => format!("AstChildren::new(self.node.children())"),
+                            SelectorKind::Text(name) => format!("child_of_type_exn(self.node, {}).text()", name),
+                        }
+                    }
+                }).collect()
             }
-            buff.dedent();
-            buff.line("});");
-            buff.dedent();
+        }).collect::<Vec<_>>());
+    }
+
+    Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
+}
+
+fn generate_alt(alt: Alt) -> String {
+    fn is_commit(part: Part) -> bool {
+        part.node().text() == "<commit>"
+    }
+    let commit = alt.parts().position(is_commit);
+
+    let parts = alt.parts()
+        .filter(|&p| !is_commit(p))
+        .map(|p| generate_part(p))
+        .collect::<Vec<_>>();
+    format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
+}
+
+fn generate_part(part: Part) -> String {
+    match part.kind() {
+        PartKind::Token(t) => format!("syn::Part::Token({})", scream(t)),
+        PartKind::RuleReference { idx } => format!("syn::Part::Rule({:?})", idx),
+        PartKind::Call { name, mut alts } => {
+            let op = match name {
+                "rep" => "Rep",
+                "opt" => "Opt",
+                _ => unimplemented!(),
+            };
+            format!("syn::Part::{}({})", op, generate_alt(alts.next().unwrap()))
         }
-        buff.line("}");
-        buff.blank_line();
+    }
+}
 
+const TEMPLATE: &'static str = r#####"
+use std::sync::{Once, ONCE_INIT};
+use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
+use fall_parse::Rule;
+use fall_parse::syn;
+pub use fall_tree::{ERROR, WHITESPACE};
 
-        buff.blank_line();
-        self.generate_syn_rules(&mut buff);
-        buff.blank_line();
+{% for node_type in node_types %}
+pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
+{% endfor %}
 
-        buff.block(r##"
+fn register_node_types() {
+    static REGISTER: Once = ONCE_INIT;
+    REGISTER.call_once(|| {
+        {% for node_type in node_types %}
+        {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
+        {% endfor %}
+    });
+}
+
+const PARSER: &'static [syn::Rule] = &[
+    {% for rule in syn_rules %}
+    syn::Rule {
+        ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
+        alts: &[{% for alt in rule.alts %}{% if loop.first %}{{ alt }}{% else %}, {{ alt }}{% endif %}{% endfor %}],
+    },
+    {% endfor %}
+];
+
 lazy_static! {
     pub static ref LANG: Language = {
         register_node_types();
@@ -55,140 +131,41 @@ lazy_static! {
 
         Language::new(Impl {
             tokenizer: vec![
-"##);
-        {
-            buff.indent(); buff.indent(); buff.indent(); buff.indent();
-            for rule in self.tokenizer_def().lex_rules() {
-                let f = match rule.extern_fn() {
-                    None => "None".to_owned(),
-                    Some(ref f) => format!("Some({})", f)
-                };
-                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},",
-                    scream(&rule.node_type()), rule.token_re(), f);
-            }
-            buff.dedent(); buff.dedent(); buff.dedent(); buff.dedent();
-        }
-
-        buff.block(r##"            ]
+                {% for rule in lex_rules %}
+                Rule { ty: {{ rule.ty | upper }}, re: {{ rule.re }}, f: {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %} },
+                {% endfor %}
+            ]
         })
     };
-}"##);
+}
+{% if verbatim is string %}
+{{ verbatim }}
+{% endif %}
 
-        if let Some(v) = self.verbatim_def() {
-            buff.blank_line();
-            for l in v.contents().lines() {
-                buff.line(l)
-            }
-        }
+{% if ast_nodes is defined %}
+use fall_tree::{AstNode, AstChildren, Node};
+use fall_tree::search::child_of_type_exn;
 
-        if let Some(ast_def) = self.ast_def() {
-            generate_ast(ast_def, &mut buff);
-        }
+{% for node in ast_nodes %}
+#[derive(Clone, Copy)]
+pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
 
-        buff.done()
+impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
+    fn ty() -> NodeType { {{ node.node_type_name }} }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        {{ node.struct_name }} { node: node }
     }
-
-    fn generate_syn_rules(&self, buff: &mut Buff) {
-        buff.line("const PARSER: &'static [syn::Rule] = &[");
-        buff.indent();
-        for rule in self.syn_rules() {
-            let ty = if rule.is_public() {
-                format!("Some({})", scream(&rule.name()))
-            } else {
-                "None".to_owned()
-            };
-            let alts = rule.alts().map(|a| self.generate_alt(a)).collect::<Vec<_>>();
-            ln!(buff, r#"syn::Rule {{ ty: {}, alts: &[{}] }},"#, ty, alts.join(", "));
-        }
-        buff.dedent();
-        buff.line("];");
-    }
-
-    fn generate_alt(&self, alt: Alt) -> String {
-        fn is_commit(part: Part) -> bool {
-            part.node().text() == "<commit>"
-        }
-        let commit = alt.parts().position(is_commit);
-
-        let parts = alt.parts()
-            .filter(|&p| !is_commit(p))
-            .map(|p| self.generate_part(p))
-            .collect::<Vec<_>>();
-        format!("syn::Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
-    }
-
-    fn generate_part(&self, part: Part) -> String {
-        match part.kind() {
-            PartKind::Token(t) => format!("syn::Part::Token({})", scream(t)),
-            PartKind::RuleReference { idx } => format!("syn::Part::Rule({:?})", idx),
-            PartKind::Call { name, mut alts } => {
-                let op = match name {
-                    "rep" => "Rep",
-                    "opt" => "Opt",
-                    _ => unimplemented!(),
-                };
-                format!("syn::Part::{}({})", op, self.generate_alt(alts.next().unwrap()))
-            }
-        }
-    }
+    fn node(&self) -> Node<'f> { self.node }
 }
 
-fn generate_ast(ast: AstDef, buff: &mut Buff) {
-    buff.blank_line();
-    buff.line("use fall_tree::{AstNode, AstChildren, Node};");
-    buff.line("use fall_tree::search::child_of_type_exn;");
-    buff.blank_line();
-    for node in ast.ast_nodes() {
-        let sn = snake(node.name());
-        buff.line("#[derive(Clone, Copy)]");
-        ln!(buff, "pub struct {}<'f> {{ node: Node<'f> }}", sn);
-        ln!(buff, "impl<'f> AstNode<'f> for {}<'f> {{", sn);
-        buff.indent();
-        ln!(buff, "fn ty() -> NodeType {{ {} }}", scream(node.name()));
-        buff.line("fn new(node: Node<'f>) -> Self {");
-        buff.indent();
-        buff.line("assert_eq!(node.ty(), Self::ty());");
-        ln!(buff, "{} {{ node: node }}", sn);
-        buff.dedent();
-        buff.line("}");
-        buff.line("fn node(&self) -> Node<'f> { self.node }");
-        buff.dedent();
-        buff.line("}");
-        buff.blank_line();
-
-        if node.methods().count() > 0 {
-            ln!(buff, "impl<'f> {}<'f> {{", sn);
-            buff.indent();
-            for method in node.methods() {
-                let ret_type = match method.selector_kind() {
-                    SelectorKind::Single(name) => format!("{}<'f>", snake(name)),
-                    SelectorKind::Opt(name) => format!("Option<{}<'f>>", snake(name)),
-                    SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", snake(name)),
-                    SelectorKind::Text(_) => "&'f str".to_owned(),
-                };
-
-                ln!(buff, "pub fn {}(&self) -> {} {{", method.name(), ret_type);
-                buff.indent();
-                match method.selector_kind() {
-                    SelectorKind::Single(_) => {
-                        ln!(buff, "AstChildren::new(self.node.children()).next().unwrap()")
-                    }
-                    SelectorKind::Opt(_) => {
-                        ln!(buff, "AstChildren::new(self.node.children()).next()")
-                    }
-                    SelectorKind::Many(_) => {
-                        ln!(buff, "AstChildren::new(self.node.children())")
-                    }
-                    SelectorKind::Text(name) => {
-                        ln!(buff, "child_of_type_exn(self.node, {}).text()", name)
-                    }
-                }
-                buff.dedent();
-                buff.line("}");
-            }
-            buff.dedent();
-            buff.line("}");
-        }
-        buff.blank_line();
+impl<'f> {{ node.struct_name }}<'f> {
+    {% for method in node.methods %}
+    pub fn {{ method.name }}(&self) -> {{ method.ret_type }} {
+        {{ method.body }}
     }
+    {% endfor %}
 }
+{% endfor %}
+{% endif %}
+"#####;

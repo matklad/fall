@@ -1,7 +1,10 @@
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
 extern crate elapsed;
 extern crate regex;
+extern crate tera;
 extern crate fall_tree;
 extern crate fall_parse;
 
@@ -33,7 +36,7 @@ impl FallFile {
     }
 
     pub fn generate(&self) -> String {
-        self.ast().generate()
+        generate::generate(self.ast())
     }
 
     pub fn lexing_time(&self) -> ElapsedDuration {

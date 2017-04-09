@@ -4,42 +4,42 @@ use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
-pub const KW_AST    : NodeType = NodeType(100);
-pub const KW_NODES  : NodeType = NodeType(101);
+pub const KW_AST: NodeType = NodeType(100);
+pub const KW_NODES: NodeType = NodeType(101);
 pub const KW_TOKENIZER: NodeType = NodeType(102);
-pub const KW_RULE   : NodeType = NodeType(103);
+pub const KW_RULE: NodeType = NodeType(103);
 pub const KW_VERBATIM: NodeType = NodeType(104);
-pub const EQ        : NodeType = NodeType(105);
-pub const PIPE      : NodeType = NodeType(106);
-pub const STAR      : NodeType = NodeType(107);
-pub const QUESTION  : NodeType = NodeType(108);
-pub const DOT       : NodeType = NodeType(109);
-pub const LBRACE    : NodeType = NodeType(110);
-pub const RBRACE    : NodeType = NodeType(111);
-pub const LANGLE    : NodeType = NodeType(112);
-pub const RANGLE    : NodeType = NodeType(113);
-pub const LPAREN    : NodeType = NodeType(114);
-pub const RPAREN    : NodeType = NodeType(115);
-pub const IDENT     : NodeType = NodeType(116);
+pub const EQ: NodeType = NodeType(105);
+pub const PIPE: NodeType = NodeType(106);
+pub const STAR: NodeType = NodeType(107);
+pub const QUESTION: NodeType = NodeType(108);
+pub const DOT: NodeType = NodeType(109);
+pub const LBRACE: NodeType = NodeType(110);
+pub const RBRACE: NodeType = NodeType(111);
+pub const LANGLE: NodeType = NodeType(112);
+pub const RANGLE: NodeType = NodeType(113);
+pub const LPAREN: NodeType = NodeType(114);
+pub const RPAREN: NodeType = NodeType(115);
+pub const IDENT: NodeType = NodeType(116);
 pub const SIMPLE_STRING: NodeType = NodeType(117);
 pub const HASH_STRING: NodeType = NodeType(118);
-pub const FILE      : NodeType = NodeType(119);
-pub const STRING    : NodeType = NodeType(120);
+pub const FILE: NodeType = NodeType(119);
+pub const STRING: NodeType = NodeType(120);
 pub const VERBATIM_DEF: NodeType = NodeType(121);
-pub const NODES_DEF : NodeType = NodeType(122);
+pub const NODES_DEF: NodeType = NodeType(122);
 pub const TOKENIZER_DEF: NodeType = NodeType(123);
-pub const LEX_RULE  : NodeType = NodeType(124);
-pub const SYN_RULE  : NodeType = NodeType(125);
-pub const ALT       : NodeType = NodeType(126);
-pub const PART      : NodeType = NodeType(127);
-pub const AST_DEF   : NodeType = NodeType(128);
+pub const LEX_RULE: NodeType = NodeType(124);
+pub const SYN_RULE: NodeType = NodeType(125);
+pub const ALT: NodeType = NodeType(126);
+pub const PART: NodeType = NodeType(127);
+pub const AST_DEF: NodeType = NodeType(128);
 pub const AST_NODE_DEF: NodeType = NodeType(129);
 pub const METHOD_DEF: NodeType = NodeType(130);
 pub const AST_SELECTOR: NodeType = NodeType(131);
 
 fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(||{
+    REGISTER.call_once(|| {
         KW_AST.register(NodeTypeInfo { name: "KW_AST" });
         KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
         KW_TOKENIZER.register(NodeTypeInfo { name: "KW_TOKENIZER" });
@@ -75,25 +75,68 @@ fn register_node_types() {
     });
 }
 
-
 const PARSER: &'static [syn::Rule] = &[
-    syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(9)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(10)], commit: None })], commit: None }] },
-    syn::Rule { ty: Some(NODES_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_NODES), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
-    syn::Rule { ty: Some(TOKENIZER_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_TOKENIZER), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }] },
-    syn::Rule { ty: Some(LEX_RULE), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(8), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(8)], commit: None })], commit: Some(1) }] },
-    syn::Rule { ty: Some(SYN_RULE), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_RULE), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rule(5), syn::Part::Token(RBRACE)], commit: Some(1) }] },
-    syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(PIPE), syn::Part::Rule(6)], commit: None })], commit: None }] },
-    syn::Rule { ty: Some(ALT), alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(7)], commit: None })], commit: None }] },
-    syn::Rule { ty: Some(PART), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }] },
-    syn::Rule { ty: Some(STRING), alts: &[syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(HASH_STRING)], commit: None }] },
-    syn::Rule { ty: Some(VERBATIM_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_VERBATIM), syn::Part::Token(HASH_STRING)], commit: None }] },
-    syn::Rule { ty: Some(AST_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(KW_AST), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(11)], commit: None }), syn::Part::Token(RBRACE)], commit: None }] },
-    syn::Rule { ty: Some(AST_NODE_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(12)], commit: None }), syn::Part::Token(RBRACE)], commit: None }] },
-    syn::Rule { ty: Some(METHOD_DEF), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(13)], commit: None }] },
-    syn::Rule { ty: Some(AST_SELECTOR), alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(14)], commit: None })], commit: None }] },
-    syn::Rule { ty: None, alts: &[syn::Alt { parts: &[syn::Part::Token(STAR)], commit: None }, syn::Alt { parts: &[syn::Part::Token(QUESTION)], commit: None }, syn::Alt { parts: &[syn::Part::Token(DOT), syn::Part::Token(IDENT)], commit: None }] },
+    syn::Rule {
+        ty: Some(FILE),
+        alts: &[syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Rule(2), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(9)], commit: None }), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(10)], commit: None })], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(NODES_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_NODES), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }],
+    },
+    syn::Rule {
+        ty: Some(TOKENIZER_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_TOKENIZER), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(3)], commit: None }), syn::Part::Token(RBRACE)], commit: Some(1) }],
+    },
+    syn::Rule {
+        ty: Some(LEX_RULE),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(8), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(8)], commit: None })], commit: Some(1) }],
+    },
+    syn::Rule {
+        ty: Some(SYN_RULE),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_RULE), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rule(5), syn::Part::Token(RBRACE)], commit: Some(1) }],
+    },
+    syn::Rule {
+        ty: None,
+        alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(6)], commit: None }), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Token(PIPE), syn::Part::Rule(6)], commit: None })], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(ALT),
+        alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(7)], commit: None })], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(PART),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT)], commit: None }, syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(LANGLE), syn::Part::Token(IDENT), syn::Part::Rule(5), syn::Part::Token(RANGLE)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(STRING),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(SIMPLE_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(HASH_STRING)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(VERBATIM_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_VERBATIM), syn::Part::Token(HASH_STRING)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(AST_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(KW_AST), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(11)], commit: None }), syn::Part::Token(RBRACE)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(AST_NODE_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(12)], commit: None }), syn::Part::Token(RBRACE)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(METHOD_DEF),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Rule(13)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(AST_SELECTOR),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(IDENT), syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(14)], commit: None })], commit: None }],
+    },
+    syn::Rule {
+        ty: None,
+        alts: &[syn::Alt { parts: &[syn::Part::Token(STAR)], commit: None }, syn::Alt { parts: &[syn::Part::Token(QUESTION)], commit: None }, syn::Alt { parts: &[syn::Part::Token(DOT), syn::Part::Token(IDENT)], commit: None }],
+    },
 ];
-
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -143,6 +186,7 @@ use fall_tree::search::child_of_type_exn;
 
 #[derive(Clone, Copy)]
 pub struct File<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for File<'f> {
     fn ty() -> NodeType { FILE }
     fn new(node: Node<'f>) -> Self {
@@ -169,9 +213,9 @@ impl<'f> File<'f> {
         AstChildren::new(self.node.children()).next()
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct NodesDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for NodesDef<'f> {
     fn ty() -> NodeType { NODES_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -181,9 +225,12 @@ impl<'f> AstNode<'f> for NodesDef<'f> {
     fn node(&self) -> Node<'f> { self.node }
 }
 
-
+impl<'f> NodesDef<'f> {
+    
+}
 #[derive(Clone, Copy)]
 pub struct TokenizerDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for TokenizerDef<'f> {
     fn ty() -> NodeType { TOKENIZER_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -198,9 +245,9 @@ impl<'f> TokenizerDef<'f> {
         AstChildren::new(self.node.children())
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct LexRule<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for LexRule<'f> {
     fn ty() -> NodeType { LEX_RULE }
     fn new(node: Node<'f>) -> Self {
@@ -215,9 +262,9 @@ impl<'f> LexRule<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct SynRule<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for SynRule<'f> {
     fn ty() -> NodeType { SYN_RULE }
     fn new(node: Node<'f>) -> Self {
@@ -235,9 +282,9 @@ impl<'f> SynRule<'f> {
         AstChildren::new(self.node.children())
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct Alt<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for Alt<'f> {
     fn ty() -> NodeType { ALT }
     fn new(node: Node<'f>) -> Self {
@@ -252,9 +299,9 @@ impl<'f> Alt<'f> {
         AstChildren::new(self.node.children())
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct Part<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for Part<'f> {
     fn ty() -> NodeType { PART }
     fn new(node: Node<'f>) -> Self {
@@ -264,9 +311,12 @@ impl<'f> AstNode<'f> for Part<'f> {
     fn node(&self) -> Node<'f> { self.node }
 }
 
-
+impl<'f> Part<'f> {
+    
+}
 #[derive(Clone, Copy)]
 pub struct VerbatimDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for VerbatimDef<'f> {
     fn ty() -> NodeType { VERBATIM_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -276,9 +326,12 @@ impl<'f> AstNode<'f> for VerbatimDef<'f> {
     fn node(&self) -> Node<'f> { self.node }
 }
 
-
+impl<'f> VerbatimDef<'f> {
+    
+}
 #[derive(Clone, Copy)]
 pub struct AstDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for AstDef<'f> {
     fn ty() -> NodeType { AST_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -293,9 +346,9 @@ impl<'f> AstDef<'f> {
         AstChildren::new(self.node.children())
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct AstNodeDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for AstNodeDef<'f> {
     fn ty() -> NodeType { AST_NODE_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -313,9 +366,9 @@ impl<'f> AstNodeDef<'f> {
         AstChildren::new(self.node.children())
     }
 }
-
 #[derive(Clone, Copy)]
 pub struct MethodDef<'f> { node: Node<'f> }
+
 impl<'f> AstNode<'f> for MethodDef<'f> {
     fn ty() -> NodeType { METHOD_DEF }
     fn new(node: Node<'f>) -> Self {
@@ -330,4 +383,3 @@ impl<'f> MethodDef<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
-

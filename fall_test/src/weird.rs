@@ -4,14 +4,14 @@ use fall_parse::Rule;
 use fall_parse::syn;
 pub use fall_tree::{ERROR, WHITESPACE};
 
-pub const ATOM      : NodeType = NodeType(100);
+pub const ATOM: NodeType = NodeType(100);
 pub const RAW_STRING: NodeType = NodeType(101);
-pub const FILE      : NodeType = NodeType(102);
-pub const EMPTY     : NodeType = NodeType(103);
+pub const FILE: NodeType = NodeType(102);
+pub const EMPTY: NodeType = NodeType(103);
 
 fn register_node_types() {
     static REGISTER: Once = ONCE_INIT;
-    REGISTER.call_once(||{
+    REGISTER.call_once(|| {
         ATOM.register(NodeTypeInfo { name: "ATOM" });
         RAW_STRING.register(NodeTypeInfo { name: "RAW_STRING" });
         FILE.register(NodeTypeInfo { name: "FILE" });
@@ -19,13 +19,20 @@ fn register_node_types() {
     });
 }
 
-
 const PARSER: &'static [syn::Rule] = &[
-    syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Token(RAW_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Token(ATOM), syn::Part::Rule(1)], commit: None }] },
-    syn::Rule { ty: Some(EMPTY), alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(2)], commit: None })], commit: None }] },
-    syn::Rule { ty: None, alts: &[syn::Alt { parts: &[], commit: None }] },
+    syn::Rule {
+        ty: Some(FILE),
+        alts: &[syn::Alt { parts: &[syn::Part::Token(RAW_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Token(ATOM), syn::Part::Rule(1)], commit: None }],
+    },
+    syn::Rule {
+        ty: Some(EMPTY),
+        alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Rule(2)], commit: None })], commit: None }],
+    },
+    syn::Rule {
+        ty: None,
+        alts: &[syn::Alt { parts: &[], commit: None }],
+    },
 ];
-
 
 lazy_static! {
     pub static ref LANG: Language = {
