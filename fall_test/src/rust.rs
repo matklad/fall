@@ -33,17 +33,6 @@ fn register_node_types() {
     });
 }
 
-const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: LPAREN, re: "\\(", f: None },
-    Rule { ty: RPAREN, re: "\\)", f: None },
-    Rule { ty: LBRACE, re: "\\{", f: None },
-    Rule { ty: RBRACE, re: "\\}", f: None },
-    Rule { ty: PUB, re: "pub", f: None },
-    Rule { ty: STRUCT, re: "struct", f: None },
-    Rule { ty: FN, re: "fn", f: None },
-    Rule { ty: WHITESPACE, re: "\\s+", f: None },
-    Rule { ty: IDENT, re: "\\w+", f: None },
-];
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rep(syn::Alt { parts: &[syn::Part::Rule(1)], commit: None })], commit: None }] },
@@ -52,16 +41,29 @@ const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(STRUCT_DEF), alts: &[syn::Alt { parts: &[syn::Part::Opt(syn::Alt { parts: &[syn::Part::Token(PUB)], commit: None }), syn::Part::Token(STRUCT), syn::Part::Token(IDENT), syn::Part::Token(LBRACE), syn::Part::Token(RBRACE)], commit: None }] },
 ];
 
+
 lazy_static! {
     pub static ref LANG: Language = {
         register_node_types();
-        struct Impl;
+        struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
             }
         }
 
-        Language::new(Impl)
+        Language::new(Impl {
+            tokenizer: vec![
+                Rule { ty: LPAREN, re: "\\(", f: None },
+                Rule { ty: RPAREN, re: "\\)", f: None },
+                Rule { ty: LBRACE, re: "\\{", f: None },
+                Rule { ty: RBRACE, re: "\\}", f: None },
+                Rule { ty: PUB, re: "pub", f: None },
+                Rule { ty: STRUCT, re: "struct", f: None },
+                Rule { ty: FN, re: "fn", f: None },
+                Rule { ty: WHITESPACE, re: "\\s+", f: None },
+                Rule { ty: IDENT, re: "\\w+", f: None },
+            ]
+        })
     };
 }

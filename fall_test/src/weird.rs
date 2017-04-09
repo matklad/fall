@@ -19,11 +19,6 @@ fn register_node_types() {
     });
 }
 
-const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: WHITESPACE, re: "\\s+", f: None },
-    Rule { ty: RAW_STRING, re: "r#+\"", f: Some(parse_raw_string) },
-    Rule { ty: ATOM, re: "\\w+", f: None },
-];
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Token(RAW_STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(1), syn::Part::Token(ATOM), syn::Part::Rule(1)], commit: None }] },
@@ -31,17 +26,24 @@ const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: None, alts: &[syn::Alt { parts: &[], commit: None }] },
 ];
 
+
 lazy_static! {
     pub static ref LANG: Language = {
         register_node_types();
-        struct Impl;
+        struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
             }
         }
 
-        Language::new(Impl)
+        Language::new(Impl {
+            tokenizer: vec![
+                Rule { ty: WHITESPACE, re: "\\s+", f: None },
+                Rule { ty: RAW_STRING, re: "r#+\"", f: Some(parse_raw_string) },
+                Rule { ty: ATOM, re: "\\w+", f: None },
+            ]
+        })
     };
 }
 fn parse_raw_string(s: &str) -> Option<usize> {

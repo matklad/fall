@@ -37,21 +37,6 @@ impl<'f> File<'f> {
         buff.line("}");
         buff.blank_line();
 
-        buff.line("const TOKENIZER: &'static [Rule] = &[");
-        {
-            buff.indent();
-            for rule in self.tokenizer_def().lex_rules() {
-                let f = match rule.extern_fn() {
-                    None => "None".to_owned(),
-                    Some(ref f) => format!("Some({})", f)
-                };
-                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},",
-                    scream(&rule.node_type()), rule.token_re(), f);
-            }
-            buff.dedent();
-        }
-        buff.line("];");
-
 
         buff.blank_line();
         self.generate_syn_rules(&mut buff);
@@ -61,14 +46,31 @@ impl<'f> File<'f> {
 lazy_static! {
     pub static ref LANG: Language = {
         register_node_types();
-        struct Impl;
+        struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
             }
         }
 
-        Language::new(Impl)
+        Language::new(Impl {
+            tokenizer: vec![
+"##);
+        {
+            buff.indent(); buff.indent(); buff.indent(); buff.indent();
+            for rule in self.tokenizer_def().lex_rules() {
+                let f = match rule.extern_fn() {
+                    None => "None".to_owned(),
+                    Some(ref f) => format!("Some({})", f)
+                };
+                ln!(buff, "Rule {{ ty: {}, re: {:?}, f: {} }},",
+                    scream(&rule.node_type()), rule.token_re(), f);
+            }
+            buff.dedent(); buff.dedent(); buff.dedent(); buff.dedent();
+        }
+
+        buff.block(r##"            ]
+        })
     };
 }"##);
 

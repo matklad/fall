@@ -41,19 +41,6 @@ fn register_node_types() {
     });
 }
 
-const TOKENIZER: &'static [Rule] = &[
-    Rule { ty: LBRACE, re: "\\{", f: None },
-    Rule { ty: RBRACE, re: "\\}", f: None },
-    Rule { ty: LBRACK, re: "\\[", f: None },
-    Rule { ty: RBRACK, re: "\\]", f: None },
-    Rule { ty: COLON, re: ":", f: None },
-    Rule { ty: COMMA, re: ",", f: None },
-    Rule { ty: NULL, re: "null", f: None },
-    Rule { ty: WHITESPACE, re: "\\s+", f: None },
-    Rule { ty: BOOL, re: "true|false", f: None },
-    Rule { ty: STRING, re: "\"[^\"]*\"", f: None },
-    Rule { ty: NUMBER, re: "\\d+", f: None },
-];
 
 const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(FILE), alts: &[syn::Alt { parts: &[syn::Part::Rule(1)], commit: None }, syn::Alt { parts: &[syn::Part::Rule(4)], commit: None }] },
@@ -65,16 +52,31 @@ const PARSER: &'static [syn::Rule] = &[
     syn::Rule { ty: Some(PRIMITIVE), alts: &[syn::Alt { parts: &[syn::Part::Token(NULL)], commit: None }, syn::Alt { parts: &[syn::Part::Token(NUMBER)], commit: None }, syn::Alt { parts: &[syn::Part::Token(STRING)], commit: None }, syn::Alt { parts: &[syn::Part::Token(BOOL)], commit: None }] },
 ];
 
+
 lazy_static! {
     pub static ref LANG: Language = {
         register_node_types();
-        struct Impl;
+        struct Impl { tokenizer: Vec<Rule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(text, FILE, TOKENIZER, &|b| syn::Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(text, FILE, &self.tokenizer, &|b| syn::Parser::new(PARSER).parse(b))
             }
         }
 
-        Language::new(Impl)
+        Language::new(Impl {
+            tokenizer: vec![
+                Rule { ty: LBRACE, re: "\\{", f: None },
+                Rule { ty: RBRACE, re: "\\}", f: None },
+                Rule { ty: LBRACK, re: "\\[", f: None },
+                Rule { ty: RBRACK, re: "\\]", f: None },
+                Rule { ty: COLON, re: ":", f: None },
+                Rule { ty: COMMA, re: ",", f: None },
+                Rule { ty: NULL, re: "null", f: None },
+                Rule { ty: WHITESPACE, re: "\\s+", f: None },
+                Rule { ty: BOOL, re: "true|false", f: None },
+                Rule { ty: STRING, re: "\"[^\"]*\"", f: None },
+                Rule { ty: NUMBER, re: "\\d+", f: None },
+            ]
+        })
     };
 }

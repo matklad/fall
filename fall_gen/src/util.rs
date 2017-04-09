@@ -34,7 +34,7 @@ impl Buff {
     }
 
     pub fn block(&mut self, block: &str) {
-        self.inner.push_str(block.trim())
+        self.inner.push_str(block)
     }
 
     pub fn blank_line(&mut self) {
