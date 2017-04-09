@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
-use {Token, LexRule, tokenize};
 use fall_tree::{NodeType, File};
+use lex::{Token, LexRule, tokenize};
 
 mod imp;
 

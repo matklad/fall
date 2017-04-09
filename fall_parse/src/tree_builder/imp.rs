@@ -2,8 +2,8 @@ use std::collections::HashSet;
 
 use elapsed::ElapsedDuration;
 
-use {Token};
 use fall_tree::{TextRange, NodeType, File, FileBuilder, NodeBuilder, WHITESPACE};
+use lex::Token;
 
 
 pub struct TreeBuilderImpl {
