@@ -21,22 +21,6 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
-        NULL.register(NodeTypeInfo { name: "NULL" });
-        BOOL.register(NodeTypeInfo { name: "BOOL" });
-        NUMBER.register(NodeTypeInfo { name: "NUMBER" });
-        STRING.register(NodeTypeInfo { name: "STRING" });
-        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
-        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
-        LBRACK.register(NodeTypeInfo { name: "LBRACK" });
-        RBRACK.register(NodeTypeInfo { name: "RBRACK" });
-        COMMA.register(NodeTypeInfo { name: "COMMA" });
-        COLON.register(NodeTypeInfo { name: "COLON" });
-        OBJECT.register(NodeTypeInfo { name: "OBJECT" });
-        ARRAY.register(NodeTypeInfo { name: "ARRAY" });
-        PRIMITIVE.register(NodeTypeInfo { name: "PRIMITIVE" });
-        FIELD.register(NodeTypeInfo { name: "FIELD" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
@@ -72,6 +56,29 @@ lazy_static! {
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            }
+
+            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                match ty {
+                    ERROR => NodeTypeInfo { name: "ERROR" },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    NULL => NodeTypeInfo { name: "NULL" },
+                    BOOL => NodeTypeInfo { name: "BOOL" },
+                    NUMBER => NodeTypeInfo { name: "NUMBER" },
+                    STRING => NodeTypeInfo { name: "STRING" },
+                    LBRACE => NodeTypeInfo { name: "LBRACE" },
+                    RBRACE => NodeTypeInfo { name: "RBRACE" },
+                    LBRACK => NodeTypeInfo { name: "LBRACK" },
+                    RBRACK => NodeTypeInfo { name: "RBRACK" },
+                    COMMA => NodeTypeInfo { name: "COMMA" },
+                    COLON => NodeTypeInfo { name: "COLON" },
+                    OBJECT => NodeTypeInfo { name: "OBJECT" },
+                    ARRAY => NodeTypeInfo { name: "ARRAY" },
+                    PRIMITIVE => NodeTypeInfo { name: "PRIMITIVE" },
+                    FIELD => NodeTypeInfo { name: "FIELD" },
+                    FILE => NodeTypeInfo { name: "FILE" },
+                    _ => panic!("Unknown NodeType: {:?}", ty)
+                }
             }
         }
 

@@ -38,39 +38,6 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
-        KW_AST.register(NodeTypeInfo { name: "KW_AST" });
-        KW_NODES.register(NodeTypeInfo { name: "KW_NODES" });
-        KW_TOKENIZER.register(NodeTypeInfo { name: "KW_TOKENIZER" });
-        KW_RULE.register(NodeTypeInfo { name: "KW_RULE" });
-        KW_VERBATIM.register(NodeTypeInfo { name: "KW_VERBATIM" });
-        EQ.register(NodeTypeInfo { name: "EQ" });
-        PIPE.register(NodeTypeInfo { name: "PIPE" });
-        STAR.register(NodeTypeInfo { name: "STAR" });
-        QUESTION.register(NodeTypeInfo { name: "QUESTION" });
-        DOT.register(NodeTypeInfo { name: "DOT" });
-        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
-        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
-        LANGLE.register(NodeTypeInfo { name: "LANGLE" });
-        RANGLE.register(NodeTypeInfo { name: "RANGLE" });
-        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
-        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
-        IDENT.register(NodeTypeInfo { name: "IDENT" });
-        SIMPLE_STRING.register(NodeTypeInfo { name: "SIMPLE_STRING" });
-        HASH_STRING.register(NodeTypeInfo { name: "HASH_STRING" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        STRING.register(NodeTypeInfo { name: "STRING" });
-        VERBATIM_DEF.register(NodeTypeInfo { name: "VERBATIM_DEF" });
-        NODES_DEF.register(NodeTypeInfo { name: "NODES_DEF" });
-        TOKENIZER_DEF.register(NodeTypeInfo { name: "TOKENIZER_DEF" });
-        LEX_RULE.register(NodeTypeInfo { name: "LEX_RULE" });
-        SYN_RULE.register(NodeTypeInfo { name: "SYN_RULE" });
-        ALT.register(NodeTypeInfo { name: "ALT" });
-        PART.register(NodeTypeInfo { name: "PART" });
-        AST_DEF.register(NodeTypeInfo { name: "AST_DEF" });
-        AST_NODE_DEF.register(NodeTypeInfo { name: "AST_NODE_DEF" });
-        METHOD_DEF.register(NodeTypeInfo { name: "METHOD_DEF" });
-        AST_SELECTOR.register(NodeTypeInfo { name: "AST_SELECTOR" });
-
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
@@ -138,6 +105,46 @@ lazy_static! {
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            }
+
+            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                match ty {
+                    ERROR => NodeTypeInfo { name: "ERROR" },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    KW_AST => NodeTypeInfo { name: "KW_AST" },
+                    KW_NODES => NodeTypeInfo { name: "KW_NODES" },
+                    KW_TOKENIZER => NodeTypeInfo { name: "KW_TOKENIZER" },
+                    KW_RULE => NodeTypeInfo { name: "KW_RULE" },
+                    KW_VERBATIM => NodeTypeInfo { name: "KW_VERBATIM" },
+                    EQ => NodeTypeInfo { name: "EQ" },
+                    PIPE => NodeTypeInfo { name: "PIPE" },
+                    STAR => NodeTypeInfo { name: "STAR" },
+                    QUESTION => NodeTypeInfo { name: "QUESTION" },
+                    DOT => NodeTypeInfo { name: "DOT" },
+                    LBRACE => NodeTypeInfo { name: "LBRACE" },
+                    RBRACE => NodeTypeInfo { name: "RBRACE" },
+                    LANGLE => NodeTypeInfo { name: "LANGLE" },
+                    RANGLE => NodeTypeInfo { name: "RANGLE" },
+                    LPAREN => NodeTypeInfo { name: "LPAREN" },
+                    RPAREN => NodeTypeInfo { name: "RPAREN" },
+                    IDENT => NodeTypeInfo { name: "IDENT" },
+                    SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING" },
+                    HASH_STRING => NodeTypeInfo { name: "HASH_STRING" },
+                    FILE => NodeTypeInfo { name: "FILE" },
+                    STRING => NodeTypeInfo { name: "STRING" },
+                    VERBATIM_DEF => NodeTypeInfo { name: "VERBATIM_DEF" },
+                    NODES_DEF => NodeTypeInfo { name: "NODES_DEF" },
+                    TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF" },
+                    LEX_RULE => NodeTypeInfo { name: "LEX_RULE" },
+                    SYN_RULE => NodeTypeInfo { name: "SYN_RULE" },
+                    ALT => NodeTypeInfo { name: "ALT" },
+                    PART => NodeTypeInfo { name: "PART" },
+                    AST_DEF => NodeTypeInfo { name: "AST_DEF" },
+                    AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF" },
+                    METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF" },
+                    AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR" },
+                    _ => panic!("Unknown NodeType: {:?}", ty)
+                }
             }
         }
 

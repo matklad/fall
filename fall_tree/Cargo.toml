@@ -5,4 +5,3 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 elapsed = "0.1"
-lazy_static = "0.2"

@@ -151,7 +151,7 @@ impl TreeBuilderImpl {
 impl ::std::fmt::Debug for TreeBuilderImpl {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.write_str("TreeBuilder {")?;
-        let pending = self.pending.iter().map(|f| f.ty.name()).collect::<String>();
+        let pending = self.pending.iter().map(|f| format!("{:?}", f.ty)).collect::<String>();
         f.write_str(&format!("  pending = {}", pending))?;
         f.write_str("}")?;
         Ok(())

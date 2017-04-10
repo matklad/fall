@@ -10,11 +10,6 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
-        ATOM.register(NodeTypeInfo { name: "ATOM" });
-        RAW_STRING.register(NodeTypeInfo { name: "RAW_STRING" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        EMPTY.register(NodeTypeInfo { name: "EMPTY" });
-
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
@@ -34,6 +29,18 @@ lazy_static! {
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            }
+
+            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                match ty {
+                    ERROR => NodeTypeInfo { name: "ERROR" },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    ATOM => NodeTypeInfo { name: "ATOM" },
+                    RAW_STRING => NodeTypeInfo { name: "RAW_STRING" },
+                    FILE => NodeTypeInfo { name: "FILE" },
+                    EMPTY => NodeTypeInfo { name: "EMPTY" },
+                    _ => panic!("Unknown NodeType: {:?}", ty)
+                }
             }
         }
 

@@ -102,10 +102,6 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
-        {% for node_type in node_types %}
-        {{ node_type | upper }}.register(NodeTypeInfo { name: "{{ node_type | upper }}" });
-        {% endfor %}
-
         const PARSER: &'static [SynRule] = &[
             {% for rule in syn_rules %}
             SynRule {
@@ -119,6 +115,17 @@ lazy_static! {
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            }
+
+            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                match ty {
+                    ERROR => NodeTypeInfo { name: "ERROR" },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    {% for node_type in node_types %}
+                    {{ node_type | upper }} => NodeTypeInfo { name: "{{ node_type | upper }}" },
+                    {% endfor %}
+                    _ => panic!("Unknown NodeType: {:?}", ty)
+                }
             }
         }
 

@@ -17,18 +17,6 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
 
-        LPAREN.register(NodeTypeInfo { name: "LPAREN" });
-        RPAREN.register(NodeTypeInfo { name: "RPAREN" });
-        LBRACE.register(NodeTypeInfo { name: "LBRACE" });
-        RBRACE.register(NodeTypeInfo { name: "RBRACE" });
-        PUB.register(NodeTypeInfo { name: "PUB" });
-        STRUCT.register(NodeTypeInfo { name: "STRUCT" });
-        FN.register(NodeTypeInfo { name: "FN" });
-        IDENT.register(NodeTypeInfo { name: "IDENT" });
-        FILE.register(NodeTypeInfo { name: "FILE" });
-        STRUCT_DEF.register(NodeTypeInfo { name: "STRUCT_DEF" });
-        FN_DEF.register(NodeTypeInfo { name: "FN_DEF" });
-
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
@@ -52,6 +40,25 @@ lazy_static! {
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
                 ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+            }
+
+            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                match ty {
+                    ERROR => NodeTypeInfo { name: "ERROR" },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    LPAREN => NodeTypeInfo { name: "LPAREN" },
+                    RPAREN => NodeTypeInfo { name: "RPAREN" },
+                    LBRACE => NodeTypeInfo { name: "LBRACE" },
+                    RBRACE => NodeTypeInfo { name: "RBRACE" },
+                    PUB => NodeTypeInfo { name: "PUB" },
+                    STRUCT => NodeTypeInfo { name: "STRUCT" },
+                    FN => NodeTypeInfo { name: "FN" },
+                    IDENT => NodeTypeInfo { name: "IDENT" },
+                    FILE => NodeTypeInfo { name: "FILE" },
+                    STRUCT_DEF => NodeTypeInfo { name: "STRUCT_DEF" },
+                    FN_DEF => NodeTypeInfo { name: "FN_DEF" },
+                    _ => panic!("Unknown NodeType: {:?}", ty)
+                }
             }
         }
 
