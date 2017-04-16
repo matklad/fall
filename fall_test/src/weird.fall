@@ -1,22 +1,33 @@
 nodes {
-  t1 t2
+  t1 t2 t3 foo bar
   atom
   raw_string
   file
+  private_partial
   empty
 }
 
 tokenizer {
   whitespace r"\s+"
   raw_string r#"r#+""# 'parse_raw_string'
+  foo 'foo'
+  bar 'bar'
   t1 '_1'
   t2 '_2'
+  t3 '_3'
   atom r"\w+"
 }
 
 rule file {
-  '_1' raw_string | '_2' empty atom empty
+  '_1' raw_string | '_2' empty atom empty | '_3' private_partial
 }
+
+rule private_partial {
+  foobar | foofoo
+}
+
+rule foobar { 'foo' 'bar' }
+rule foofoo { 'foo' 'foo' }
 
 rule empty { <opt none> }
 
