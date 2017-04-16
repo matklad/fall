@@ -24,7 +24,7 @@ struct PreNode {
 
 #[derive(Debug)]
 struct Frame {
-    ty: NodeType,
+    ty: Option<NodeType>,
     children: Vec<PreNode>,
     start_token: usize,
 }
@@ -40,11 +40,11 @@ impl TreeBuilderImpl {
         self.do_skip();
     }
 
-    pub fn start(&mut self, ty: NodeType) {
+    pub fn start(&mut self, ty: Option<NodeType>) {
         self.pending.push(Frame { ty: ty, children: vec![], start_token: self.current_token })
     }
 
-    pub fn finish(&mut self, ty: NodeType) {
+    pub fn finish(&mut self, ty: Option<NodeType>) {
         assert!(self.top().ty == ty, "Expected {:?}, got {:?}", self.top().ty, ty);
         let mut top = self.pending.pop().unwrap();
 
@@ -55,36 +55,47 @@ impl TreeBuilderImpl {
             top.children.pop();
             self.current_token -= 1;
         }
-        let node = self.to_prenode(top);
 
-        if let Some(t) = node.children.first() {
-            assert!(!self.is_skip(t.ty));
-        }
-        if let Some(t) = node.children.last() {
-            assert!(!self.is_skip(t.ty));
-        }
+        match self.to_prenode(top) {
+            Ok(node) => {
+                if let Some(t) = node.children.first() {
+                    assert!(!self.is_skip(t.ty));
+                }
+                if let Some(t) = node.children.last() {
+                    assert!(!self.is_skip(t.ty));
+                }
 
-        self.top().children.push(node);
+                self.top().children.push(node);
+            }
+            Err(nodes) => {
+                self.top().children.extend(nodes.into_iter())
+            }
+        };
+
         self.do_skip();
     }
 
-    pub fn rollback(&mut self, ty: NodeType) {
+    pub fn rollback(&mut self, ty: Option<NodeType>) {
         assert!(self.top().ty == ty, "Expected {:?}, got {:?}", self.top().ty, ty);
         let top = self.pending.pop().unwrap();
         self.current_token = top.start_token;
     }
 
-    fn to_prenode(&self, frame: Frame) -> PreNode {
-        let range = if frame.children.is_empty() {
-            let start = self.tokens.get(frame.start_token).map(|t| t.range.start()).unwrap_or(0);
-            TextRange::from_to(start, start)
-        } else {
-            let first = frame.children.first().unwrap();
-            let last = frame.children.last().unwrap();
-            TextRange::from_to(first.range.start(), last.range.end())
-        };
+    fn to_prenode(&self, frame: Frame) -> Result<PreNode, Vec<PreNode>> {
+        if let Some(ty) = frame.ty {
+            let range = if frame.children.is_empty() {
+                let start = self.tokens.get(frame.start_token).map(|t| t.range.start()).unwrap_or(0);
+                TextRange::from_to(start, start)
+            } else {
+                let first = frame.children.first().unwrap();
+                let last = frame.children.last().unwrap();
+                TextRange::from_to(first.range.start(), last.range.end())
+            };
 
-        PreNode { ty: frame.ty, range: range, children: frame.children }
+            Ok(PreNode { ty: ty, range: range, children: frame.children })
+        } else {
+            Err(frame.children)
+        }
     }
 
     pub fn new(lang: Language,text: String, file_type: NodeType, tokens: Vec<Token>) -> TreeBuilderImpl {
@@ -94,7 +105,7 @@ impl TreeBuilderImpl {
             text: text,
             skip: skip.iter().cloned().collect(),
             tokens: tokens,
-            pending: vec![Frame { ty: file_type, children: vec![], start_token: 0 }],
+            pending: vec![Frame { ty: Some(file_type), children: vec![], start_token: 0 }],
             current_token: 0,
         };
         result.do_skip();
@@ -130,7 +141,7 @@ impl TreeBuilderImpl {
         }
         let top = self.pending.pop().unwrap();
         assert!(self.pending.is_empty());
-        let root = self.to_prenode(top);
+        let root = self.to_prenode(top).unwrap();
         let mut builder = FileBuilder::new(self.lang, self.text, lex_time, parse_time);
         go(&mut builder, None, root);
         return builder.build();

@@ -62,22 +62,16 @@ impl<'r> Parser<'r> {
     }
 
     fn parse_rule(&self, rule: &SynRule, b: &mut TreeBuilder) -> bool {
-        if let Some(ty) = rule.ty {
-            b.start(ty)
-        }
+        b.start(rule.ty);
 
         for alt in rule.alts {
             if self.parse_alt(alt, b) {
-                if let Some(ty) = rule.ty {
-                    b.finish(ty)
-                }
+                b.finish(rule.ty);
                 return true;
             }
         }
 
-        if let Some(ty) = rule.ty {
-            b.rollback(ty)
-        }
+        b.rollback(rule.ty);
         false
     }
 }

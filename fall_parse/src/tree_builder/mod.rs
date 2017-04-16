@@ -16,15 +16,15 @@ impl TreeBuilder {
         self.0.bump()
     }
 
-    pub fn start(&mut self, ty: NodeType) {
+    pub fn start(&mut self, ty: Option<NodeType>) {
         self.0.start(ty)
     }
 
-    pub fn finish(&mut self, ty: NodeType) {
+    pub fn finish(&mut self, ty: Option<NodeType>) {
         self.0.finish(ty)
     }
 
-    pub fn rollback(&mut self, ty: NodeType) {
+    pub fn rollback(&mut self, ty: Option<NodeType>) {
         self.0.rollback(ty)
     }
 
