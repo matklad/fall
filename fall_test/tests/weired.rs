@@ -11,8 +11,9 @@ fn ast(code: &str) -> String {
 
 #[test]
 fn empty_nodes() {
-    match_ast(&ast(" hello "), r#"
+    match_ast(&ast("_2 hello "), r#"
 FILE
+  T2 "_2"
   WHITESPACE " "
   EMPTY ""
   ATOM "hello"
@@ -23,8 +24,9 @@ FILE
 
 #[test]
 fn external_rule() {
-    match_ast(&ast(r###" r##"f#"o"#o"## "###), r###"
+    match_ast(&ast(r###"_1 r##"f#"o"#o"## "###), r###"
 FILE
+  T1 "_1"
   WHITESPACE " "
   RAW_STRING "r##\"f#\"o\"#o\"##"
   WHITESPACE " "

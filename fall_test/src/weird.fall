@@ -1,4 +1,5 @@
 nodes {
+  t1 t2
   atom
   raw_string
   file
@@ -8,11 +9,13 @@ nodes {
 tokenizer {
   whitespace r"\s+"
   raw_string r#"r#+""# 'parse_raw_string'
+  t1 '_1'
+  t2 '_2'
   atom r"\w+"
 }
 
 rule file {
-  raw_string | empty atom empty
+  '_1' raw_string | '_2' empty atom empty
 }
 
 rule empty { <opt none> }

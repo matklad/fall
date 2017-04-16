@@ -1,10 +1,12 @@
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 pub use fall_tree::{ERROR, WHITESPACE};
 
-pub const ATOM: NodeType = NodeType(100);
-pub const RAW_STRING: NodeType = NodeType(101);
-pub const FILE: NodeType = NodeType(102);
-pub const EMPTY: NodeType = NodeType(103);
+pub const T1: NodeType = NodeType(100);
+pub const T2: NodeType = NodeType(101);
+pub const ATOM: NodeType = NodeType(102);
+pub const RAW_STRING: NodeType = NodeType(103);
+pub const FILE: NodeType = NodeType(104);
+pub const EMPTY: NodeType = NodeType(105);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -13,7 +15,7 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Token(RAW_STRING)], commit: None }, Alt { parts: &[Part::Rule(1), Part::Token(ATOM), Part::Rule(1)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(T1), Part::Token(RAW_STRING)], commit: None }, Alt { parts: &[Part::Token(T2), Part::Rule(1), Part::Token(ATOM), Part::Rule(1)], commit: None }],
             },
             SynRule {
                 ty: Some(EMPTY),
@@ -35,6 +37,8 @@ lazy_static! {
                 match ty {
                     ERROR => NodeTypeInfo { name: "ERROR" },
                     WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    T1 => NodeTypeInfo { name: "T1" },
+                    T2 => NodeTypeInfo { name: "T2" },
                     ATOM => NodeTypeInfo { name: "ATOM" },
                     RAW_STRING => NodeTypeInfo { name: "RAW_STRING" },
                     FILE => NodeTypeInfo { name: "FILE" },
@@ -48,6 +52,8 @@ lazy_static! {
             tokenizer: vec![
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(RAW_STRING, "r#+\"", Some(parse_raw_string)),
+                LexRule::new(T1, "_1", None),
+                LexRule::new(T2, "_2", None),
                 LexRule::new(ATOM, "\\w+", None),
             ]
         })
