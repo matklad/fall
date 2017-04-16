@@ -1,29 +1,23 @@
-pub use self::core::TextRange;
-
-mod core {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-    pub struct TextRange {
-        start: u32,
-        end: u32,
-    }
-
-    impl TextRange {
-        pub fn from_to(start: u32, end: u32) -> TextRange {
-            assert!(start <= end);
-            TextRange { start: start, end: end }
-        }
-
-        pub fn start(&self) -> u32 {
-            self.start
-        }
-
-        pub fn end(&self) -> u32 {
-            self.end
-        }
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TextRange {
+    start: u32,
+    end: u32,
 }
 
 impl TextRange {
+    pub fn from_to(start: u32, end: u32) -> TextRange {
+        assert!(start <= end);
+        TextRange { start: start, end: end }
+    }
+
+    pub fn start(&self) -> u32 {
+        self.start
+    }
+
+    pub fn end(&self) -> u32 {
+        self.end
+    }
+
     pub fn empty() -> TextRange {
         TextRange::from_to(0, 0)
     }
