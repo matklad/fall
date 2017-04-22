@@ -57,11 +57,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(SYN_RULE),
-                alts: &[Alt { parts: &[Part::Token(KW_RULE), Part::Token(IDENT), Part::Token(LBRACE), Part::Rule(5), Part::Token(RBRACE)], commit: Some(1) }],
+                alts: &[Alt { parts: &[Part::Token(KW_RULE), Part::Token(IDENT), Part::Rule(5)], commit: Some(1) }],
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None }), Part::Token(RBRACE)], commit: None }],
             },
             SynRule {
                 ty: Some(ALT),

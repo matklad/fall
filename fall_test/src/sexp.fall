@@ -12,7 +12,7 @@ tokenizer {
   atom       r"\w+"
 }
 
-rule file { <rep sexp> }
+rule file { <rep {sexp}> }
 
 rule sexp { atom | list }
-rule list { '(' <rep sexp> ')' }
+rule list { '(' <rep {sexp}> ')' }

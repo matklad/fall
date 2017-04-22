@@ -29,7 +29,7 @@ rule private_partial {
 rule foobar { 'foo' 'bar' }
 rule foofoo { 'foo' 'foo' }
 
-rule empty { <opt none> }
+rule empty { <opt {none}> }
 
 rule none { }
 

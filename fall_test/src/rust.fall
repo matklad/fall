@@ -25,15 +25,15 @@ tokenizer {
   ident r"\w+"
 }
 
-rule file { <rep fn_or_struct > }
+rule file { <rep {fn_or_struct} > }
 rule fn_or_struct { fn_def | struct_def }
 
 rule fn_def {
-  <opt 'pub'> 'fn' <commit> ident
+  <opt {'pub'}> 'fn' <commit> ident
   '(' ')' '{' '}'
 }
 
 rule struct_def {
-  <opt 'pub'> 'struct' <commit> ident
+  <opt {'pub'}> 'struct' <commit> ident
   '{' '}'
 }
