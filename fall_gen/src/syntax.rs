@@ -69,7 +69,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(PART),
-                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rule(5), Part::Token(RANGLE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Opt(Alt { parts: &[Part::Rule(5)], commit: None }), Part::Token(RANGLE)], commit: None }],
             },
             SynRule {
                 ty: Some(STRING),
