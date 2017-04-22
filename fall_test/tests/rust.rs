@@ -58,3 +58,23 @@ FILE
   IDENT "foo"
 "#);
 }
+
+#[test]
+fn skipping() {
+    match_ast(&ast("foo fn foo(){} bar baz struct S {} quuz"), r#"
+FILE
+  IDENT "foo"
+  FN "fn"
+  IDENT "foo"
+  LPAREN "("
+  RPAREN ")"
+  LBRACE "{"
+  RBRACE "}"
+  IDENT "bar"
+  IDENT "baz"
+  STRUCT "struct"
+  IDENT "S"
+  LBRACE "{"
+  RBRACE "}"
+  IDENT "quuz""#);
+}
