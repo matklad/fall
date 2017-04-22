@@ -66,13 +66,13 @@ rule tokenizer_def {
 rule lex_rule { ident <commit> string <opt {string}> }
 
 rule syn_rule {
-  'rule' <commit> ident syn_rule_body
+  'rule' <commit> ident block
 }
-rule syn_rule_body { '{' <opt {alt}> <rep {'|' alt}> '}' }
+rule block { '{' <opt {alt}> <rep {'|' alt}> '}' }
 
 rule alt { <rep {part}> }
 
-rule part { ident | simple_string | '<' ident <rep {syn_rule_body}> '>' }
+rule part { ident | simple_string | '<' ident <rep {block}> '>' }
 
 rule string { simple_string | hash_string }
 
