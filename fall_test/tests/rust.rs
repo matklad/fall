@@ -60,3 +60,17 @@ FILE
   WHITESPACE "\n"
 "#)
 }
+
+#[test]
+fn missing_token() {
+    match_ast(&ast("fn foo foo"), r#"
+FILE
+  FN_DEF
+    FN "fn"
+    WHITESPACE " "
+    IDENT "foo"
+    WHITESPACE " "
+    ERROR ""
+  IDENT "foo"
+"#);
+}

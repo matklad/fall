@@ -39,8 +39,13 @@ impl<'r> Parser<'r> {
     fn parse_alt(&self, alt: &Alt, b: &mut TreeBuilder) -> bool {
         let commit = alt.commit.unwrap_or(alt.parts.len());
         for (i, p) in alt.parts.iter().enumerate() {
-            if !self.parse_part(p, b) && i < commit {
-                return false;
+            if !self.parse_part(p, b) {
+                if i < commit {
+                    return false;
+                } else {
+                    b.error();
+                    break
+                }
             }
         }
         true

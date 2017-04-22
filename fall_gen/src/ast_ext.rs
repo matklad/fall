@@ -55,28 +55,28 @@ pub enum PartKind<'f> {
 }
 
 impl<'f> Part<'f> {
-    pub fn kind(&self) -> PartKind<'f> {
+    pub fn kind(&self) -> Option<PartKind<'f>> {
         if child_of_type(self.node(), LANGLE).is_some() {
-            return PartKind::Call {
+            return Some(PartKind::Call {
                 name: child_of_type_exn(self.node(), IDENT).text(),
                 alts: AstChildren::new(self.node().children()),
-            }
+            })
         }
         let file = ast_parent_exn::<File>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
             if let Some(idx) = file.syn_rules().position(|r| r.name() == ident.text()) {
-                return PartKind::RuleReference { idx: idx }
+                return Some(PartKind::RuleReference { idx: idx })
             }
         }
         let token_name = child_of_type(self.node(), IDENT)
             .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
             .text();
 
-        let node_type = file.tokenizer_def().lex_rules().find(|r| r.token_name() == token_name)
-            .unwrap().node_type();
-
-        PartKind::Token(node_type)
+        match file.tokenizer_def().lex_rules().find(|r| r.token_name() == token_name) {
+            Some(rule) => Some(PartKind::Token(rule.node_type())),
+            None => None,
+        }
     }
 }
 

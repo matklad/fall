@@ -28,11 +28,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(FN_DEF),
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(FN), Part::Token(IDENT), Part::Token(LPAREN), Part::Token(RPAREN), Part::Token(LBRACE), Part::Token(RBRACE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(FN), Part::Token(IDENT), Part::Token(LPAREN), Part::Token(RPAREN), Part::Token(LBRACE), Part::Token(RBRACE)], commit: Some(2) }],
             },
             SynRule {
                 ty: Some(STRUCT_DEF),
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(STRUCT), Part::Token(IDENT), Part::Token(LBRACE), Part::Token(RBRACE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(STRUCT), Part::Token(IDENT), Part::Token(LBRACE), Part::Token(RBRACE)], commit: Some(2) }],
             },
         ];
 

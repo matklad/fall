@@ -69,6 +69,9 @@ fn colorize(text: String) -> Spans {
             .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER, KW_AST], |spans, node| {
                 colorize_node(node, "keyword", spans)
             })
+            .visit_nodes(&[ERROR], |spans, node| {
+                spans.push((node.range().start(), node.range().end() + 1, "error"))
+            })
             .visit::<NodesDef, _>(|spans, def| {
                 walk_tree(def.node(), |n| if n.ty() == IDENT {
                     let color = if token_names.contains(n.text()) { "token" } else { "rule" };
@@ -79,13 +82,14 @@ fn colorize(text: String) -> Spans {
             .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
             .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
             .visit::<Part, _>(|spans, part| match part.kind() {
-                PartKind::Token(_) => colorize_node(part.node(), "token", spans),
-                PartKind::RuleReference { .. } => colorize_node(part.node(), "rule", spans),
-                PartKind::Call { .. } => {
+                Some(PartKind::Token(_)) => colorize_node(part.node(), "token", spans),
+                Some(PartKind::RuleReference { .. }) => colorize_node(part.node(), "rule", spans),
+                Some(PartKind::Call { .. }) => {
                     colorize_child(part.node(), IDENT, "builtin", spans);
                     colorize_child(part.node(), LANGLE, "builtin", spans);
                     colorize_child(part.node(), RANGLE, "builtin", spans);
                 }
+                None => {}
             })
             .walk_recursively_children_first(file.ast().node());
         spans

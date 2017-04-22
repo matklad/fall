@@ -30,11 +30,18 @@
 (defun fall-highlight-span (span)
   (let* ((start (elt span 0))
 	 (end (elt span 1))
-	 (color (elt span 2))
-	 (face (cdr (assoc color fall-faces))))
-    (add-text-properties
-     (+ 1 start) (+ 1 end)
-     `(face ,face))))
+	 (color (elt span 2)))
+    (message "%s %s" color (equal color "error"))
+    (if (equal color "error")
+	(progn
+	  (message "fooo")
+	  (add-face-text-property
+	   (+ 1 start) (+ 1 end)
+	   '(:underline (:color "red" :style wave)))
+      	  )
+      (add-text-properties
+	 (+ 1 start) (+ 1 end)
+     	 `(face ,(cdr (assoc color fall-faces)))))))
 
 (defun fall-rehighlight (spans)
   (remove-text-properties 1 (- (buffer-size) 1) '(face nil))

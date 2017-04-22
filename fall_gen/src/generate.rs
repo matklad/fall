@@ -76,7 +76,7 @@ fn generate_alt(alt: Alt) -> String {
 }
 
 fn generate_part(part: Part) -> String {
-    match part.kind() {
+    match part.kind().expect("unresolved reference") {
         PartKind::Token(t) => format!("Part::Token({})", scream(t)),
         PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
         PartKind::Call { name, mut alts } => {

@@ -1,6 +1,6 @@
 use elapsed::measure_time;
 
-use fall_tree::{Language, NodeType, File};
+use fall_tree::{Language, NodeType, File, ERROR};
 use lex::{Token, LexRule, tokenize};
 
 mod imp;
@@ -22,6 +22,11 @@ impl TreeBuilder {
 
     pub fn finish(&mut self, ty: Option<NodeType>) {
         self.0.finish(ty)
+    }
+
+    pub fn error(&mut self) {
+        self.start(Some(ERROR));
+        self.finish(Some(ERROR));
     }
 
     pub fn rollback(&mut self, ty: Option<NodeType>) {
