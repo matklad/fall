@@ -15,12 +15,13 @@ fn generator_path() -> PathBuf {
 
 fn check_by_path<T: AsRef<Path>>(grammar: T) {
     let grammar = grammar.as_ref();
+    let file_name = grammar.display().to_string();
     let input = file::get_text(grammar).unwrap();
     let expected = file::get_text(grammar.with_extension("rs")).unwrap();
-    do_test(&input, &expected);
+    do_test(&input, &expected, &file_name);
 }
 
-fn do_test(grammar: &str, expected: &str) {
+fn do_test(grammar: &str, expected: &str, file_name: &str) {
     let dir = TempDir::new("gen-tests").unwrap();
     let grammar_path = dir.path().join("weird.fall");
     file::put_text(&grammar_path, grammar).unwrap();
@@ -41,7 +42,7 @@ fn do_test(grammar: &str, expected: &str) {
     let actual = actual.trim();
     if expected != actual {
         let difference = difference::Changeset::new(expected, actual, "\n");
-        println!("{}", difference);
+        println!("{}\n{}", file_name, difference);
         panic!("Mismatch!")
     }
 }
