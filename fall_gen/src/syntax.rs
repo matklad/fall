@@ -197,11 +197,11 @@ impl<'f> AstNode<'f> for File<'f> {
 }
 
 impl<'f> File<'f> {
-    pub fn nodes_def(&self) -> NodesDef<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn nodes_def(&self) -> Option<NodesDef<'f>> {
+        AstChildren::new(self.node.children()).next()
     }
-    pub fn tokenizer_def(&self) -> TokenizerDef<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn tokenizer_def(&self) -> Option<TokenizerDef<'f>> {
+        AstChildren::new(self.node.children()).next()
     }
     pub fn syn_rules(&self) -> AstChildren<'f, SynRule<'f>> {
         AstChildren::new(self.node.children())

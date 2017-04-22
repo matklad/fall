@@ -102,8 +102,8 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 
 ast {
   file {
-    nodes_def nodes_def
-    tokenizer_def tokenizer_def
+    nodes_def nodes_def?
+    tokenizer_def tokenizer_def?
     syn_rules syn_rule*
     verbatim_def verbatim_def?
     ast_def ast_def?

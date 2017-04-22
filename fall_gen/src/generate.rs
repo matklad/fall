@@ -20,7 +20,7 @@ pub fn generate(file: File) -> String {
     struct CtxMethod<'f> { name: &'f str, ret_type: String, body: String }
 
     let mut context = Context::new();
-    context.add("node_types", &file.nodes_def().nodes());
+    context.add("node_types", &file.nodes_def().expect("no nodes defined").nodes());
     context.add("syn_rules", &file.syn_rules().map(|r| {
         CtxSynRule {
             is_public: r.is_public(),
@@ -28,7 +28,7 @@ pub fn generate(file: File) -> String {
             alts: r.alts().map(generate_alt).collect()
         }
     }).collect::<Vec<_>>());
-    context.add("lex_rules", &file.tokenizer_def().lex_rules().map(|r| {
+    context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
         CtxLexRule { ty: r.node_type(), re: format!("{:?}", r.token_re()), f: r.extern_fn() }
     }).collect::<Vec<_>>());
     context.add("verbatim", &file.verbatim_def().map(|v| v.contents()));

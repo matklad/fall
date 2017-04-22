@@ -61,7 +61,9 @@ fn colorize(text: String) -> Spans {
     let file = fall_gen::FallFile::parse(text);
     let (elapsed, spans) = measure_time(|| {
         let mut spans = vec![];
-        let token_names: HashSet<_> = file.ast().tokenizer_def().lex_rules().map(|r| r.node_type()).collect();
+        let token_names: HashSet<_> = file.ast().tokenizer_def()
+            .map(|td| td.lex_rules().map(|r| r.node_type()).collect())
+            .unwrap_or_default();
         Visitor(&mut spans)
             .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
                 colorize_node(node, "string", spans)
