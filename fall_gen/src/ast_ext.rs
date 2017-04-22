@@ -4,6 +4,12 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
              LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef, MethodDef};
 
+impl<'f> File<'f> {
+    pub fn resolve_rule(&self, name: &str) -> Option<usize> {
+        self.syn_rules().position(|r| r.name() == name)
+    }
+}
+
 impl<'f> NodesDef<'f> {
     pub fn nodes(&self) -> Vec<&'f str> {
         children_of_type(self.node(), IDENT)
@@ -65,7 +71,7 @@ impl<'f> Part<'f> {
         let file = ast_parent_exn::<File>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
-            if let Some(idx) = file.syn_rules().position(|r| r.name() == ident.text()) {
+            if let Some(idx) = file.resolve_rule(ident.text()) {
                 return Some(PartKind::RuleReference { idx: idx })
             }
         }

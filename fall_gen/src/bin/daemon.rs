@@ -6,8 +6,6 @@ extern crate fall_gen;
 extern crate fall_tree;
 extern crate elapsed;
 
-use std::collections::HashSet;
-
 use jsonrpc_core::{IoHandler, Params, to_value};
 use jsonrpc_minihttp_server::{ServerBuilder};
 
@@ -61,9 +59,6 @@ fn colorize(text: String) -> Spans {
     let file = fall_gen::FallFile::parse(text);
     let (elapsed, spans) = measure_time(|| {
         let mut spans = vec![];
-        let token_names: HashSet<_> = file.ast().tokenizer_def()
-            .map(|td| td.lex_rules().map(|r| r.node_type()).collect())
-            .unwrap_or_default();
         Visitor(&mut spans)
             .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
                 colorize_node(node, "string", spans)
@@ -76,7 +71,7 @@ fn colorize(text: String) -> Spans {
             })
             .visit::<NodesDef, _>(|spans, def| {
                 walk_tree(def.node(), |n| if n.ty() == IDENT {
-                    let color = if token_names.contains(n.text()) { "token" } else { "rule" };
+                    let color = if file.ast().resolve_rule(n.text()).is_some() { "rule" } else { "token" };
                     colorize_node(n, color, spans);
                 })
             })
