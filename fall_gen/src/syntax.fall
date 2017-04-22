@@ -72,7 +72,7 @@ rule syn_rule_body { '{' <opt {alt}> <rep {'|' alt}> '}' }
 
 rule alt { <rep {part}> }
 
-rule part { ident | simple_string | '<' ident <opt {syn_rule_body}> '>' }
+rule part { ident | simple_string | '<' ident <rep {syn_rule_body}> '>' }
 
 rule string { simple_string | hash_string }
 
