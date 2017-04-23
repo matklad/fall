@@ -8,41 +8,46 @@ use std::path::{PathBuf, Path};
 
 use tempdir::TempDir;
 
+const OVERWRITE: bool = true;
+
 fn generator_path() -> PathBuf {
     let test_exe = env::current_exe().unwrap();
     test_exe.parent().unwrap().parent().unwrap().join("gen")
 }
 
-fn check_by_path<T: AsRef<Path>>(grammar: T) {
-    let grammar = grammar.as_ref();
-    let file_name = grammar.display().to_string();
-    let input = file::get_text(grammar).unwrap();
-    let expected = file::get_text(grammar.with_extension("rs")).unwrap();
-    do_test(&input, &expected, &file_name);
-}
+fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
+    let grammar_path = grammar_path.as_ref();
+    let generated_path = &grammar_path.with_extension("rs");
+    let grammar_text = file::get_text(grammar_path).unwrap();
 
-fn do_test(grammar: &str, expected: &str, file_name: &str) {
-    let dir = TempDir::new("gen-tests").unwrap();
-    let grammar_path = dir.path().join("weird.fall");
-    file::put_text(&grammar_path, grammar).unwrap();
+    let expected = file::get_text(generated_path).unwrap();
 
-    let output = process::Command::new(generator_path())
-        .arg(&grammar_path)
-        .output()
-        .expect("Failed to execute process");
+    let generated = {
+        let dir = TempDir::new("gen-tests").unwrap();
+        let tmp_file = dir.path().join("grammar.fall");
+        file::put_text(&tmp_file, grammar_text).unwrap();
 
-    if !output.status.success() {
-        panic!("Generator exited with code {:?}\n----\n{}\n----\n",
-               output.status.code(), std::str::from_utf8(&output.stderr).unwrap())
-    }
+        let output = process::Command::new(generator_path())
+            .arg(&tmp_file)
+            .output()
+            .expect("Failed to execute process");
 
-    let actual = file::get_text(grammar_path.with_extension("rs")).unwrap();
+        if !output.status.success() {
+            panic!("Generator exited with code {:?}\n----\n{}\n----\n",
+                   output.status.code(), std::str::from_utf8(&output.stderr).unwrap())
+        }
+        file::get_text(tmp_file.with_extension("rs")).unwrap()
+    };
 
-    let expected = expected.trim();
-    let actual = actual.trim();
-    if expected != actual {
-        let difference = difference::Changeset::new(expected, actual, "\n");
-        println!("{}\n{}", file_name, difference);
+    if expected != generated {
+        if OVERWRITE {
+            println!("UPDATING {}", grammar_path.display());
+            file::put_text(generated_path, generated)
+                .unwrap_or_else(|_| panic!("Failed to write result to {}", generated_path.display()));
+            return
+        }
+        let difference = difference::Changeset::new(&expected, &generated, "\n");
+        println!("MISMATCH {}\n{}", grammar_path.display(), difference);
         panic!("Mismatch!")
     }
 }
@@ -53,5 +58,6 @@ fn test_grammars_are_fresh() {
     check_by_path("../fall_test/src/rust.fall");
     check_by_path("../fall_test/src/weird.fall");
     check_by_path("../fall_test/src/json.fall");
-    check_by_path("./src/syntax.fall");
+
+    check_by_path("./src/syntax.fall")
 }
