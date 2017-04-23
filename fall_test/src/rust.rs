@@ -20,7 +20,7 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None }, None, None)], commit: None }],
             },
             SynRule {
                 ty: None,

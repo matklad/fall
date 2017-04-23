@@ -32,7 +32,7 @@ lazy_static! {
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(3), Part::Token(COMMA)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(3), Part::Token(COMMA)], commit: None }, None, None)], commit: None }],
             },
             SynRule {
                 ty: Some(FIELD),
@@ -40,7 +40,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(ARRAY),
-                alts: &[Alt { parts: &[Part::Token(LBRACK), Part::Rep(Alt { parts: &[Part::Rule(5), Part::Token(COMMA)], commit: None }), Part::Token(RBRACK)], commit: Some(1) }],
+                alts: &[Alt { parts: &[Part::Token(LBRACK), Part::Rep(Alt { parts: &[Part::Rule(5), Part::Token(COMMA)], commit: None }, None, None), Part::Token(RBRACK)], commit: Some(1) }],
             },
             SynRule {
                 ty: None,

@@ -41,15 +41,15 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }, None, None), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
             },
             SynRule {
                 ty: Some(NODES_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_NODES), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Token(IDENT)], commit: None }), Part::Token(RBRACE)], commit: Some(1) }],
+                alts: &[Alt { parts: &[Part::Token(KW_NODES), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Token(IDENT)], commit: None }, None, None), Part::Token(RBRACE)], commit: Some(1) }],
             },
             SynRule {
                 ty: Some(TOKENIZER_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_TOKENIZER), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(3)], commit: None }), Part::Token(RBRACE)], commit: Some(1) }],
+                alts: &[Alt { parts: &[Part::Token(KW_TOKENIZER), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(3)], commit: None }, None, None), Part::Token(RBRACE)], commit: Some(1) }],
             },
             SynRule {
                 ty: Some(LEX_RULE),
@@ -61,15 +61,15 @@ lazy_static! {
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None }), Part::Token(RBRACE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
             },
             SynRule {
                 ty: Some(ALT),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(7)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(7)], commit: None }, None, None)], commit: None }],
             },
             SynRule {
                 ty: Some(PART),
-                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rep(Alt { parts: &[Part::Rule(5)], commit: None }), Part::Token(RANGLE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rep(Alt { parts: &[Part::Rule(5)], commit: None }, None, None), Part::Token(RANGLE)], commit: None }],
             },
             SynRule {
                 ty: Some(STRING),
@@ -81,11 +81,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(AST_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_AST), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(11)], commit: None }), Part::Token(RBRACE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(KW_AST), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(11)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
             },
             SynRule {
                 ty: Some(AST_NODE_DEF),
-                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(12)], commit: None }), Part::Token(RBRACE)], commit: None }],
+                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(12)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
             },
             SynRule {
                 ty: Some(METHOD_DEF),

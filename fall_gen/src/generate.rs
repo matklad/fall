@@ -80,12 +80,11 @@ fn generate_part(part: Part) -> String {
         PartKind::Token(t) => format!("Part::Token({})", scream(t)),
         PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
         PartKind::Call { name, mut alts } => {
-            let op = match name {
-                "rep" => "Rep",
-                "opt" => "Opt",
+             match name {
+                "rep" => format!("Part::Rep({}, None, None)", generate_alt(alts.next().unwrap())),
+                "opt" => format!("Part::Opt({})", generate_alt(alts.next().unwrap())),
                 _ => unimplemented!(),
-            };
-            format!("Part::{}({})", op, generate_alt(alts.next().unwrap()))
+            }
         }
     }
 }
