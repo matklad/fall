@@ -1,0 +1,64 @@
+buildscript {
+    ext.kotlin_version = '1.1.2'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: "kotlin"
+apply plugin: 'application'
+apply plugin: 'com.google.protobuf'
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/java")
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/grpc")
+    }
+}
+
+sourceSets {
+    main.kotlin.srcDirs = ["src"]
+    main.proto.srcDirs = ["../proto"]
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.2.0"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.3.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+dependencies {
+    compile 'no.tornado:tornadofx:1.7.2'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8"
+    compile 'io.grpc:grpc-netty:1.3.0'
+    compile 'io.grpc:grpc-protobuf:1.3.0'
+    compile 'io.grpc:grpc-stub:1.3.0'
+}

@@ -1,0 +1,15 @@
+[package]
+name = "ediback"
+version = "0.1.0"
+authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
+
+[workspace]
+
+[dependencies]
+grpc = "0.*"
+protobuf        = "1.*"
+futures         = "0.1"
+futures-cpupool = "0.1"
+ediproto = { path = "./proto" }
+file = "*"
+env_logger = "*"
