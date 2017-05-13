@@ -30,7 +30,6 @@ impl<E: Editor> ProtoEditor for EditorServerImpl<E> {
         let reply = futures::finished(EventReply::new());
         let sink = g.1.clone();
         let response = view_state_to_proto(view_state);
-
         GrpcSingleResponse::no_metadata(
             sink.send(response)
                 .map_err(|_| unreachable!())
@@ -71,5 +70,6 @@ fn view_state_to_proto(s: ViewState) -> ViewStateReply {
     }
     result.cursorX = s.cursor.x as i32;
     result.cursorY = s.cursor.y as i32;
+    result.syntax_tree = s.syntax_tree;
     result
 }

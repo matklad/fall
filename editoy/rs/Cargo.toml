@@ -6,10 +6,11 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [workspace]
 
 [dependencies]
-grpc = "0.*"
+grpc = "0.1.4"
 protobuf        = "1.*"
 futures         = "0.1"
 futures-cpupool = "0.1"
 ediproto = { path = "./proto" }
 file = "*"
 env_logger = "*"
+fall_gen = { path = "../../fall_gen" }

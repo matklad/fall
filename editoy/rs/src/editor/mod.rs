@@ -5,7 +5,7 @@ use {Editor, InputEvent, ViewState, GridPosition, Direction, Amount};
 
 mod utils;
 
-use self::utils::move_cursor_by;
+use self::utils::{move_cursor_by, collect_text};
 
 
 //#[derive(Default)]
@@ -19,6 +19,7 @@ impl Default for EditorImpl {
             state: ViewState {
                 lines: vec!["Hello".to_owned(); 32],
                 cursor: Default::default(),
+                syntax_tree: String::default(),
             }
         }
     }
@@ -38,6 +39,8 @@ impl Editor for EditorImpl {
             }
             InputEvent::OpenFile(path) => do_open_file(&mut self.state, &path)
         }
+        let file = ::fall_gen::FallFile::parse(collect_text(&self.state));
+        self.state.syntax_tree = file.tree_to_string();
         self.state.clone()
     }
 }

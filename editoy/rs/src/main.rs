@@ -3,6 +3,7 @@ extern crate futures;
 extern crate grpc;
 extern crate file;
 extern crate env_logger;
+extern crate fall_gen;
 
 mod rpc;
 mod model;

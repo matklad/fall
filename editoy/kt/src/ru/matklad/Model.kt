@@ -6,7 +6,8 @@ data class GridPosition(val x: Int = 0, val y: Int = 0)
 
 data class ViewState(
         val lines: List<String> = emptyList(),
-        val cursor: GridPosition = GridPosition()
+        val cursor: GridPosition = GridPosition(),
+        val syntaxTree: String = ""
 )
 
 fun inputEvent(f: InputEvent.Builder.() -> Unit): InputEvent =

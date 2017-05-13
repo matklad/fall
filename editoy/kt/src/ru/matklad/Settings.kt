@@ -6,7 +6,7 @@ import javafx.scene.text.Text
 class Settings {
     val defaultFile = "/home/matklad/projects/fall/fall_gen/src/syntax.fall"
     val buildCommand = ProcessBuilder("/home/matklad/.cargo/bin/cargo", "build", "--manifest-path", "./rs/Cargo.toml")
-    val backendCommand = ProcessBuilder("/home/matklad/projects/editoy/rs/target/debug/ediback")
+    val backendCommand = ProcessBuilder("./rs/target/debug/ediback")
 
     val font = Font.font("Ubuntu Mono", 18.0)!!
 

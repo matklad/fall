@@ -45,7 +45,9 @@ class ToyView : View() {
     override val root: Parent = borderpane {
         center = canvas
         right = TextArea().apply {
-            isDisable = true
+            isEditable = false
+            isFocusTraversable = false
+            textProperty().bind(Bindings.select<String>(viewModel, "syntaxTree"))
         }
         bottom = borderpane {
             style {

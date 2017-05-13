@@ -7,6 +7,7 @@ import ru.matklad.proto.ViewStateReply
 fun viewStateFromProto(viewStateReply: ViewStateReply): ViewState {
     return ViewState(
             viewStateReply.lineList,
-            GridPosition(viewStateReply.cursorX, viewStateReply.cursorY)
+            GridPosition(viewStateReply.cursorX, viewStateReply.cursorY),
+            viewStateReply.syntaxTree
     )
 }

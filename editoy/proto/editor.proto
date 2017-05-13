@@ -60,4 +60,5 @@ message ViewStateReply {
     repeated string line = 1;
     int32 cursorX = 2;
     int32 cursorY = 3;
+    string syntax_tree = 4;
 }

@@ -12,6 +12,7 @@ pub struct GridPosition {
 pub struct ViewState {
     pub lines: Vec<String>,
     pub cursor: GridPosition,
+    pub syntax_tree: String,
 }
 
 #[derive(Debug)]

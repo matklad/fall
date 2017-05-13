@@ -6,7 +6,6 @@ import javafx.scene.canvas.GraphicsContext
 import ru.matklad.backend.Backend
 import ru.matklad.backend.ProtoBackend
 import ru.matklad.backend.Server
-import ru.matklad.proto.InputEvent
 import tornadofx.App
 import tornadofx.UIComponent
 
@@ -48,8 +47,6 @@ class ToyApp : App(ToyView::class) {
         super.stop()
         backend.close()
     }
-
-
 }
 
 class GridDrawer(

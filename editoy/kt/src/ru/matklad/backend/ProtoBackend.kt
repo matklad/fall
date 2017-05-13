@@ -25,8 +25,10 @@ class ProtoBackend : Backend {
             override fun onCompleted() =
                     error("Should never complete")
 
-            override fun onNext(value: ViewStateReply) =
-                    updateSourceImpl.emit(viewStateFromProto(value))
+            override fun onNext(value: ViewStateReply) {
+                println("onNext")
+                updateSourceImpl.emit(viewStateFromProto(value))
+            }
 
             override fun onError(t: Throwable) {
                 if (t is StatusRuntimeException && t.status.code == Status.Code.UNAVAILABLE) {
