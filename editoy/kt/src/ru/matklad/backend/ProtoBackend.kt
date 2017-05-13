@@ -26,7 +26,6 @@ class ProtoBackend : Backend {
                     error("Should never complete")
 
             override fun onNext(value: ViewStateReply) {
-                println("onNext")
                 updateSourceImpl.emit(viewStateFromProto(value))
             }
 

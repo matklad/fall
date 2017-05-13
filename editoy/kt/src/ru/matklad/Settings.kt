@@ -1,5 +1,6 @@
 package ru.matklad
 
+import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 
@@ -9,7 +10,6 @@ class Settings {
     val backendCommand = ProcessBuilder("./rs/target/debug/ediback")
 
     val font = Font.font("Ubuntu Mono", 18.0)!!
-
     val editorSize = Dimension(1024.0, 768.0)
 
     val cellSize = run {
@@ -18,4 +18,21 @@ class Settings {
         Dimension(t.layoutBounds.width, t.layoutBounds.height)
     }
     val cursorWidth: Double = 2.0
+
+    val colors: Map<String, Color> = """
+        background 3F3F3F
+        text DCDCCC
+        keyword F0DFAF
+    """.run {
+        trim().lines()
+                .map { it.trim().split(" ") }
+                .map { it[0] to it[1] }
+                .map { (name, color) ->
+                    name to Color.web("#$color")
+                }
+                .toMap()
+    }
+
+    val defaultBackground = colors["background"]
+    val cursorColor = colors["text"]
 }

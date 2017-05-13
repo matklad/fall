@@ -3,6 +3,7 @@ package ru.matklad
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.paint.Color
 import ru.matklad.backend.Backend
 import ru.matklad.backend.ProtoBackend
 import ru.matklad.backend.Server
@@ -54,19 +55,24 @@ class GridDrawer(
         private val cellSize: Dimension,
         private val cursorWidth: Double
 ) {
-    fun drawText(position: GridPosition, text: String) {
+    fun drawText(position: GridPosition, text: String, style: TextStyle) {
         check('\n' !in text)
+        g.fill = style.color
         g.fillText(text, position.xx, position.yy + cellSize.height)
     }
 
     fun drawCursor(position: GridPosition) {
+        g.fill = SETTINGS.cursorColor
         g.fillRect(position.xx, position.yy, cursorWidth, cellSize.height)
     }
 
     private val GridPosition.xx: Double get() = x * cellSize.width
     private val GridPosition.yy: Double get() = y * cellSize.height
-
 }
+
+class TextStyle(
+        val color: Color
+)
 
 
 data class Dimension(val width: Double, val height: Double)

@@ -48,8 +48,8 @@ enum Direction {
 }
 
 enum Amount {
-    Char = 0;
-    Page = 1;
+    CHAR = 0;
+    PAGE = 1;
 }
 
 
@@ -57,8 +57,17 @@ message ViewStateRequest {
 }
 
 message ViewStateReply {
-    repeated string line = 1;
+    repeated Line lines = 1;
     int32 cursorX = 2;
     int32 cursorY = 3;
     string syntax_tree = 4;
+}
+
+message Line {
+    repeated StyledText ranges = 1;
+}
+
+message StyledText {
+    string text = 1;
+    string style = 2;
 }

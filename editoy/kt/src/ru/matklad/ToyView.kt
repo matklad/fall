@@ -73,7 +73,8 @@ class ToyView : View() {
         lastFrameTime.set(System.nanoTime() - lastInputEvent)
         val g = canvas.graphicsContext2D
         g.font = SETTINGS.font
-        g.clearRect(0.0, 0.0, SETTINGS.editorSize.width, SETTINGS.editorSize.height)
+        g.fill = SETTINGS.defaultBackground
+        g.fillRect(0.0, 0.0, SETTINGS.editorSize.width, SETTINGS.editorSize.height)
         val grid = GridDrawer(g, SETTINGS.cellSize, SETTINGS.cursorWidth)
         redraw(grid, state)
     }
@@ -82,7 +83,7 @@ class ToyView : View() {
 
 private fun keyPressedToEvent(key: KeyEvent): InputEvent? {
     fun movement(code: KeyCode): Pair<Direction, Amount>? {
-        val amount = if (key.code.isArrowKey) Amount.Char else Amount.Page
+        val amount = if (key.code.isArrowKey) Amount.CHAR else Amount.PAGE
         val direction = when (code) {
             KeyCode.RIGHT, KeyCode.END -> Direction.RIGHT
             KeyCode.LEFT, KeyCode.HOME -> Direction.LEFT
@@ -112,8 +113,12 @@ private fun prepareCanvas(dimension: Dimension): Canvas {
 }
 
 private fun redraw(grid: GridDrawer, state: ViewState) {
-    for ((index, line) in state.lines.withIndex()) {
-        grid.drawText(GridPosition(0, index), line)
+    for ((y, line) in state.lines.withIndex()) {
+        var x = 0
+        for ((text, style) in line) {
+            grid.drawText(GridPosition(x, y), text, style)
+            x += text.length
+        }
     }
 
     grid.drawCursor(state.cursor)

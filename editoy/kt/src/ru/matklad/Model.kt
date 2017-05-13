@@ -5,7 +5,7 @@ import ru.matklad.proto.InputEvent
 data class GridPosition(val x: Int = 0, val y: Int = 0)
 
 data class ViewState(
-        val lines: List<String> = emptyList(),
+        val lines: List<List<Pair<String, TextStyle>>> = emptyList(),
         val cursor: GridPosition = GridPosition(),
         val syntaxTree: String = ""
 )
