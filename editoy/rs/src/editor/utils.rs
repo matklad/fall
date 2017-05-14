@@ -1,14 +1,14 @@
-use model::ViewState;
+use model::State;
 use std::cmp::{max, min};
 
-pub fn current_line(state: &ViewState) -> Option<&str> {
+pub fn current_line(state: &State) -> Option<&str> {
     match state.lines.get(state.cursor.y as usize) {
         Some(line) => Some(&line),
         None => None
     }
 }
 
-pub fn move_cursor_by(state: &mut ViewState, dx: i32, dy: i32) {
+pub fn move_cursor_by(state: &mut State, dx: i32, dy: i32) {
     fn m(p: u32, d: i32, m: usize) -> u32 {
         min(
             max(p as i32 + d, 0) as u32,
@@ -22,7 +22,7 @@ pub fn move_cursor_by(state: &mut ViewState, dx: i32, dy: i32) {
     state.cursor.x = m(state.cursor.x, dx, mx);
 }
 
-pub fn collect_text(state: &ViewState) -> String {
+pub fn collect_text(state: &State) -> String {
     let mut result = String::new();
     for line in state.lines.iter() {
         result += line;

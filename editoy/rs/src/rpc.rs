@@ -4,7 +4,7 @@ use futures::{self, Future, Sink, Stream};
 use grpc::{GrpcRequestOptions, GrpcSingleResponse, GrpcStreamingResponse};
 
 use ediproto::{InputEvent as EventRequest, EventReply, ViewStateRequest, ViewStateReply, Editor as ProtoEditor};
-use model::{Editor, ViewState, InputEvent};
+use model::{Editor, InputEvent};
 use std::sync::Mutex;
 
 pub struct EditorServerImpl<E: Editor> {
@@ -25,13 +25,13 @@ impl<E: Default + Editor> Default for EditorServerImpl<E> {
 impl<E: Editor> ProtoEditor for EditorServerImpl<E> {
     fn event(&self, _: GrpcRequestOptions, p: EventRequest) -> GrpcSingleResponse<EventReply> {
         let mut g = self.editor.lock().unwrap();
-        let view_state = g.0.apply(input_event_from_proto(p));
+        g.0.apply(input_event_from_proto(p));
+        let view_state = g.0.render();
 
         let reply = futures::finished(EventReply::new());
         let sink = g.1.clone();
-        let response = view_state_to_proto(view_state);
         GrpcSingleResponse::no_metadata(
-            sink.send(response)
+            sink.send(view_state)
                 .map_err(|_| unreachable!())
                 .and_then(|_| reply)
         )
@@ -61,15 +61,4 @@ fn input_event_from_proto(mut p: EventRequest) -> InputEvent {
     } else {
         panic!()
     }
-}
-
-fn view_state_to_proto(s: ViewState) -> ViewStateReply {
-    let mut result = ViewStateReply::new();
-    for line in s.lines {
-        result.mut_line().push(line)
-    }
-    result.cursorX = s.cursor.x as i32;
-    result.cursorY = s.cursor.y as i32;
-    result.syntax_tree = s.syntax_tree;
-    result
 }

@@ -1,6 +1,5 @@
 use std::path::PathBuf;
-pub use ediproto::Direction;
-pub use ediproto::Amount;
+pub use ediproto::{Direction, Amount, ViewStateReply};
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GridPosition {
@@ -8,11 +7,14 @@ pub struct GridPosition {
     pub y: u32,
 }
 
+type Spans = Vec<(u32, u32, &'static str)>;
+
 #[derive(Debug, Default, Clone)]
-pub struct ViewState {
+pub struct State {
     pub lines: Vec<String>,
     pub cursor: GridPosition,
     pub syntax_tree: String,
+    pub spans: Spans,
 }
 
 #[derive(Debug)]
@@ -24,5 +26,6 @@ pub enum InputEvent {
 }
 
 pub trait Editor: Default {
-    fn apply(&mut self, event: InputEvent) -> ViewState;
+    fn apply(&mut self, event: InputEvent);
+    fn render(&self) -> ViewStateReply;
 }

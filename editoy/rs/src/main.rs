@@ -6,10 +6,9 @@ extern crate env_logger;
 extern crate fall_gen;
 
 mod rpc;
-mod model;
 mod editor;
+pub mod model;
 
-pub use model::{Editor, Direction, Amount, GridPosition, InputEvent, ViewState};
 use editor::EditorImpl;
 
 use ediproto::EditorServer;

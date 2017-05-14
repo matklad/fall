@@ -7,5 +7,5 @@ extern crate futures_cpupool;
 pub mod editor;
 pub mod editor_grpc;
 
-pub use editor::{InputEvent, EventReply, ViewStateRequest, ViewStateReply, Direction, Amount};
+pub use editor::{InputEvent, EventReply, ViewStateRequest, ViewStateReply, Direction, Amount, Line, StyledText};
 pub use editor_grpc::{Editor, EditorServer};
