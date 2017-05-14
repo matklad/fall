@@ -17,8 +17,14 @@ import tornadofx.*
 
 
 class ToyView : View() {
+    val windowSize = (SETTINGS.editorSize.height / SETTINGS.cellSize.height).toInt()
+    var windowStart = 0
     val viewModel = SimpleObjectProperty(ViewState()).apply {
         addListener { _, _, newValue ->
+            val cursorLine = newValue.cursor.y
+            windowStart += maxOf(0, cursorLine - (windowStart + windowSize - 2))
+            windowStart -= maxOf(0, windowStart - cursorLine + 1)
+            windowStart = maxOf(0, windowStart)
             redraw(newValue)
         }
     }
@@ -76,7 +82,7 @@ class ToyView : View() {
         g.fill = SETTINGS.defaultBackground
         g.fillRect(0.0, 0.0, SETTINGS.editorSize.width, SETTINGS.editorSize.height)
         val grid = GridDrawer(g, SETTINGS.cellSize, SETTINGS.cursorWidth)
-        redraw(grid, state)
+        redraw(grid, state, windowStart to (windowStart + windowSize))
     }
 }
 
@@ -112,8 +118,10 @@ private fun prepareCanvas(dimension: Dimension): Canvas {
     return canvas
 }
 
-private fun redraw(grid: GridDrawer, state: ViewState) {
-    for ((y, line) in state.lines.withIndex()) {
+private fun redraw(grid: GridDrawer, state: ViewState, window: Pair<Int, Int>) {
+    val (lo, hi) = window
+    val lines = state.lines.subList(lo, minOf(hi, state.lines.size))
+    for ((y, line) in lines.withIndex()) {
         var x = 0
         for ((text, style) in line) {
             grid.drawText(GridPosition(x, y), text, style)
@@ -121,5 +129,5 @@ private fun redraw(grid: GridDrawer, state: ViewState) {
         }
     }
 
-    grid.drawCursor(state.cursor)
+    grid.drawCursor(state.cursor.copy(y = state.cursor.y - window.first))
 }
