@@ -1,11 +1,17 @@
-use model::State;
+use model::{State, CowStr};
+use xi_rope::rope::{LinesMetric, BaseMetric};
 use std::cmp::{max, min};
 
-pub fn current_line(state: &State) -> Option<&str> {
-    match state.lines.get(state.cursor.y as usize) {
-        Some(line) => Some(&line),
-        None => None
-    }
+pub fn current_line(state: &State) -> CowStr {
+    let line_idx = state.cursor.y as usize;
+    let line_start = state.text.convert_metrics::<LinesMetric, BaseMetric>(line_idx);
+    let line_end = state.text.convert_metrics::<LinesMetric, BaseMetric>(line_idx + 1);
+    state.text.lines(line_start, line_end).next().unwrap()
+}
+
+pub fn cursor_offset(state: &State) -> usize {
+    let line_start = state.text.convert_metrics::<LinesMetric, BaseMetric>(state.cursor.y as usize);
+    line_start + state.cursor.x as usize
 }
 
 pub fn move_cursor_by(state: &mut State, dx: i32, dy: i32) {
@@ -15,17 +21,9 @@ pub fn move_cursor_by(state: &mut State, dx: i32, dy: i32) {
             m as u32
         )
     }
-    let my = state.lines.len();
-    state.cursor.y = m(state.cursor.y, dy, my);
+    let my = state.text.measure::<LinesMetric>();
+    state.cursor.y = m(state.cursor.y, dy, my - 1);
     //XXX: current line may have changed
-    let mx = current_line(state).unwrap_or("").len();
+    let mx = current_line(state).len();
     state.cursor.x = m(state.cursor.x, dx, mx);
-}
-
-pub fn collect_text(state: &State) -> String {
-    let mut result = String::new();
-    for line in state.lines.iter() {
-        result += line;
-    }
-    result
 }

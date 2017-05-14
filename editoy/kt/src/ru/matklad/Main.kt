@@ -56,7 +56,6 @@ class GridDrawer(
         private val cursorWidth: Double
 ) {
     fun drawText(position: GridPosition, text: String, style: TextStyle) {
-        check('\n' !in text)
         g.fill = style.color
         g.fillText(text, position.xx, position.yy + cellSize.height)
     }

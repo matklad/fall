@@ -4,12 +4,11 @@ use file;
 use fall_gen::highighting;
 
 use ediproto::{ViewStateReply, Line, StyledText};
-use model::{Direction, Amount, GridPosition, State, Editor, InputEvent};
+use model::{Direction, Amount, State, Editor, InputEvent, CowStr};
 
 mod utils;
 
-use self::utils::{move_cursor_by, collect_text};
-
+use self::utils::{move_cursor_by, cursor_offset};
 
 #[derive(Default)]
 pub struct EditorImpl {
@@ -30,7 +29,7 @@ impl Editor for EditorImpl {
             }
             InputEvent::OpenFile(path) => do_open_file(&mut self.state, &path)
         }
-        let text = collect_text(&self.state);
+        let text: String = self.state.text.clone().into();
         let file = ::fall_gen::FallFile::parse(text.clone());
         self.state.syntax_tree = file.tree_to_string();
         self.state.spans = highighting::colorize(text);
@@ -38,7 +37,7 @@ impl Editor for EditorImpl {
 
     fn render(&self) -> ViewStateReply {
         let mut result = ViewStateReply::new();
-        render_lines(&mut result, &self.state.lines, &self.state.spans);
+        render_lines(&mut result, self.state.text.lines_raw(0, self.state.text.len()), &self.state.spans);
         result.cursorX = self.state.cursor.x as i32;
         result.cursorY = self.state.cursor.y as i32;
         result.syntax_tree = self.state.syntax_tree.clone();
@@ -46,13 +45,22 @@ impl Editor for EditorImpl {
     }
 }
 
-fn render_lines(reply: &mut ViewStateReply, lines: &[String], spans: &[(u32, u32, &'static str)]) {
-    let mut lines = lines.iter();
+fn render_lines<'a, L: Iterator<Item=CowStr<'a>>>(reply: &mut ViewStateReply, mut lines: L, spans: &[(u32, u32, &'static str)]) {
     let mut curr_global_offset = 0;
+
+    let mut line_off;
+    let mut curr_line: CowStr;
     macro_rules! next_line {
-        () => { if let Some(line) = lines.next() { &line } else { return } }
+        () => {
+            if let Some(line) = lines.next() {
+                curr_line = line;
+                line_off = 0;
+            } else {
+                return
+            }
+        }
     }
-    let mut curr_line: &str = next_line!();
+    next_line!();
 
     let mut line_sink = Line::new();
     macro_rules! push_line {
@@ -87,14 +95,13 @@ fn render_lines(reply: &mut ViewStateReply, lines: &[String], spans: &[(u32, u32
     while let Some((off, _, is_close, color)) = events.next() {
         let mut l = off - curr_global_offset;
         while l > 0 {
-            let effective_l = ::std::cmp::min(l, curr_line.len());
+            let effective_l = ::std::cmp::min(l, curr_line.len() - line_off);
             l -= effective_l;
-            let (chunk, new_curr) = curr_line.split_at(effective_l);
-            curr_line = new_curr;
-            push_range!(chunk);
-            if curr_line.is_empty() {
+            push_range!(&curr_line[line_off .. line_off + effective_l]);
+            line_off += effective_l;
+            if line_off == curr_line.len() {
                 push_line!();
-                curr_line = next_line!();
+                next_line!();
             }
         }
         if is_close {
@@ -106,9 +113,9 @@ fn render_lines(reply: &mut ViewStateReply, lines: &[String], spans: &[(u32, u32
     }
 
     loop {
-        push_range!(curr_line);
+        push_range!(curr_line.as_ref());
         push_line!();
-        curr_line = next_line!();
+        next_line!();
     }
 }
 
@@ -129,56 +136,20 @@ fn do_move_cursor(state: &mut State, direction: Direction, amount: Amount) {
 }
 
 fn do_backspace(state: &mut State) {
-    delete_backwards(state);
+    let off = cursor_offset(state);
+    if off == 0 { return }
+    state.text.edit_str(off- 1, off, "");
     move_cursor_by(state, -1, 0);
 }
 
 fn do_insert(state: &mut State, text: String) {
     let dx = text.len();
-    insert_text(state, text);
+    let off = cursor_offset(state);
+    state.text.edit_str(off, off, &text);
     move_cursor_by(state, dx as i32, 0);
 }
 
 fn do_open_file(state: &mut State, path: &Path) {
     let text = file::get_text(path).unwrap();
-    state.lines = text.lines().map(|l| l.to_owned()).collect();
-}
-
-fn insert_text(state: &mut State, text: String) {
-    let line_idx = state.cursor.y as usize;
-    if line_idx == state.lines.len() {
-        state.lines.push(String::new())
-    }
-    let (line, insert_point) = match position_in_line(&mut state.lines, state.cursor) {
-        Some(p) => p,
-        None => return
-    };
-    let tail = line.split_off(insert_point);
-    line.push_str(&text);
-    line.push_str(&tail);
-}
-
-
-fn delete_backwards(state: &mut State) {
-    let (line, insert_point) = match position_in_line(&mut state.lines, state.cursor) {
-        Some(p) => p,
-        None => return
-    };
-    if insert_point == 0 {
-        return
-    }
-    let tail = line.split_off(insert_point - 1);
-    line.push_str(&tail[1..]);
-}
-
-fn position_in_line<'l>(lines: &'l mut [String], cursor: GridPosition) -> Option<(&'l mut String, usize)> {
-    let line = match lines.get_mut(cursor.y as usize) {
-        Some(line) => line,
-        None => return None
-    };
-    let insert_point = cursor.x as usize;
-    if insert_point > line.len() {
-        return None;
-    }
-    Some((line, insert_point))
+    state.text = From::from(text);
 }

@@ -27,6 +27,7 @@ class Settings {
         rule 93E0E3
         string CC9393
         builtin DD6718
+        error FF0000
     """.run {
         trim().lines()
                 .map { it.trim().split(" ") }
