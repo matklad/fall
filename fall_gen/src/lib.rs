@@ -15,6 +15,7 @@ use fall_tree::AstNode;
 mod util;
 pub mod syntax;
 pub mod ast_ext;
+pub mod highighting;
 
 mod generate;
 

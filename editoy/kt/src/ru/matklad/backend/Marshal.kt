@@ -21,6 +21,6 @@ private fun styledTextFromProto(text: StyledText): Pair<String, TextStyle> {
 
 private fun attr(a: String): TextStyle {
     val color = SETTINGS.colors[a]
-            ?: error("unknown attribute $a")
+            ?: error("unknown attribute `$a`")
     return TextStyle(color)
 }

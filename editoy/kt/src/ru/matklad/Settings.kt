@@ -23,6 +23,10 @@ class Settings {
         background 3F3F3F
         text DCDCCC
         keyword F0DFAF
+        token DFAF8F
+        rule 93E0E3
+        string CC9393
+        builtin DD6718
     """.run {
         trim().lines()
                 .map { it.trim().split(" ") }
