@@ -4,6 +4,7 @@ extern crate grpc;
 extern crate file;
 extern crate env_logger;
 extern crate fall_gen;
+extern crate fall_tree;
 extern crate xi_rope;
 
 mod rpc;

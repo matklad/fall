@@ -9,8 +9,7 @@ use ast_ext::PartKind;
 
 type Spans = Vec<(u32, u32, &'static str)>;
 
-pub fn colorize(text: String) -> Spans {
-    let file = ::FallFile::parse(text);
+pub fn colorize(file: &::FallFile) -> Spans {
     let (elapsed, spans) = measure_time(|| {
         let mut spans = vec![];
         Visitor(&mut spans)

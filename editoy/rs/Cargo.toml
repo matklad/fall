@@ -15,3 +15,4 @@ ediproto = { path = "./proto" }
 file = "*"
 env_logger = "*"
 fall_gen = { path = "../../fall_gen" }
+fall_tree = { path = "../../fall_tree" }

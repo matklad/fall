@@ -1,4 +1,17 @@
-use {Node, NodeType, AstNode};
+use {Node, NodeType, AstNode, TextRange};
+
+pub fn path_to_leaf_at_offset(node: Node, offset: u32) -> Vec<Node> {
+    let mut result = Vec::new();
+    let mut node = node;
+    loop {
+        result.push(node);
+        if !has_children(node) {
+            break;
+        }
+        node = node.children().find(|&child| contains(child, offset)).unwrap();
+    }
+    result
+}
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -30,4 +43,12 @@ pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
         curr = node.parent()
     }
     None
+}
+
+fn has_children(node: Node) -> bool {
+    node.children().next().is_some()
+}
+
+fn contains(node: Node, offset: u32) -> bool {
+    TextRange::from_to(offset, offset).is_subrange_of(node.range())
 }

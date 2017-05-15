@@ -13,8 +13,8 @@ serde = "*"
 serde_derive = "*"
 jsonrpc-core = { git = "https://github.com/paritytech/jsonrpc" }
 jsonrpc-minihttp-server = { git = "https://github.com/paritytech/jsonrpc" }
-fall-tree = { path = "../fall_tree" }
-fall-parse = { path = "../fall_parse" }
+fall_tree = { path = "../fall_tree" }
+fall_parse = { path = "../fall_parse" }
 file = { git = "https://github.com/matklad/rust-file", branch = "text" }
 
 [dev-dependencies]

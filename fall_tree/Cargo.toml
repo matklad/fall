@@ -1,5 +1,5 @@
 [package]
-name = "fall-tree"
+name = "fall_tree"
 version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 

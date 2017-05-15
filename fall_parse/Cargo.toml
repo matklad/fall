@@ -1,11 +1,11 @@
 [package]
-name = "fall-parse"
+name = "fall_parse"
 version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 elapsed = "0.1"
 regex = "0.2"
-fall-tree = { path = "../fall_tree" }
+fall_tree = { path = "../fall_tree" }
 
 

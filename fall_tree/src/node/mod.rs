@@ -36,6 +36,12 @@ impl File {
 #[derive(Clone, Copy)]
 pub struct Node<'f>(imp::NodeImpl<'f>);
 
+impl<'f> ::std::fmt::Debug for Node<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        self.ty().fmt(f)
+    }
+}
+
 impl<'f> Node<'f> {
     pub fn ty(&self) -> NodeType {
         self.0.ty()

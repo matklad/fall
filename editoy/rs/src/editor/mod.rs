@@ -2,6 +2,9 @@ use std::path::Path;
 
 use file;
 use fall_gen::highighting;
+use fall_gen::FallFile;
+use fall_tree::AstNode;
+use fall_tree::search::path_to_leaf_at_offset;
 
 use ediproto::{ViewStateReply, Line, StyledText};
 use model::{Direction, Amount, State, Editor, InputEvent, CowStr};
@@ -31,8 +34,8 @@ impl Editor for EditorImpl {
         }
         let text: String = self.state.text.clone().into();
         let file = ::fall_gen::FallFile::parse(text.clone());
-        self.state.syntax_tree = file.tree_to_string();
-        self.state.spans = highighting::colorize(text);
+        self.state.spans = highighting::colorize(&file);
+        self.state.syntax_tree = context(&file, cursor_offset(&self.state));
     }
 
     fn render(&self) -> ViewStateReply {
@@ -138,7 +141,7 @@ fn do_move_cursor(state: &mut State, direction: Direction, amount: Amount) {
 fn do_backspace(state: &mut State) {
     let off = cursor_offset(state);
     if off == 0 { return }
-    state.text.edit_str(off- 1, off, "");
+    state.text.edit_str(off - 1, off, "");
     move_cursor_by(state, -1, 0);
 }
 
@@ -152,4 +155,19 @@ fn do_insert(state: &mut State, text: String) {
 fn do_open_file(state: &mut State, path: &Path) {
     let text = file::get_text(path).unwrap();
     state.text = From::from(text);
+}
+
+fn context(file: &FallFile, offset: usize) -> String {
+    let mut result = String::new();
+    let mut level = 0;
+    for node in path_to_leaf_at_offset(file.ast().node(), offset as u32) {
+        for _ in 0..level {
+            result += " ";
+        }
+        let name = ::fall_gen::syntax::LANG.node_type_info(node.ty()).name;
+        result += name;
+        result += "\n";
+        level += 1;
+    }
+    result
 }
