@@ -33,7 +33,7 @@ impl File {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Node<'f>(imp::NodeImpl<'f>);
 
 impl<'f> ::std::fmt::Debug for Node<'f> {

@@ -36,6 +36,16 @@ pub struct NodeImpl<'f> {
     file: &'f FileImpl,
 }
 
+impl<'f> ::std::cmp::PartialEq for NodeImpl<'f> {
+    fn eq(&self, other: &NodeImpl<'f>) -> bool {
+        self.file as *const FileImpl == other.file as *const FileImpl && self.id == other.id
+    }
+}
+
+impl <'f> ::std::cmp::Eq for NodeImpl<'f> {
+
+}
+
 impl<'f> NodeImpl<'f> {
     pub fn ty(&self) -> NodeType {
         self.data().ty

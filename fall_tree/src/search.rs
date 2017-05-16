@@ -1,4 +1,4 @@
-use {Node, NodeType, AstNode, TextRange};
+use {Node, NodeType, AstNode};
 
 pub fn path_to_leaf_at_offset(node: Node, offset: u32) -> Vec<Node> {
     let mut result = Vec::new();
@@ -50,5 +50,8 @@ fn has_children(node: Node) -> bool {
 }
 
 fn contains(node: Node, offset: u32) -> bool {
-    TextRange::from_to(offset, offset).is_subrange_of(node.range())
+    let r = node.range();
+    let (start, end) = (r.start(), r.end());
+    offset == start || start < offset && offset < end
 }
+

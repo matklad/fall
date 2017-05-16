@@ -3,7 +3,7 @@ use std::path::Path;
 use file;
 use fall_gen::highighting;
 use fall_gen::FallFile;
-use fall_tree::AstNode;
+use fall_tree::{AstNode, Node, WHITESPACE};
 use fall_tree::search::path_to_leaf_at_offset;
 
 use ediproto::{ViewStateReply, Line, StyledText};
@@ -35,7 +35,21 @@ impl Editor for EditorImpl {
         let text: String = self.state.text.clone().into();
         let file = ::fall_gen::FallFile::parse(text.clone());
         self.state.spans = highighting::colorize(&file);
-        self.state.syntax_tree = context(&file, cursor_offset(&self.state));
+
+        let mut off = cursor_offset(&self.state);
+        loop {
+            if text.len() == 0 || off == 0 {
+                break
+            }
+            let c = &text[off..off + 1]; // :(
+            if c == " " || c == "\n" {
+                off -= 1;
+            } else {
+                break
+            }
+        }
+
+        self.state.syntax_tree = context(&file, off);
     }
 
     fn render(&self) -> ViewStateReply {
@@ -158,16 +172,35 @@ fn do_open_file(state: &mut State, path: &Path) {
 }
 
 fn context(file: &FallFile, offset: usize) -> String {
-    let mut result = String::new();
-    let mut level = 0;
-    for node in path_to_leaf_at_offset(file.ast().node(), offset as u32) {
-        for _ in 0..level {
-            result += " ";
+    fn go(path: &[Node], level: usize, buff: &mut String) {
+        assert!(path.len() > 0);
+        if path.len() == 1 {
+            return
         }
-        let name = ::fall_gen::syntax::LANG.node_type_info(node.ty()).name;
-        result += name;
-        result += "\n";
-        level += 1;
+        let node = path[0];
+        let next = path[1];
+        for child in node.children() {
+            if child.ty() == WHITESPACE {
+                continue
+            }
+
+            let name = ::fall_gen::syntax::LANG.node_type_info(child.ty()).name;
+            for _ in 0..level {
+                buff.push_str("  ");
+            }
+            buff.push_str(name);
+            if child == next {
+                buff.push_str(" *");
+            }
+            buff.push_str("\n");
+
+            if child == next {
+                go(&path[1..], level + 1, buff);
+            }
+        }
     }
+    let mut result = String::new();
+    let path = path_to_leaf_at_offset(file.ast().node(), offset as u32);
+    go(&path, 0, &mut result);
     result
 }
