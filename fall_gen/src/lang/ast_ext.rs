@@ -1,7 +1,7 @@
 use fall_tree::{AstNode, AstChildren, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
+use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
              LexRule, SynRule, NodesDef, File, Block, Part, VerbatimDef, MethodDef};
 
 impl<'f> File<'f> {

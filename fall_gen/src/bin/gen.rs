@@ -1,11 +1,10 @@
 extern crate clap;
+extern crate file;
 extern crate fall_gen;
 
 use std::error::Error;
-use std::io::prelude::*;
 use std::io::Write;
 use std::path::Path;
-use std::fs::File;
 
 use clap::{App, Arg};
 
@@ -23,17 +22,13 @@ fn main() {
     std::process::exit(return_code)
 }
 
-fn main_inner(file: &Path) -> Result<(), Box<Error>> {
-    let input = {
-        let mut file = File::open(file)?;
-        let mut buff = String::new();
-        file.read_to_string(&mut buff)?;
-        buff
-    };
+fn main_inner(path: &Path) -> Result<(), Box<Error>> {
+    let input = file::get_text(path)?;
 
-    let result = fall_gen::FallFile::parse(input).generate();
+    let file = fall_gen::lang::parse(input);
+    let ast = fall_gen::lang::ast(&file);
+    let result = fall_gen::generate(ast);
 
-    let mut out_file = File::create(file.with_extension("rs"))?;
-    write!(out_file, "{}", result)?;
+    file::put_text(path.with_extension("rs"), result)?;
     Ok(())
 }

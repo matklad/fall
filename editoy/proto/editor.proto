@@ -61,6 +61,8 @@ message ViewStateReply {
     int32 cursorX = 2;
     int32 cursorY = 3;
     string syntax_tree = 4;
+    int64 lexing_time_nanos = 5;
+    int64 parsing_time_nanos = 6;
 }
 
 message Line {

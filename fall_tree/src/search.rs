@@ -8,7 +8,11 @@ pub fn path_to_leaf_at_offset(node: Node, offset: u32) -> Vec<Node> {
         if !has_children(node) {
             break;
         }
-        node = node.children().find(|&child| contains(child, offset)).unwrap();
+        node = node.children().find(|&child| contains(child, offset)).unwrap_or_else(|| {
+            let last_child = node.children().last().unwrap();
+            assert_eq!(offset, last_child.range().end());
+            last_child
+        });
     }
     result
 }
@@ -52,6 +56,6 @@ fn has_children(node: Node) -> bool {
 fn contains(node: Node, offset: u32) -> bool {
     let r = node.range();
     let (start, end) = (r.start(), r.end());
-    offset == start || start < offset && offset < end
+    start <= offset && offset < end
 }
 

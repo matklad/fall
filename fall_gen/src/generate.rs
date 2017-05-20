@@ -1,11 +1,11 @@
 use fall_tree::AstNode;
-use ast_ext::{PartKind, SelectorKind};
+use lang::{PartKind, SelectorKind};
 use util::{scream, snake};
 use tera::{Tera, Context};
 
-use syntax::{File, Alt, Part};
+use lang::{self, Alt, Part};
 
-pub fn generate(file: File) -> String {
+pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
     struct CtxSynRule<'f> { is_public: bool, name: &'f str, alts: Vec<String> };
 

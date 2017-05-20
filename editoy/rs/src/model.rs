@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use fall_tree::File;
 pub use ediproto::{Direction, Amount, ViewStateReply};
 use xi_rope::rope::Rope;
 
@@ -12,8 +13,9 @@ pub type Spans = Vec<(u32, u32, &'static str)>;
 pub type CowStr<'a> = ::std::borrow::Cow<'a, str>;
 
 
-#[derive(Default, Clone)]
+#[derive(Default)]
 pub struct State {
+    pub file: Option<File>,
     pub text: Rope,
     pub cursor: GridPosition,
     pub syntax_tree: String,

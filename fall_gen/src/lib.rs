@@ -7,17 +7,19 @@ extern crate regex;
 extern crate tera;
 extern crate fall_tree;
 extern crate fall_parse;
-
 use elapsed::ElapsedDuration;
 use fall_tree::AstNode;
 
-#[macro_use]
 mod util;
-pub mod syntax;
-pub mod ast_ext;
-pub mod highighting;
+pub mod lang;
 
+mod highighting;
 mod generate;
+
+pub fn generate(file: lang::File) -> String {
+    generate::generate(file)
+}
+pub use highighting::colorize;
 
 pub struct FallFile {
     file: fall_tree::File,
@@ -25,19 +27,15 @@ pub struct FallFile {
 
 impl FallFile {
     pub fn parse(text: String) -> Self {
-        FallFile { file: syntax::LANG.parse(text) }
+        FallFile { file: lang::LANG.parse(text) }
     }
 
-    pub fn ast(&self) -> syntax::File {
-        syntax::File::new(self.file.root())
+    pub fn ast(&self) -> lang::File {
+        lang::File::new(self.file.root())
     }
 
     pub fn tree_to_string(&self) -> String {
         fall_tree::dump_file(&self.file)
-    }
-
-    pub fn generate(&self) -> String {
-        generate::generate(self.ast())
     }
 
     pub fn lexing_time(&self) -> ElapsedDuration {

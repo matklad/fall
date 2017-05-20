@@ -11,7 +11,9 @@ fun viewStateFromProto(viewStateReply: ViewStateReply): ViewState {
     return ViewState(
             viewStateReply.linesList.map { it.rangesList.map(::styledTextFromProto) },
             GridPosition(viewStateReply.cursorX, viewStateReply.cursorY),
-            viewStateReply.syntaxTree
+            viewStateReply.syntaxTree,
+            viewStateReply.lexingTimeNanos,
+            viewStateReply.parsingTimeNanos
     )
 }
 

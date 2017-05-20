@@ -1,8 +1,9 @@
 use std::path::Path;
+use xi_rope::tree::Cursor;
 
 use file;
-use fall_gen::highighting;
-use fall_gen::FallFile;
+use fall_gen::colorize;
+use fall_gen::lang;
 use fall_tree::{AstNode, Node, WHITESPACE};
 use fall_tree::search::path_to_leaf_at_offset;
 
@@ -20,36 +21,41 @@ pub struct EditorImpl {
 
 impl Editor for EditorImpl {
     fn apply(&mut self, event: InputEvent) {
+        let mut text_changed = false;
         match event {
             InputEvent::Ready => {}
             InputEvent::MoveCursor(d, a) => do_move_cursor(&mut self.state, d, a),
             InputEvent::InsertText(text) => {
+                text_changed = true;
                 if text == "\x08" {
                     do_backspace(&mut self.state);
                 } else {
                     do_insert(&mut self.state, text);
                 }
             }
-            InputEvent::OpenFile(path) => do_open_file(&mut self.state, &path)
+            InputEvent::OpenFile(path) => {
+                text_changed = true;
+                do_open_file(&mut self.state, &path)
+            }
         }
         let text: String = self.state.text.clone().into();
-        let file = ::fall_gen::FallFile::parse(text.clone());
-        self.state.spans = highighting::colorize(&file);
+        if text_changed || self.state.file.is_none() {
+            let file = lang::parse(text.clone());
+            self.state.file = Some(file);
+        }
+        let file = self.state.file.as_ref().unwrap();
+        let ast = lang::ast(&file);
+        self.state.spans = colorize(ast);
 
         let mut off = cursor_offset(&self.state);
-        loop {
-            if text.len() == 0 || off == 0 {
+        let mut cursor = Cursor::new(&self.state.text, off);
+        while let Some(c) = cursor.next_codepoint() {
+            if !(c == ' ' || c == '\n') {
                 break
             }
-            let c = &text[off..off + 1]; // :(
-            if c == " " || c == "\n" {
-                off -= 1;
-            } else {
-                break
-            }
+            off += c.len_utf8()
         }
-
-        self.state.syntax_tree = context(&file, off);
+        self.state.syntax_tree = context(ast, off);
     }
 
     fn render(&self) -> ViewStateReply {
@@ -58,6 +64,10 @@ impl Editor for EditorImpl {
         result.cursorX = self.state.cursor.x as i32;
         result.cursorY = self.state.cursor.y as i32;
         result.syntax_tree = self.state.syntax_tree.clone();
+        if let Some(ref file) = self.state.file {
+            result.lexing_time_nanos = file.lexing_time().nanos() as i64;
+            result.parsing_time_nanos = file.parsing_time().nanos() as i64;
+        }
         result
     }
 }
@@ -72,6 +82,7 @@ fn render_lines<'a, L: Iterator<Item=CowStr<'a>>>(reply: &mut ViewStateReply, mu
             if let Some(line) = lines.next() {
                 curr_line = line;
                 line_off = 0;
+                let _ = line_off;
             } else {
                 return
             }
@@ -171,7 +182,7 @@ fn do_open_file(state: &mut State, path: &Path) {
     state.text = From::from(text);
 }
 
-fn context(file: &FallFile, offset: usize) -> String {
+fn context(file: lang::File, offset: usize) -> String {
     fn go(path: &[Node], level: usize, buff: &mut String) {
         assert!(path.len() > 0);
         if path.len() == 1 {
@@ -184,7 +195,7 @@ fn context(file: &FallFile, offset: usize) -> String {
                 continue
             }
 
-            let name = ::fall_gen::syntax::LANG.node_type_info(child.ty()).name;
+            let name = ::fall_gen::lang::LANG.node_type_info(child.ty()).name;
             for _ in 0..level {
                 buff.push_str("  ");
             }
@@ -200,7 +211,7 @@ fn context(file: &FallFile, offset: usize) -> String {
         }
     }
     let mut result = String::new();
-    let path = path_to_leaf_at_offset(file.ast().node(), offset as u32);
+    let path = path_to_leaf_at_offset(file.node(), offset as u32);
     go(&path, 0, &mut result);
     result
 }

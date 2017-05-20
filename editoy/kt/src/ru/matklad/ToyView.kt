@@ -61,11 +61,15 @@ class ToyView : View() {
                         left = null, right = null, bottom = null
                 )
             }
+            left = label(Bindings.format("%3d lex %3d parse %3d draw",
+                    Bindings.selectLong(viewModel, "lexingTime").divide(1_000_000),
+                    Bindings.selectLong(viewModel, "parsingTime").divide(1_000_000),
+                    lastFrameTime.divide(1_000_000)
+            ))
+            right = label(Bindings.select<GridPosition>(viewModel, "cursor"))
             children.style {
                 font = SETTINGS.font
             }
-            left = label(Bindings.concat("redraw ", lastFrameTime.divide(1000).asString(), " μs"))
-            right = label(Bindings.select<GridPosition>(viewModel, "cursor"))
         }
     }
 
