@@ -25,6 +25,7 @@ nodes {
 
   ast_def
   ast_node_def
+  ast_class_def
   method_def
   ast_selector
 
@@ -145,11 +146,15 @@ ast {
 
   node ast_def {
     ast_nodes ast_node_def*
+    ast_classes ast_class_def*
   }
 
   node ast_node_def {
     name IDENT.text
     methods method_def*
+  }
+
+  node ast_class_def {
   }
 
   node method_def {

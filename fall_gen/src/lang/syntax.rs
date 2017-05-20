@@ -31,12 +31,13 @@ pub const LEX_RULE: NodeType = NodeType(126);
 pub const SYN_RULE: NodeType = NodeType(127);
 pub const AST_DEF: NodeType = NodeType(128);
 pub const AST_NODE_DEF: NodeType = NodeType(129);
-pub const METHOD_DEF: NodeType = NodeType(130);
-pub const AST_SELECTOR: NodeType = NodeType(131);
-pub const REF_EXPR: NodeType = NodeType(132);
-pub const CALL_EXPR: NodeType = NodeType(133);
-pub const BLOCK_EXPR: NodeType = NodeType(134);
-pub const SEQ_EXPR: NodeType = NodeType(135);
+pub const AST_CLASS_DEF: NodeType = NodeType(130);
+pub const METHOD_DEF: NodeType = NodeType(131);
+pub const AST_SELECTOR: NodeType = NodeType(132);
+pub const REF_EXPR: NodeType = NodeType(133);
+pub const CALL_EXPR: NodeType = NodeType(134);
+pub const BLOCK_EXPR: NodeType = NodeType(135);
+pub const SEQ_EXPR: NodeType = NodeType(136);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -92,7 +93,7 @@ lazy_static! {
                 body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Rule(13), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
-                ty: None,
+                ty: Some(AST_CLASS_DEF),
                 body: Expr::Or(&[Expr::And(&[Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Token(IDENT), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
@@ -169,6 +170,7 @@ lazy_static! {
                     SYN_RULE => NodeTypeInfo { name: "SYN_RULE" },
                     AST_DEF => NodeTypeInfo { name: "AST_DEF" },
                     AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF" },
+                    AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF" },
                     METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF" },
                     AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR" },
                     REF_EXPR => NodeTypeInfo { name: "REF_EXPR" },
@@ -215,7 +217,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use fall_tree::{AstNode, AstChildren, Node};
+use fall_tree::{AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use fall_tree::search::child_of_type_exn;
 
 #[derive(Clone, Copy)]
@@ -347,6 +349,9 @@ impl<'f> AstDef<'f> {
     pub fn ast_nodes(&self) -> AstChildren<'f, AstNodeDef<'f>> {
         AstChildren::new(self.node.children())
     }
+    pub fn ast_classes(&self) -> AstChildren<'f, AstClassDef<'f>> {
+        AstChildren::new(self.node.children())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct AstNodeDef<'f> { node: Node<'f> }
@@ -367,6 +372,21 @@ impl<'f> AstNodeDef<'f> {
     pub fn methods(&self) -> AstChildren<'f, MethodDef<'f>> {
         AstChildren::new(self.node.children())
     }
+}
+#[derive(Clone, Copy)]
+pub struct AstClassDef<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for AstClassDef<'f> {
+    fn ty() -> NodeType { AST_CLASS_DEF }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        AstClassDef { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> AstClassDef<'f> {
+    
 }
 #[derive(Clone, Copy)]
 pub struct MethodDef<'f> { node: Node<'f> }
@@ -447,5 +467,44 @@ impl<'f> AstNode<'f> for BlockExpr<'f> {
 impl<'f> BlockExpr<'f> {
     pub fn alts(&self) -> AstChildren<'f, SeqExpr<'f>> {
         AstChildren::new(self.node.children())
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Expr<'f> {
+    RefExpr(RefExpr<'f>),
+    CallExpr(CallExpr<'f>),
+    SeqExpr(SeqExpr<'f>),
+    BlockExpr(BlockExpr<'f>),
+}
+
+impl<'f> AstClass<'f> for Expr<'f> {
+    fn tys() -> &'static [NodeType] {
+        const TYS: &[NodeType] = &[
+            REF_EXPR,
+            CALL_EXPR,
+            SEQ_EXPR,
+            BLOCK_EXPR,
+        ];
+        TYS
+    }
+
+    fn new(node: Node<'f>) -> Self {
+        match node.ty() {
+            REF_EXPR => Expr::RefExpr(RefExpr::new(node)),
+            CALL_EXPR => Expr::CallExpr(CallExpr::new(node)),
+            SEQ_EXPR => Expr::SeqExpr(SeqExpr::new(node)),
+            BLOCK_EXPR => Expr::BlockExpr(BlockExpr::new(node)),
+            _ => panic!("Bad ast class")
+        }
+    }
+
+    fn node(&self) -> Node<'f> {
+        match *self {
+            Expr::RefExpr(n) => n.node(),
+            Expr::CallExpr(n) => n.node(),
+            Expr::SeqExpr(n) => n.node(),
+            Expr::BlockExpr(n) => n.node(),
+        }
     }
 }

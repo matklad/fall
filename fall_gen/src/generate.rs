@@ -1,6 +1,6 @@
 use fall_tree::{AstNode, AstClass};
 use lang::{SelectorKind, RefKind};
-use util::{scream, snake};
+use util::{scream, camel};
 use tera::{Tera, Context};
 
 use lang::{self, Expr};
@@ -14,6 +14,9 @@ pub fn generate(file: lang::File) -> String {
 
     #[derive(Serialize)]
     struct CtxAstNode<'f> { struct_name: String, node_type_name: String, methods: Vec<CtxMethod<'f>> }
+
+    #[derive(Serialize)]
+    struct CtxAstClass { enum_name: String, variants: Vec<(String, String)> }
 
     #[derive(Serialize)]
     struct CtxMethod<'f> { name: &'f str, ret_type: String, body: String }
@@ -35,15 +38,15 @@ pub fn generate(file: lang::File) -> String {
     if let Some(ast) = file.ast_def() {
         context.add("ast_nodes", &ast.ast_nodes().map(|node| {
             CtxAstNode {
-                struct_name: snake(node.name()),
+                struct_name: camel(node.name()),
                 node_type_name: scream(node.name()),
                 methods: node.methods().map(|method| {
                     CtxMethod {
                         name: method.name(),
                         ret_type: match method.selector_kind() {
-                            SelectorKind::Single(name) => format!("{}<'f>", snake(name)),
-                            SelectorKind::Opt(name) => format!("Option<{}<'f>>", snake(name)),
-                            SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", snake(name)),
+                            SelectorKind::Single(name) => format!("{}<'f>", camel(name)),
+                            SelectorKind::Opt(name) => format!("Option<{}<'f>>", camel(name)),
+                            SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", camel(name)),
                             SelectorKind::Text(_) => "&'f str".to_owned(),
                         },
                         body: match method.selector_kind() {
@@ -54,6 +57,13 @@ pub fn generate(file: lang::File) -> String {
                         }
                     }
                 }).collect()
+            }
+        }).collect::<Vec<_>>());
+
+        context.add("ast_classes", &ast.ast_classes().map(|class| {
+            CtxAstClass {
+                enum_name: camel(class.name()),
+                variants: class.variants().map(|variant| (scream(variant), camel(variant))).collect(),
             }
         }).collect::<Vec<_>>());
     }
@@ -93,7 +103,7 @@ fn gen_expr(expr: Expr) -> String {
                             let block = match expr {
                                 Expr::BlockExpr(block) => block,
                                 _ => panic!("bad rep argument!")
-                            } ;
+                            };
                             let tokens: String = block.alts()
                                 .flat_map(|alt| alt.parts())
                                 .map(|part| {
@@ -184,7 +194,7 @@ lazy_static! {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use fall_tree::{AstNode, AstChildren, Node};
+use fall_tree::{AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use fall_tree::search::child_of_type_exn;
 
 {% for node in ast_nodes %}
@@ -208,5 +218,43 @@ impl<'f> {{ node.struct_name }}<'f> {
     {% endfor %}
 }
 {% endfor %}
+
+{% for class in ast_classes %}
+#[derive(Clone, Copy)]
+pub enum {{ class.enum_name }}<'f> {
+    {% for v in class.variants %}
+        {{ v.1 }}({{ v.1 }}<'f>),
+    {% endfor %}
+}
+
+impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
+    fn tys() -> &'static [NodeType] {
+        const TYS: &[NodeType] = &[
+            {% for v in class.variants %}
+                {{ v.0 }},
+            {% endfor %}
+        ];
+        TYS
+    }
+
+    fn new(node: Node<'f>) -> Self {
+        match node.ty() {
+            {% for v in class.variants %}
+                {{ v.0 }} => {{ class.enum_name }}::{{ v.1 }}({{ v.1 }}::new(node)),
+            {% endfor %}
+            _ => panic!("Bad ast class")
+        }
+    }
+
+    fn node(&self) -> Node<'f> {
+        match *self {
+            {% for v in class.variants %}
+                {{ class.enum_name }}::{{ v.1 }}(n) => n.node(),
+            {% endfor %}
+        }
+    }
+}
+{% endfor %}
+
 {% endif %}
 "#####;

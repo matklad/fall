@@ -1,10 +1,9 @@
-use fall_tree::{AstNode, Node, NodeType, AstClass, AstClassChildren};
+use fall_tree::{AstNode, Node, NodeType, AstClassChildren};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR,
-             BLOCK_EXPR, REF_EXPR, CALL_EXPR, SEQ_EXPR,
              LexRule, SynRule, NodesDef, File, VerbatimDef, MethodDef,
-             BlockExpr, RefExpr, CallExpr, SeqExpr};
+             RefExpr, CallExpr, SeqExpr, AstClassDef, Expr};
 
 impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
@@ -79,45 +78,21 @@ impl<'f> MethodDef<'f> {
     }
 }
 
+impl<'f> AstClassDef<'f> {
+    pub fn name(&self) -> &'f str {
+        child_of_type(self.node(), IDENT).unwrap().text()
+    }
+
+    pub fn variants<'a>(&'a self) -> Box<Iterator<Item=&'f str> + 'a> {
+        Box::new(children_of_type(self.node(), IDENT).skip(1).map(|it| it.text()))
+    }
+}
+
 pub enum SelectorKind<'f> {
     Single(&'f str),
     Opt(&'f str),
     Many(&'f str),
     Text(&'f str),
-}
-
-#[derive(Clone, Copy)]
-pub enum Expr<'f> {
-    BlockExpr(BlockExpr<'f>),
-    SeqExpr(SeqExpr<'f>),
-    RefExpr(RefExpr<'f>),
-    CallExpr(CallExpr<'f>),
-}
-
-impl<'f> AstClass<'f> for Expr<'f> {
-    fn tys() -> &'static [NodeType] {
-        const TYS: &[NodeType] = &[BLOCK_EXPR, SEQ_EXPR, REF_EXPR, CALL_EXPR];
-        TYS
-    }
-
-    fn new(node: Node<'f>) -> Self {
-        match node.ty() {
-            BLOCK_EXPR => Expr::BlockExpr(BlockExpr::new(node)),
-            SEQ_EXPR => Expr::SeqExpr(SeqExpr::new(node)),
-            REF_EXPR => Expr::RefExpr(RefExpr::new(node)),
-            CALL_EXPR => Expr::CallExpr(CallExpr::new(node)),
-            _ => unreachable!()
-        }
-    }
-
-    fn node(&self) -> Node<'f> {
-        match *self {
-            Expr::BlockExpr(e) => e.node(),
-            Expr::SeqExpr(e) => e.node(),
-            Expr::RefExpr(e) => e.node(),
-            Expr::CallExpr(e) => e.node(),
-        }
-    }
 }
 
 pub enum RefKind<'f> {
