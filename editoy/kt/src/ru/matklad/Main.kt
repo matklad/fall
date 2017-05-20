@@ -41,7 +41,9 @@ class ToyApp : App(ToyView::class) {
                 inputEvent { readyBuilder.build() },
                 inputEvent { openFileBuilder.setPath(SETTINGS.defaultFile).build() }
         )
-        startUpEvents.forEach { backend.eventSink(it) }
+        for (event in startUpEvents) {
+            backend.eventSink(event)
+        }
     }
 
     override fun stop() {

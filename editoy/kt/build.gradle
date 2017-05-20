@@ -15,9 +15,12 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: "kotlin"
-apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'application'
+mainClassName = 'ru.matklad.MainKt'
+
 
 compileKotlin {
     kotlinOptions {
@@ -35,6 +38,8 @@ idea {
 }
 
 sourceSets {
+    main.java.srcDirs += 'build/generated/source/proto/main/java'
+    main.java.srcDirs += 'build/generated/source/proto/main/grpc'
     main.kotlin.srcDirs = ["src"]
     main.proto.srcDirs = ["../proto"]
 }
@@ -54,6 +59,8 @@ protobuf {
         }
     }
 }
+
+compileKotlin.dependsOn ':generateProto'
 
 dependencies {
     compile 'no.tornado:tornadofx:1.7.2'
