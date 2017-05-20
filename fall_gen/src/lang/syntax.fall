@@ -1,6 +1,7 @@
 nodes {
   kw_ast
   kw_nodes
+  kw_node
   kw_tokenizer
   kw_rule
   kw_verbatim
@@ -45,6 +46,7 @@ tokenizer {
   lparen '('
   rparen ')'
   kw_nodes 'nodes'
+  kw_node 'node'
   kw_tokenizer 'tokenizer'
   kw_rule 'rule'
   kw_verbatim 'verbatim'
@@ -84,7 +86,7 @@ rule verbatim_def { 'verbatim' hash_string }
 rule ast_def { 'ast' '{' <rep {ast_node_def}> '}' }
 
 rule ast_node_def {
-  ident '{' <rep {method_def}> '}'
+  'node' ident '{' <rep {method_def}> '}'
 }
 
 rule method_def { ident ast_selector }
@@ -110,7 +112,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 "#########
 
 ast {
-  file {
+  node file {
     nodes_def nodes_def?
     tokenizer_def tokenizer_def?
     syn_rules syn_rule*
@@ -118,42 +120,42 @@ ast {
     ast_def ast_def?
   }
 
-  nodes_def { }
+  node nodes_def { }
 
-  tokenizer_def {
+  node tokenizer_def {
     lex_rules lex_rule*
   }
 
-  lex_rule {
+  node lex_rule {
     node_type IDENT.text
   }
 
-  syn_rule {
+  node syn_rule {
     name IDENT.text
     block_expr block_expr
   }
 
-  verbatim_def { }
+  node verbatim_def { }
 
-  ast_def {
+  node ast_def {
     ast_nodes ast_node_def*
   }
 
-  ast_node_def {
+  node ast_node_def {
     name IDENT.text
     methods method_def*
   }
 
-  method_def {
+  node method_def {
     name IDENT.text
   }
 
-  ref_expr {  }
-  call_expr {
+  node ref_expr {  }
+  node call_expr {
     fn_name IDENT.text
   }
-  seq_expr {  }
-  block_expr {
+  node seq_expr {  }
+  node block_expr {
     alts seq_expr*
   }
 }

@@ -3,38 +3,39 @@ pub use fall_tree::{ERROR, WHITESPACE};
 
 pub const KW_AST: NodeType = NodeType(100);
 pub const KW_NODES: NodeType = NodeType(101);
-pub const KW_TOKENIZER: NodeType = NodeType(102);
-pub const KW_RULE: NodeType = NodeType(103);
-pub const KW_VERBATIM: NodeType = NodeType(104);
-pub const EQ: NodeType = NodeType(105);
-pub const PIPE: NodeType = NodeType(106);
-pub const STAR: NodeType = NodeType(107);
-pub const QUESTION: NodeType = NodeType(108);
-pub const DOT: NodeType = NodeType(109);
-pub const LBRACE: NodeType = NodeType(110);
-pub const RBRACE: NodeType = NodeType(111);
-pub const LANGLE: NodeType = NodeType(112);
-pub const RANGLE: NodeType = NodeType(113);
-pub const LPAREN: NodeType = NodeType(114);
-pub const RPAREN: NodeType = NodeType(115);
-pub const IDENT: NodeType = NodeType(116);
-pub const SIMPLE_STRING: NodeType = NodeType(117);
-pub const HASH_STRING: NodeType = NodeType(118);
-pub const FILE: NodeType = NodeType(119);
-pub const STRING: NodeType = NodeType(120);
-pub const VERBATIM_DEF: NodeType = NodeType(121);
-pub const NODES_DEF: NodeType = NodeType(122);
-pub const TOKENIZER_DEF: NodeType = NodeType(123);
-pub const LEX_RULE: NodeType = NodeType(124);
-pub const SYN_RULE: NodeType = NodeType(125);
-pub const AST_DEF: NodeType = NodeType(126);
-pub const AST_NODE_DEF: NodeType = NodeType(127);
-pub const METHOD_DEF: NodeType = NodeType(128);
-pub const AST_SELECTOR: NodeType = NodeType(129);
-pub const REF_EXPR: NodeType = NodeType(130);
-pub const CALL_EXPR: NodeType = NodeType(131);
-pub const BLOCK_EXPR: NodeType = NodeType(132);
-pub const SEQ_EXPR: NodeType = NodeType(133);
+pub const KW_NODE: NodeType = NodeType(102);
+pub const KW_TOKENIZER: NodeType = NodeType(103);
+pub const KW_RULE: NodeType = NodeType(104);
+pub const KW_VERBATIM: NodeType = NodeType(105);
+pub const EQ: NodeType = NodeType(106);
+pub const PIPE: NodeType = NodeType(107);
+pub const STAR: NodeType = NodeType(108);
+pub const QUESTION: NodeType = NodeType(109);
+pub const DOT: NodeType = NodeType(110);
+pub const LBRACE: NodeType = NodeType(111);
+pub const RBRACE: NodeType = NodeType(112);
+pub const LANGLE: NodeType = NodeType(113);
+pub const RANGLE: NodeType = NodeType(114);
+pub const LPAREN: NodeType = NodeType(115);
+pub const RPAREN: NodeType = NodeType(116);
+pub const IDENT: NodeType = NodeType(117);
+pub const SIMPLE_STRING: NodeType = NodeType(118);
+pub const HASH_STRING: NodeType = NodeType(119);
+pub const FILE: NodeType = NodeType(120);
+pub const STRING: NodeType = NodeType(121);
+pub const VERBATIM_DEF: NodeType = NodeType(122);
+pub const NODES_DEF: NodeType = NodeType(123);
+pub const TOKENIZER_DEF: NodeType = NodeType(124);
+pub const LEX_RULE: NodeType = NodeType(125);
+pub const SYN_RULE: NodeType = NodeType(126);
+pub const AST_DEF: NodeType = NodeType(127);
+pub const AST_NODE_DEF: NodeType = NodeType(128);
+pub const METHOD_DEF: NodeType = NodeType(129);
+pub const AST_SELECTOR: NodeType = NodeType(130);
+pub const REF_EXPR: NodeType = NodeType(131);
+pub const CALL_EXPR: NodeType = NodeType(132);
+pub const BLOCK_EXPR: NodeType = NodeType(133);
+pub const SEQ_EXPR: NodeType = NodeType(134);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -87,7 +88,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(AST_NODE_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(12)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(12)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(METHOD_DEF),
@@ -135,6 +136,7 @@ lazy_static! {
                     WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
                     KW_AST => NodeTypeInfo { name: "KW_AST" },
                     KW_NODES => NodeTypeInfo { name: "KW_NODES" },
+                    KW_NODE => NodeTypeInfo { name: "KW_NODE" },
                     KW_TOKENIZER => NodeTypeInfo { name: "KW_TOKENIZER" },
                     KW_RULE => NodeTypeInfo { name: "KW_RULE" },
                     KW_VERBATIM => NodeTypeInfo { name: "KW_VERBATIM" },
@@ -186,6 +188,7 @@ lazy_static! {
                 LexRule::new(LPAREN, "\\(", None),
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(KW_NODES, "nodes", None),
+                LexRule::new(KW_NODE, "node", None),
                 LexRule::new(KW_TOKENIZER, "tokenizer", None),
                 LexRule::new(KW_RULE, "rule", None),
                 LexRule::new(KW_VERBATIM, "verbatim", None),
