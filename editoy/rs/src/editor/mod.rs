@@ -26,12 +26,15 @@ impl Editor for EditorImpl {
             InputEvent::Ready => {}
             InputEvent::MoveCursor(d, a) => do_move_cursor(&mut self.state, d, a),
             InputEvent::InsertText(text) => {
+                println!("text = {:?}", text);
+                println!("self.state.text = {:?}", String::from(self.state.text.clone()));
                 text_changed = true;
                 if text == "\x08" {
                     do_backspace(&mut self.state);
                 } else {
                     do_insert(&mut self.state, text);
                 }
+                println!("self.state.text = {:?}", String::from(self.state.text.clone()));
             }
             InputEvent::OpenFile(path) => {
                 text_changed = true;

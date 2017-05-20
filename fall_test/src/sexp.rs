@@ -14,7 +14,7 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), None, None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), None, None)], None)]),
             },
             SynRule {
                 ty: None,
@@ -22,7 +22,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(LIST),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LPAREN), Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), None, None), Expr::Token(RPAREN)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LPAREN), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), None, None), Expr::Token(RPAREN)], None)]),
             },
         ];
 

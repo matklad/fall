@@ -35,7 +35,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(EMPTY),
-                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Rule(5)], None))], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(5)], None)]))], None)]),
             },
             SynRule {
                 ty: None,

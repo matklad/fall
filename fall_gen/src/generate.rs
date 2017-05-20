@@ -1,9 +1,9 @@
 use fall_tree::{AstNode, AstClass};
-use lang::{PartKind, SelectorKind, RefKind};
+use lang::{SelectorKind, RefKind};
 use util::{scream, snake};
 use tera::{Tera, Context};
 
-use lang::{self, Alt, Part, Block, BlockExpr, Expr};
+use lang::{self, Expr};
 
 pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
@@ -24,7 +24,7 @@ pub fn generate(file: lang::File) -> String {
         CtxSynRule {
             is_public: r.is_public(),
             name: r.name(),
-            body: gen_block(r.block())
+            body: gen_expr(Expr::BlockExpr(r.block_expr()))
         }
     }).collect::<Vec<_>>());
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
@@ -129,55 +129,6 @@ fn list<D: ::std::fmt::Display, I: Iterator<Item=D>>(i: I) -> String {
         result += &item.to_string();
     }
     result
-}
-
-fn gen_block(block: Block) -> String {
-    let parts = block.alts().map(gen_alt);
-    format!("Expr::Or(&[{}])", list(parts))
-}
-
-fn gen_alt(alt: Alt) -> String {
-    fn is_commit(part: Part) -> bool {
-        part.node().text() == "<commit>"
-    }
-    let commit = alt.parts().position(is_commit);
-    let parts = alt.parts()
-        .filter(|&p| !is_commit(p))
-        .map(generate_part);
-    format!("Expr::And(&[{}], {:?})", list(parts), commit)
-}
-
-fn generate_part(part: Part) -> String {
-    match part.kind().unwrap_or_else(|| panic!("unresolved reference: {}", part.node().text())) {
-        PartKind::Token(t) => format!("Expr::Token({})", scream(t)),
-        PartKind::RuleReference { idx } => format!("Expr::Rule({:?})", idx),
-        PartKind::Call { name, mut args } => {
-            let arg = args.next().unwrap().alts().next().unwrap();
-            match name {
-                "rep" => {
-                    let skip = match args.next() {
-                        None => "None".to_owned(),
-                        Some(block) => {
-                            let tokens: String = block.alts()
-                                .flat_map(|alt| alt.parts())
-                                .map(|part| {
-                                    if let PartKind::Token(t) = part.kind().unwrap() {
-                                        format!("{}, ", scream(t))
-                                    } else {
-                                        panic!("bad break in rep {:?}", part.node().text())
-                                    }
-                                })
-                                .collect();
-                            format!("Some(&[{}])", tokens)
-                        }
-                    };
-                    format!("Expr::Rep(&{}, {}, None)", gen_alt(arg), skip)
-                }
-                "opt" => format!("Expr::Opt(&{})", gen_alt(arg)),
-                _ => unimplemented!(),
-            }
-        }
-    }
 }
 
 const TEMPLATE: &'static str = r#####"

@@ -72,7 +72,7 @@ rule tokenizer_def {
 rule lex_rule { ident <commit> string <opt {string}> }
 
 rule syn_rule {
-  'rule' <commit> ident block
+  'rule' <commit> ident block_expr
 }
 rule block { '{' <opt {alt}> <rep {'|' alt}> '}' }
 

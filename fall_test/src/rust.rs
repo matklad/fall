@@ -20,7 +20,7 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), Some(&[PUB, FN, STRUCT, ]), None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), Some(&[PUB, FN, STRUCT, ]), None)], None)]),
             },
             SynRule {
                 ty: None,
@@ -28,11 +28,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(FN_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Token(PUB)], None)), Expr::Token(FN), Expr::Token(IDENT), Expr::Token(LPAREN), Expr::Token(RPAREN), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Token(PUB)], None)])), Expr::Token(FN), Expr::Token(IDENT), Expr::Token(LPAREN), Expr::Token(RPAREN), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
             },
             SynRule {
                 ty: Some(STRUCT_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Token(PUB)], None)), Expr::Token(STRUCT), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Token(PUB)], None)])), Expr::Token(STRUCT), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
             },
         ];
 

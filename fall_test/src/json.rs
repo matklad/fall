@@ -32,7 +32,7 @@ lazy_static! {
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(3), Expr::Token(COMMA)], None), None, None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(3), Expr::Token(COMMA)], None)]), None, None)], None)]),
             },
             SynRule {
                 ty: Some(FIELD),
@@ -40,7 +40,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(ARRAY),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACK), Expr::Rep(&Expr::And(&[Expr::Rule(5), Expr::Token(COMMA)], None), None, None), Expr::Token(RBRACK)], Some(1))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACK), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(5), Expr::Token(COMMA)], None)]), None, None), Expr::Token(RBRACK)], Some(1))]),
             },
             SynRule {
                 ty: None,
