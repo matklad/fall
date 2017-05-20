@@ -5,5 +5,5 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 lazy_static = "0.2"
-fall-tree = { path = "../fall_tree" }
-fall-parse = { path = "../fall_parse" }
+fall_tree = { path = "../fall_tree" }
+fall_parse = { path = "../fall_parse" }

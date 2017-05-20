@@ -2,7 +2,7 @@ use fall_tree::{AstNode, AstChildren, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use syntax::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
-             LexRule, SynRule, NodesDef, File, Alt, Part, VerbatimDef, MethodDef};
+             LexRule, SynRule, NodesDef, File, Block, Alt, Part, VerbatimDef, MethodDef};
 
 impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
@@ -57,7 +57,7 @@ impl<'f> SynRule<'f> {
 pub enum PartKind<'f> {
     Token(&'f str),
     RuleReference { idx: usize },
-    Call { name: &'f str, alts: AstChildren<'f, Alt<'f>> }
+    Call { name: &'f str, args: AstChildren<'f, Block<'f>> }
 }
 
 impl<'f> Part<'f> {
@@ -65,7 +65,7 @@ impl<'f> Part<'f> {
         if child_of_type(self.node(), LANGLE).is_some() {
             return Some(PartKind::Call {
                 name: child_of_type_exn(self.node(), IDENT).text(),
-                alts: AstChildren::new(self.node().children()),
+                args: AstChildren::new(self.node().children()),
             })
         }
         let file = ast_parent_exn::<File>(self.node());

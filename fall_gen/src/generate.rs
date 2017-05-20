@@ -25,7 +25,7 @@ pub fn generate(file: File) -> String {
         CtxSynRule {
             is_public: r.is_public(),
             name: r.name(),
-            alts: r.alts().map(generate_alt).collect()
+            alts: r.block().alts().map(generate_alt).collect()
         }
     }).collect::<Vec<_>>());
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
@@ -79,10 +79,11 @@ fn generate_part(part: Part) -> String {
     match part.kind().unwrap_or_else(|| panic!("unresolved reference: {}", part.node().text())) {
         PartKind::Token(t) => format!("Part::Token({})", scream(t)),
         PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
-        PartKind::Call { name, mut alts } => {
+        PartKind::Call { name, mut args } => {
+            let alt = args.next().unwrap().alts().next().unwrap();
              match name {
-                "rep" => format!("Part::Rep({}, None, None)", generate_alt(alts.next().unwrap())),
-                "opt" => format!("Part::Opt({})", generate_alt(alts.next().unwrap())),
+                "rep" => format!("Part::Rep({}, None, None)", generate_alt(alt)),
+                "opt" => format!("Part::Opt({})", generate_alt(alt)),
                 _ => unimplemented!(),
             }
         }

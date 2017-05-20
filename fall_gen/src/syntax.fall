@@ -20,6 +20,7 @@ nodes {
   tokenizer_def
   lex_rule
   syn_rule
+  block
   alt
   part
 
@@ -121,6 +122,10 @@ ast {
 
   syn_rule {
     name IDENT.text
+    block block
+  }
+
+  block {
     alts alt*
   }
 
