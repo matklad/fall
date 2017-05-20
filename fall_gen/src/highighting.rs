@@ -28,15 +28,15 @@ pub fn colorize(file: File) -> Spans {
         .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
         .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-        .visit::<Part, _>(|spans, part| match part.kind() {
-            Some(PartKind::Token(_)) => colorize_node(part.node(), "token", spans),
-            Some(PartKind::RuleReference { .. }) => colorize_node(part.node(), "rule", spans),
-            Some(PartKind::Call { .. }) => {
-                colorize_child(part.node(), IDENT, "builtin", spans);
-                colorize_child(part.node(), LANGLE, "builtin", spans);
-                colorize_child(part.node(), RANGLE, "builtin", spans);
-            }
+        .visit::<RefExpr, _>(|spans, ref_| match ref_.resolve() {
+            Some(RefKind::Token(_)) => colorize_node(ref_.node(), "token", spans),
+            Some(RefKind::RuleReference { .. }) => colorize_node(ref_.node(), "rule", spans),
             None => {}
+        })
+        .visit::<CallExpr, _>(|spans, call| {
+            colorize_child(call.node(), IDENT, "builtin", spans);
+            colorize_child(call.node(), LANGLE, "builtin", spans);
+            colorize_child(call.node(), RANGLE, "builtin", spans);
         })
         .walk_recursively_children_first(file.node());
     spans

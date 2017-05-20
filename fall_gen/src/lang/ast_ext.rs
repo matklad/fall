@@ -1,9 +1,9 @@
-use fall_tree::{AstNode, AstChildren, Node, NodeType, AstClass, AstClassChildren};
+use fall_tree::{AstNode, Node, NodeType, AstClass, AstClassChildren};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
+use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR,
              BLOCK_EXPR, REF_EXPR, CALL_EXPR, SEQ_EXPR,
-             LexRule, SynRule, NodesDef, File, Block, Part, VerbatimDef, MethodDef,
+             LexRule, SynRule, NodesDef, File, VerbatimDef, MethodDef,
              BlockExpr, RefExpr, CallExpr, SeqExpr};
 
 impl<'f> File<'f> {
@@ -53,38 +53,6 @@ impl<'f> SynRule<'f> {
     pub fn is_public(&self) -> bool {
         let file = ast_parent_exn::<File>(self.node());
         file.nodes_def().unwrap().nodes().contains(&self.name())
-    }
-}
-
-pub enum PartKind<'f> {
-    Token(&'f str),
-    RuleReference { idx: usize },
-    Call { name: &'f str, args: AstChildren<'f, Block<'f>> }
-}
-
-impl<'f> Part<'f> {
-    pub fn kind(&self) -> Option<PartKind<'f>> {
-        if child_of_type(self.node(), LANGLE).is_some() {
-            return Some(PartKind::Call {
-                name: child_of_type_exn(self.node(), IDENT).text(),
-                args: AstChildren::new(self.node().children()),
-            })
-        }
-        let file = ast_parent_exn::<File>(self.node());
-
-        if let Some(ident) = child_of_type(self.node(), IDENT) {
-            if let Some(idx) = file.resolve_rule(ident.text()) {
-                return Some(PartKind::RuleReference { idx: idx })
-            }
-        }
-        let token_name = child_of_type(self.node(), IDENT)
-            .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
-            .text();
-
-        match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
-            Some(rule) => Some(PartKind::Token(rule.node_type())),
-            None => None,
-        }
     }
 }
 
@@ -176,7 +144,6 @@ impl<'f> RefExpr<'f> {
         }
     }
 }
-
 
 impl<'f> SeqExpr<'f> {
     pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {

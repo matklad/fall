@@ -27,17 +27,14 @@ pub const NODES_DEF: NodeType = NodeType(122);
 pub const TOKENIZER_DEF: NodeType = NodeType(123);
 pub const LEX_RULE: NodeType = NodeType(124);
 pub const SYN_RULE: NodeType = NodeType(125);
-pub const BLOCK: NodeType = NodeType(126);
-pub const ALT: NodeType = NodeType(127);
-pub const PART: NodeType = NodeType(128);
-pub const AST_DEF: NodeType = NodeType(129);
-pub const AST_NODE_DEF: NodeType = NodeType(130);
-pub const METHOD_DEF: NodeType = NodeType(131);
-pub const AST_SELECTOR: NodeType = NodeType(132);
-pub const REF_EXPR: NodeType = NodeType(133);
-pub const CALL_EXPR: NodeType = NodeType(134);
-pub const BLOCK_EXPR: NodeType = NodeType(135);
-pub const SEQ_EXPR: NodeType = NodeType(136);
+pub const AST_DEF: NodeType = NodeType(126);
+pub const AST_NODE_DEF: NodeType = NodeType(127);
+pub const METHOD_DEF: NodeType = NodeType(128);
+pub const AST_SELECTOR: NodeType = NodeType(129);
+pub const REF_EXPR: NodeType = NodeType(130);
+pub const CALL_EXPR: NodeType = NodeType(131);
+pub const BLOCK_EXPR: NodeType = NodeType(132);
+pub const SEQ_EXPR: NodeType = NodeType(133);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -65,15 +62,15 @@ lazy_static! {
                 body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(19)], Some(1))]),
             },
             SynRule {
-                ty: Some(BLOCK),
+                ty: None,
                 body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(6)], None)])), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(6)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
-                ty: Some(ALT),
+                ty: None,
                 body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(7)], None)]), None, None)], None)]),
             },
             SynRule {
-                ty: Some(PART),
+                ty: None,
                 body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(5)], None)]), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
@@ -162,9 +159,6 @@ lazy_static! {
                     TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF" },
                     LEX_RULE => NodeTypeInfo { name: "LEX_RULE" },
                     SYN_RULE => NodeTypeInfo { name: "SYN_RULE" },
-                    BLOCK => NodeTypeInfo { name: "BLOCK" },
-                    ALT => NodeTypeInfo { name: "ALT" },
-                    PART => NodeTypeInfo { name: "PART" },
                     AST_DEF => NodeTypeInfo { name: "AST_DEF" },
                     AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF" },
                     METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF" },
@@ -308,61 +302,9 @@ impl<'f> SynRule<'f> {
     pub fn name(&self) -> &'f str {
         child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn block(&self) -> Block<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
-    }
     pub fn block_expr(&self) -> BlockExpr<'f> {
         AstChildren::new(self.node.children()).next().unwrap()
     }
-}
-#[derive(Clone, Copy)]
-pub struct Block<'f> { node: Node<'f> }
-
-impl<'f> AstNode<'f> for Block<'f> {
-    fn ty() -> NodeType { BLOCK }
-    fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
-        Block { node: node }
-    }
-    fn node(&self) -> Node<'f> { self.node }
-}
-
-impl<'f> Block<'f> {
-    pub fn alts(&self) -> AstChildren<'f, Alt<'f>> {
-        AstChildren::new(self.node.children())
-    }
-}
-#[derive(Clone, Copy)]
-pub struct Alt<'f> { node: Node<'f> }
-
-impl<'f> AstNode<'f> for Alt<'f> {
-    fn ty() -> NodeType { ALT }
-    fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
-        Alt { node: node }
-    }
-    fn node(&self) -> Node<'f> { self.node }
-}
-
-impl<'f> Alt<'f> {
-    pub fn parts(&self) -> AstChildren<'f, Part<'f>> {
-        AstChildren::new(self.node.children())
-    }
-}
-#[derive(Clone, Copy)]
-pub struct Part<'f> { node: Node<'f> }
-
-impl<'f> AstNode<'f> for Part<'f> {
-    fn ty() -> NodeType { PART }
-    fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
-        Part { node: node }
-    }
-    fn node(&self) -> Node<'f> { self.node }
-}
-
-impl<'f> Part<'f> {
-    
 }
 #[derive(Clone, Copy)]
 pub struct VerbatimDef<'f> { node: Node<'f> }

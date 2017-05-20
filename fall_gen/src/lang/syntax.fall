@@ -20,9 +20,6 @@ nodes {
   tokenizer_def
   lex_rule
   syn_rule
-  block
-  alt
-  part
 
   ast_def
   ast_node_def
@@ -133,19 +130,8 @@ ast {
 
   syn_rule {
     name IDENT.text
-    block block
     block_expr block_expr
   }
-
-  block {
-    alts alt*
-  }
-
-  alt {
-    parts part*
-  }
-
-  part { }
 
   verbatim_def { }
 
