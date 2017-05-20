@@ -4,38 +4,39 @@ pub use fall_tree::{ERROR, WHITESPACE};
 pub const KW_AST: NodeType = NodeType(100);
 pub const KW_NODES: NodeType = NodeType(101);
 pub const KW_NODE: NodeType = NodeType(102);
-pub const KW_TOKENIZER: NodeType = NodeType(103);
-pub const KW_RULE: NodeType = NodeType(104);
-pub const KW_VERBATIM: NodeType = NodeType(105);
-pub const EQ: NodeType = NodeType(106);
-pub const PIPE: NodeType = NodeType(107);
-pub const STAR: NodeType = NodeType(108);
-pub const QUESTION: NodeType = NodeType(109);
-pub const DOT: NodeType = NodeType(110);
-pub const LBRACE: NodeType = NodeType(111);
-pub const RBRACE: NodeType = NodeType(112);
-pub const LANGLE: NodeType = NodeType(113);
-pub const RANGLE: NodeType = NodeType(114);
-pub const LPAREN: NodeType = NodeType(115);
-pub const RPAREN: NodeType = NodeType(116);
-pub const IDENT: NodeType = NodeType(117);
-pub const SIMPLE_STRING: NodeType = NodeType(118);
-pub const HASH_STRING: NodeType = NodeType(119);
-pub const FILE: NodeType = NodeType(120);
-pub const STRING: NodeType = NodeType(121);
-pub const VERBATIM_DEF: NodeType = NodeType(122);
-pub const NODES_DEF: NodeType = NodeType(123);
-pub const TOKENIZER_DEF: NodeType = NodeType(124);
-pub const LEX_RULE: NodeType = NodeType(125);
-pub const SYN_RULE: NodeType = NodeType(126);
-pub const AST_DEF: NodeType = NodeType(127);
-pub const AST_NODE_DEF: NodeType = NodeType(128);
-pub const METHOD_DEF: NodeType = NodeType(129);
-pub const AST_SELECTOR: NodeType = NodeType(130);
-pub const REF_EXPR: NodeType = NodeType(131);
-pub const CALL_EXPR: NodeType = NodeType(132);
-pub const BLOCK_EXPR: NodeType = NodeType(133);
-pub const SEQ_EXPR: NodeType = NodeType(134);
+pub const KW_CLASS: NodeType = NodeType(103);
+pub const KW_TOKENIZER: NodeType = NodeType(104);
+pub const KW_RULE: NodeType = NodeType(105);
+pub const KW_VERBATIM: NodeType = NodeType(106);
+pub const EQ: NodeType = NodeType(107);
+pub const PIPE: NodeType = NodeType(108);
+pub const STAR: NodeType = NodeType(109);
+pub const QUESTION: NodeType = NodeType(110);
+pub const DOT: NodeType = NodeType(111);
+pub const LBRACE: NodeType = NodeType(112);
+pub const RBRACE: NodeType = NodeType(113);
+pub const LANGLE: NodeType = NodeType(114);
+pub const RANGLE: NodeType = NodeType(115);
+pub const LPAREN: NodeType = NodeType(116);
+pub const RPAREN: NodeType = NodeType(117);
+pub const IDENT: NodeType = NodeType(118);
+pub const SIMPLE_STRING: NodeType = NodeType(119);
+pub const HASH_STRING: NodeType = NodeType(120);
+pub const FILE: NodeType = NodeType(121);
+pub const STRING: NodeType = NodeType(122);
+pub const VERBATIM_DEF: NodeType = NodeType(123);
+pub const NODES_DEF: NodeType = NodeType(124);
+pub const TOKENIZER_DEF: NodeType = NodeType(125);
+pub const LEX_RULE: NodeType = NodeType(126);
+pub const SYN_RULE: NodeType = NodeType(127);
+pub const AST_DEF: NodeType = NodeType(128);
+pub const AST_NODE_DEF: NodeType = NodeType(129);
+pub const METHOD_DEF: NodeType = NodeType(130);
+pub const AST_SELECTOR: NodeType = NodeType(131);
+pub const REF_EXPR: NodeType = NodeType(132);
+pub const CALL_EXPR: NodeType = NodeType(133);
+pub const BLOCK_EXPR: NodeType = NodeType(134);
+pub const SEQ_EXPR: NodeType = NodeType(135);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -60,7 +61,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(SYN_RULE),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(19)], Some(1))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(20)], Some(1))]),
             },
             SynRule {
                 ty: None,
@@ -84,19 +85,23 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(AST_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_AST), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(11)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_AST), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(11)], None), Expr::And(&[Expr::Rule(12)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(AST_NODE_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(12)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(13)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+            },
+            SynRule {
+                ty: None,
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(METHOD_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(13)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(14)], None)]),
             },
             SynRule {
                 ty: Some(AST_SELECTOR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(14)], None)]))], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(15)], None)]))], None)]),
             },
             SynRule {
                 ty: None,
@@ -108,19 +113,19 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(CALL_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(17)], None)]), None, None), Expr::Token(RANGLE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(18)], None)]), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(16)], None), Expr::And(&[Expr::Rule(15)], None), Expr::And(&[Expr::Rule(19)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(17)], None), Expr::And(&[Expr::Rule(16)], None), Expr::And(&[Expr::Rule(20)], None)]),
             },
             SynRule {
                 ty: Some(SEQ_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(17)], None)]), None, None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(18)], None)]), None, None)], None)]),
             },
             SynRule {
                 ty: Some(BLOCK_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(18)], None)])), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(18)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(19)], None)])), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(19)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
         ];
 
@@ -137,6 +142,7 @@ lazy_static! {
                     KW_AST => NodeTypeInfo { name: "KW_AST" },
                     KW_NODES => NodeTypeInfo { name: "KW_NODES" },
                     KW_NODE => NodeTypeInfo { name: "KW_NODE" },
+                    KW_CLASS => NodeTypeInfo { name: "KW_CLASS" },
                     KW_TOKENIZER => NodeTypeInfo { name: "KW_TOKENIZER" },
                     KW_RULE => NodeTypeInfo { name: "KW_RULE" },
                     KW_VERBATIM => NodeTypeInfo { name: "KW_VERBATIM" },
@@ -189,6 +195,7 @@ lazy_static! {
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(KW_NODES, "nodes", None),
                 LexRule::new(KW_NODE, "node", None),
+                LexRule::new(KW_CLASS, "class", None),
                 LexRule::new(KW_TOKENIZER, "tokenizer", None),
                 LexRule::new(KW_RULE, "rule", None),
                 LexRule::new(KW_VERBATIM, "verbatim", None),
