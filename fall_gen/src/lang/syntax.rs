@@ -5,35 +5,41 @@ pub const KW_AST: NodeType = NodeType(100);
 pub const KW_NODES: NodeType = NodeType(101);
 pub const KW_TOKENIZER: NodeType = NodeType(102);
 pub const KW_RULE: NodeType = NodeType(103);
-pub const KW_VERBATIM: NodeType = NodeType(104);
-pub const EQ: NodeType = NodeType(105);
-pub const PIPE: NodeType = NodeType(106);
-pub const STAR: NodeType = NodeType(107);
-pub const QUESTION: NodeType = NodeType(108);
-pub const DOT: NodeType = NodeType(109);
-pub const LBRACE: NodeType = NodeType(110);
-pub const RBRACE: NodeType = NodeType(111);
-pub const LANGLE: NodeType = NodeType(112);
-pub const RANGLE: NodeType = NodeType(113);
-pub const LPAREN: NodeType = NodeType(114);
-pub const RPAREN: NodeType = NodeType(115);
-pub const IDENT: NodeType = NodeType(116);
-pub const SIMPLE_STRING: NodeType = NodeType(117);
-pub const HASH_STRING: NodeType = NodeType(118);
-pub const FILE: NodeType = NodeType(119);
-pub const STRING: NodeType = NodeType(120);
-pub const VERBATIM_DEF: NodeType = NodeType(121);
-pub const NODES_DEF: NodeType = NodeType(122);
-pub const TOKENIZER_DEF: NodeType = NodeType(123);
-pub const LEX_RULE: NodeType = NodeType(124);
-pub const SYN_RULE: NodeType = NodeType(125);
-pub const BLOCK: NodeType = NodeType(126);
-pub const ALT: NodeType = NodeType(127);
-pub const PART: NodeType = NodeType(128);
-pub const AST_DEF: NodeType = NodeType(129);
-pub const AST_NODE_DEF: NodeType = NodeType(130);
-pub const METHOD_DEF: NodeType = NodeType(131);
-pub const AST_SELECTOR: NodeType = NodeType(132);
+pub const KW_RULE2: NodeType = NodeType(104);
+pub const KW_VERBATIM: NodeType = NodeType(105);
+pub const EQ: NodeType = NodeType(106);
+pub const PIPE: NodeType = NodeType(107);
+pub const STAR: NodeType = NodeType(108);
+pub const QUESTION: NodeType = NodeType(109);
+pub const DOT: NodeType = NodeType(110);
+pub const LBRACE: NodeType = NodeType(111);
+pub const RBRACE: NodeType = NodeType(112);
+pub const LANGLE: NodeType = NodeType(113);
+pub const RANGLE: NodeType = NodeType(114);
+pub const LPAREN: NodeType = NodeType(115);
+pub const RPAREN: NodeType = NodeType(116);
+pub const IDENT: NodeType = NodeType(117);
+pub const SIMPLE_STRING: NodeType = NodeType(118);
+pub const HASH_STRING: NodeType = NodeType(119);
+pub const FILE: NodeType = NodeType(120);
+pub const STRING: NodeType = NodeType(121);
+pub const VERBATIM_DEF: NodeType = NodeType(122);
+pub const NODES_DEF: NodeType = NodeType(123);
+pub const TOKENIZER_DEF: NodeType = NodeType(124);
+pub const LEX_RULE: NodeType = NodeType(125);
+pub const SYN_RULE: NodeType = NodeType(126);
+pub const BLOCK: NodeType = NodeType(127);
+pub const ALT: NodeType = NodeType(128);
+pub const PART: NodeType = NodeType(129);
+pub const AST_DEF: NodeType = NodeType(130);
+pub const AST_NODE_DEF: NodeType = NodeType(131);
+pub const METHOD_DEF: NodeType = NodeType(132);
+pub const AST_SELECTOR: NodeType = NodeType(133);
+pub const EXPR_REFERENCE: NodeType = NodeType(134);
+pub const EXPR_CALL: NodeType = NodeType(135);
+pub const EXPR_BLOCK: NodeType = NodeType(136);
+pub const EXPR_SEQ: NodeType = NodeType(137);
+pub const SYN_RULE2: NodeType = NodeType(138);
 
 lazy_static! {
     pub static ref LANG: Language = {
@@ -42,7 +48,7 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }, None, None), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
+                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(15)], commit: None }, None, None), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }, None, None), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
             },
             SynRule {
                 ty: Some(NODES_DEF),
@@ -100,6 +106,30 @@ lazy_static! {
                 ty: None,
                 alts: &[Alt { parts: &[Part::Token(STAR)], commit: None }, Alt { parts: &[Part::Token(QUESTION)], commit: None }, Alt { parts: &[Part::Token(DOT), Part::Token(IDENT)], commit: None }],
             },
+            SynRule {
+                ty: Some(SYN_RULE2),
+                alts: &[Alt { parts: &[Part::Token(KW_RULE2), Part::Token(IDENT), Part::Rule(20)], commit: Some(1) }],
+            },
+            SynRule {
+                ty: Some(EXPR_REFERENCE),
+                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }],
+            },
+            SynRule {
+                ty: Some(EXPR_CALL),
+                alts: &[Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rep(Alt { parts: &[Part::Rule(18)], commit: None }, None, None), Part::Token(RANGLE)], commit: None }],
+            },
+            SynRule {
+                ty: None,
+                alts: &[Alt { parts: &[Part::Rule(17)], commit: None }, Alt { parts: &[Part::Rule(16)], commit: None }, Alt { parts: &[Part::Rule(20)], commit: None }],
+            },
+            SynRule {
+                ty: Some(EXPR_SEQ),
+                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(18)], commit: None }, None, None)], commit: None }],
+            },
+            SynRule {
+                ty: Some(EXPR_BLOCK),
+                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(19)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(19)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
+            },
         ];
 
         struct Impl { tokenizer: Vec<LexRule> };
@@ -116,6 +146,7 @@ lazy_static! {
                     KW_NODES => NodeTypeInfo { name: "KW_NODES" },
                     KW_TOKENIZER => NodeTypeInfo { name: "KW_TOKENIZER" },
                     KW_RULE => NodeTypeInfo { name: "KW_RULE" },
+                    KW_RULE2 => NodeTypeInfo { name: "KW_RULE2" },
                     KW_VERBATIM => NodeTypeInfo { name: "KW_VERBATIM" },
                     EQ => NodeTypeInfo { name: "EQ" },
                     PIPE => NodeTypeInfo { name: "PIPE" },
@@ -145,6 +176,11 @@ lazy_static! {
                     AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF" },
                     METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF" },
                     AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR" },
+                    EXPR_REFERENCE => NodeTypeInfo { name: "EXPR_REFERENCE" },
+                    EXPR_CALL => NodeTypeInfo { name: "EXPR_CALL" },
+                    EXPR_BLOCK => NodeTypeInfo { name: "EXPR_BLOCK" },
+                    EXPR_SEQ => NodeTypeInfo { name: "EXPR_SEQ" },
+                    SYN_RULE2 => NodeTypeInfo { name: "SYN_RULE2" },
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }
             }
@@ -166,6 +202,7 @@ lazy_static! {
                 LexRule::new(KW_NODES, "nodes", None),
                 LexRule::new(KW_TOKENIZER, "tokenizer", None),
                 LexRule::new(KW_RULE, "rule", None),
+                LexRule::new(KW_RULE2, "rule2", None),
                 LexRule::new(KW_VERBATIM, "verbatim", None),
                 LexRule::new(KW_AST, "ast", None),
                 LexRule::new(WHITESPACE, "\\s+", None),
