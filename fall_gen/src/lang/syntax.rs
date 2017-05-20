@@ -436,6 +436,9 @@ impl<'f> CallExpr<'f> {
     pub fn fn_name(&self) -> &'f str {
         child_of_type_exn(self.node, IDENT).text()
     }
+    pub fn args(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node.children())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct SeqExpr<'f> { node: Node<'f> }
@@ -450,7 +453,9 @@ impl<'f> AstNode<'f> for SeqExpr<'f> {
 }
 
 impl<'f> SeqExpr<'f> {
-    
+    pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node.children())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct BlockExpr<'f> { node: Node<'f> }

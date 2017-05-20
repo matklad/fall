@@ -41,18 +41,19 @@ pub fn generate(file: lang::File) -> String {
                 struct_name: camel(node.name()),
                 node_type_name: scream(node.name()),
                 methods: node.methods().map(|method| {
+                    let iter_type = if method.is_class() { "AstClassChildren" } else { "AstChildren" };
                     CtxMethod {
                         name: method.name(),
                         ret_type: match method.selector_kind() {
                             SelectorKind::Single(name) => format!("{}<'f>", camel(name)),
                             SelectorKind::Opt(name) => format!("Option<{}<'f>>", camel(name)),
-                            SelectorKind::Many(name) => format!("AstChildren<'f, {}<'f>>", camel(name)),
+                            SelectorKind::Many(name) => format!("{}<'f, {}<'f>>", iter_type, camel(name)),
                             SelectorKind::Text(_) => "&'f str".to_owned(),
                         },
                         body: match method.selector_kind() {
-                            SelectorKind::Single(_) => format!("AstChildren::new(self.node.children()).next().unwrap()"),
-                            SelectorKind::Opt(_) => format!("AstChildren::new(self.node.children()).next()"),
-                            SelectorKind::Many(_) => format!("AstChildren::new(self.node.children())"),
+                            SelectorKind::Single(_) => format!("{}::new(self.node.children()).next().unwrap()", iter_type),
+                            SelectorKind::Opt(_) => format!("{}::new(self.node.children()).next()", iter_type),
+                            SelectorKind::Many(_) => format!("{}::new(self.node.children())", iter_type),
                             SelectorKind::Text(name) => format!("child_of_type_exn(self.node, {}).text()", name),
                         }
                     }

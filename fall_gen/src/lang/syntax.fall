@@ -162,10 +162,16 @@ ast {
   }
 
   node ref_expr {  }
+
   node call_expr {
     fn_name IDENT.text
+    args expr*
   }
-  node seq_expr {  }
+
+  node seq_expr {
+    parts expr*
+  }
+
   node block_expr {
     alts seq_expr*
   }

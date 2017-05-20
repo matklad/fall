@@ -1,9 +1,9 @@
-use fall_tree::{AstNode, Node, NodeType, AstClassChildren};
+use fall_tree::{AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR,
              LexRule, SynRule, NodesDef, File, VerbatimDef, MethodDef,
-             RefExpr, CallExpr, SeqExpr, AstClassDef, Expr};
+             RefExpr, AstClassDef, AstDef};
 
 impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
@@ -65,7 +65,7 @@ impl<'f> VerbatimDef<'f> {
 impl<'f> MethodDef<'f> {
     pub fn selector_kind(&self) -> SelectorKind<'f> {
         let selector = child_of_type_exn(self.node(), AST_SELECTOR);
-        let name = child_of_type_exn(selector, IDENT).text();
+        let name = self.selector_name();
         if has(selector, QUESTION) {
             SelectorKind::Opt(name)
         } else if has(selector, STAR) {
@@ -75,6 +75,17 @@ impl<'f> MethodDef<'f> {
         } else {
             SelectorKind::Single(name)
         }
+    }
+
+    pub fn is_class(&self) -> bool {
+        let ast_def = ast_parent_exn::<AstDef>(self.node());
+        let name = self.selector_name();
+        ast_def.ast_classes().find(|cls| cls.name() == name).is_some()
+    }
+
+    fn selector_name(&self) -> &'f str {
+        let selector = child_of_type_exn(self.node(), AST_SELECTOR);
+        child_of_type_exn(selector, IDENT).text()
     }
 }
 
@@ -119,19 +130,6 @@ impl<'f> RefExpr<'f> {
         }
     }
 }
-
-impl<'f> SeqExpr<'f> {
-    pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
-        AstClassChildren::new(self.node().children())
-    }
-}
-
-impl<'f> CallExpr<'f> {
-    pub fn args(&self) -> AstClassChildren<'f, Expr<'f>> {
-        AstClassChildren::new(self.node().children())
-    }
-}
-
 
 fn lit_body(lit: &str) -> &str {
     let q = if lit.starts_with('\'') { '\'' } else { '"' };
