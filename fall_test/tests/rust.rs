@@ -55,7 +55,8 @@ FILE
     FN "fn"
     IDENT "foo"
     ERROR ""
-  IDENT "foo"
+  ERROR
+    IDENT "foo"
 "#);
 }
 
@@ -63,18 +64,23 @@ FILE
 fn skipping() {
     match_ast(&ast("foo fn foo(){} bar baz struct S {} quuz"), r#"
 FILE
-  IDENT "foo"
-  FN "fn"
-  IDENT "foo"
-  LPAREN "("
-  RPAREN ")"
-  LBRACE "{"
-  RBRACE "}"
-  IDENT "bar"
-  IDENT "baz"
-  STRUCT "struct"
-  IDENT "S"
-  LBRACE "{"
-  RBRACE "}"
-  IDENT "quuz""#);
+  ERROR
+    IDENT "foo"
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    LBRACE "{"
+    RBRACE "}"
+  ERROR
+    IDENT "bar"
+    IDENT "baz"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "S"
+    LBRACE "{"
+    RBRACE "}"
+  ERROR
+    IDENT "quuz""#);
 }

@@ -140,7 +140,7 @@ impl TreeBuilderImpl {
             self.bump();
         }
         let top = self.pending.pop().unwrap();
-        assert!(self.pending.is_empty());
+        assert!(self.pending.is_empty(), "parser has not consumed the whole file");
         let root = self.to_prenode(top).unwrap();
         let mut builder = FileBuilder::new(self.lang, self.text, lex_time, parse_time);
         go(&mut builder, None, root);

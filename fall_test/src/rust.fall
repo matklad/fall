@@ -25,7 +25,7 @@ tokenizer {
   ident r"\w+"
 }
 
-rule file { <rep {fn_or_struct} > }
+rule file { <rep {fn_or_struct} { 'pub' | 'fn' | 'struct' } > }
 rule fn_or_struct { fn_def | struct_def }
 
 rule fn_def {

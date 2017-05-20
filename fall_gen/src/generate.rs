@@ -6,7 +6,6 @@ use tera::{Tera, Context};
 use syntax::{File, Alt, Part};
 
 pub fn generate(file: File) -> String {
-
     #[derive(Serialize)]
     struct CtxSynRule<'f> { is_public: bool, name: &'f str, alts: Vec<String> };
 
@@ -80,10 +79,28 @@ fn generate_part(part: Part) -> String {
         PartKind::Token(t) => format!("Part::Token({})", scream(t)),
         PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
         PartKind::Call { name, mut args } => {
-            let alt = args.next().unwrap().alts().next().unwrap();
-             match name {
-                "rep" => format!("Part::Rep({}, None, None)", generate_alt(alt)),
-                "opt" => format!("Part::Opt({})", generate_alt(alt)),
+            let arg = args.next().unwrap().alts().next().unwrap();
+            match name {
+                "rep" => {
+                    let skip = match args.next() {
+                        None => "None".to_owned(),
+                        Some(block) => {
+                            let tokens: String = block.alts()
+                                .flat_map(|alt| alt.parts())
+                                .map(|part| {
+                                    if let PartKind::Token(t) = part.kind().unwrap() {
+                                        format!("{}, ", scream(t))
+                                    } else {
+                                        panic!("bad break in rep {:?}", part.node().text())
+                                    }
+                                })
+                                .collect();
+                            format!("Some(&[{}])", tokens)
+                        }
+                    };
+                    format!("Part::Rep({}, {}, None)", generate_alt(arg), skip)
+                },
+                "opt" => format!("Part::Opt({})", generate_alt(arg)),
                 _ => unimplemented!(),
             }
         }

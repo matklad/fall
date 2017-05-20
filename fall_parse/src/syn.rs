@@ -1,4 +1,4 @@
-use fall_tree::NodeType;
+use fall_tree::{NodeType, ERROR};
 use TreeBuilder;
 
 pub struct Parser<'r> {
@@ -55,8 +55,45 @@ impl<'r> Parser<'r> {
         match *part {
             Part::Token(ty) => b.try_eat(ty),
             Part::Rule(id) => self.parse_rule(&self.rules[id], b),
-            Part::Rep(ref a, _, _) => {
-                while self.parse_alt(a, b) {}
+            Part::Rep(ref a, skip_until, _) => {
+                'outer: loop {
+                    let mut skipped = false;
+                    'inner: loop {
+                        let current = match b.current() {
+                            None => {
+                                if skipped {
+                                    b.finish(Some(ERROR))
+                                }
+                                break 'outer
+                            },
+                            Some(c) => c,
+                        };
+                        let skip = match skip_until {
+                            None => {
+                                if skipped {
+                                    b.finish(Some(ERROR))
+                                }
+                                break 'inner
+                            },
+                            Some(s) => s,
+                        };
+                        if skip.iter().any(|&it| it == current.ty) {
+                            if skipped {
+                                b.finish(Some(ERROR))
+                            }
+                            break 'inner
+                        } else {
+                            if !skipped {
+                                b.start(Some(ERROR))
+                            }
+                            skipped = true;
+                            b.bump();
+                        }
+                    }
+                    if !self.parse_alt(a, b) {
+                        break 'outer;
+                    }
+                }
                 true
             }
             Part::Opt(ref a) => {
