@@ -13,7 +13,7 @@ pub fn colorize(file: File) -> Spans {
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
             colorize_node(node, "string", spans)
         })
-        .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER, KW_AST], |spans, node| {
+        .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_NODES, KW_TOKENIZER, KW_AST, KW_NODE, KW_CLASS], |spans, node| {
             colorize_node(node, "keyword", spans)
         })
         .visit_nodes(&[ERROR], |spans, node| {
