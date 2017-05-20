@@ -9,20 +9,20 @@ pub const LIST: NodeType = NodeType(104);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None }, None, None)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), None, None)], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Token(ATOM)], commit: None }, Alt { parts: &[Part::Rule(2)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(ATOM)], None), Expr::And(&[Expr::Rule(2)], None)]),
             },
             SynRule {
                 ty: Some(LIST),
-                alts: &[Alt { parts: &[Part::Token(LPAREN), Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None }, None, None), Part::Token(RPAREN)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LPAREN), Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), None, None), Expr::Token(RPAREN)], None)]),
             },
         ];
 

@@ -7,5 +7,5 @@ mod syn;
 mod tree_builder;
 
 pub use lex::{LexRule};
-pub use syn::{SynRule, Alt, Part, Parser};
+pub use syn::{SynRule, Expr, Parser};
 pub use tree_builder::{TreeBuilder, parse};

@@ -15,24 +15,24 @@ pub const FN_DEF: NodeType = NodeType(110);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(1)], commit: None }, Some(&[PUB, FN, STRUCT, ]), None)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(1)], None), Some(&[PUB, FN, STRUCT, ]), None)], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Rule(2)], commit: None }, Alt { parts: &[Part::Rule(3)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(2)], None), Expr::And(&[Expr::Rule(3)], None)]),
             },
             SynRule {
                 ty: Some(FN_DEF),
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(FN), Part::Token(IDENT), Part::Token(LPAREN), Part::Token(RPAREN), Part::Token(LBRACE), Part::Token(RBRACE)], commit: Some(2) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Token(PUB)], None)), Expr::Token(FN), Expr::Token(IDENT), Expr::Token(LPAREN), Expr::Token(RPAREN), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
             },
             SynRule {
                 ty: Some(STRUCT_DEF),
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Token(PUB)], commit: None }), Part::Token(STRUCT), Part::Token(IDENT), Part::Token(LBRACE), Part::Token(RBRACE)], commit: Some(2) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Token(PUB)], None)), Expr::Token(STRUCT), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
             },
         ];
 

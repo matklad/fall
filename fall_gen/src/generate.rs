@@ -3,11 +3,11 @@ use lang::{PartKind, SelectorKind};
 use util::{scream, snake};
 use tera::{Tera, Context};
 
-use lang::{self, Alt, Part};
+use lang::{self, Alt, Part, Block};
 
 pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
-    struct CtxSynRule<'f> { is_public: bool, name: &'f str, alts: Vec<String> };
+    struct CtxSynRule<'f> { is_public: bool, name: &'f str, body: String };
 
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
@@ -24,7 +24,7 @@ pub fn generate(file: lang::File) -> String {
         CtxSynRule {
             is_public: r.is_public(),
             name: r.name(),
-            alts: r.block().alts().map(generate_alt).collect()
+            body: gen_block(r.block())
         }
     }).collect::<Vec<_>>());
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
@@ -61,23 +61,37 @@ pub fn generate(file: lang::File) -> String {
     Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
 }
 
-fn generate_alt(alt: Alt) -> String {
+fn list<D: ::std::fmt::Display, I: Iterator<Item=D>>(i: I) -> String {
+    let mut result = String::new();
+    let mut sep = "";
+    for item in i {
+        result += sep;
+        sep = ", ";
+        result += &item.to_string();
+    }
+    result
+}
+
+fn gen_block(block: Block) -> String {
+    let parts = block.alts().map(gen_alt);
+    format!("Expr::Or(&[{}])", list(parts))
+}
+
+fn gen_alt(alt: Alt) -> String {
     fn is_commit(part: Part) -> bool {
         part.node().text() == "<commit>"
     }
     let commit = alt.parts().position(is_commit);
-
     let parts = alt.parts()
         .filter(|&p| !is_commit(p))
-        .map(|p| generate_part(p))
-        .collect::<Vec<_>>();
-    format!("Alt {{ parts: &[{}], commit: {:?} }}", parts.join(", "), commit)
+        .map(generate_part);
+    format!("Expr::And(&[{}], {:?})", list(parts), commit)
 }
 
 fn generate_part(part: Part) -> String {
     match part.kind().unwrap_or_else(|| panic!("unresolved reference: {}", part.node().text())) {
-        PartKind::Token(t) => format!("Part::Token({})", scream(t)),
-        PartKind::RuleReference { idx } => format!("Part::Rule({:?})", idx),
+        PartKind::Token(t) => format!("Expr::Token({})", scream(t)),
+        PartKind::RuleReference { idx } => format!("Expr::Rule({:?})", idx),
         PartKind::Call { name, mut args } => {
             let arg = args.next().unwrap().alts().next().unwrap();
             match name {
@@ -98,9 +112,9 @@ fn generate_part(part: Part) -> String {
                             format!("Some(&[{}])", tokens)
                         }
                     };
-                    format!("Part::Rep({}, {}, None)", generate_alt(arg), skip)
+                    format!("Expr::Rep(&{}, {}, None)", gen_alt(arg), skip)
                 },
-                "opt" => format!("Part::Opt({})", generate_alt(arg)),
+                "opt" => format!("Expr::Opt(&{})", gen_alt(arg)),
                 _ => unimplemented!(),
             }
         }
@@ -117,13 +131,13 @@ pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             {% for rule in syn_rules %}
             SynRule {
                 ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
-                alts: &[{% for alt in rule.alts %}{% if loop.first %}{{ alt }}{% else %}, {{ alt }}{% endif %}{% endfor %}],
+                body: {{ rule.body }},
             },
             {% endfor %}
         ];

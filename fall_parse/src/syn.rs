@@ -7,19 +7,17 @@ pub struct Parser<'r> {
 
 pub struct SynRule {
     pub ty: Option<NodeType>,
-    pub alts: &'static [Alt],
+    pub body: Expr,
 }
 
-pub struct Alt {
-    pub parts: &'static [Part],
-    pub commit: Option<usize>,
-}
 
-pub enum Part {
+pub enum Expr {
+    Or(&'static [Expr]),
+    And(&'static [Expr], Option<usize>),
     Rule(usize),
     Token(NodeType),
-    Rep(Alt, Option<&'static [NodeType]>, Option<&'static [NodeType]>),
-    Opt(Alt)
+    Rep(&'static Expr, Option<&'static [NodeType]>, Option<&'static [NodeType]>),
+    Opt(&'static Expr),
 }
 
 impl<'r> Parser<'r> {
@@ -28,34 +26,49 @@ impl<'r> Parser<'r> {
     }
 
     pub fn parse(&self, b: &mut TreeBuilder) {
-        let main_rule = &self.rules[0];
-        for alt in main_rule.alts {
-            if self.parse_alt(alt, b) {
-                return
-            }
-        }
+        self.parse_expr(&Expr::Rule(0), b);
     }
 
-    fn parse_alt(&self, alt: &Alt, b: &mut TreeBuilder) -> bool {
-        let commit = alt.commit.unwrap_or(alt.parts.len());
-        for (i, p) in alt.parts.iter().enumerate() {
-            if !self.parse_part(p, b) {
-                if i < commit {
-                    return false;
+    fn parse_expr(&self, expr: &Expr, b: &mut TreeBuilder) -> bool {
+        match *expr {
+            Expr::Or(parts) => {
+                for p in parts.iter() {
+                    if self.parse_expr(p, b) {
+                        return true;
+                    }
+                }
+                false
+            }
+
+            Expr::And(parts, commit) => {
+                let commit = commit.unwrap_or(parts.len());
+                for (i, p) in parts.iter().enumerate() {
+                    if !self.parse_expr(p, b) {
+                        if i < commit {
+                            return false;
+                        } else {
+                            b.error();
+                            break
+                        }
+                    }
+                }
+                true
+            }
+
+            Expr::Rule(id) => {
+                let rule = &self.rules[id];
+                if id != 0 { b.start(rule.ty) }
+                if self.parse_expr(&rule.body, b) {
+                    if id != 0 { b.finish(rule.ty) };
+                    true
                 } else {
-                    b.error();
-                    break
+                    if id != 0 { b.rollback(rule.ty) };
+                    false
                 }
             }
-        }
-        true
-    }
 
-    fn parse_part(&self, part: &Part, b: &mut TreeBuilder) -> bool {
-        match *part {
-            Part::Token(ty) => b.try_eat(ty),
-            Part::Rule(id) => self.parse_rule(&self.rules[id], b),
-            Part::Rep(ref a, skip_until, _) => {
+            Expr::Token(ty) => b.try_eat(ty),
+            Expr::Rep(body, skip_until, _) => {
                 'outer: loop {
                     let mut skipped = false;
                     'inner: loop {
@@ -65,7 +78,7 @@ impl<'r> Parser<'r> {
                                     b.finish(Some(ERROR))
                                 }
                                 break 'outer
-                            },
+                            }
                             Some(c) => c,
                         };
                         let skip = match skip_until {
@@ -74,7 +87,7 @@ impl<'r> Parser<'r> {
                                     b.finish(Some(ERROR))
                                 }
                                 break 'inner
-                            },
+                            }
                             Some(s) => s,
                         };
                         if skip.iter().any(|&it| it == current.ty) {
@@ -90,31 +103,17 @@ impl<'r> Parser<'r> {
                             b.bump();
                         }
                     }
-                    if !self.parse_alt(a, b) {
+                    if !self.parse_expr(body, b) {
                         break 'outer;
                     }
                 }
                 true
             }
-            Part::Opt(ref a) => {
-                self.parse_alt(a, b);
+            Expr::Opt(body) => {
+                self.parse_expr(body, b);
                 true
             }
         }
-    }
-
-    fn parse_rule(&self, rule: &SynRule, b: &mut TreeBuilder) -> bool {
-        b.start(rule.ty);
-
-        for alt in rule.alts {
-            if self.parse_alt(alt, b) {
-                b.finish(rule.ty);
-                return true;
-            }
-        }
-
-        b.rollback(rule.ty);
-        false
     }
 }
 

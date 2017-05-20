@@ -43,92 +43,92 @@ pub const SYN_RULE2: NodeType = NodeType(138);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rule(1), Part::Rule(2), Part::Rep(Alt { parts: &[Part::Rule(15)], commit: None }, None, None), Part::Rep(Alt { parts: &[Part::Rule(4)], commit: None }, None, None), Part::Opt(Alt { parts: &[Part::Rule(9)], commit: None }), Part::Opt(Alt { parts: &[Part::Rule(10)], commit: None })], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(1), Expr::Rule(2), Expr::Rep(&Expr::And(&[Expr::Rule(15)], None), None, None), Expr::Rep(&Expr::And(&[Expr::Rule(4)], None), None, None), Expr::Opt(&Expr::And(&[Expr::Rule(9)], None)), Expr::Opt(&Expr::And(&[Expr::Rule(10)], None))], None)]),
             },
             SynRule {
                 ty: Some(NODES_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_NODES), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Token(IDENT)], commit: None }, None, None), Part::Token(RBRACE)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODES), Expr::Token(LBRACE), Expr::Rep(&Expr::And(&[Expr::Token(IDENT)], None), None, None), Expr::Token(RBRACE)], Some(1))]),
             },
             SynRule {
                 ty: Some(TOKENIZER_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_TOKENIZER), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(3)], commit: None }, None, None), Part::Token(RBRACE)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_TOKENIZER), Expr::Token(LBRACE), Expr::Rep(&Expr::And(&[Expr::Rule(3)], None), None, None), Expr::Token(RBRACE)], Some(1))]),
             },
             SynRule {
                 ty: Some(LEX_RULE),
-                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Rule(8), Part::Opt(Alt { parts: &[Part::Rule(8)], commit: None })], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(8), Expr::Opt(&Expr::And(&[Expr::Rule(8)], None))], Some(1))]),
             },
             SynRule {
                 ty: Some(SYN_RULE),
-                alts: &[Alt { parts: &[Part::Token(KW_RULE), Part::Token(IDENT), Part::Rule(5)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(5)], Some(1))]),
             },
             SynRule {
                 ty: Some(BLOCK),
-                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(6)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(6)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::And(&[Expr::Rule(6)], None)), Expr::Rep(&Expr::And(&[Expr::Token(PIPE), Expr::Rule(6)], None), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(ALT),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(7)], commit: None }, None, None)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(7)], None), None, None)], None)]),
             },
             SynRule {
                 ty: Some(PART),
-                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rep(Alt { parts: &[Part::Rule(5)], commit: None }, None, None), Part::Token(RANGLE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::And(&[Expr::Rule(5)], None), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
                 ty: Some(STRING),
-                alts: &[Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }, Alt { parts: &[Part::Token(HASH_STRING)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(HASH_STRING)], None)]),
             },
             SynRule {
                 ty: Some(VERBATIM_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_VERBATIM), Part::Token(HASH_STRING)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_VERBATIM), Expr::Token(HASH_STRING)], None)]),
             },
             SynRule {
                 ty: Some(AST_DEF),
-                alts: &[Alt { parts: &[Part::Token(KW_AST), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(11)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_AST), Expr::Token(LBRACE), Expr::Rep(&Expr::And(&[Expr::Rule(11)], None), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(AST_NODE_DEF),
-                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Token(LBRACE), Part::Rep(Alt { parts: &[Part::Rule(12)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::And(&[Expr::Rule(12)], None), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(METHOD_DEF),
-                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Rule(13)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(13)], None)]),
             },
             SynRule {
                 ty: Some(AST_SELECTOR),
-                alts: &[Alt { parts: &[Part::Token(IDENT), Part::Opt(Alt { parts: &[Part::Rule(14)], commit: None })], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::And(&[Expr::Rule(14)], None))], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Token(STAR)], commit: None }, Alt { parts: &[Part::Token(QUESTION)], commit: None }, Alt { parts: &[Part::Token(DOT), Part::Token(IDENT)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(STAR)], None), Expr::And(&[Expr::Token(QUESTION)], None), Expr::And(&[Expr::Token(DOT), Expr::Token(IDENT)], None)]),
             },
             SynRule {
                 ty: Some(SYN_RULE2),
-                alts: &[Alt { parts: &[Part::Token(KW_RULE2), Part::Token(IDENT), Part::Rule(20)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE2), Expr::Token(IDENT), Expr::Rule(20)], Some(1))]),
             },
             SynRule {
                 ty: Some(EXPR_REFERENCE),
-                alts: &[Alt { parts: &[Part::Token(IDENT)], commit: None }, Alt { parts: &[Part::Token(SIMPLE_STRING)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None)]),
             },
             SynRule {
                 ty: Some(EXPR_CALL),
-                alts: &[Alt { parts: &[Part::Token(LANGLE), Part::Token(IDENT), Part::Rep(Alt { parts: &[Part::Rule(18)], commit: None }, None, None), Part::Token(RANGLE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::And(&[Expr::Rule(18)], None), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Rule(17)], commit: None }, Alt { parts: &[Part::Rule(16)], commit: None }, Alt { parts: &[Part::Rule(20)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(17)], None), Expr::And(&[Expr::Rule(16)], None), Expr::And(&[Expr::Rule(20)], None)]),
             },
             SynRule {
                 ty: Some(EXPR_SEQ),
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(18)], commit: None }, None, None)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(18)], None), None, None)], None)]),
             },
             SynRule {
                 ty: Some(EXPR_BLOCK),
-                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Opt(Alt { parts: &[Part::Rule(19)], commit: None }), Part::Rep(Alt { parts: &[Part::Token(PIPE), Part::Rule(19)], commit: None }, None, None), Part::Token(RBRACE)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::And(&[Expr::Rule(19)], None)), Expr::Rep(&Expr::And(&[Expr::Token(PIPE), Expr::Rule(19)], None), None, None), Expr::Token(RBRACE)], None)]),
             },
         ];
 

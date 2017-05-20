@@ -14,32 +14,32 @@ pub const EMPTY: NodeType = NodeType(109);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Token(T1), Part::Token(RAW_STRING)], commit: None }, Alt { parts: &[Part::Token(T2), Part::Rule(4), Part::Token(ATOM), Part::Rule(4)], commit: None }, Alt { parts: &[Part::Token(T3), Part::Rule(1)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(T1), Expr::Token(RAW_STRING)], None), Expr::And(&[Expr::Token(T2), Expr::Rule(4), Expr::Token(ATOM), Expr::Rule(4)], None), Expr::And(&[Expr::Token(T3), Expr::Rule(1)], None)]),
             },
             SynRule {
                 ty: Some(PRIVATE_PARTIAL),
-                alts: &[Alt { parts: &[Part::Rule(2)], commit: None }, Alt { parts: &[Part::Rule(3)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(2)], None), Expr::And(&[Expr::Rule(3)], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Token(FOO), Part::Token(BAR)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(FOO), Expr::Token(BAR)], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Token(FOO), Part::Token(FOO)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(FOO), Expr::Token(FOO)], None)]),
             },
             SynRule {
                 ty: Some(EMPTY),
-                alts: &[Alt { parts: &[Part::Opt(Alt { parts: &[Part::Rule(5)], commit: None })], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::And(&[Expr::Rule(5)], None))], None)]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[], commit: None }],
+                body: Expr::Or(&[Expr::And(&[], None)]),
             },
         ];
 

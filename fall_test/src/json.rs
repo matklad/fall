@@ -19,36 +19,36 @@ pub const FILE: NodeType = NodeType(114);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Alt, Part, Parser};
+        use fall_parse::{LexRule, SynRule, Expr, Parser};
 
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                alts: &[Alt { parts: &[Part::Rule(1)], commit: None }, Alt { parts: &[Part::Rule(4)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(1)], None), Expr::And(&[Expr::Rule(4)], None)]),
             },
             SynRule {
                 ty: Some(OBJECT),
-                alts: &[Alt { parts: &[Part::Token(LBRACE), Part::Rule(2), Part::Token(RBRACE)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Rule(2), Expr::Token(RBRACE)], Some(1))]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Rep(Alt { parts: &[Part::Rule(3), Part::Token(COMMA)], commit: None }, None, None)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::And(&[Expr::Rule(3), Expr::Token(COMMA)], None), None, None)], None)]),
             },
             SynRule {
                 ty: Some(FIELD),
-                alts: &[Alt { parts: &[Part::Token(STRING), Part::Token(COLON), Part::Rule(5)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(STRING), Expr::Token(COLON), Expr::Rule(5)], Some(1))]),
             },
             SynRule {
                 ty: Some(ARRAY),
-                alts: &[Alt { parts: &[Part::Token(LBRACK), Part::Rep(Alt { parts: &[Part::Rule(5), Part::Token(COMMA)], commit: None }, None, None), Part::Token(RBRACK)], commit: Some(1) }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACK), Expr::Rep(&Expr::And(&[Expr::Rule(5), Expr::Token(COMMA)], None), None, None), Expr::Token(RBRACK)], Some(1))]),
             },
             SynRule {
                 ty: None,
-                alts: &[Alt { parts: &[Part::Rule(6)], commit: None }, Alt { parts: &[Part::Rule(1)], commit: None }, Alt { parts: &[Part::Rule(4)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(6)], None), Expr::And(&[Expr::Rule(1)], None), Expr::And(&[Expr::Rule(4)], None)]),
             },
             SynRule {
                 ty: Some(PRIMITIVE),
-                alts: &[Alt { parts: &[Part::Token(NULL)], commit: None }, Alt { parts: &[Part::Token(NUMBER)], commit: None }, Alt { parts: &[Part::Token(STRING)], commit: None }, Alt { parts: &[Part::Token(BOOL)], commit: None }],
+                body: Expr::Or(&[Expr::And(&[Expr::Token(NULL)], None), Expr::And(&[Expr::Token(NUMBER)], None), Expr::And(&[Expr::Token(STRING)], None), Expr::And(&[Expr::Token(BOOL)], None)]),
             },
         ];
 
