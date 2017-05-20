@@ -1,8 +1,10 @@
-use fall_tree::{AstNode, AstChildren, Node, NodeType};
+use fall_tree::{AstNode, AstChildren, Node, NodeType, AstClass, AstClassChildren};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, LANGLE, AST_SELECTOR, QUESTION, DOT, STAR,
-             LexRule, SynRule, NodesDef, File, Block, Part, VerbatimDef, MethodDef};
+             BLOCK_EXPR, REF_EXPR, CALL_EXPR, SEQ_EXPR,
+             LexRule, SynRule, NodesDef, File, Block, Part, VerbatimDef, MethodDef,
+             BlockExpr, RefExpr, CallExpr, SeqExpr};
 
 impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
@@ -114,6 +116,78 @@ pub enum SelectorKind<'f> {
     Opt(&'f str),
     Many(&'f str),
     Text(&'f str),
+}
+
+#[derive(Clone, Copy)]
+pub enum Expr<'f> {
+    BlockExpr(BlockExpr<'f>),
+    SeqExpr(SeqExpr<'f>),
+    RefExpr(RefExpr<'f>),
+    CallExpr(CallExpr<'f>),
+}
+
+impl<'f> AstClass<'f> for Expr<'f> {
+    fn tys() -> &'static [NodeType] {
+        const TYS: &[NodeType] = &[BLOCK_EXPR, SEQ_EXPR, REF_EXPR, CALL_EXPR];
+        TYS
+    }
+
+    fn new(node: Node<'f>) -> Self {
+        match node.ty() {
+            BLOCK_EXPR => Expr::BlockExpr(BlockExpr::new(node)),
+            SEQ_EXPR => Expr::SeqExpr(SeqExpr::new(node)),
+            REF_EXPR => Expr::RefExpr(RefExpr::new(node)),
+            CALL_EXPR => Expr::CallExpr(CallExpr::new(node)),
+            _ => unreachable!()
+        }
+    }
+
+    fn node(&self) -> Node<'f> {
+        match *self {
+            Expr::BlockExpr(e) => e.node(),
+            Expr::SeqExpr(e) => e.node(),
+            Expr::RefExpr(e) => e.node(),
+            Expr::CallExpr(e) => e.node(),
+        }
+    }
+}
+
+pub enum RefKind<'f> {
+    Token(&'f str),
+    RuleReference { idx: usize },
+}
+
+impl<'f> RefExpr<'f> {
+    pub fn resolve(&self) -> Option<RefKind<'f>> {
+        let file = ast_parent_exn::<File>(self.node());
+
+        if let Some(ident) = child_of_type(self.node(), IDENT) {
+            if let Some(idx) = file.resolve_rule(ident.text()) {
+                return Some(RefKind::RuleReference { idx: idx })
+            }
+        }
+        let token_name = child_of_type(self.node(), IDENT)
+            .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
+            .text();
+
+        match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
+            Some(rule) => Some(RefKind::Token(rule.node_type())),
+            None => None,
+        }
+    }
+}
+
+
+impl<'f> SeqExpr<'f> {
+    pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node().children())
+    }
+}
+
+impl<'f> CallExpr<'f> {
+    pub fn args(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node().children())
+    }
 }
 
 

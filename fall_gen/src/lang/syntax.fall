@@ -3,7 +3,6 @@ nodes {
   kw_nodes
   kw_tokenizer
   kw_rule
-  kw_rule2
   kw_verbatim
 
   eq pipe star question dot
@@ -30,11 +29,10 @@ nodes {
   method_def
   ast_selector
 
-  expr_reference
-  expr_call
-  expr_block
-  expr_seq
-  syn_rule2
+  ref_expr
+  call_expr
+  block_expr
+  seq_expr
 }
 
 tokenizer {
@@ -52,7 +50,6 @@ tokenizer {
   kw_nodes 'nodes'
   kw_tokenizer 'tokenizer'
   kw_rule 'rule'
-  kw_rule2 'rule2'
   kw_verbatim 'verbatim'
   kw_ast 'ast'
 
@@ -62,7 +59,7 @@ tokenizer {
   ident r"\w+"
 }
 
-rule file { nodes_def tokenizer_def <rep {syn_rule2}> <rep {syn_rule}> <opt {verbatim_def}> <opt {ast_def}> }
+rule file { nodes_def tokenizer_def <rep {syn_rule}> <opt {verbatim_def}> <opt {ast_def}> }
 
 rule nodes_def {
   'nodes' <commit> '{' <rep {ident}> '}'
@@ -97,16 +94,11 @@ rule method_def { ident ast_selector }
 rule ast_selector { ident <opt {ast_selector_suffix}> }
 rule ast_selector_suffix { '*' | '?' | '.' ident }
 
-rule syn_rule2 {
-  'rule2' <commit> ident expr_block
-}
-
-rule expr_reference { ident | simple_string }
-rule expr_call { '<' ident <rep {expr}> '>' }
-rule expr { expr_call | expr_reference | expr_block }
-rule expr_seq { <rep {expr}> }
-
-rule expr_block { '{' <opt {expr_seq}> <rep {'|' expr_seq}> '}' }
+rule ref_expr { ident | simple_string }
+rule call_expr { '<' ident <rep {expr}> '>' }
+rule expr { call_expr | ref_expr | block_expr }
+rule seq_expr { <rep {expr}> }
+rule block_expr { '{' <opt {seq_expr}> <rep {'|' seq_expr}> '}' }
 
 
 verbatim r#########"
@@ -142,6 +134,7 @@ ast {
   syn_rule {
     name IDENT.text
     block block
+    block_expr block_expr
   }
 
   block {
@@ -167,5 +160,14 @@ ast {
 
   method_def {
     name IDENT.text
+  }
+
+  ref_expr {  }
+  call_expr {
+    fn_name IDENT.text
+  }
+  seq_expr {  }
+  block_expr {
+    alts seq_expr*
   }
 }

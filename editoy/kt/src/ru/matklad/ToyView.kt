@@ -111,7 +111,8 @@ private fun keyPressedToEvent(key: KeyEvent): InputEvent? {
     }
 
     if (key.eventType == KeyEvent.KEY_TYPED && key.character != KeyEvent.CHAR_UNDEFINED && !key.isControlDown) {
-        return inputEvent { insertTextBuilder.setText(key.character).build() }
+        val text = if (key.character == "\r") "\n" else key.character
+        return inputEvent { insertTextBuilder.setText(text).build() }
     }
     return null
 }

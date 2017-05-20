@@ -1,9 +1,9 @@
-use fall_tree::AstNode;
-use lang::{PartKind, SelectorKind};
+use fall_tree::{AstNode, AstClass};
+use lang::{PartKind, SelectorKind, RefKind};
 use util::{scream, snake};
 use tera::{Tera, Context};
 
-use lang::{self, Alt, Part, Block};
+use lang::{self, Alt, Part, Block, BlockExpr, Expr};
 
 pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
@@ -61,6 +61,65 @@ pub fn generate(file: lang::File) -> String {
     Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
 }
 
+fn gen_expr(expr: Expr) -> String {
+    match expr {
+        Expr::BlockExpr(block) => {
+            format!("Expr::Or(&[{}])",
+                    list(block.alts().map(|it| gen_expr(Expr::SeqExpr(it)))))
+        }
+        Expr::SeqExpr(seq) => {
+            fn is_commit(part: Expr) -> bool {
+                part.node().text() == "<commit>"
+            }
+            let commit = seq.parts().position(is_commit);
+            let parts = seq.parts()
+                .filter(|&p| !is_commit(p))
+                .map(gen_expr);
+            format!("Expr::And(&[{}], {:?})", list(parts), commit)
+        }
+        Expr::RefExpr(ref_) => match ref_.resolve() {
+            Some(RefKind::Token(t)) => format!("Expr::Token({})", scream(t)),
+            Some(RefKind::RuleReference { idx }) => format!("Expr::Rule({:?})", idx),
+            None => panic!("Unresolved references: {}", ref_.node().text()),
+        },
+        Expr::CallExpr(call) => {
+            let mut args = call.args();
+            let arg = args.next().unwrap();
+            match call.fn_name() {
+                "rep" => {
+                    let skip = match args.next() {
+                        None => "None".to_owned(),
+                        Some(expr) => {
+                            let block = match expr {
+                                Expr::BlockExpr(block) => block,
+                                _ => panic!("bad rep argument!")
+                            } ;
+                            let tokens: String = block.alts()
+                                .flat_map(|alt| alt.parts())
+                                .map(|part| {
+                                    let ref_ = match part {
+                                        Expr::RefExpr(ref_) => ref_,
+                                        _ => panic!("bad rep argument2")
+                                    };
+                                    if let RefKind::Token(t) = ref_.resolve().unwrap() {
+                                        format!("{}, ", scream(t))
+                                    } else {
+                                        panic!("bad break in rep {:?}", part.node().text())
+                                    }
+                                })
+                                .collect();
+                            format!("Some(&[{}])", tokens)
+                        }
+                    };
+                    format!("Expr::Rep(&{}, {}, None)", gen_expr(arg), skip)
+                }
+                "opt" => format!("Expr::Opt(&{})", gen_expr(arg)),
+                _ => unimplemented!(),
+            }
+        }
+    }
+}
+
 fn list<D: ::std::fmt::Display, I: Iterator<Item=D>>(i: I) -> String {
     let mut result = String::new();
     let mut sep = "";
@@ -113,7 +172,7 @@ fn generate_part(part: Part) -> String {
                         }
                     };
                     format!("Expr::Rep(&{}, {}, None)", gen_alt(arg), skip)
-                },
+                }
                 "opt" => format!("Expr::Opt(&{})", gen_alt(arg)),
                 _ => unimplemented!(),
             }
