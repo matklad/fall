@@ -45,19 +45,19 @@ lazy_static! {
         const PARSER: &'static [SynRule] = &[
             SynRule {
                 ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(1), Expr::Rule(2), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(4)], None)]), None, None), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(9)], None)])), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(10)], None)]))], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rule(1), Expr::Rule(2), Expr::Rep(&Expr::Rule(4), None, None), Expr::Opt(&Expr::Rule(9)), Expr::Opt(&Expr::Rule(10))], None)]),
             },
             SynRule {
                 ty: Some(NODES_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODES), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None)]), None, None), Expr::Token(RBRACE)], Some(1))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODES), Expr::Token(LBRACE), Expr::Rep(&Expr::Token(IDENT), None, None), Expr::Token(RBRACE)], Some(1))]),
             },
             SynRule {
                 ty: Some(TOKENIZER_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_TOKENIZER), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(3)], None)]), None, None), Expr::Token(RBRACE)], Some(1))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_TOKENIZER), Expr::Token(LBRACE), Expr::Rep(&Expr::Rule(3), None, None), Expr::Token(RBRACE)], Some(1))]),
             },
             SynRule {
                 ty: Some(LEX_RULE),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(8), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(8)], None)]))], Some(1))]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(8), Expr::Opt(&Expr::Rule(8))], Some(1))]),
             },
             SynRule {
                 ty: Some(SYN_RULE),
@@ -65,15 +65,15 @@ lazy_static! {
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(6)], None)])), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(6)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Rule(6)), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(6)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(7)], None)]), None, None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Rule(7), None, None)], None)]),
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(5)], None)]), None, None), Expr::Token(RANGLE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Rule(5), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
                 ty: Some(STRING),
@@ -89,11 +89,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(AST_NODE_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(13)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Rule(13), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Token(IDENT), None, None), Expr::Token(RBRACE)], None)]),
             },
             SynRule {
                 ty: Some(METHOD_DEF),
@@ -101,7 +101,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(AST_SELECTOR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(15)], None)]))], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::Rule(15))], None)]),
             },
             SynRule {
                 ty: None,
@@ -113,7 +113,7 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(CALL_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(18)], None)]), None, None), Expr::Token(RANGLE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Rule(18), None, None), Expr::Token(RANGLE)], None)]),
             },
             SynRule {
                 ty: None,
@@ -121,11 +121,11 @@ lazy_static! {
             },
             SynRule {
                 ty: Some(SEQ_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(18)], None)]), None, None)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Rule(18), None, None)], None)]),
             },
             SynRule {
                 ty: Some(BLOCK_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Rule(19)], None)])), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(19)], None)]), None, None), Expr::Token(RBRACE)], None)]),
+                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Rule(19)), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(19)], None)]), None, None), Expr::Token(RBRACE)], None)]),
             },
         ];
 
