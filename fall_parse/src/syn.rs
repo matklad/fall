@@ -43,10 +43,12 @@ impl<'r> Parser<'r> {
             }
 
             Expr::And(ref parts, commit) => {
+                b.start(None);
                 let commit = commit.unwrap_or(parts.len());
                 for (i, p) in parts.iter().enumerate() {
                     if !self.parse_expr(p, b) {
                         if i < commit {
+                            b.rollback(None);
                             return false;
                         } else {
                             b.error();
@@ -54,6 +56,7 @@ impl<'r> Parser<'r> {
                         }
                     }
                 }
+                b.finish(None);
                 true
             }
 
@@ -72,15 +75,15 @@ impl<'r> Parser<'r> {
 
             Expr::Token(ty) => b.try_eat(self.node_type(ty)),
             Expr::Rep(ref body, ref skip_until, ref stop_at) => {
-                'outer2: loop {
+                'outer: loop {
                     let mut skipped = false;
-                    'inner2: loop {
+                    'inner: loop {
                         let current = match b.current() {
                             None => {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
-                                break 'outer2
+                                break 'outer
                             }
                             Some(c) => c,
                         };
@@ -89,7 +92,7 @@ impl<'r> Parser<'r> {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
-                                break 'outer2
+                                break 'outer
                             }
                         }
 
@@ -98,7 +101,7 @@ impl<'r> Parser<'r> {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
-                                break 'inner2
+                                break 'inner
                             }
                             Some(ref s) => s,
                         };
@@ -106,7 +109,7 @@ impl<'r> Parser<'r> {
                             if skipped {
                                 b.finish(Some(ERROR))
                             }
-                            break 'inner2
+                            break 'inner
                         } else {
                             if !skipped {
                                 b.start(Some(ERROR))
@@ -117,7 +120,11 @@ impl<'r> Parser<'r> {
                     }
                     if !self.parse_expr(&*body, b) {
                         if stop_at.is_none() {
-                            break 'outer2;
+                            break 'outer;
+                        } else {
+                            b.start(Some(ERROR));
+                            b.bump();
+                            b.finish(Some(ERROR));
                         }
                     }
                 }

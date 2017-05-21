@@ -104,7 +104,7 @@ rule ref_expr { ident | simple_string }
 rule call_expr { '<' ident <rep expr> '>' }
 rule expr { call_expr | ref_expr | block_expr }
 rule seq_expr { <rep expr> }
-rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr}> '}' }
+rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr} {} {'}'}> '}' }
 
 
 verbatim r#########"

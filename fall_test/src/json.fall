@@ -33,7 +33,7 @@ rule object {
   '}'
 }
 
-rule object_body { <rep {field ','} {string} {'}'}> }
+rule object_body { <rep {field <commit> ','} {string} {'}'}> }
 
 rule field {
   string <commit> ':' value
