@@ -90,7 +90,7 @@ ast {
 
   node syn_rule {
     name IDENT.text
-    block_expr block_expr
+    body expr
   }
 
   node verbatim_def { }
@@ -124,7 +124,7 @@ ast {
   }
 
   node block_expr {
-    alts seq_expr*
+    alts expr*
   }
 
   class expr {

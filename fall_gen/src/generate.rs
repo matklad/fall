@@ -72,14 +72,14 @@ pub fn generate(file: lang::File) -> String {
 fn compile_rule(ast: SynRule) -> fall_parse::SynRule {
     fall_parse::SynRule {
         ty: ast.resolve_ty(),
-        body: compile_expr(Expr::BlockExpr(ast.block_expr())),
+        body: compile_expr(ast.body()),
     }
 }
 
 fn compile_expr(ast: Expr) -> fall_parse::Expr {
     match ast {
         Expr::BlockExpr(block) => {
-            fall_parse::Expr::Or(block.alts().map(|e| compile_expr(Expr::SeqExpr(e))).collect())
+            fall_parse::Expr::Or(block.alts().map(compile_expr).collect())
         }
         Expr::SeqExpr(seq) => {
             fn is_commit(part: Expr) -> bool {
@@ -102,25 +102,10 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             match call.fn_name() {
                 "rep" => {
                     fn collect_tokens(expr: Expr) -> Option<Vec<usize>> {
-                        let block = match expr {
-                            Expr::BlockExpr(block) => block,
-                            _ => panic!("bad rep argument!")
-                        };
-                        let tokens: Vec<usize> = block.alts()
-                            .flat_map(|alt| alt.parts())
-                            .map(|part| {
-                                let ref_ = match part {
-                                    Expr::RefExpr(ref_) => ref_,
-                                    _ => panic!("bad rep argument2")
-                                };
-                                if let RefKind::Token(idx) = ref_.resolve().unwrap() {
-                                    idx
-                                } else {
-                                    panic!("bad break in rep {:?}", part.node().text())
-                                }
-                            })
-                            .collect();
-                        if tokens.is_empty() { None } else { Some(tokens) }
+                        let ts = expr.token_set().unwrap_or_else(|| {
+                            panic!("Bad token set: `{}`", expr.node().text())
+                        });
+                        if ts.is_empty() { None } else { Some(ts) }
                     }
                     let skip = match args.next() {
                         None => None,

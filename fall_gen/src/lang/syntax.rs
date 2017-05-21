@@ -217,8 +217,8 @@ impl<'f> SynRule<'f> {
     pub fn name(&self) -> &'f str {
         child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn block_expr(&self) -> BlockExpr<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn body(&self) -> Expr<'f> {
+        AstClassChildren::new(self.node.children()).next().unwrap()
     }
 }
 #[derive(Clone, Copy)]
@@ -373,8 +373,8 @@ impl<'f> AstNode<'f> for BlockExpr<'f> {
 }
 
 impl<'f> BlockExpr<'f> {
-    pub fn alts(&self) -> AstChildren<'f, SeqExpr<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn alts(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node.children())
     }
 }
 

@@ -3,7 +3,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
              LexRule, SynRule, File, VerbatimDef, MethodDef,
-             RefExpr, AstClassDef, AstDef};
+             RefExpr, AstClassDef, AstDef, Expr};
 
 impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
@@ -148,6 +148,40 @@ impl<'f> RefExpr<'f> {
                 file.resolve_ty(ty_name).map(RefKind::Token)
             }
             None => None,
+        }
+    }
+}
+
+impl<'f> Expr<'f> {
+    pub fn token_set(&self) -> Option<Vec<usize>> {
+        match *self {
+            Expr::RefExpr(ref_) => {
+                if let Some(RefKind::Token(idx)) = ref_.resolve() {
+                    Some(vec![idx])
+                } else {
+                    None
+                }
+            }
+            Expr::CallExpr(_) => None,
+            Expr::SeqExpr(seq) => {
+                let mut parts = seq.parts();
+                match (parts.next(), parts.next()) {
+                    (None, None) => Some(Vec::new()),
+                    (Some(expr), None) => expr.token_set(),
+                    _ => None
+                }
+            }
+            Expr::BlockExpr(block) => {
+                let mut result = Vec::new();
+                for alt in block.alts() {
+                    if let Some(ts) = alt.token_set() {
+                        result.extend(ts.into_iter())
+                    } else {
+                        return None
+                    }
+                }
+                Some(result)
+            }
         }
     }
 }
