@@ -2,7 +2,7 @@ nodes {
   lparen rparen
   lbrace rbrace
 
-  pub
+  kw_pub
   struct
   fn
 
@@ -18,7 +18,7 @@ tokenizer {
   rparen ')'
   lbrace '{'
   rbrace '}'
-  pub 'pub'
+  kw_pub 'pub'
   struct 'struct'
   fn 'fn'
   whitespace r"\s+"

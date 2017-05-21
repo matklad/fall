@@ -31,13 +31,13 @@ FILE
     LBRACE "{"
     RBRACE "}"
   STRUCT_DEF
-    PUB "pub"
+    KW_PUB "pub"
     STRUCT "struct"
     IDENT "Baz"
     LBRACE "{"
     RBRACE "}"
   FN_DEF
-    PUB "pub"
+    KW_PUB "pub"
     FN "fn"
     IDENT "quux"
     LPAREN "("

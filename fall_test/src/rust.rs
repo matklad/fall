@@ -6,7 +6,7 @@ pub const LPAREN: NodeType = NodeType(100);
 pub const RPAREN: NodeType = NodeType(101);
 pub const LBRACE: NodeType = NodeType(102);
 pub const RBRACE: NodeType = NodeType(103);
-pub const PUB: NodeType = NodeType(104);
+pub const KW_PUB: NodeType = NodeType(104);
 pub const STRUCT: NodeType = NodeType(105);
 pub const FN: NodeType = NodeType(106);
 pub const IDENT: NodeType = NodeType(107);
@@ -19,7 +19,7 @@ lazy_static! {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            LPAREN, RPAREN, LBRACE, RBRACE, PUB, STRUCT, FN, IDENT, FILE, STRUCT_DEF, FN_DEF,
+            LPAREN, RPAREN, LBRACE, RBRACE, KW_PUB, STRUCT, FN, IDENT, FILE, STRUCT_DEF, FN_DEF,
         ];
         let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
@@ -40,7 +40,7 @@ lazy_static! {
                     RPAREN => NodeTypeInfo { name: "RPAREN" },
                     LBRACE => NodeTypeInfo { name: "LBRACE" },
                     RBRACE => NodeTypeInfo { name: "RBRACE" },
-                    PUB => NodeTypeInfo { name: "PUB" },
+                    KW_PUB => NodeTypeInfo { name: "KW_PUB" },
                     STRUCT => NodeTypeInfo { name: "STRUCT" },
                     FN => NodeTypeInfo { name: "FN" },
                     IDENT => NodeTypeInfo { name: "IDENT" },
@@ -58,7 +58,7 @@ lazy_static! {
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(LBRACE, "\\{", None),
                 LexRule::new(RBRACE, "\\}", None),
-                LexRule::new(PUB, "pub", None),
+                LexRule::new(KW_PUB, "pub", None),
                 LexRule::new(STRUCT, "struct", None),
                 LexRule::new(FN, "fn", None),
                 LexRule::new(WHITESPACE, "\\s+", None),

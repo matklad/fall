@@ -6,6 +6,7 @@ nodes {
   kw_tokenizer
   kw_rule
   kw_verbatim
+  kw_pub
 
   eq pipe star question dot
   lbrace rbrace
@@ -54,6 +55,7 @@ tokenizer {
   kw_rule 'rule'
   kw_verbatim 'verbatim'
   kw_ast 'ast'
+  kw_pub 'pub'
 
   whitespace r"\s+"
   simple_string r#"'([^'\\]|\\.)*'"#
