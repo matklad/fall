@@ -71,7 +71,7 @@ impl<'r> Parser<'r> {
             }
 
             Expr::Token(ty) => b.try_eat(self.node_type(ty)),
-            Expr::Rep(ref body, ref skip_until, _) => {
+            Expr::Rep(ref body, ref skip_until, ref stop_at) => {
                 'outer2: loop {
                     let mut skipped = false;
                     'inner2: loop {
@@ -84,6 +84,15 @@ impl<'r> Parser<'r> {
                             }
                             Some(c) => c,
                         };
+                        if let Some(ref stop_at) = *stop_at {
+                            if stop_at.iter().any(|&it| self.node_type(it) == current.ty) {
+                                if skipped {
+                                    b.finish(Some(ERROR))
+                                }
+                                break 'outer2
+                            }
+                        }
+
                         let skip = match *skip_until {
                             None => {
                                 if skipped {

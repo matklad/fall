@@ -10,9 +10,6 @@ use lang::{self, Expr};
 
 pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
-    struct CtxSynRule { is_public: bool, ty: usize, body: String };
-
-    #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
 
     #[derive(Serialize)]
@@ -30,14 +27,6 @@ pub fn generate(file: lang::File) -> String {
     let parser = Vec::from_iter(file.syn_rules().map(compile_rule));
     let parser = serde_json::to_string(&parser).unwrap();
     context.add("parser_json", &parser);
-
-    context.add("syn_rules", &file.syn_rules().map(|r| {
-        CtxSynRule {
-            is_public: r.is_public(),
-            ty: file.resolve_ty(r.name()).unwrap_or(0xDEADBEEF),
-            body: gen_expr(Expr::BlockExpr(r.block_expr()))
-        }
-    }).collect::<Vec<_>>());
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
         CtxLexRule { ty: r.node_type(), re: format!("{:?}", r.token_re()), f: r.extern_fn() }
     }).collect::<Vec<_>>());
@@ -112,107 +101,42 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             let arg = args.next().unwrap();
             match call.fn_name() {
                 "rep" => {
+                    fn collect_tokens(expr: Expr) -> Option<Vec<usize>> {
+                        let block = match expr {
+                            Expr::BlockExpr(block) => block,
+                            _ => panic!("bad rep argument!")
+                        };
+                        let tokens: Vec<usize> = block.alts()
+                            .flat_map(|alt| alt.parts())
+                            .map(|part| {
+                                let ref_ = match part {
+                                    Expr::RefExpr(ref_) => ref_,
+                                    _ => panic!("bad rep argument2")
+                                };
+                                if let RefKind::Token(idx) = ref_.resolve().unwrap() {
+                                    idx
+                                } else {
+                                    panic!("bad break in rep {:?}", part.node().text())
+                                }
+                            })
+                            .collect();
+                        if tokens.is_empty() { None } else { Some(tokens) }
+                    }
                     let skip = match args.next() {
                         None => None,
-                        Some(expr) => {
-                            let block = match expr {
-                                Expr::BlockExpr(block) => block,
-                                _ => panic!("bad rep argument!")
-                            };
-                            let tokens: Vec<usize> = block.alts()
-                                .flat_map(|alt| alt.parts())
-                                .map(|part| {
-                                    let ref_ = match part {
-                                        Expr::RefExpr(ref_) => ref_,
-                                        _ => panic!("bad rep argument2")
-                                    };
-                                    if let RefKind::Token(idx) = ref_.resolve().unwrap() {
-                                        idx
-                                    } else {
-                                        panic!("bad break in rep {:?}", part.node().text())
-                                    }
-                                })
-                                .collect();
-                            Some(tokens)
-                        }
+                        Some(expr) => collect_tokens(expr)
                     };
-                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)), skip, None)
+                    let stop = match args.next() {
+                        None => None,
+                        Some(expr) => collect_tokens(expr)
+                    };
+                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)), skip, stop)
                 }
                 "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(arg))),
                 _ => unimplemented!(),
             }
         }
     }
-}
-
-fn gen_expr(expr: Expr) -> String {
-    match expr {
-        Expr::BlockExpr(block) => {
-            format!("Expr::Or(vec![{}])",
-                    list(block.alts().map(|it| gen_expr(Expr::SeqExpr(it)))))
-        }
-        Expr::SeqExpr(seq) => {
-            fn is_commit(part: Expr) -> bool {
-                part.node().text() == "<commit>"
-            }
-            let commit = seq.parts().position(is_commit);
-            let parts = seq.parts()
-                .filter(|&p| !is_commit(p))
-                .map(gen_expr);
-            format!("Expr::And(vec![{}], {:?})", list(parts), commit)
-        }
-        Expr::RefExpr(ref_) => match ref_.resolve() {
-            Some(RefKind::Token(idx)) => format!("Expr::Token({})", idx),
-            Some(RefKind::RuleReference { idx }) => format!("Expr::Rule({:?})", idx),
-            None => panic!("Unresolved references: {}", ref_.node().text()),
-        },
-        Expr::CallExpr(call) => {
-            let mut args = call.args();
-            let arg = args.next().unwrap();
-            match call.fn_name() {
-                "rep" => {
-                    let skip = match args.next() {
-                        None => "None".to_owned(),
-                        Some(expr) => {
-                            let block = match expr {
-                                Expr::BlockExpr(block) => block,
-                                _ => panic!("bad rep argument!")
-                            };
-                            let tokens: String = block.alts()
-                                .flat_map(|alt| alt.parts())
-                                .map(|part| {
-                                    let ref_ = match part {
-                                        Expr::RefExpr(ref_) => ref_,
-                                        _ => panic!("bad rep argument2")
-                                    };
-                                    if let RefKind::Token(idx) = ref_.resolve().unwrap() {
-                                        format!("{}, ", idx)
-                                    } else {
-                                        panic!("bad break in rep {:?}", part.node().text())
-                                    }
-                                })
-                                .collect();
-                            format!("Some(vec![{}])", tokens)
-                        }
-                    };
-                    format!("Expr::Rep(Box::new({}), {}, None)", gen_expr(arg), skip)
-                }
-                "opt" => format!("Expr::Opt(Box::new({}))", gen_expr(arg)),
-                _ => unimplemented!(),
-            }
-        }
-    }
-}
-
-fn list<D: ::std::fmt::Display, I: Iterator<Item=D>>(i: I) -> String {
-    let mut result = String::new();
-    let mut sep = "";
-    for item in i {
-        result += sep;
-        sep = ", ";
-        result += &item.to_string();
-    }
-    result
 }
 
 const TEMPLATE: &'static str = r#####"
