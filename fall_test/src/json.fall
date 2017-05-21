@@ -33,7 +33,7 @@ rule object {
   '}'
 }
 
-rule object_body { <rep {field ','}> }
+rule object_body { <rep {field ','} {string} {'}'}> }
 
 rule field {
   string <commit> ':' value
@@ -41,7 +41,7 @@ rule field {
 
 rule array {
   '[' <commit>
-    <rep {value ','}>
+    <rep {value ','} {'null'|number|string|bool|'{'|'['} {']'}>
   ']'
 }
 

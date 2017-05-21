@@ -116,7 +116,9 @@ impl<'r> Parser<'r> {
                         }
                     }
                     if !self.parse_expr(&*body, b) {
-                        break 'outer2;
+                        if stop_at.is_none() {
+                            break 'outer2;
+                        }
                     }
                 }
                 true
