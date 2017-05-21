@@ -12,12 +12,12 @@ pub struct SynRule {
 
 
 pub enum Expr {
-    Or(&'static [Expr]),
-    And(&'static [Expr], Option<usize>),
+    Or(Vec<Expr>),
+    And(Vec<Expr>, Option<usize>),
     Rule(usize),
     Token(NodeType),
-    Rep(&'static Expr, Option<&'static [NodeType]>, Option<&'static [NodeType]>),
-    Opt(&'static Expr),
+    Rep(Box<Expr>, Option<Vec<NodeType>>, Option<Vec<NodeType>>),
+    Opt(Box<Expr>),
 }
 
 impl<'r> Parser<'r> {
@@ -31,7 +31,7 @@ impl<'r> Parser<'r> {
 
     fn parse_expr(&self, expr: &Expr, b: &mut TreeBuilder) -> bool {
         match *expr {
-            Expr::Or(parts) => {
+            Expr::Or(ref parts) => {
                 for p in parts.iter() {
                     if self.parse_expr(p, b) {
                         return true;
@@ -40,7 +40,7 @@ impl<'r> Parser<'r> {
                 false
             }
 
-            Expr::And(parts, commit) => {
+            Expr::And(ref parts, commit) => {
                 let commit = commit.unwrap_or(parts.len());
                 for (i, p) in parts.iter().enumerate() {
                     if !self.parse_expr(p, b) {
@@ -68,7 +68,7 @@ impl<'r> Parser<'r> {
             }
 
             Expr::Token(ty) => b.try_eat(ty),
-            Expr::Rep(body, skip_until, _) => {
+            Expr::Rep(ref body, ref skip_until, _) => {
                 'outer: loop {
                     let mut skipped = false;
                     'inner: loop {
@@ -81,14 +81,14 @@ impl<'r> Parser<'r> {
                             }
                             Some(c) => c,
                         };
-                        let skip = match skip_until {
+                        let skip = match *skip_until {
                             None => {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
                                 break 'inner
                             }
-                            Some(s) => s,
+                            Some(ref s) => s,
                         };
                         if skip.iter().any(|&it| it == current.ty) {
                             if skipped {
@@ -103,14 +103,14 @@ impl<'r> Parser<'r> {
                             b.bump();
                         }
                     }
-                    if !self.parse_expr(body, b) {
+                    if !self.parse_expr(&*body, b) {
                         break 'outer;
                     }
                 }
                 true
             }
-            Expr::Opt(body) => {
-                self.parse_expr(body, b);
+            Expr::Opt(ref body) => {
+                self.parse_expr(&*body, b);
                 true
             }
         }

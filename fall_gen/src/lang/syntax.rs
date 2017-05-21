@@ -43,97 +43,10 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
 
-        const PARSER: &'static [SynRule] = &[
-            SynRule {
-                ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(1), Expr::Rule(2), Expr::Rep(&Expr::Rule(4), None, None), Expr::Opt(&Expr::Rule(9)), Expr::Opt(&Expr::Rule(10))], None)]),
-            },
-            SynRule {
-                ty: Some(NODES_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODES), Expr::Token(LBRACE), Expr::Rep(&Expr::Token(IDENT), None, None), Expr::Token(RBRACE)], Some(1))]),
-            },
-            SynRule {
-                ty: Some(TOKENIZER_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_TOKENIZER), Expr::Token(LBRACE), Expr::Rep(&Expr::Rule(3), None, None), Expr::Token(RBRACE)], Some(1))]),
-            },
-            SynRule {
-                ty: Some(LEX_RULE),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(8), Expr::Opt(&Expr::Rule(8))], Some(1))]),
-            },
-            SynRule {
-                ty: Some(SYN_RULE),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(20)], Some(1))]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Rule(6)), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(6)], None)]), None, None), Expr::Token(RBRACE)], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Rule(7), None, None)], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Rule(5), None, None), Expr::Token(RANGLE)], None)]),
-            },
-            SynRule {
-                ty: Some(STRING),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(SIMPLE_STRING)], None), Expr::And(&[Expr::Token(HASH_STRING)], None)]),
-            },
-            SynRule {
-                ty: Some(VERBATIM_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_VERBATIM), Expr::Token(HASH_STRING)], None)]),
-            },
-            SynRule {
-                ty: Some(AST_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_AST), Expr::Token(LBRACE), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(11)], None), Expr::And(&[Expr::Rule(12)], None)]), None, None), Expr::Token(RBRACE)], None)]),
-            },
-            SynRule {
-                ty: Some(AST_NODE_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Rule(13), None, None), Expr::Token(RBRACE)], None)]),
-            },
-            SynRule {
-                ty: Some(AST_CLASS_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(&Expr::Token(IDENT), None, None), Expr::Token(RBRACE)], None)]),
-            },
-            SynRule {
-                ty: Some(METHOD_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Rule(14)], None)]),
-            },
-            SynRule {
-                ty: Some(AST_SELECTOR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT), Expr::Opt(&Expr::Rule(15))], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(STAR)], None), Expr::And(&[Expr::Token(QUESTION)], None), Expr::And(&[Expr::Token(DOT), Expr::Token(IDENT)], None)]),
-            },
-            SynRule {
-                ty: Some(REF_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(IDENT)], None), Expr::And(&[Expr::Token(SIMPLE_STRING)], None)]),
-            },
-            SynRule {
-                ty: Some(CALL_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(&Expr::Rule(18), None, None), Expr::Token(RANGLE)], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(17)], None), Expr::And(&[Expr::Rule(16)], None), Expr::And(&[Expr::Rule(20)], None)]),
-            },
-            SynRule {
-                ty: Some(SEQ_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Rule(18), None, None)], None)]),
-            },
-            SynRule {
-                ty: Some(BLOCK_EXPR),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Opt(&Expr::Rule(19)), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Token(PIPE), Expr::Rule(19)], None)]), None, None), Expr::Token(RBRACE)], None)]),
-            },
-        ];
-
-        struct Impl { tokenizer: Vec<LexRule> };
+        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -206,6 +119,92 @@ lazy_static! {
                 LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
                 LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
                 LexRule::new(IDENT, "\\w+", None),
+            ],
+            parser: vec![
+                SynRule {
+                    ty: Some(FILE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(1), Expr::Rule(2), Expr::Rep(Box::new(Expr::Rule(4)), None, None), Expr::Opt(Box::new(Expr::Rule(9))), Expr::Opt(Box::new(Expr::Rule(10)))], None)]),
+                },
+                SynRule {
+                    ty: Some(NODES_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_NODES), Expr::Token(LBRACE), Expr::Rep(Box::new(Expr::Token(IDENT)), None, None), Expr::Token(RBRACE)], Some(1))]),
+                },
+                SynRule {
+                    ty: Some(TOKENIZER_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_TOKENIZER), Expr::Token(LBRACE), Expr::Rep(Box::new(Expr::Rule(3)), None, None), Expr::Token(RBRACE)], Some(1))]),
+                },
+                SynRule {
+                    ty: Some(LEX_RULE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(IDENT), Expr::Rule(8), Expr::Opt(Box::new(Expr::Rule(8)))], Some(1))]),
+                },
+                SynRule {
+                    ty: Some(SYN_RULE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_RULE), Expr::Token(IDENT), Expr::Rule(20)], Some(1))]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACE), Expr::Opt(Box::new(Expr::Rule(6))), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(PIPE), Expr::Rule(6)], None)])), None, None), Expr::Token(RBRACE)], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Rule(7)), None, None)], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(IDENT)], None), Expr::And(vec![Expr::Token(SIMPLE_STRING)], None), Expr::And(vec![Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(Box::new(Expr::Rule(5)), None, None), Expr::Token(RANGLE)], None)]),
+                },
+                SynRule {
+                    ty: Some(STRING),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(SIMPLE_STRING)], None), Expr::And(vec![Expr::Token(HASH_STRING)], None)]),
+                },
+                SynRule {
+                    ty: Some(VERBATIM_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_VERBATIM), Expr::Token(HASH_STRING)], None)]),
+                },
+                SynRule {
+                    ty: Some(AST_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_AST), Expr::Token(LBRACE), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(11)], None), Expr::And(vec![Expr::Rule(12)], None)])), None, None), Expr::Token(RBRACE)], None)]),
+                },
+                SynRule {
+                    ty: Some(AST_NODE_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_NODE), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(Box::new(Expr::Rule(13)), None, None), Expr::Token(RBRACE)], None)]),
+                },
+                SynRule {
+                    ty: Some(AST_CLASS_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(KW_CLASS), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Rep(Box::new(Expr::Token(IDENT)), None, None), Expr::Token(RBRACE)], None)]),
+                },
+                SynRule {
+                    ty: Some(METHOD_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(IDENT), Expr::Rule(14)], None)]),
+                },
+                SynRule {
+                    ty: Some(AST_SELECTOR),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(IDENT), Expr::Opt(Box::new(Expr::Rule(15)))], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(STAR)], None), Expr::And(vec![Expr::Token(QUESTION)], None), Expr::And(vec![Expr::Token(DOT), Expr::Token(IDENT)], None)]),
+                },
+                SynRule {
+                    ty: Some(REF_EXPR),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(IDENT)], None), Expr::And(vec![Expr::Token(SIMPLE_STRING)], None)]),
+                },
+                SynRule {
+                    ty: Some(CALL_EXPR),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LANGLE), Expr::Token(IDENT), Expr::Rep(Box::new(Expr::Rule(18)), None, None), Expr::Token(RANGLE)], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(17)], None), Expr::And(vec![Expr::Rule(16)], None), Expr::And(vec![Expr::Rule(20)], None)]),
+                },
+                SynRule {
+                    ty: Some(SEQ_EXPR),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Rule(18)), None, None)], None)]),
+                },
+                SynRule {
+                    ty: Some(BLOCK_EXPR),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACE), Expr::Opt(Box::new(Expr::Rule(19))), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(PIPE), Expr::Rule(19)], None)])), None, None), Expr::Token(RBRACE)], None)]),
+                },
             ]
         })
     };

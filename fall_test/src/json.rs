@@ -21,41 +21,10 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
 
-        const PARSER: &'static [SynRule] = &[
-            SynRule {
-                ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(1)], None), Expr::And(&[Expr::Rule(4)], None)]),
-            },
-            SynRule {
-                ty: Some(OBJECT),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACE), Expr::Rule(2), Expr::Token(RBRACE)], Some(1))]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(3), Expr::Token(COMMA)], None)]), None, None)], None)]),
-            },
-            SynRule {
-                ty: Some(FIELD),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(STRING), Expr::Token(COLON), Expr::Rule(5)], Some(1))]),
-            },
-            SynRule {
-                ty: Some(ARRAY),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LBRACK), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(5), Expr::Token(COMMA)], None)]), None, None), Expr::Token(RBRACK)], Some(1))]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(6)], None), Expr::And(&[Expr::Rule(1)], None), Expr::And(&[Expr::Rule(4)], None)]),
-            },
-            SynRule {
-                ty: Some(PRIMITIVE),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(NULL)], None), Expr::And(&[Expr::Token(NUMBER)], None), Expr::And(&[Expr::Token(STRING)], None), Expr::And(&[Expr::Token(BOOL)], None)]),
-            },
-        ];
-
-        struct Impl { tokenizer: Vec<LexRule> };
+        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -95,6 +64,36 @@ lazy_static! {
                 LexRule::new(BOOL, "true|false", None),
                 LexRule::new(STRING, "\"[^\"]*\"", None),
                 LexRule::new(NUMBER, "\\d+", None),
+            ],
+            parser: vec![
+                SynRule {
+                    ty: Some(FILE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None), Expr::And(vec![Expr::Rule(4)], None)]),
+                },
+                SynRule {
+                    ty: Some(OBJECT),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACE), Expr::Rule(2), Expr::Token(RBRACE)], Some(1))]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(3), Expr::Token(COMMA)], None)])), None, None)], None)]),
+                },
+                SynRule {
+                    ty: Some(FIELD),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(STRING), Expr::Token(COLON), Expr::Rule(5)], Some(1))]),
+                },
+                SynRule {
+                    ty: Some(ARRAY),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACK), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(5), Expr::Token(COMMA)], None)])), None, None), Expr::Token(RBRACK)], Some(1))]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(6)], None), Expr::And(vec![Expr::Rule(1)], None), Expr::And(vec![Expr::Rule(4)], None)]),
+                },
+                SynRule {
+                    ty: Some(PRIMITIVE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(NULL)], None), Expr::And(vec![Expr::Token(NUMBER)], None), Expr::And(vec![Expr::Token(STRING)], None), Expr::And(vec![Expr::Token(BOOL)], None)]),
+                },
             ]
         })
     };

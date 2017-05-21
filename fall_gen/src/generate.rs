@@ -75,7 +75,7 @@ pub fn generate(file: lang::File) -> String {
 fn gen_expr(expr: Expr) -> String {
     match expr {
         Expr::BlockExpr(block) => {
-            format!("Expr::Or(&[{}])",
+            format!("Expr::Or(vec![{}])",
                     list(block.alts().map(|it| gen_expr(Expr::SeqExpr(it)))))
         }
         Expr::SeqExpr(seq) => {
@@ -86,7 +86,7 @@ fn gen_expr(expr: Expr) -> String {
             let parts = seq.parts()
                 .filter(|&p| !is_commit(p))
                 .map(gen_expr);
-            format!("Expr::And(&[{}], {:?})", list(parts), commit)
+            format!("Expr::And(vec![{}], {:?})", list(parts), commit)
         }
         Expr::RefExpr(ref_) => match ref_.resolve() {
             Some(RefKind::Token(t)) => format!("Expr::Token({})", scream(t)),
@@ -119,12 +119,12 @@ fn gen_expr(expr: Expr) -> String {
                                     }
                                 })
                                 .collect();
-                            format!("Some(&[{}])", tokens)
+                            format!("Some(vec![{}])", tokens)
                         }
                     };
-                    format!("Expr::Rep(&{}, {}, None)", gen_expr(arg), skip)
+                    format!("Expr::Rep(Box::new({}), {}, None)", gen_expr(arg), skip)
                 }
-                "opt" => format!("Expr::Opt(&{})", gen_expr(arg)),
+                "opt" => format!("Expr::Opt(Box::new({}))", gen_expr(arg)),
                 _ => unimplemented!(),
             }
         }
@@ -154,19 +154,10 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
 
-        const PARSER: &'static [SynRule] = &[
-            {% for rule in syn_rules %}
-            SynRule {
-                ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
-                body: {{ rule.body }},
-            },
-            {% endfor %}
-        ];
-
-        struct Impl { tokenizer: Vec<LexRule> };
+        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -185,6 +176,14 @@ lazy_static! {
             tokenizer: vec![
                 {% for rule in lex_rules %}
                 LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
+                {% endfor %}
+            ],
+            parser: vec![
+                {% for rule in syn_rules %}
+                SynRule {
+                    ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
+                    body: {{ rule.body }},
+                },
                 {% endfor %}
             ]
         })

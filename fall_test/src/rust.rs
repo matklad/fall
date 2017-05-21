@@ -17,29 +17,10 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
 
-        const PARSER: &'static [SynRule] = &[
-            SynRule {
-                ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), Some(&[PUB, FN, STRUCT, ]), None)], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Rule(2)], None), Expr::And(&[Expr::Rule(3)], None)]),
-            },
-            SynRule {
-                ty: Some(FN_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Token(PUB)], None)])), Expr::Token(FN), Expr::Token(IDENT), Expr::Token(LPAREN), Expr::Token(RPAREN), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
-            },
-            SynRule {
-                ty: Some(STRUCT_DEF),
-                body: Expr::Or(&[Expr::And(&[Expr::Opt(&Expr::Or(&[Expr::And(&[Expr::Token(PUB)], None)])), Expr::Token(STRUCT), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
-            },
-        ];
-
-        struct Impl { tokenizer: Vec<LexRule> };
+        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -73,6 +54,24 @@ lazy_static! {
                 LexRule::new(FN, "fn", None),
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(IDENT, "\\w+", None),
+            ],
+            parser: vec![
+                SynRule {
+                    ty: Some(FILE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), Some(vec![PUB, FN, STRUCT, ]), None)], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(2)], None), Expr::And(vec![Expr::Rule(3)], None)]),
+                },
+                SynRule {
+                    ty: Some(FN_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Opt(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(PUB)], None)]))), Expr::Token(FN), Expr::Token(IDENT), Expr::Token(LPAREN), Expr::Token(RPAREN), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
+                },
+                SynRule {
+                    ty: Some(STRUCT_DEF),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Opt(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(PUB)], None)]))), Expr::Token(STRUCT), Expr::Token(IDENT), Expr::Token(LBRACE), Expr::Token(RBRACE)], Some(2))]),
+                },
             ]
         })
     };

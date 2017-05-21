@@ -11,25 +11,10 @@ lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
 
-        const PARSER: &'static [SynRule] = &[
-            SynRule {
-                ty: Some(FILE),
-                body: Expr::Or(&[Expr::And(&[Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), None, None)], None)]),
-            },
-            SynRule {
-                ty: None,
-                body: Expr::Or(&[Expr::And(&[Expr::Token(ATOM)], None), Expr::And(&[Expr::Rule(2)], None)]),
-            },
-            SynRule {
-                ty: Some(LIST),
-                body: Expr::Or(&[Expr::And(&[Expr::Token(LPAREN), Expr::Rep(&Expr::Or(&[Expr::And(&[Expr::Rule(1)], None)]), None, None), Expr::Token(RPAREN)], None)]),
-            },
-        ];
-
-        struct Impl { tokenizer: Vec<LexRule> };
+        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(PARSER).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -52,6 +37,20 @@ lazy_static! {
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(ATOM, "\\w+", None),
+            ],
+            parser: vec![
+                SynRule {
+                    ty: Some(FILE),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), None, None)], None)]),
+                },
+                SynRule {
+                    ty: None,
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(ATOM)], None), Expr::And(vec![Expr::Rule(2)], None)]),
+                },
+                SynRule {
+                    ty: Some(LIST),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LPAREN), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), None, None), Expr::Token(RPAREN)], None)]),
+                },
             ]
         })
     };
