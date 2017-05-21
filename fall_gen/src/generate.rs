@@ -22,7 +22,7 @@ pub fn generate(file: lang::File) -> String {
     struct CtxMethod<'f> { name: &'f str, ret_type: String, body: String }
 
     let mut context = Context::new();
-    context.add("node_types", &file.nodes_def().expect("no nodes defined").nodes());
+    context.add("node_types", &file.node_types());
 
     let parser = Vec::from_iter(file.syn_rules().map(compile_rule));
     let parser = serde_json::to_string(&parser).unwrap();

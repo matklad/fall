@@ -1,41 +1,3 @@
-nodes {
-  kw_ast
-  kw_nodes
-  kw_node
-  kw_class
-  kw_tokenizer
-  kw_rule
-  kw_verbatim
-  kw_pub
-
-  eq pipe star question dot
-  lbrace rbrace
-  langle rangle
-  lparen rparen
-  ident
-  simple_string
-  hash_string
-
-  file
-  string
-  verbatim_def
-  nodes_def
-  tokenizer_def
-  lex_rule
-  syn_rule
-
-  ast_def
-  ast_node_def
-  ast_class_def
-  method_def
-  ast_selector
-
-  ref_expr
-  call_expr
-  block_expr
-  seq_expr
-}
-
 tokenizer {
   eq '='
   pipe '|'
@@ -48,7 +10,6 @@ tokenizer {
   rangle '>'
   lparen '('
   rparen ')'
-  kw_nodes 'nodes'
   kw_node 'node'
   kw_class 'class'
   kw_tokenizer 'tokenizer'
@@ -63,11 +24,7 @@ tokenizer {
   ident r"\w+"
 }
 
-pub rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
-
-pub rule nodes_def {
-  'nodes' <commit> '{' <rep ident {ident} {'}'}> '}'
-}
+pub rule file { tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
 
 pub rule tokenizer_def {
   'tokenizer' <commit> '{' <rep lex_rule> '}'
@@ -79,7 +36,7 @@ pub rule syn_rule {
   <opt 'pub'> 'rule' <commit> ident block_expr
 }
 
-rule string { simple_string | hash_string }
+pub rule string { simple_string | hash_string }
 
 pub rule verbatim_def { 'verbatim' hash_string }
 
@@ -117,14 +74,11 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 
 ast {
   node file {
-    nodes_def nodes_def?
     tokenizer_def tokenizer_def?
     syn_rules syn_rule*
     verbatim_def verbatim_def?
     ast_def ast_def?
   }
-
-  node nodes_def { }
 
   node tokenizer_def {
     lex_rules lex_rule*

@@ -1,8 +1,8 @@
 use fall_tree::{AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR,
-             LexRule, SynRule, NodesDef, File, VerbatimDef, MethodDef,
+use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
+             LexRule, SynRule, File, VerbatimDef, MethodDef,
              RefExpr, AstClassDef, AstDef};
 
 impl<'f> File<'f> {
@@ -11,16 +11,25 @@ impl<'f> File<'f> {
     }
 
     pub fn resolve_ty(&self, name: &str) -> Option<usize> {
-        self.nodes_def().unwrap().nodes().iter().position(|&it| it == name)
+        self.node_types().iter().position(|&it| it == name)
             .map(|idx| idx + 2)
     }
-}
 
-impl<'f> NodesDef<'f> {
-    pub fn nodes(&self) -> Vec<&'f str> {
-        children_of_type(self.node(), IDENT)
-            .map(|n| n.text())
-            .collect()
+    pub fn node_types(&self) -> Vec<&'f str> {
+        let mut result = Vec::new();
+        if let Some(tokenizer) = self.tokenizer_def() {
+            result.extend(
+                tokenizer.lex_rules()
+                    .map(|r| r.node_type())
+                    .filter(|&n| n != "whitespace")
+            )
+        }
+        result.extend(
+            self.syn_rules()
+                .filter(|r| r.is_pub())
+                .map(|r| r.name())
+        );
+        result
     }
 }
 
@@ -55,13 +64,18 @@ impl<'f> LexRule<'f> {
 
 impl<'f> SynRule<'f> {
     pub fn is_public(&self) -> bool {
-        let file = ast_parent_exn::<File>(self.node());
-        file.nodes_def().unwrap().nodes().contains(&self.name())
+        //        let file = ast_parent_exn::<File>(self.node());
+        //        file.nodes_def().unwrap().nodes().contains(&self.name())
+        self.is_pub()
     }
 
     pub fn resolve_ty(&self) -> Option<usize> {
         let file = ast_parent_exn::<File>(self.node());
         file.resolve_ty(self.name())
+    }
+
+    pub fn is_pub(&self) -> bool {
+        child_of_type(self.node(), KW_PUB).is_some()
     }
 }
 
@@ -138,7 +152,7 @@ impl<'f> RefExpr<'f> {
             Some(rule) => {
                 let ty_name = rule.node_type();
                 file.resolve_ty(ty_name).map(RefKind::Token)
-            },
+            }
             None => None,
         }
     }

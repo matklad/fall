@@ -1,18 +1,3 @@
-nodes {
-  lparen rparen
-  lbrace rbrace
-
-  kw_pub
-  struct
-  fn
-
-  ident
-
-  file
-  struct_def
-  fn_def
-}
-
 tokenizer {
   lparen '('
   rparen ')'
@@ -25,15 +10,15 @@ tokenizer {
   ident r"\w+"
 }
 
-rule file { <rep {fn_or_struct} { 'pub' | 'fn' | 'struct' } > }
+pub rule file { <rep {fn_or_struct} { 'pub' | 'fn' | 'struct' } > }
 rule fn_or_struct { fn_def | struct_def }
 
-rule fn_def {
+pub rule fn_def {
   <opt {'pub'}> 'fn' <commit> ident
   '(' ')' '{' '}'
 }
 
-rule struct_def {
+pub rule struct_def {
   <opt {'pub'}> 'struct' <commit> ident
   '{' '}'
 }

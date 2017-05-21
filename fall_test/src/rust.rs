@@ -11,17 +11,17 @@ pub const STRUCT: NodeType = NodeType(105);
 pub const FN: NodeType = NodeType(106);
 pub const IDENT: NodeType = NodeType(107);
 pub const FILE: NodeType = NodeType(108);
-pub const STRUCT_DEF: NodeType = NodeType(109);
-pub const FN_DEF: NodeType = NodeType(110);
+pub const FN_DEF: NodeType = NodeType(109);
+pub const STRUCT_DEF: NodeType = NodeType(110);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            LPAREN, RPAREN, LBRACE, RBRACE, KW_PUB, STRUCT, FN, IDENT, FILE, STRUCT_DEF, FN_DEF,
+            LPAREN, RPAREN, LBRACE, RBRACE, KW_PUB, STRUCT, FN, IDENT, FILE, FN_DEF, STRUCT_DEF,
         ];
-        let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
+        let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -45,8 +45,8 @@ lazy_static! {
                     FN => NodeTypeInfo { name: "FN" },
                     IDENT => NodeTypeInfo { name: "IDENT" },
                     FILE => NodeTypeInfo { name: "FILE" },
-                    STRUCT_DEF => NodeTypeInfo { name: "STRUCT_DEF" },
                     FN_DEF => NodeTypeInfo { name: "FN_DEF" },
+                    STRUCT_DEF => NodeTypeInfo { name: "STRUCT_DEF" },
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }
             }
