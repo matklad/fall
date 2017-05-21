@@ -63,45 +63,45 @@ tokenizer {
   ident r"\w+"
 }
 
-rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
+pub rule file { nodes_def tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
 
-rule nodes_def {
+pub rule nodes_def {
   'nodes' <commit> '{' <rep ident {ident} {'}'}> '}'
 }
 
-rule tokenizer_def {
+pub rule tokenizer_def {
   'tokenizer' <commit> '{' <rep lex_rule> '}'
 }
 
-rule lex_rule { ident <commit> string <opt string> }
+pub rule lex_rule { ident <commit> string <opt string> }
 
-rule syn_rule {
-  'rule' <commit> ident block_expr
+pub rule syn_rule {
+  <opt 'pub'> 'rule' <commit> ident block_expr
 }
 
 rule string { simple_string | hash_string }
 
-rule verbatim_def { 'verbatim' hash_string }
+pub rule verbatim_def { 'verbatim' hash_string }
 
-rule ast_def { 'ast' '{' <rep {ast_node_def | ast_class_def}> '}' }
+pub rule ast_def { 'ast' '{' <rep {ast_node_def | ast_class_def}> '}' }
 
-rule ast_node_def {
+pub rule ast_node_def {
   'node' ident '{' <rep method_def> '}'
 }
 
-rule ast_class_def {
+pub rule ast_class_def {
   'class' ident '{' <rep ident> '}'
 }
 
-rule method_def { ident ast_selector }
-rule ast_selector { ident <opt ast_selector_suffix> }
+pub rule method_def { ident ast_selector }
+pub rule ast_selector { ident <opt ast_selector_suffix> }
 rule ast_selector_suffix { '*' | '?' | '.' ident }
 
-rule ref_expr { ident | simple_string }
-rule call_expr { '<' ident <rep expr> '>' }
 rule expr { call_expr | ref_expr | block_expr }
-rule seq_expr { <rep expr> }
-rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr} {} {'}'}> '}' }
+pub rule ref_expr { ident | simple_string }
+pub rule call_expr { '<' ident <rep expr> '>' }
+pub rule seq_expr { <rep expr> }
+pub rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr} {} {'}'}> '}' }
 
 
 verbatim r#########"
