@@ -7,7 +7,7 @@ pub struct Parser<'r> {
 }
 
 pub struct SynRule {
-    pub ty: Option<NodeType>,
+    pub ty: Option<usize>,
     pub body: Expr,
 }
 
@@ -58,12 +58,13 @@ impl<'r> Parser<'r> {
 
             Expr::Rule(id) => {
                 let rule = &self.rules[id];
-                if id != 0 { b.start(rule.ty) }
+                let ty = rule.ty.map(|ty| self.node_type(ty));
+                if id != 0 { b.start(ty) }
                 if self.parse_expr(&rule.body, b) {
-                    if id != 0 { b.finish(rule.ty) };
+                    if id != 0 { b.finish(ty) };
                     true
                 } else {
-                    if id != 0 { b.rollback(rule.ty) };
+                    if id != 0 { b.rollback(ty) };
                     false
                 }
             }

@@ -128,23 +128,23 @@ lazy_static! {
             ],
             parser: vec![
                 SynRule {
-                    ty: Some(FILE),
+                    ty: Some(23),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rule(1), Expr::Rule(2), Expr::Rep(Box::new(Expr::Rule(4)), None, None), Expr::Opt(Box::new(Expr::Rule(9))), Expr::Opt(Box::new(Expr::Rule(10)))], None)]),
                 },
                 SynRule {
-                    ty: Some(NODES_DEF),
+                    ty: Some(26),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(3), Expr::Token(14), Expr::Rep(Box::new(Expr::Token(20)), None, None), Expr::Token(15)], Some(1))]),
                 },
                 SynRule {
-                    ty: Some(TOKENIZER_DEF),
+                    ty: Some(27),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(6), Expr::Token(14), Expr::Rep(Box::new(Expr::Rule(3)), None, None), Expr::Token(15)], Some(1))]),
                 },
                 SynRule {
-                    ty: Some(LEX_RULE),
+                    ty: Some(28),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Rule(8), Expr::Opt(Box::new(Expr::Rule(8)))], Some(1))]),
                 },
                 SynRule {
-                    ty: Some(SYN_RULE),
+                    ty: Some(29),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(7), Expr::Token(20), Expr::Rule(20)], Some(1))]),
                 },
                 SynRule {
@@ -160,31 +160,31 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(20)], None), Expr::And(vec![Expr::Token(21)], None), Expr::And(vec![Expr::Token(16), Expr::Token(20), Expr::Rep(Box::new(Expr::Rule(5)), None, None), Expr::Token(17)], None)]),
                 },
                 SynRule {
-                    ty: Some(STRING),
+                    ty: Some(24),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(21)], None), Expr::And(vec![Expr::Token(22)], None)]),
                 },
                 SynRule {
-                    ty: Some(VERBATIM_DEF),
+                    ty: Some(25),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(8), Expr::Token(22)], None)]),
                 },
                 SynRule {
-                    ty: Some(AST_DEF),
+                    ty: Some(30),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(2), Expr::Token(14), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(11)], None), Expr::And(vec![Expr::Rule(12)], None)])), None, None), Expr::Token(15)], None)]),
                 },
                 SynRule {
-                    ty: Some(AST_NODE_DEF),
+                    ty: Some(31),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(4), Expr::Token(20), Expr::Token(14), Expr::Rep(Box::new(Expr::Rule(13)), None, None), Expr::Token(15)], None)]),
                 },
                 SynRule {
-                    ty: Some(AST_CLASS_DEF),
+                    ty: Some(32),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(5), Expr::Token(20), Expr::Token(14), Expr::Rep(Box::new(Expr::Token(20)), None, None), Expr::Token(15)], None)]),
                 },
                 SynRule {
-                    ty: Some(METHOD_DEF),
+                    ty: Some(33),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Rule(14)], None)]),
                 },
                 SynRule {
-                    ty: Some(AST_SELECTOR),
+                    ty: Some(34),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Opt(Box::new(Expr::Rule(15)))], None)]),
                 },
                 SynRule {
@@ -192,11 +192,11 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(11)], None), Expr::And(vec![Expr::Token(12)], None), Expr::And(vec![Expr::Token(13), Expr::Token(20)], None)]),
                 },
                 SynRule {
-                    ty: Some(REF_EXPR),
+                    ty: Some(35),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(20)], None), Expr::And(vec![Expr::Token(21)], None)]),
                 },
                 SynRule {
-                    ty: Some(CALL_EXPR),
+                    ty: Some(36),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(16), Expr::Token(20), Expr::Rep(Box::new(Expr::Rule(18)), None, None), Expr::Token(17)], None)]),
                 },
                 SynRule {
@@ -204,11 +204,11 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rule(17)], None), Expr::And(vec![Expr::Rule(16)], None), Expr::And(vec![Expr::Rule(20)], None)]),
                 },
                 SynRule {
-                    ty: Some(SEQ_EXPR),
+                    ty: Some(38),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Rule(18)), None, None)], None)]),
                 },
                 SynRule {
-                    ty: Some(BLOCK_EXPR),
+                    ty: Some(37),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(14), Expr::Opt(Box::new(Expr::Rule(19))), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(10), Expr::Rule(19)], None)])), None, None), Expr::Token(15)], None)]),
                 },
             ]

@@ -7,7 +7,7 @@ use lang::{self, Expr};
 
 pub fn generate(file: lang::File) -> String {
     #[derive(Serialize)]
-    struct CtxSynRule<'f> { is_public: bool, name: &'f str, body: String };
+    struct CtxSynRule { is_public: bool, ty: usize, body: String };
 
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
@@ -26,7 +26,7 @@ pub fn generate(file: lang::File) -> String {
     context.add("syn_rules", &file.syn_rules().map(|r| {
         CtxSynRule {
             is_public: r.is_public(),
-            name: r.name(),
+            ty: file.resolve_ty(r.name()).unwrap_or(0xDEADBEEF),
             body: gen_expr(Expr::BlockExpr(r.block_expr()))
         }
     }).collect::<Vec<_>>());
@@ -187,7 +187,7 @@ lazy_static! {
             parser: vec![
                 {% for rule in syn_rules %}
                 SynRule {
-                    ty: {% if rule.is_public %}Some({{ rule.name | upper }}){% else %}None{% endif %},
+                    ty: {% if rule.is_public %}Some({{ rule.ty }}){% else %}None{% endif %},
                     body: {{ rule.body }},
                 },
                 {% endfor %}

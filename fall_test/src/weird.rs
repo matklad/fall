@@ -60,11 +60,11 @@ lazy_static! {
             ],
             parser: vec![
                 SynRule {
-                    ty: Some(FILE),
+                    ty: Some(9),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(2), Expr::Token(8)], None), Expr::And(vec![Expr::Token(3), Expr::Rule(4), Expr::Token(7), Expr::Rule(4)], None), Expr::And(vec![Expr::Token(4), Expr::Rule(1)], None)]),
                 },
                 SynRule {
-                    ty: Some(PRIVATE_PARTIAL),
+                    ty: Some(10),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rule(2)], None), Expr::And(vec![Expr::Rule(3)], None)]),
                 },
                 SynRule {
@@ -76,7 +76,7 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(5), Expr::Token(5)], None)]),
                 },
                 SynRule {
-                    ty: Some(EMPTY),
+                    ty: Some(11),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Opt(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(5)], None)])))], None)]),
                 },
                 SynRule {

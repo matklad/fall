@@ -73,11 +73,11 @@ lazy_static! {
             ],
             parser: vec![
                 SynRule {
-                    ty: Some(FILE),
+                    ty: Some(16),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None), Expr::And(vec![Expr::Rule(4)], None)]),
                 },
                 SynRule {
-                    ty: Some(OBJECT),
+                    ty: Some(12),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(6), Expr::Rule(2), Expr::Token(7)], Some(1))]),
                 },
                 SynRule {
@@ -85,11 +85,11 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(3), Expr::Token(10)], None)])), None, None)], None)]),
                 },
                 SynRule {
-                    ty: Some(FIELD),
+                    ty: Some(15),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(5), Expr::Token(11), Expr::Rule(5)], Some(1))]),
                 },
                 SynRule {
-                    ty: Some(ARRAY),
+                    ty: Some(13),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(8), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(5), Expr::Token(10)], None)])), None, None), Expr::Token(9)], Some(1))]),
                 },
                 SynRule {
@@ -97,7 +97,7 @@ lazy_static! {
                     body: Expr::Or(vec![Expr::And(vec![Expr::Rule(6)], None), Expr::And(vec![Expr::Rule(1)], None), Expr::And(vec![Expr::Rule(4)], None)]),
                 },
                 SynRule {
-                    ty: Some(PRIMITIVE),
+                    ty: Some(14),
                     body: Expr::Or(vec![Expr::And(vec![Expr::Token(2)], None), Expr::And(vec![Expr::Token(4)], None), Expr::And(vec![Expr::Token(5)], None), Expr::And(vec![Expr::Token(3)], None)]),
                 },
             ]

@@ -9,6 +9,11 @@ impl<'f> File<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
         self.syn_rules().position(|r| r.name() == name)
     }
+
+    pub fn resolve_ty(&self, name: &str) -> Option<usize> {
+        self.nodes_def().unwrap().nodes().iter().position(|&it| it == name)
+            .map(|idx| idx + 2)
+    }
 }
 
 impl<'f> NodesDef<'f> {
@@ -127,8 +132,7 @@ impl<'f> RefExpr<'f> {
         match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
             Some(rule) => {
                 let ty_name = rule.node_type();
-                let idx = file.nodes_def().unwrap().nodes().iter().position(|&it| it == ty_name).unwrap();
-                Some(RefKind::Token(idx + 2))
+                Some(RefKind::Token(file.resolve_ty(ty_name).unwrap()))
             },
             None => None,
         }
