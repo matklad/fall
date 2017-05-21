@@ -8,7 +8,7 @@ use std::path::{PathBuf, Path};
 
 use tempdir::TempDir;
 
-const OVERWRITE: bool = false;
+const OVERWRITE: bool = true;
 
 fn generator_path() -> PathBuf {
     let test_exe = env::current_exe().unwrap();

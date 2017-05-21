@@ -1,3 +1,4 @@
+use serde_json;
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -15,11 +16,13 @@ pub const FN_DEF: NodeType = NodeType(110);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Expr, Parser};
+        use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
             LPAREN, RPAREN, LBRACE, RBRACE, PUB, STRUCT, FN, IDENT, FILE, STRUCT_DEF, FN_DEF,
         ];
+        let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
+        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
@@ -61,24 +64,7 @@ lazy_static! {
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(IDENT, "\\w+", None),
             ],
-            parser: vec![
-                SynRule {
-                    ty: Some(10),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), Some(vec![6, 8, 7, ]), None)], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(2)], None), Expr::And(vec![Expr::Rule(3)], None)]),
-                },
-                SynRule {
-                    ty: Some(12),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Opt(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(6)], None)]))), Expr::Token(8), Expr::Token(9), Expr::Token(2), Expr::Token(3), Expr::Token(4), Expr::Token(5)], Some(2))]),
-                },
-                SynRule {
-                    ty: Some(11),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Opt(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(6)], None)]))), Expr::Token(7), Expr::Token(9), Expr::Token(4), Expr::Token(5)], Some(2))]),
-                },
-            ]
+            parser: parser,
         })
     };
 }

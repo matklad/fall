@@ -1,3 +1,4 @@
+use serde_json;
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -41,11 +42,13 @@ pub const SEQ_EXPR: NodeType = NodeType(136);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Expr, Parser};
+        use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
             KW_AST, KW_NODES, KW_NODE, KW_CLASS, KW_TOKENIZER, KW_RULE, KW_VERBATIM, EQ, PIPE, STAR, QUESTION, DOT, LBRACE, RBRACE, LANGLE, RANGLE, LPAREN, RPAREN, IDENT, SIMPLE_STRING, HASH_STRING, FILE, STRING, VERBATIM_DEF, NODES_DEF, TOKENIZER_DEF, LEX_RULE, SYN_RULE, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR, REF_EXPR, CALL_EXPR, BLOCK_EXPR, SEQ_EXPR,
         ];
+        let parser_json = r##"[{"ty":23,"body":{"Or":[{"And":[[{"Rule":1},{"Rule":2},{"Rep":[{"Rule":4},null,null]},{"Opt":{"Rule":9}},{"Opt":{"Rule":10}}],null]}]}},{"ty":26,"body":{"Or":[{"And":[[{"Token":3},{"Token":14},{"Rep":[{"Token":20},null,null]},{"Token":15}],1]}]}},{"ty":27,"body":{"Or":[{"And":[[{"Token":6},{"Token":14},{"Rep":[{"Rule":3},null,null]},{"Token":15}],1]}]}},{"ty":28,"body":{"Or":[{"And":[[{"Token":20},{"Rule":8},{"Opt":{"Rule":8}}],1]}]}},{"ty":29,"body":{"Or":[{"And":[[{"Token":7},{"Token":20},{"Rule":20}],1]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":14},{"Opt":{"Rule":6}},{"Rep":[{"Or":[{"And":[[{"Token":10},{"Rule":6}],null]}]},null,null]},{"Token":15}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rep":[{"Rule":7},null,null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":20}],null]},{"And":[[{"Token":21}],null]},{"And":[[{"Token":16},{"Token":20},{"Rep":[{"Rule":5},null,null]},{"Token":17}],null]}]}},{"ty":24,"body":{"Or":[{"And":[[{"Token":21}],null]},{"And":[[{"Token":22}],null]}]}},{"ty":25,"body":{"Or":[{"And":[[{"Token":8},{"Token":22}],null]}]}},{"ty":30,"body":{"Or":[{"And":[[{"Token":2},{"Token":14},{"Rep":[{"Or":[{"And":[[{"Rule":11}],null]},{"And":[[{"Rule":12}],null]}]},null,null]},{"Token":15}],null]}]}},{"ty":31,"body":{"Or":[{"And":[[{"Token":4},{"Token":20},{"Token":14},{"Rep":[{"Rule":13},null,null]},{"Token":15}],null]}]}},{"ty":32,"body":{"Or":[{"And":[[{"Token":5},{"Token":20},{"Token":14},{"Rep":[{"Token":20},null,null]},{"Token":15}],null]}]}},{"ty":33,"body":{"Or":[{"And":[[{"Token":20},{"Rule":14}],null]}]}},{"ty":34,"body":{"Or":[{"And":[[{"Token":20},{"Opt":{"Rule":15}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":11}],null]},{"And":[[{"Token":12}],null]},{"And":[[{"Token":13},{"Token":20}],null]}]}},{"ty":35,"body":{"Or":[{"And":[[{"Token":20}],null]},{"And":[[{"Token":21}],null]}]}},{"ty":36,"body":{"Or":[{"And":[[{"Token":16},{"Token":20},{"Rep":[{"Rule":18},null,null]},{"Token":17}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":17}],null]},{"And":[[{"Rule":16}],null]},{"And":[[{"Rule":20}],null]}]}},{"ty":38,"body":{"Or":[{"And":[[{"Rep":[{"Rule":18},null,null]}],null]}]}},{"ty":37,"body":{"Or":[{"And":[[{"Token":14},{"Opt":{"Rule":19}},{"Rep":[{"Or":[{"And":[[{"Token":10},{"Rule":19}],null]}]},null,null]},{"Token":15}],null]}]}}]"##;
+        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
@@ -126,92 +129,7 @@ lazy_static! {
                 LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
                 LexRule::new(IDENT, "\\w+", None),
             ],
-            parser: vec![
-                SynRule {
-                    ty: Some(23),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(1), Expr::Rule(2), Expr::Rep(Box::new(Expr::Rule(4)), None, None), Expr::Opt(Box::new(Expr::Rule(9))), Expr::Opt(Box::new(Expr::Rule(10)))], None)]),
-                },
-                SynRule {
-                    ty: Some(26),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(3), Expr::Token(14), Expr::Rep(Box::new(Expr::Token(20)), None, None), Expr::Token(15)], Some(1))]),
-                },
-                SynRule {
-                    ty: Some(27),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(6), Expr::Token(14), Expr::Rep(Box::new(Expr::Rule(3)), None, None), Expr::Token(15)], Some(1))]),
-                },
-                SynRule {
-                    ty: Some(28),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Rule(8), Expr::Opt(Box::new(Expr::Rule(8)))], Some(1))]),
-                },
-                SynRule {
-                    ty: Some(29),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(7), Expr::Token(20), Expr::Rule(20)], Some(1))]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(14), Expr::Opt(Box::new(Expr::Rule(6))), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(10), Expr::Rule(6)], None)])), None, None), Expr::Token(15)], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Rule(7)), None, None)], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(20)], None), Expr::And(vec![Expr::Token(21)], None), Expr::And(vec![Expr::Token(16), Expr::Token(20), Expr::Rep(Box::new(Expr::Rule(5)), None, None), Expr::Token(17)], None)]),
-                },
-                SynRule {
-                    ty: Some(24),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(21)], None), Expr::And(vec![Expr::Token(22)], None)]),
-                },
-                SynRule {
-                    ty: Some(25),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(8), Expr::Token(22)], None)]),
-                },
-                SynRule {
-                    ty: Some(30),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(2), Expr::Token(14), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(11)], None), Expr::And(vec![Expr::Rule(12)], None)])), None, None), Expr::Token(15)], None)]),
-                },
-                SynRule {
-                    ty: Some(31),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(4), Expr::Token(20), Expr::Token(14), Expr::Rep(Box::new(Expr::Rule(13)), None, None), Expr::Token(15)], None)]),
-                },
-                SynRule {
-                    ty: Some(32),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(5), Expr::Token(20), Expr::Token(14), Expr::Rep(Box::new(Expr::Token(20)), None, None), Expr::Token(15)], None)]),
-                },
-                SynRule {
-                    ty: Some(33),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Rule(14)], None)]),
-                },
-                SynRule {
-                    ty: Some(34),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(20), Expr::Opt(Box::new(Expr::Rule(15)))], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(11)], None), Expr::And(vec![Expr::Token(12)], None), Expr::And(vec![Expr::Token(13), Expr::Token(20)], None)]),
-                },
-                SynRule {
-                    ty: Some(35),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(20)], None), Expr::And(vec![Expr::Token(21)], None)]),
-                },
-                SynRule {
-                    ty: Some(36),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(16), Expr::Token(20), Expr::Rep(Box::new(Expr::Rule(18)), None, None), Expr::Token(17)], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rule(17)], None), Expr::And(vec![Expr::Rule(16)], None), Expr::And(vec![Expr::Rule(20)], None)]),
-                },
-                SynRule {
-                    ty: Some(38),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Rule(18)), None, None)], None)]),
-                },
-                SynRule {
-                    ty: Some(37),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(14), Expr::Opt(Box::new(Expr::Rule(19))), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Token(10), Expr::Rule(19)], None)])), None, None), Expr::Token(15)], None)]),
-                },
-            ]
+            parser: parser,
         })
     };
 }

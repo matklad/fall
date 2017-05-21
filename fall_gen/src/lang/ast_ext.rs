@@ -58,6 +58,11 @@ impl<'f> SynRule<'f> {
         let file = ast_parent_exn::<File>(self.node());
         file.nodes_def().unwrap().nodes().contains(&self.name())
     }
+
+    pub fn resolve_ty(&self) -> Option<usize> {
+        let file = ast_parent_exn::<File>(self.node());
+        file.resolve_ty(self.name())
+    }
 }
 
 impl<'f> VerbatimDef<'f> {

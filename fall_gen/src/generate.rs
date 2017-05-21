@@ -1,5 +1,8 @@
+use serde_json;
+use std::iter::FromIterator;
+use fall_parse;
 use fall_tree::{AstNode, AstClass};
-use lang::{SelectorKind, RefKind};
+use lang::{SelectorKind, RefKind, SynRule};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -23,6 +26,11 @@ pub fn generate(file: lang::File) -> String {
 
     let mut context = Context::new();
     context.add("node_types", &file.nodes_def().expect("no nodes defined").nodes());
+
+    let parser = Vec::from_iter(file.syn_rules().map(compile_rule));
+    let parser = serde_json::to_string(&parser).unwrap();
+    context.add("parser_json", &parser);
+
     context.add("syn_rules", &file.syn_rules().map(|r| {
         CtxSynRule {
             is_public: r.is_public(),
@@ -70,6 +78,71 @@ pub fn generate(file: lang::File) -> String {
     }
 
     Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
+}
+
+fn compile_rule(ast: SynRule) -> fall_parse::SynRule {
+    fall_parse::SynRule {
+        ty: ast.resolve_ty(),
+        body: compile_expr(Expr::BlockExpr(ast.block_expr())),
+    }
+}
+
+fn compile_expr(ast: Expr) -> fall_parse::Expr {
+    match ast {
+        Expr::BlockExpr(block) => {
+            fall_parse::Expr::Or(block.alts().map(|e| compile_expr(Expr::SeqExpr(e))).collect())
+        }
+        Expr::SeqExpr(seq) => {
+            fn is_commit(part: Expr) -> bool {
+                part.node().text() == "<commit>"
+            }
+            let commit = seq.parts().position(is_commit);
+            let parts = seq.parts()
+                .filter(|&p| !is_commit(p))
+                .map(compile_expr);
+            fall_parse::Expr::And(parts.collect(), commit)
+        }
+        Expr::RefExpr(ref_) => match ref_.resolve() {
+            Some(RefKind::Token(idx)) => fall_parse::Expr::Token(idx),
+            Some(RefKind::RuleReference { idx }) => fall_parse::Expr::Rule(idx),
+            None => panic!("Unresolved references: {}", ref_.node().text()),
+        },
+        Expr::CallExpr(call) => {
+            let mut args = call.args();
+            let arg = args.next().unwrap();
+            match call.fn_name() {
+                "rep" => {
+                    let skip = match args.next() {
+                        None => None,
+                        Some(expr) => {
+                            let block = match expr {
+                                Expr::BlockExpr(block) => block,
+                                _ => panic!("bad rep argument!")
+                            };
+                            let tokens: Vec<usize> = block.alts()
+                                .flat_map(|alt| alt.parts())
+                                .map(|part| {
+                                    let ref_ = match part {
+                                        Expr::RefExpr(ref_) => ref_,
+                                        _ => panic!("bad rep argument2")
+                                    };
+                                    if let RefKind::Token(idx) = ref_.resolve().unwrap() {
+                                        idx
+                                    } else {
+                                        panic!("bad break in rep {:?}", part.node().text())
+                                    }
+                                })
+                                .collect();
+                            Some(tokens)
+                        }
+                    };
+                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)), skip, None)
+                }
+                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(arg))),
+                _ => unimplemented!(),
+            }
+        }
+    }
 }
 
 fn gen_expr(expr: Expr) -> String {
@@ -143,6 +216,7 @@ fn list<D: ::std::fmt::Display, I: Iterator<Item=D>>(i: I) -> String {
 }
 
 const TEMPLATE: &'static str = r#####"
+use serde_json;
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -152,11 +226,13 @@ pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Expr, Parser};
+        use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
             {% for node_type in node_types %}{{ node_type | upper }}, {% endfor %}
         ];
+        let parser_json = r##"{{ parser_json }}"##;
+        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
@@ -184,14 +260,7 @@ lazy_static! {
                 LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
                 {% endfor %}
             ],
-            parser: vec![
-                {% for rule in syn_rules %}
-                SynRule {
-                    ty: {% if rule.is_public %}Some({{ rule.ty }}){% else %}None{% endif %},
-                    body: {{ rule.body }},
-                },
-                {% endfor %}
-            ]
+            parser: parser,
         })
     };
 }

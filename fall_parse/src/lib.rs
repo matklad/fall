@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate serde_derive;
 extern crate elapsed;
 extern crate regex;
 extern crate fall_tree;

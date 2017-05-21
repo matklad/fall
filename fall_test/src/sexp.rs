@@ -1,3 +1,4 @@
+use serde_json;
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
 pub use fall_tree::{ERROR, WHITESPACE};
 
@@ -9,11 +10,13 @@ pub const LIST: NodeType = NodeType(104);
 
 lazy_static! {
     pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Expr, Parser};
+        use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
             ATOM, LPAREN, RPAREN, FILE, LIST,
         ];
+        let parser_json = r##"[{"ty":5,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},null,null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Rule":2}],null]}]}},{"ty":6,"body":{"Or":[{"And":[[{"Token":3},{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},null,null]},{"Token":4}],null]}]}}]"##;
+        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
@@ -44,20 +47,7 @@ lazy_static! {
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(ATOM, "\\w+", None),
             ],
-            parser: vec![
-                SynRule {
-                    ty: Some(5),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), None, None)], None)]),
-                },
-                SynRule {
-                    ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(2)], None), Expr::And(vec![Expr::Rule(2)], None)]),
-                },
-                SynRule {
-                    ty: Some(6),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(3), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(1)], None)])), None, None), Expr::Token(4)], None)]),
-                },
-            ]
+            parser: parser,
         })
     };
 }

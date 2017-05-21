@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
+serde = "1.*"
+serde_derive = "1.*"
 elapsed = "0.1"
 regex = "0.2"
 fall_tree = { path = "../fall_tree" }

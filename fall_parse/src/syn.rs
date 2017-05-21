@@ -6,12 +6,13 @@ pub struct Parser<'r> {
     rules: &'r [SynRule],
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct SynRule {
     pub ty: Option<usize>,
     pub body: Expr,
 }
 
-
+#[derive(Serialize, Deserialize)]
 pub enum Expr {
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),

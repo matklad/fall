@@ -9,8 +9,9 @@ tera = "0.10"
 elapsed = "0.1"
 clap = "2.20"
 regex = "0.2"
-serde = "*"
-serde_derive = "*"
+serde = "1.*"
+serde_derive = "1.*"
+serde_json = "1.*"
 fall_tree = { path = "../fall_tree" }
 fall_parse = { path = "../fall_parse" }
 file = "*"
