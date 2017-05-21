@@ -3,6 +3,7 @@ package ru.matklad
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ObservableValue
 import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.TextArea
@@ -14,6 +15,7 @@ import ru.matklad.proto.Amount
 import ru.matklad.proto.Direction
 import ru.matklad.proto.InputEvent
 import tornadofx.*
+import java.util.concurrent.Callable
 
 
 class ToyView : View() {
@@ -36,11 +38,15 @@ class ToyView : View() {
 
     private val canvas = prepareCanvas(SETTINGS.editorSize).apply {
         addEventHandler(KeyEvent.ANY) { key ->
-            val event = if (key.isControlDown && key.code == KeyCode.O) {
-                val file = FileChooser().showOpenDialog(this@ToyView.currentWindow)
-                file?.let { inputEvent { openFileBuilder.setPath(it.path).build() } }
-            } else {
-                keyPressedToEvent(key)
+            val event = when {
+                key.isControlDown && key.code == KeyCode.O -> {
+                    val file = FileChooser().showOpenDialog(this@ToyView.currentWindow)
+                    file?.let { inputEvent { openFileBuilder.setPath(it.path).build() } }
+                }
+                key.isControlDown && key.code == KeyCode.S -> {
+                    inputEvent { saveFileBuilder.build() }
+                }
+                else -> keyPressedToEvent(key)
             }
             if (event != null) {
                 fireEvent(event)
@@ -61,10 +67,11 @@ class ToyView : View() {
                         left = null, right = null, bottom = null
                 )
             }
-            left = label(Bindings.format("%3d lex %3d parse %3d draw",
-                    Bindings.selectLong(viewModel, "lexingTime").divide(1_000_000),
-                    Bindings.selectLong(viewModel, "parsingTime").divide(1_000_000),
-                    lastFrameTime.divide(1_000_000)
+            left = label(Bindings.format("%3d lex %3d parse %3d draw %s",
+                    viewModel.map { it.lexingTime / 1_000_000 },
+                    viewModel.map { it.parsingTime / 1_000_000 },
+                    lastFrameTime.divide(1_000_000),
+                    viewModel.map { it.openedFile?.toString() + (if (it.isDirty) "*" else "") }
             ))
             right = label(Bindings.select<GridPosition>(viewModel, "cursor"))
             children.style {
@@ -136,3 +143,7 @@ private fun redraw(grid: GridDrawer, state: ViewState, window: Pair<Int, Int>) {
 
     grid.drawCursor(state.cursor.copy(y = state.cursor.y - window.first))
 }
+
+
+fun <T, U> ObservableValue<T>.map(f: (T) -> U): ObservableValue<U> =
+        Bindings.createObjectBinding(Callable<U> { f(this.value) }, this)

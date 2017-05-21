@@ -6,6 +6,7 @@ import ru.matklad.TextStyle
 import ru.matklad.ViewState
 import ru.matklad.proto.StyledText
 import ru.matklad.proto.ViewStateReply
+import java.nio.file.Paths
 
 fun viewStateFromProto(viewStateReply: ViewStateReply): ViewState {
     return ViewState(
@@ -13,7 +14,9 @@ fun viewStateFromProto(viewStateReply: ViewStateReply): ViewState {
             GridPosition(viewStateReply.cursorX, viewStateReply.cursorY),
             viewStateReply.syntaxTree,
             viewStateReply.lexingTimeNanos,
-            viewStateReply.parsingTimeNanos
+            viewStateReply.parsingTimeNanos,
+            viewStateReply.file.takeIf { it.isNotEmpty() }?.let { Paths.get(it) },
+            viewStateReply.dirty
     )
 }
 

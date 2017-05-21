@@ -20,6 +20,9 @@ pub struct State {
     pub cursor: GridPosition,
     pub syntax_tree: String,
     pub spans: Spans,
+
+    pub file_path: Option<PathBuf>,
+    pub dirty: bool,
 }
 
 #[derive(Debug)]
@@ -28,6 +31,7 @@ pub enum InputEvent {
     MoveCursor(Direction, Amount),
     InsertText(String),
     OpenFile(PathBuf),
+    SaveFile,
 }
 
 pub trait Editor: Default {

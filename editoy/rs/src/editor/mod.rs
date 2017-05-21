@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::PathBuf;
 use xi_rope::tree::Cursor;
 
 use file;
@@ -26,20 +26,18 @@ impl Editor for EditorImpl {
             InputEvent::Ready => {}
             InputEvent::MoveCursor(d, a) => do_move_cursor(&mut self.state, d, a),
             InputEvent::InsertText(text) => {
-                println!("text = {:?}", text);
-                println!("self.state.text = {:?}", String::from(self.state.text.clone()));
                 text_changed = true;
                 if text == "\x08" {
                     do_backspace(&mut self.state);
                 } else {
                     do_insert(&mut self.state, text);
                 }
-                println!("self.state.text = {:?}", String::from(self.state.text.clone()));
             }
             InputEvent::OpenFile(path) => {
                 text_changed = true;
-                do_open_file(&mut self.state, &path)
+                do_open_file(&mut self.state, path);
             }
+            InputEvent::SaveFile => do_save_file(&mut self.state),
         }
         let text: String = self.state.text.clone().into();
         if text_changed || self.state.file.is_none() {
@@ -71,6 +69,10 @@ impl Editor for EditorImpl {
             result.lexing_time_nanos = file.lexing_time().nanos() as i64;
             result.parsing_time_nanos = file.parsing_time().nanos() as i64;
         }
+        if let Some(ref path) = self.state.file_path {
+            result.file = path.display().to_string();
+        }
+        result.dirty = self.state.dirty;
         result
     }
 }
@@ -170,6 +172,7 @@ fn do_backspace(state: &mut State) {
     let off = cursor_offset(state);
     if off == 0 { return }
     state.text.edit_str(off - 1, off, "");
+    state.dirty = true;
     move_cursor_by(state, -1, 0);
 }
 
@@ -177,12 +180,26 @@ fn do_insert(state: &mut State, text: String) {
     let dx = text.len();
     let off = cursor_offset(state);
     state.text.edit_str(off, off, &text);
+    state.dirty = true;
     move_cursor_by(state, dx as i32, 0);
 }
 
-fn do_open_file(state: &mut State, path: &Path) {
-    let text = file::get_text(path).unwrap();
+fn do_open_file(state: &mut State, path: PathBuf) {
+    let text = file::get_text(&path).unwrap();
     state.text = From::from(text);
+    state.dirty = false;
+    state.file_path = Some(path)
+}
+
+fn do_save_file(state: &mut State) {
+    if !state.dirty {
+        return
+    }
+    if let Some(ref path) = state.file_path {
+        file::put_text(path, String::from(state.text.clone()))
+            .unwrap();
+        state.dirty = false
+    }
 }
 
 fn context(file: lang::File, offset: usize) -> String {

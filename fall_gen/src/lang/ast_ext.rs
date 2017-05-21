@@ -137,7 +137,7 @@ impl<'f> RefExpr<'f> {
         match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
             Some(rule) => {
                 let ty_name = rule.node_type();
-                Some(RefKind::Token(file.resolve_ty(ty_name).unwrap()))
+                file.resolve_ty(ty_name).map(RefKind::Token)
             },
             None => None,
         }

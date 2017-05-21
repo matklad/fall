@@ -29,11 +29,16 @@ message InputEvent {
         string path = 1;
     }
 
+    message SaveFile {
+
+    }
+
     oneof kind {
         Ready ready = 1;
         MoveCursor move_cursor = 2;
         InsertText insert_text = 3;
         OpenFile open_file = 4;
+        SaveFile save_file = 5;
     }
 }
 
@@ -63,6 +68,8 @@ message ViewStateReply {
     string syntax_tree = 4;
     int64 lexing_time_nanos = 5;
     int64 parsing_time_nanos = 6;
+    string file = 7;
+    bool dirty = 8;
 }
 
 message Line {

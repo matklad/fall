@@ -58,6 +58,8 @@ fn input_event_from_proto(mut p: EventRequest) -> InputEvent {
         InputEvent::InsertText(p.take_insert_text().text)
     } else if p.has_open_file() {
         InputEvent::OpenFile(PathBuf::from(p.take_open_file().path))
+    } else if p.has_save_file() {
+        InputEvent::SaveFile
     } else {
         panic!()
     }
