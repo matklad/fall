@@ -76,11 +76,6 @@ rule lex_rule { ident <commit> string <opt string> }
 rule syn_rule {
   'rule' <commit> ident block_expr
 }
-rule block { '{' <opt alt> <rep {'|' alt}> '}' }
-
-rule alt { <rep part> }
-
-rule part { ident | simple_string | '<' ident <rep block> '>' }
 
 rule string { simple_string | hash_string }
 
