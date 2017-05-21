@@ -63,12 +63,6 @@ impl<'f> LexRule<'f> {
 }
 
 impl<'f> SynRule<'f> {
-    pub fn is_public(&self) -> bool {
-        //        let file = ast_parent_exn::<File>(self.node());
-        //        file.nodes_def().unwrap().nodes().contains(&self.name())
-        self.is_pub()
-    }
-
     pub fn resolve_ty(&self) -> Option<usize> {
         let file = ast_parent_exn::<File>(self.node());
         file.resolve_ty(self.name())
