@@ -20,11 +20,17 @@ pub const FILE: NodeType = NodeType(114);
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
+        const ALL_NODE_TYPES: &[NodeType] = &[
+            ERROR, WHITESPACE,
+            NULL, BOOL, NUMBER, STRING, LBRACE, RBRACE, LBRACK, RBRACK, COMMA, COLON, OBJECT, ARRAY, PRIMITIVE, FIELD, FILE,
+        ];
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| {
+                    Parser::new(ALL_NODE_TYPES, &self.parser).parse(b)
+                })
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -72,19 +78,19 @@ lazy_static! {
                 },
                 SynRule {
                     ty: Some(OBJECT),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACE), Expr::Rule(2), Expr::Token(RBRACE)], Some(1))]),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(6), Expr::Rule(2), Expr::Token(7)], Some(1))]),
                 },
                 SynRule {
                     ty: None,
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(3), Expr::Token(COMMA)], None)])), None, None)], None)]),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(3), Expr::Token(10)], None)])), None, None)], None)]),
                 },
                 SynRule {
                     ty: Some(FIELD),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(STRING), Expr::Token(COLON), Expr::Rule(5)], Some(1))]),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(5), Expr::Token(11), Expr::Rule(5)], Some(1))]),
                 },
                 SynRule {
                     ty: Some(ARRAY),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(LBRACK), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(5), Expr::Token(COMMA)], None)])), None, None), Expr::Token(RBRACK)], Some(1))]),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(8), Expr::Rep(Box::new(Expr::Or(vec![Expr::And(vec![Expr::Rule(5), Expr::Token(10)], None)])), None, None), Expr::Token(9)], Some(1))]),
                 },
                 SynRule {
                     ty: None,
@@ -92,7 +98,7 @@ lazy_static! {
                 },
                 SynRule {
                     ty: Some(PRIMITIVE),
-                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(NULL)], None), Expr::And(vec![Expr::Token(NUMBER)], None), Expr::And(vec![Expr::Token(STRING)], None), Expr::And(vec![Expr::Token(BOOL)], None)]),
+                    body: Expr::Or(vec![Expr::And(vec![Expr::Token(2)], None), Expr::And(vec![Expr::Token(4)], None), Expr::And(vec![Expr::Token(5)], None), Expr::And(vec![Expr::Token(3)], None)]),
                 },
             ]
         })

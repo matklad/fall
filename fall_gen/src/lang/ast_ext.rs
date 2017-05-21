@@ -106,13 +106,13 @@ pub enum SelectorKind<'f> {
     Text(&'f str),
 }
 
-pub enum RefKind<'f> {
-    Token(&'f str),
+pub enum RefKind {
+    Token(usize),
     RuleReference { idx: usize },
 }
 
 impl<'f> RefExpr<'f> {
-    pub fn resolve(&self) -> Option<RefKind<'f>> {
+    pub fn resolve(&self) -> Option<RefKind> {
         let file = ast_parent_exn::<File>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
@@ -125,7 +125,11 @@ impl<'f> RefExpr<'f> {
             .text();
 
         match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
-            Some(rule) => Some(RefKind::Token(rule.node_type())),
+            Some(rule) => {
+                let ty_name = rule.node_type();
+                let idx = file.nodes_def().unwrap().nodes().iter().position(|&it| it == ty_name).unwrap();
+                Some(RefKind::Token(idx + 2))
+            },
             None => None,
         }
     }

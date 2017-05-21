@@ -89,7 +89,7 @@ fn gen_expr(expr: Expr) -> String {
             format!("Expr::And(vec![{}], {:?})", list(parts), commit)
         }
         Expr::RefExpr(ref_) => match ref_.resolve() {
-            Some(RefKind::Token(t)) => format!("Expr::Token({})", scream(t)),
+            Some(RefKind::Token(idx)) => format!("Expr::Token({})", idx),
             Some(RefKind::RuleReference { idx }) => format!("Expr::Rule({:?})", idx),
             None => panic!("Unresolved references: {}", ref_.node().text()),
         },
@@ -112,8 +112,8 @@ fn gen_expr(expr: Expr) -> String {
                                         Expr::RefExpr(ref_) => ref_,
                                         _ => panic!("bad rep argument2")
                                     };
-                                    if let RefKind::Token(t) = ref_.resolve().unwrap() {
-                                        format!("{}, ", scream(t))
+                                    if let RefKind::Token(idx) = ref_.resolve().unwrap() {
+                                        format!("{}, ", idx)
                                     } else {
                                         panic!("bad break in rep {:?}", part.node().text())
                                     }
@@ -153,11 +153,17 @@ pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Expr, Parser};
+        const ALL_NODE_TYPES: &[NodeType] = &[
+            ERROR, WHITESPACE,
+            {% for node_type in node_types %}{{ node_type | upper }}, {% endfor %}
+        ];
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| Parser::new(&self.parser).parse(b))
+                ::fall_parse::parse(lang, text, FILE, &self.tokenizer, &|b| {
+                    Parser::new(ALL_NODE_TYPES, &self.parser).parse(b)
+                })
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

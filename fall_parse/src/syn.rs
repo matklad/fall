@@ -2,6 +2,7 @@ use fall_tree::{NodeType, ERROR};
 use TreeBuilder;
 
 pub struct Parser<'r> {
+    node_types: &'r [NodeType],
     rules: &'r [SynRule],
 }
 
@@ -15,14 +16,14 @@ pub enum Expr {
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
-    Token(NodeType),
-    Rep(Box<Expr>, Option<Vec<NodeType>>, Option<Vec<NodeType>>),
+    Token(usize),
+    Rep(Box<Expr>, Option<Vec<usize>>, Option<Vec<usize>>),
     Opt(Box<Expr>),
 }
 
 impl<'r> Parser<'r> {
-    pub fn new(rules: &[SynRule]) -> Parser {
-        Parser { rules: rules }
+    pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
+        Parser { node_types, rules: rules }
     }
 
     pub fn parse(&self, b: &mut TreeBuilder) {
@@ -67,17 +68,17 @@ impl<'r> Parser<'r> {
                 }
             }
 
-            Expr::Token(ty) => b.try_eat(ty),
+            Expr::Token(ty) => b.try_eat(self.node_type(ty)),
             Expr::Rep(ref body, ref skip_until, _) => {
-                'outer: loop {
+                'outer2: loop {
                     let mut skipped = false;
-                    'inner: loop {
+                    'inner2: loop {
                         let current = match b.current() {
                             None => {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
-                                break 'outer
+                                break 'outer2
                             }
                             Some(c) => c,
                         };
@@ -86,15 +87,15 @@ impl<'r> Parser<'r> {
                                 if skipped {
                                     b.finish(Some(ERROR))
                                 }
-                                break 'inner
+                                break 'inner2
                             }
                             Some(ref s) => s,
                         };
-                        if skip.iter().any(|&it| it == current.ty) {
+                        if skip.iter().any(|&it| self.node_type(it) == current.ty) {
                             if skipped {
                                 b.finish(Some(ERROR))
                             }
-                            break 'inner
+                            break 'inner2
                         } else {
                             if !skipped {
                                 b.start(Some(ERROR))
@@ -104,16 +105,21 @@ impl<'r> Parser<'r> {
                         }
                     }
                     if !self.parse_expr(&*body, b) {
-                        break 'outer;
+                        break 'outer2;
                     }
                 }
                 true
             }
+
             Expr::Opt(ref body) => {
                 self.parse_expr(&*body, b);
                 true
             }
         }
+    }
+
+    fn node_type(&self, idx: usize) -> NodeType {
+        self.node_types[idx]
     }
 }
 
