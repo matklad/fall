@@ -20,7 +20,7 @@ pub enum Expr {
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
     Token(usize),
-    Rep(Box<Expr>, Option<Vec<usize>>, Option<Vec<usize>>),
+    Rep(Box<Expr>),
     Opt(Box<Expr>),
     Not(Vec<usize>),
     Layer(Box<Expr>, Box<Expr>),
@@ -125,7 +125,7 @@ impl<'r> Parser<'r> {
                 None
             }
 
-            Expr::Rep(ref body, _, _) => {
+            Expr::Rep(ref body) => {
                 let mut node = nf.create_composite_node(None);
                 let mut tokens = tokens;
                 loop {

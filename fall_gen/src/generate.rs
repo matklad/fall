@@ -101,21 +101,8 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             let arg = args.next().unwrap();
             match call.fn_name() {
                 "rep" => {
-                    fn collect_tokens(expr: Expr) -> Option<Vec<usize>> {
-                        let ts = expr.token_set().unwrap_or_else(|| {
-                            panic!("Bad token set: `{}`", expr.node().text())
-                        });
-                        if ts.is_empty() { None } else { Some(ts) }
-                    }
-                    let skip = match args.next() {
-                        None => None,
-                        Some(expr) => collect_tokens(expr)
-                    };
-                    let stop = match args.next() {
-                        None => None,
-                        Some(expr) => collect_tokens(expr)
-                    };
-                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)), skip, stop)
+                    assert!(args.next().is_none());
+                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)))
                 }
                 "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(arg))),
                 "not" => {

@@ -58,7 +58,7 @@ rule expr { call_expr | ref_expr | block_expr }
 pub rule ref_expr { ident | simple_string }
 pub rule call_expr { '<' ident <rep expr> '>' }
 pub rule seq_expr { <rep expr> }
-pub rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr} {} {'}'}> '}' }
+pub rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr}> '}' }
 
 
 verbatim r#########"
