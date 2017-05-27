@@ -21,7 +21,7 @@ lazy_static! {
             ERROR, WHITESPACE,
             LPAREN, RPAREN, LBRACE, RBRACE, KW_PUB, STRUCT, FN, IDENT, FILE, FN_DEF, STRUCT_DEF,
         ];
-        let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
+        let parser_json = r##"[{"ty":10,"body":{"Or":[{"And":[[{"Rep":[{"Or":[{"And":[[{"SkipUntil":[6,8,7]},{"Rule":1}],null]}]},[6,8,7],null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":8},{"Token":9},{"Token":2},{"Token":3},{"Token":4},{"Token":5}],2]}]}},{"ty":12,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":6}],null]}]}},{"Token":7},{"Token":9},{"Token":4},{"Token":5}],2]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };

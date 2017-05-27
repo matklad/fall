@@ -47,40 +47,40 @@ FILE
 "#)
 }
 
-//#[test]
-//fn missing_token() {
-//    match_ast(&ast("fn foo foo"), r#"
-//FILE
-//  FN_DEF
-//    FN "fn"
-//    IDENT "foo"
-//    ERROR ""
-//  ERROR
-//    IDENT "foo"
-//"#);
-//}
+#[test]
+fn missing_token() {
+    match_ast(&ast("fn foo foo"), r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    ERROR ""
+  ERROR
+    IDENT "foo"
+"#);
+}
 
-//#[test]
-//fn skipping() {
-//    match_ast(&ast("foo fn foo(){} bar baz struct S {} quuz"), r#"
-//FILE
-//  ERROR
-//    IDENT "foo"
-//  FN_DEF
-//    FN "fn"
-//    IDENT "foo"
-//    LPAREN "("
-//    RPAREN ")"
-//    LBRACE "{"
-//    RBRACE "}"
-//  ERROR
-//    IDENT "bar"
-//    IDENT "baz"
-//  STRUCT_DEF
-//    STRUCT "struct"
-//    IDENT "S"
-//    LBRACE "{"
-//    RBRACE "}"
-//  ERROR
-//    IDENT "quuz""#);
-//}
+#[test]
+fn skipping() {
+    match_ast(&ast("foo fn foo(){} bar baz struct S {} quuz"), r#"
+FILE
+  ERROR
+    IDENT "foo"
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    LBRACE "{"
+    RBRACE "}"
+  ERROR
+    IDENT "bar"
+    IDENT "baz"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "S"
+    LBRACE "{"
+    RBRACE "}"
+  ERROR
+    IDENT "quuz""#);
+}

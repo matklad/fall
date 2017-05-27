@@ -214,8 +214,22 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
         add_child(&mut result, &child, tokens)
     }
     if let Some(idx) = result.last {
-        for idx in idx + 1..tokens.len() {
-            result.push_child_raw(token_pre_node(idx, tokens[idx]))
+        'l: for idx in idx + 1..tokens.len() {
+            let t = tokens[idx];
+            if t.ty != WHITESPACE {
+                let error = PreNode {
+                    ty: ERROR,
+                    range: TextRange::empty(),
+                    children: (idx..tokens.len())
+                        .map(|idx| token_pre_node(idx, tokens[idx]))
+                        .collect(),
+                    first: Some(idx),
+                    last: Some(tokens.len() - 1),
+                };
+                result.push_child_raw(error);
+                break 'l
+            }
+            result.push_child_raw(token_pre_node(idx, t))
         }
     }
     result

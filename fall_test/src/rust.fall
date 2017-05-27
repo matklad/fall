@@ -10,7 +10,9 @@ tokenizer {
   ident r"\w+"
 }
 
-pub rule file { <rep {fn_or_struct} { 'pub' | 'fn' | 'struct' } > }
+pub rule file {
+  <rep { <skip_until { 'pub' | 'fn' | 'struct' }> fn_or_struct} { 'pub' | 'fn' | 'struct' } >
+}
 rule fn_or_struct { fn_def | struct_def }
 
 pub rule fn_def {

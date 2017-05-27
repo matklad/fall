@@ -24,10 +24,7 @@ pub rule object {
 }
 
 rule object_body {
-  <rep
-    { <skip_until string> field <commit> <opt ','> }
-    {string} {'}'}
-  >
+  <rep { <skip_until string> field <commit> <opt ','> } >
 }
 
 pub rule field {
