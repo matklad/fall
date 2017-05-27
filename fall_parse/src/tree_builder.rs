@@ -11,6 +11,7 @@ pub struct TokenSequence<'a> {
 
 pub struct NodeFactory {}
 
+#[derive(Debug)]
 pub enum Node {
     Leaf(NodeType, usize),
     Composite(Option<NodeType>, Vec<Node>)
@@ -30,6 +31,18 @@ impl<'a> TokenSequence<'a> {
         TokenSequence {
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
+        }
+    }
+
+    pub fn tokens_of_node(&self, node: &Node) -> TokenSequence<'a> {
+        let idx = match node.right_idx() {
+            Some(tidx) => self.non_ws_indexes.iter().position(|&i| i == tidx).unwrap(),
+            None => 0
+        };
+
+        TokenSequence {
+            non_ws_indexes: &self.non_ws_indexes[..idx],
+            original_tokens: self.original_tokens
         }
     }
 }
@@ -56,6 +69,38 @@ impl Node {
         match *self {
             Node::Composite(_, ref mut children) => children.push(child),
             Node::Leaf(..) => panic!("Can't add children to a leaf node"),
+        }
+    }
+
+    pub fn debug(&self, tokens: &TokenSequence) -> String {
+        let (l, r) = match (self.left_idx(), self.right_idx()) {
+            (Some(l), Some(r)) => (l, r),
+            _ => return "EMPTY-NODE".to_owned()
+        };
+        let mut result = String::new();
+        for t in tokens.original_tokens[l..r].iter() {
+            result += "token"
+        }
+        result
+    }
+
+    fn right_idx(&self) -> Option<usize> {
+        match *self {
+            Node::Leaf(_, idx) => Some(idx),
+            Node::Composite(_, ref children) => match children.last() {
+                None => None,
+                Some(child) => child.right_idx()
+            },
+        }
+    }
+
+    fn left_idx(&self) -> Option<usize> {
+        match *self {
+            Node::Leaf(_, idx) => Some(idx),
+            Node::Composite(_, ref children) => match children.first() {
+                None => None,
+                Some(child) => child.left_idx()
+            },
         }
     }
 }
@@ -109,11 +154,14 @@ struct PreNode {
 
 impl PreNode {
     fn push_child(&mut self, child: PreNode, tokens: &[Token]) {
+        println!("self = {:?}", self);
+        println!("child = {:?}", child);
+        println!("\n");
         match (self.last, child.first) {
             (Some(l), Some(r)) if l + 1 < r => {
                 for idx in l + 1..r {
                     let t = tokens[idx];
-                    assert!(t.ty == WHITESPACE);
+                    assert!(t.ty == WHITESPACE, "expected whitespace, got {:?}", t.ty);
                     self.push_child_raw(token_pre_node(idx, t))
                 }
             }

@@ -103,7 +103,26 @@ impl<'r> Parser<'r> {
                 None
             }
 
-            Expr::Layer(_, ref e) => self.parse_exp(e, tokens, nf),
+            Expr::Layer(ref l, ref e) => {
+                if let Some((layer_node, rest)) = self.parse_exp(l, tokens, nf) {
+                    let mut result = nf.create_composite_node(None);
+                    let layer = tokens.tokens_of_node(&layer_node);
+                    if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, nf) {
+                        result.push_child(layer_contents);
+                        if leftovers.current().is_some() {
+                            let mut error = nf.create_error_node();
+                            while leftovers.current().is_some() {
+                                let p = nf.create_leaf_node(leftovers);
+                                error.push_child(p.0);
+                                leftovers = p.1;
+                            }
+                            result.push_child(error)
+                        }
+                    };
+                    return Some((result, rest));
+                };
+                None
+            },
 
             Expr::Rep(ref body,  _, _) => {
                 let mut node = nf.create_composite_node(None);

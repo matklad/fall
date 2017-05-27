@@ -11,7 +11,7 @@ fn ast(code: &str) -> String {
 
 #[test]
 fn obj() {
-    match_ast(&ast(r##"{ "foo": [1, 2, 3] }"##), r#"
+    match_ast(&ast(r##"{ "foo": 1, }"##), r#"
 FILE
   OBJECT
     LBRACE "{"
