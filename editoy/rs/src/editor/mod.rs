@@ -63,7 +63,10 @@ impl Editor for EditorImpl {
             }
             off += c.len_utf8()
         }
-        self.state.syntax_tree = context(ast, off);
+        self.state.syntax_tree = match ::std::panic::catch_unwind(|| {context(ast, off)}) {
+            Ok(st) => st,
+            Err(_) => "Smth died ;( ".to_owned(),
+        };
     }
 
     fn render(&self) -> ViewStateReply {
