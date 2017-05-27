@@ -53,24 +53,9 @@ impl NodeFactory {
 
 impl Node {
     pub fn push_child(&mut self, child: Node) {
-        self.children_mut().push(child)
-    }
-
-    fn children_mut(&mut self) -> &mut Vec<Node> {
         match *self {
-            Node::Composite(_, ref mut children) => children,
-            Node::Leaf(..) => {
-                panic!("Can't add children to a leaf node")
-            }
-        }
-    }
-
-    fn children(&self) -> &[Node] {
-        match *self {
-            Node::Composite(_, ref children) => &*children,
-            Node::Leaf(..) => {
-                panic!("Can't add children to a leaf node")
-            }
+            Node::Composite(_, ref mut children) => children.push(child),
+            Node::Leaf(..) => panic!("Can't add children to a leaf node"),
         }
     }
 }
@@ -156,9 +141,9 @@ fn token_pre_node(idx: usize, t: Token) -> PreNode {
 }
 
 fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
-    let ty = match file_node {
-        Node::Composite(ty, _) => ty.unwrap(),
-        _ => panic!()
+    let (ty, children) = match file_node {
+        Node::Composite(ty, children) => (ty.unwrap(), children),
+        _ => panic!("Root node must be composite")
     };
     let mut result = PreNode {
         ty: ty,
@@ -175,8 +160,8 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
         result.push_child_raw(token_pre_node(i, t))
     }
 
-    for child in file_node.children() {
-        add_child(&mut result, child, tokens)
+    for child in children {
+        add_child(&mut result, &child, tokens)
     }
     if let Some(idx) = result.last {
         for idx in idx + 1..tokens.len() {
