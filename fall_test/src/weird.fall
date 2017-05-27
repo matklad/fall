@@ -31,13 +31,10 @@ pub rule block {
   '{' <commit> block_body '}'
 }
 
-rule block_body {
-    <rep balanced>
-}
-
+rule block_body { <rep balanced> }
 rule balanced {
-      '{' <commit> block_body '}'
-    | <not '}'>
+  '{' <commit> block_body '}'
+| <not '}'>
 }
 
 verbatim r#########"

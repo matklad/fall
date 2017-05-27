@@ -11,7 +11,7 @@ tokenizer {
 }
 
 pub rule file {
-  <rep { <skip_until { 'pub' | 'fn' | 'struct' }> fn_or_struct} { 'pub' | 'fn' | 'struct' } >
+  <rep { <skip_until { 'pub' | 'fn' | 'struct' }> fn_or_struct} >
 }
 rule fn_or_struct { fn_def | struct_def }
 
