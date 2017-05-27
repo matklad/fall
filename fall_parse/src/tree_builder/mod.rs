@@ -11,14 +11,9 @@ pub struct TokenSequence<'a> {
 
 pub struct NodeFactory {}
 
-pub struct Node {
-    ty: Option<NodeType>,
-    data: NodeData,
-}
-
-enum NodeData {
-    Branch(Vec<Node>),
-    Leaf(usize),
+pub enum Node {
+    Leaf(NodeType, usize),
+    Composite(Option<NodeType>, Vec<Node>)
 }
 
 impl<'a> TokenSequence<'a> {
@@ -40,24 +35,18 @@ impl<'a> TokenSequence<'a> {
 }
 
 impl NodeFactory {
-    pub fn create_node(&mut self, ty: Option<NodeType>) -> Node {
-        Node {
-            ty: ty,
-            data: NodeData::Branch(Vec::new())
-        }
+    pub fn create_composite_node(&mut self, ty: Option<NodeType>) -> Node {
+        Node::Composite(ty, Vec::new())
     }
 
     pub fn create_error_node(&mut self) -> Node {
-        self.create_node(Some(ERROR))
+        self.create_composite_node(Some(ERROR))
     }
 
     pub fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
         let bumped = tokens.bump();
         let idx = tokens.non_ws_indexes[0];
-        let node = Node {
-            ty: Some(tokens.current().unwrap().ty),
-            data: NodeData::Leaf(idx),
-        };
+        let node = Node::Leaf(tokens.current().unwrap().ty, idx);
         (node, bumped)
     }
 }
@@ -68,22 +57,24 @@ impl Node {
     }
 
     pub fn set_ty(&mut self, ty: Option<NodeType>) {
-        self.ty = ty
+        let mut v = Vec::new();
+        ::std::mem::swap(&mut v, self.children_mut());
+        *self = Node::Composite(ty, v);
     }
 
     fn children_mut(&mut self) -> &mut Vec<Node> {
-        match self.data {
-            NodeData::Branch(ref mut children) => children,
-            NodeData::Leaf(_) => {
+        match *self {
+            Node::Composite(_, ref mut children) => children,
+            Node::Leaf(..) => {
                 panic!("Can't add children to a leaf node")
             }
         }
     }
 
     fn children(&self) -> &[Node] {
-        match self.data {
-            NodeData::Branch(ref children) => &*children,
-            NodeData::Leaf(_) => {
+        match *self {
+            Node::Composite(_, ref children) => &*children,
+            Node::Leaf(..) => {
                 panic!("Can't add children to a leaf node")
             }
         }
@@ -171,8 +162,12 @@ fn token_pre_node(idx: usize, t: Token) -> PreNode {
 }
 
 fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
+    let ty = match file_node {
+        Node::Composite(ty, _) => ty.unwrap(),
+        _ => panic!()
+    };
     let mut result = PreNode {
-        ty: file_node.ty.unwrap(),
+        ty: ty,
         range: TextRange::empty(),
         children: Vec::new(),
         first: None,
@@ -198,18 +193,18 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
 }
 
 fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
-    if node.ty.is_none() {
-        for child in node.children() {
-            add_child(parent, child, tokens)
-        }
-        return
-    }
-    let ty = node.ty.unwrap();
-    match node.data {
-        NodeData::Leaf(idx) => {
+    match *node {
+        Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        NodeData::Branch(ref children) => {
+        Node::Composite(ty, ref children) => {
+            if ty.is_none() {
+                for child in children {
+                    add_child(parent, child, tokens)
+                }
+                return
+            }
+            let ty = ty.unwrap();
             let mut p = PreNode {
                 ty: ty,
                 range: TextRange::empty(),

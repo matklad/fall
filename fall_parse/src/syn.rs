@@ -48,7 +48,7 @@ impl<'r> Parser<'r> {
             }
 
             Expr::And(ref parts, commit) => {
-                let mut node = nf.create_node(None);
+                let mut node = nf.create_composite_node(None);
                 let commit = commit.unwrap_or(parts.len());
                 let mut tokens = tokens;
                 for (i, p) in parts.iter().enumerate() {
@@ -89,7 +89,7 @@ impl<'r> Parser<'r> {
 
             Expr::Opt(ref body) => {
                 self.parse_exp(&*body, tokens, nf).or_else(|| {
-                    Some((nf.create_node(None), tokens))
+                    Some((nf.create_composite_node(None), tokens))
                 })
             }
 
@@ -105,7 +105,7 @@ impl<'r> Parser<'r> {
             Expr::Layer(_, ref e) => self.parse_exp(e, tokens, nf),
 
             Expr::Rep(ref body,  _, _) => {
-                let mut node = nf.create_node(None);
+                let mut node = nf.create_composite_node(None);
                 let mut tokens = tokens;
                 loop {
                     if let Some((n, t)) = self.parse_exp(body, tokens, nf) {
