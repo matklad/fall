@@ -58,7 +58,15 @@ rule expr { call_expr | ref_expr | block_expr }
 pub rule ref_expr { ident | simple_string }
 pub rule call_expr { '<' ident <rep expr> '>' }
 pub rule seq_expr { <rep expr> }
-pub rule block_expr { '{' <opt seq_expr> <rep {'|' seq_expr}> '}' }
+pub rule block_expr {
+  '{' <layer block_body {<opt seq_expr> <rep {'|' seq_expr}>}> '}'
+}
+
+rule block_body { <rep balanced> }
+rule balanced {
+  '{' <commit> block_body '}'
+| <not '}'>
+}
 
 
 verbatim r#########"
