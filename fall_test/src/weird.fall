@@ -6,11 +6,14 @@ tokenizer {
   t1 '_1'
   t2 '_2'
   t3 '_3'
+  t4 '_4'
+  lbrace '{'
+  rbrace '}'
   atom r"\w+"
 }
 
 pub rule file {
-  '_1' raw_string | '_2' empty atom empty | '_3' private_partial
+  '_1' raw_string | '_2' empty atom empty | '_3' private_partial | '_4' block
 }
 
 pub rule private_partial {
@@ -24,6 +27,19 @@ pub rule empty { <opt {none}> }
 
 rule none { }
 
+pub rule block {
+  '{' <commit> block_body '}'
+}
+
+rule block_body {
+    <rep balanced>
+}
+
+rule balanced {
+      '{' <commit> block_body '}'
+    | <not '}'>
+}
+
 verbatim r#########"
 
 fn parse_raw_string(s: &str) -> Option<usize> {
@@ -34,3 +50,4 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 }
 
 "#########
+

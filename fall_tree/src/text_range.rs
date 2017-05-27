@@ -6,7 +6,7 @@ pub struct TextRange {
 
 impl TextRange {
     pub fn from_to(start: u32, end: u32) -> TextRange {
-        assert!(start <= end);
+        assert!(start <= end, "Invalid range, start: {} end: {}", start, end);
         TextRange { start: start, end: end }
     }
 

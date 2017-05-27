@@ -35,7 +35,7 @@ FILE
 
 
 #[test]
-fn roolbacks_private_rules() {
+fn rollbacks_private_rules() {
     match_ast(&ast("_3 foo bar"), r#"
 FILE
   T3 "_3"
@@ -54,5 +54,62 @@ FILE
     FOO "foo"
     WHITESPACE " "
     FOO "foo"
+"#);
+}
+
+#[test]
+fn block1() {
+    match_ast(&ast("_4 { foo }"), r#"
+FILE
+  T4 "_4"
+  WHITESPACE " "
+  BLOCK
+    LBRACE "{"
+    WHITESPACE " "
+    FOO "foo"
+    WHITESPACE " "
+    RBRACE "}"
+"#);
+}
+
+#[test]
+fn block2() {
+    match_ast(&ast("_4 { foo { {foo} foo {bar}} bar }"), r#"
+FILE
+  T4 "_4"
+  WHITESPACE " "
+  BLOCK
+    LBRACE "{"
+    WHITESPACE " "
+    FOO "foo"
+    WHITESPACE " "
+    LBRACE "{"
+    WHITESPACE " "
+    LBRACE "{"
+    FOO "foo"
+    RBRACE "}"
+    WHITESPACE " "
+    FOO "foo"
+    WHITESPACE " "
+    LBRACE "{"
+    BAR "bar"
+    RBRACE "}"
+    RBRACE "}"
+    WHITESPACE " "
+    BAR "bar"
+    WHITESPACE " "
+    RBRACE "}"
+"#);
+}
+
+#[test]
+fn block3() {
+    match_ast(&ast("_4 {"), r#"
+FILE
+  T4 "_4"
+  WHITESPACE " "
+  BLOCK
+    LBRACE "{"
+    ERROR ""
 "#);
 }

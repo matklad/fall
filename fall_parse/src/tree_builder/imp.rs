@@ -84,7 +84,13 @@ impl TreeBuilderImpl {
     fn to_prenode(&self, frame: Frame) -> Result<PreNode, Vec<PreNode>> {
         if let Some(ty) = frame.ty {
             let range = if frame.children.is_empty() {
-                let start = self.tokens.get(frame.start_token).map(|t| t.range.start()).unwrap_or(0);
+                let start = if self.tokens.is_empty() && frame.start_token == 0 {
+                    0
+                } else if self.tokens.len() == frame.start_token {
+                    self.tokens.last().unwrap().range.end()
+                } else {
+                    self.tokens[frame.start_token].range.start()
+                };
                 TextRange::from_to(start, start)
             } else {
                 let first = frame.children.first().unwrap();

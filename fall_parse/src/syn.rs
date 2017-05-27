@@ -1,4 +1,5 @@
 use fall_tree::{NodeType, ERROR};
+use lex::Token;
 use TreeBuilder;
 
 pub struct Parser<'r> {
@@ -20,6 +21,7 @@ pub enum Expr {
     Token(usize),
     Rep(Box<Expr>, Option<Vec<usize>>, Option<Vec<usize>>),
     Opt(Box<Expr>),
+    Not(Vec<usize>),
 }
 
 impl<'r> Parser<'r> {
@@ -135,7 +137,24 @@ impl<'r> Parser<'r> {
                 self.parse_expr(&*body, b);
                 true
             }
+
+            Expr::Not(ref ts) => {
+                if let Some(current) = b.current() {
+                    if self.token_set_contains(ts, current) {
+                        false
+                    } else {
+                        b.bump();
+                        true
+                    }
+                } else {
+                    false
+                }
+            }
         }
+    }
+
+    fn token_set_contains(&self, ts: &[usize], token: Token) -> bool {
+        ts.iter().any(|&t| self.node_type(t) == token.ty)
     }
 
     fn node_type(&self, idx: usize) -> NodeType {

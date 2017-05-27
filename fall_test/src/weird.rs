@@ -8,19 +8,23 @@ pub const BAR: NodeType = NodeType(102);
 pub const T1: NodeType = NodeType(103);
 pub const T2: NodeType = NodeType(104);
 pub const T3: NodeType = NodeType(105);
-pub const ATOM: NodeType = NodeType(106);
-pub const FILE: NodeType = NodeType(107);
-pub const PRIVATE_PARTIAL: NodeType = NodeType(108);
-pub const EMPTY: NodeType = NodeType(109);
+pub const T4: NodeType = NodeType(106);
+pub const LBRACE: NodeType = NodeType(107);
+pub const RBRACE: NodeType = NodeType(108);
+pub const ATOM: NodeType = NodeType(109);
+pub const FILE: NodeType = NodeType(110);
+pub const PRIVATE_PARTIAL: NodeType = NodeType(111);
+pub const EMPTY: NodeType = NodeType(112);
+pub const BLOCK: NodeType = NodeType(113);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            RAW_STRING, FOO, BAR, T1, T2, T3, ATOM, FILE, PRIVATE_PARTIAL, EMPTY,
+            RAW_STRING, FOO, BAR, T1, T2, T3, T4, LBRACE, RBRACE, ATOM, FILE, PRIVATE_PARTIAL, EMPTY, BLOCK,
         ];
-        let parser_json = r##"[{"ty":9,"body":{"Or":[{"And":[[{"Token":5},{"Token":2}],null]},{"And":[[{"Token":6},{"Rule":4},{"Token":8},{"Rule":4}],null]},{"And":[[{"Token":7},{"Rule":1}],null]}]}},{"ty":10,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":3},{"Token":4}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":3},{"Token":3}],null]}]}},{"ty":11,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Rule":5}],null]}]}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[],null]}]}}]"##;
+        let parser_json = r##"[{"ty":12,"body":{"Or":[{"And":[[{"Token":5},{"Token":2}],null]},{"And":[[{"Token":6},{"Rule":4},{"Token":11},{"Rule":4}],null]},{"And":[[{"Token":7},{"Rule":1}],null]},{"And":[[{"Token":8},{"Rule":6}],null]}]}},{"ty":13,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":3},{"Token":4}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":3},{"Token":3}],null]}]}},{"ty":14,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Rule":5}],null]}]}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[],null]}]}},{"ty":15,"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rep":[{"Rule":8},null,null]}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -41,10 +45,14 @@ lazy_static! {
                     T1 => NodeTypeInfo { name: "T1" },
                     T2 => NodeTypeInfo { name: "T2" },
                     T3 => NodeTypeInfo { name: "T3" },
+                    T4 => NodeTypeInfo { name: "T4" },
+                    LBRACE => NodeTypeInfo { name: "LBRACE" },
+                    RBRACE => NodeTypeInfo { name: "RBRACE" },
                     ATOM => NodeTypeInfo { name: "ATOM" },
                     FILE => NodeTypeInfo { name: "FILE" },
                     PRIVATE_PARTIAL => NodeTypeInfo { name: "PRIVATE_PARTIAL" },
                     EMPTY => NodeTypeInfo { name: "EMPTY" },
+                    BLOCK => NodeTypeInfo { name: "BLOCK" },
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }
             }
@@ -59,6 +67,9 @@ lazy_static! {
                 LexRule::new(T1, "_1", None),
                 LexRule::new(T2, "_2", None),
                 LexRule::new(T3, "_3", None),
+                LexRule::new(T4, "_4", None),
+                LexRule::new(LBRACE, "\\{", None),
+                LexRule::new(RBRACE, "\\}", None),
                 LexRule::new(ATOM, "\\w+", None),
             ],
             parser: parser,

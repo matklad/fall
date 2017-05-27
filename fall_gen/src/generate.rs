@@ -118,6 +118,11 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
                     fall_parse::Expr::Rep(Box::new(compile_expr(arg)), skip, stop)
                 }
                 "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(arg))),
+                "not" => {
+                    fall_parse::Expr::Not(arg.token_set().unwrap_or_else(|| {
+                        panic!("Bad token set: `{}`", arg.node().text())
+                    }))
+                }
                 _ => unimplemented!(),
             }
         }
