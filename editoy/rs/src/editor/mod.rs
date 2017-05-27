@@ -46,7 +46,14 @@ impl Editor for EditorImpl {
         }
         let file = self.state.file.as_ref().unwrap();
         let ast = lang::ast(&file);
-        self.state.spans = colorize(ast);
+
+        self.state.spans = match ::std::panic::catch_unwind(|| colorize(ast)) {
+            Ok(spans) => spans,
+            Err(_) => {
+                println!("Highlighter died :(");
+                Vec::new()
+            }
+        };
 
         let mut off = cursor_offset(&self.state);
         let mut cursor = Cursor::new(&self.state.text, off);
