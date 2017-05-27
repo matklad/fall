@@ -59,6 +59,9 @@ class ToyView : View() {
         right = TextArea().apply {
             isEditable = false
             isFocusTraversable = false
+            style {
+                font = SETTINGS.font
+            }
             textProperty().bind(Bindings.select<String>(viewModel, "syntaxTree"))
         }
         bottom = borderpane {

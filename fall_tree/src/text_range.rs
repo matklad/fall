@@ -26,6 +26,10 @@ impl TextRange {
         other.start() <= self.start() && self.end() <= other.end()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.start() == self.end()
+    }
+
     pub fn glue(&self, right: TextRange) -> TextRange {
         assert_eq!(self.end(), right.start());
         TextRange::from_to(self.start(), right.end())

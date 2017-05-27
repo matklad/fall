@@ -25,17 +25,6 @@ impl<'a> TokenSequence<'a> {
         })
     }
 
-    pub fn bump(&self) -> TokenSequence<'a> {
-        if self.non_ws_indexes.is_empty() {
-            panic!("Can't bump empty token sequence")
-        }
-        TokenSequence {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[1..],
-            original_tokens: self.original_tokens,
-        }
-    }
-
     pub fn tokens_of_node(&self, node: &Node) -> TokenSequence<'a> {
         let idx = match node.right_idx() {
             Some(tidx) => self.non_ws_indexes.iter().position(|&i| i == tidx).unwrap() + 1,
@@ -46,6 +35,17 @@ impl<'a> TokenSequence<'a> {
             text: self.text,
             non_ws_indexes: &self.non_ws_indexes[..idx],
             original_tokens: self.original_tokens
+        }
+    }
+
+    fn bump(&self) -> TokenSequence<'a> {
+        if self.non_ws_indexes.is_empty() {
+            panic!("Can't bump empty token sequence")
+        }
+        TokenSequence {
+            text: self.text,
+            non_ws_indexes: &self.non_ws_indexes[1..],
+            original_tokens: self.original_tokens,
         }
     }
 }

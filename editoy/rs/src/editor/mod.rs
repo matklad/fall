@@ -5,7 +5,7 @@ use file;
 use fall_gen::colorize;
 use fall_gen::lang;
 use fall_tree::{AstNode, Node, WHITESPACE};
-use fall_tree::search::path_to_leaf_at_offset;
+use fall_tree::search::{find_leaf_at_offset, ancestors};
 
 use ediproto::{ViewStateReply, Line, StyledText};
 use model::{Direction, Amount, State, Editor, InputEvent, CowStr};
@@ -229,10 +229,13 @@ fn context(file: lang::File, offset: usize) -> String {
             for _ in 0..level {
                 buff.push_str("  ");
             }
-            buff.push_str(name);
             if child == next {
-                buff.push_str(" *");
+                buff.push_str(">");
+            } else {
+                buff.push_str(" ");
             }
+            buff.push_str(name);
+
             buff.push_str("\n");
 
             if child == next {
@@ -241,7 +244,13 @@ fn context(file: lang::File, offset: usize) -> String {
         }
     }
     let mut result = String::new();
-    let path = path_to_leaf_at_offset(file.node(), offset as u32);
+    let leaf = if let Some(leaf) = find_leaf_at_offset(file.node(), offset as u32).right_biased() {
+        leaf
+    } else {
+        return String::new()
+    };
+    let mut path: Vec<Node> = ancestors(leaf).collect();
+    path.reverse();
     go(&path, 0, &mut result);
     result
 }

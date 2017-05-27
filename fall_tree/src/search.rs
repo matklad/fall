@@ -1,25 +1,9 @@
-use {Node, NodeType, AstNode};
-
-pub fn path_to_leaf_at_offset(node: Node, offset: u32) -> Vec<Node> {
-    let mut result = Vec::new();
-    let mut node = node;
-    loop {
-        result.push(node);
-        if !has_children(node) {
-            break;
-        }
-        node = node.children().find(|&child| contains(child, offset)).unwrap_or_else(|| {
-            let last_child = node.children().last().unwrap();
-            assert_eq!(offset, last_child.range().end());
-            last_child
-        });
-    }
-    result
-}
+use {Node, NodeType, AstNode, TextRange};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
 }
+
 
 pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
     Box::new(node.children().filter(move |n| n.ty() == ty))
@@ -34,8 +18,21 @@ pub fn child_of_type_exn(node: Node, ty: NodeType) -> Node {
     })
 }
 
-pub fn ast_parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
-    ast_parent(node).unwrap()
+
+pub fn ancestors(node: Node) -> Ancestors {
+    Ancestors(Some(node))
+}
+
+pub struct Ancestors<'f>(Option<Node<'f>>);
+
+impl<'f> Iterator for Ancestors<'f> {
+    type Item = Node<'f>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = self.0;
+        self.0 = current.and_then(|n| n.parent());
+        current
+    }
 }
 
 pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
@@ -49,13 +46,60 @@ pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
     None
 }
 
-fn has_children(node: Node) -> bool {
-    node.children().next().is_some()
+pub fn ast_parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
+    ast_parent(node).unwrap()
 }
 
-fn contains(node: Node, offset: u32) -> bool {
-    let r = node.range();
-    let (start, end) = (r.start(), r.end());
-    start <= offset && offset < end
+
+pub fn is_leaf(node: Node) -> bool {
+    node.children().next().is_none() && !node.range().is_empty()
 }
 
+pub enum LeafAtOffset<'f> {
+    None,
+    Single(Node<'f>),
+    Between(Node<'f>, Node<'f>)
+}
+
+impl<'f> LeafAtOffset<'f> {
+    pub fn right_biased(self) -> Option<Node<'f>> {
+        match self {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => Some(node),
+            LeafAtOffset::Between(_, right) => Some(right)
+        }
+    }
+}
+
+pub fn find_leaf_at_offset(node: Node, offset: u32) -> LeafAtOffset {
+    let range = node.range();
+    assert!(is_offset_in_range(offset, node.range()), "Bad offset: range {:?} offset {:?}", range, offset);
+    if range.is_empty() {
+        return LeafAtOffset::None
+    }
+
+    if is_leaf(node) {
+        return LeafAtOffset::Single(node)
+    }
+
+    let mut children = node.children()
+        .filter(|child| !child.range().is_empty())
+        .filter(|child| is_offset_in_range(offset, child.range()));
+
+    let left = children.next().unwrap();
+    let right = children.next();
+    assert!(children.next().is_none());
+    return if let Some(right) = right {
+        match (find_leaf_at_offset(left, offset), find_leaf_at_offset(right, offset)) {
+            (LeafAtOffset::Single(left), LeafAtOffset::Single(right)) =>
+                LeafAtOffset::Between(left, right),
+            _ => unreachable!()
+        }
+    } else {
+        find_leaf_at_offset(left, offset)
+    };
+
+    fn is_offset_in_range(offset: u32, range: TextRange) -> bool {
+        range.start() <= offset && offset <= range.end()
+    }
+}
