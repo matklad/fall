@@ -33,7 +33,23 @@ impl<'r> Parser<'r> {
     }
 
     pub fn parse(&self, tokens: TokenSequence, nf: &mut NodeFactory) -> Node {
-        self.parse_exp(&Expr::Rule(0), tokens, nf).unwrap().0
+        let (mut file_node, mut leftover) = self.parse_exp(&Expr::Rule(0), tokens, nf).unwrap_or_else(|| {
+            let ty = self.node_type(self.rules[0].ty
+                .expect("First rule must be public"));
+            (nf.create_composite_node(Some(ty)), tokens)
+        });
+        let mut error = nf.create_error_node();
+        let mut skipped = false;
+        while leftover.current().is_some() {
+            skipped = true;
+            let p = nf.create_leaf_node(leftover);
+            leftover = p.1;
+            error.push_child(p.0)
+        }
+        if skipped {
+            file_node.push_child(error)
+        }
+        file_node
     }
 
     fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, nf: &mut NodeFactory)
