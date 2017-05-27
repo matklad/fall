@@ -22,6 +22,7 @@ pub enum Expr {
     Rep(Box<Expr>, Option<Vec<usize>>, Option<Vec<usize>>),
     Opt(Box<Expr>),
     Not(Vec<usize>),
+    Layer(Box<Expr>, Box<Expr>),
 }
 
 impl<'r> Parser<'r> {
@@ -150,6 +151,8 @@ impl<'r> Parser<'r> {
                     false
                 }
             }
+
+            Expr::Layer(_, ref e) => self.parse_expr(e, b)
         }
     }
 

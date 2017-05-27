@@ -19,7 +19,7 @@ pub rule file {
 
 pub rule object {
   '{' <commit>
-    object_body
+    <layer block_body object_body>
   '}'
 }
 
@@ -38,3 +38,9 @@ pub rule array {
 rule value { primitive | object | array }
 
 pub rule primitive { 'null' | number | string | bool }
+
+rule block_body { <rep balanced> }
+rule balanced {
+  '{' <commit> block_body '}'
+| <not '}'>
+}

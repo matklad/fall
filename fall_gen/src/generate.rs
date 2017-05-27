@@ -123,6 +123,10 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
                         panic!("Bad token set: `{}`", arg.node().text())
                     }))
                 }
+                "layer" => fall_parse::Expr::Layer(
+                    Box::new(compile_expr(arg)),
+                    Box::new(compile_expr(args.next().unwrap()))
+                ),
                 _ => unimplemented!(),
             }
         }
