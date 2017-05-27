@@ -47,4 +47,39 @@ pub fn parse(
     builder.0.into_file(elapsed_lex, elapsed_parse)
 }
 
+#[derive(Clone, Copy)]
+pub struct TokenSequence {}
 
+pub struct NodeFactory {}
+
+pub struct Node {}
+
+impl TokenSequence {
+    pub fn current(&self) -> Option<Token> {
+        None
+    }
+
+    pub fn bump(&self) -> TokenSequence {
+        unimplemented!()
+    }
+}
+
+impl NodeFactory {
+    pub fn create_node(&mut self, ty: Option<NodeType>) -> Node {
+        unimplemented!()
+    }
+
+    pub fn create_error_node(&mut self) -> Node {
+        unimplemented!()
+    }
+
+    pub fn create_leaf_node(&mut self, token: Token) -> Node {
+        unimplemented!()
+    }
+}
+
+impl Node {
+    pub fn push_child(&mut self, child: Node) {}
+
+    pub fn set_ty(&mut self, ty: Option<NodeType>) {}
+}
