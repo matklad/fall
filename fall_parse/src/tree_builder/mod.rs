@@ -56,12 +56,6 @@ impl Node {
         self.children_mut().push(child)
     }
 
-    pub fn set_ty(&mut self, ty: Option<NodeType>) {
-        let mut v = Vec::new();
-        ::std::mem::swap(&mut v, self.children_mut());
-        *self = Node::Composite(ty, v);
-    }
-
     fn children_mut(&mut self) -> &mut Vec<Node> {
         match *self {
             Node::Composite(_, ref mut children) => children,

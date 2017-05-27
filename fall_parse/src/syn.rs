@@ -70,9 +70,10 @@ impl<'r> Parser<'r> {
             Expr::Rule(id) => {
                 let rule = &self.rules[id];
                 let ty = rule.ty.map(|ty| self.node_type(ty));
-                if let Some((mut node, ts)) = self.parse_exp(&rule.body, tokens, nf) {
-                    node.set_ty(ty);
-                    Some((node, ts))
+                if let Some((node, ts)) = self.parse_exp(&rule.body, tokens, nf) {
+                    let mut result = nf.create_composite_node(ty);
+                    result.push_child(node);
+                    Some((result, ts))
                 } else {
                     None
                 }
