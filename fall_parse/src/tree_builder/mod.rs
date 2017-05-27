@@ -24,13 +24,13 @@ impl TreeBuilder {
         self.0.finish(ty)
     }
 
+    pub fn rollback(&mut self, ty: Option<NodeType>) {
+        self.0.rollback(ty)
+    }
+
     pub fn error(&mut self) {
         self.start(Some(ERROR));
         self.finish(Some(ERROR));
-    }
-
-    pub fn rollback(&mut self, ty: Option<NodeType>) {
-        self.0.rollback(ty)
     }
 }
 
