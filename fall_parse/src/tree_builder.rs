@@ -3,8 +3,9 @@ use elapsed::measure_time;
 use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, FileBuilder, NodeBuilder, TextRange};
 use lex::{Token, LexRule, tokenize};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TokenSequence<'a> {
+    text: &'a str,
     non_ws_indexes: &'a [usize],
     original_tokens: &'a [Token],
 }
@@ -29,6 +30,7 @@ impl<'a> TokenSequence<'a> {
             panic!("Can't bump empty token sequence")
         }
         TokenSequence {
+            text: self.text,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
         }
@@ -36,11 +38,12 @@ impl<'a> TokenSequence<'a> {
 
     pub fn tokens_of_node(&self, node: &Node) -> TokenSequence<'a> {
         let idx = match node.right_idx() {
-            Some(tidx) => self.non_ws_indexes.iter().position(|&i| i == tidx).unwrap(),
+            Some(tidx) => self.non_ws_indexes.iter().position(|&i| i == tidx).unwrap() + 1,
             None => 0
         };
 
         TokenSequence {
+            text: self.text,
             non_ws_indexes: &self.non_ws_indexes[..idx],
             original_tokens: self.original_tokens
         }
@@ -79,7 +82,7 @@ impl Node {
         };
         let mut result = String::new();
         for t in tokens.original_tokens[l..r].iter() {
-            result += "token"
+            result += &tokens.text[t.range];
         }
         result
     }
@@ -87,10 +90,9 @@ impl Node {
     fn right_idx(&self) -> Option<usize> {
         match *self {
             Node::Leaf(_, idx) => Some(idx),
-            Node::Composite(_, ref children) => match children.last() {
-                None => None,
-                Some(child) => child.right_idx()
-            },
+            Node::Composite(_, ref children) => children.iter().rev().filter_map(|n| {
+                n.right_idx()
+            }).next(),
         }
     }
 
@@ -119,12 +121,15 @@ pub fn parse(
             Some(i)
         }
     }).collect();
-    let tokens = TokenSequence {
-        non_ws_indexes: &non_ws_indexes,
-        original_tokens: &owned_tokens,
+    let (parse_time, node) = {
+        let tokens = TokenSequence {
+            text: &text,
+            non_ws_indexes: &non_ws_indexes,
+            original_tokens: &owned_tokens,
+        };
+        let mut nf = NodeFactory {};
+        measure_time(|| { parser(&tokens, &mut nf) })
     };
-    let mut nf = NodeFactory {};
-    let (parse_time, node) = measure_time(|| { parser(&tokens, &mut nf) });
     let pre_node = to_pre_node(node, &owned_tokens);
 
     let mut builder = FileBuilder::new(lang, text, lex_time, parse_time);
@@ -154,9 +159,6 @@ struct PreNode {
 
 impl PreNode {
     fn push_child(&mut self, child: PreNode, tokens: &[Token]) {
-        println!("self = {:?}", self);
-        println!("child = {:?}", child);
-        println!("\n");
         match (self.last, child.first) {
             (Some(l), Some(r)) if l + 1 < r => {
                 for idx in l + 1..r {
