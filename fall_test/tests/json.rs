@@ -87,6 +87,36 @@ FILE
 }
 
 #[test]
+fn array_recovery2() {
+    match_ast(&ast(r##"[1, 2, } 2 3, "foo", null 92]"##), r##"
+FILE
+  ARRAY
+    LBRACK "["
+    PRIMITIVE
+      NUMBER "1"
+    COMMA ","
+    PRIMITIVE
+      NUMBER "2"
+    COMMA ","
+    ERROR
+      RBRACE "}"
+    PRIMITIVE
+      NUMBER "2"
+    PRIMITIVE
+      NUMBER "3"
+    COMMA ","
+    PRIMITIVE
+      STRING "\"foo\""
+    COMMA ","
+    PRIMITIVE
+      NULL "null"
+    PRIMITIVE
+      NUMBER "92"
+    RBRACK "]"
+"##);
+}
+
+#[test]
 fn example() {
     match_ast(&ast(r#"
 {"widget": {

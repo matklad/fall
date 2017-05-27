@@ -24,7 +24,10 @@ pub rule object {
 }
 
 rule object_body {
-  <rep { <skip_until string> field <commit> <opt ','> } >
+  <rep {
+    <skip_until string>
+    field <commit> <opt ','>
+  }>
 }
 
 pub rule field {
@@ -33,8 +36,15 @@ pub rule field {
 
 pub rule array {
   '[' <commit>
-    <rep {value <opt ','>} {'null'|number|string|bool|'{'|'['} {']'}>
+     <layer br_block_body array_body>
   ']'
+}
+
+rule array_body {
+  <rep {
+    <skip_until { 'null' | number | string | bool | '{' | '[' }>
+    value <opt ','>
+  }>
 }
 
 rule value { primitive | object | array }
@@ -45,4 +55,10 @@ rule block_body { <rep balanced> }
 rule balanced {
   '{' <commit> block_body '}'
 | <not '}'>
+}
+
+rule br_block_body { <rep br_balanced> }
+rule br_balanced {
+  '[' <commit> br_block_body ']'
+| <not ']'>
 }
