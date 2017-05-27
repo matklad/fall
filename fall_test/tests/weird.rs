@@ -113,3 +113,25 @@ FILE
     ERROR ""
 "#);
 }
+
+#[test]
+fn block4() {
+    match_ast(&ast("_4 { foo { {} bar"), r#"
+FILE
+  T4 "_4"
+  WHITESPACE " "
+  BLOCK
+    LBRACE "{"
+    WHITESPACE " "
+    FOO "foo"
+    WHITESPACE " "
+    LBRACE "{"
+    WHITESPACE " "
+    LBRACE "{"
+    RBRACE "}"
+    WHITESPACE " "
+    BAR "bar"
+    ERROR ""
+    ERROR ""
+"#);
+}
