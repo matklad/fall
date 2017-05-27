@@ -166,68 +166,15 @@ impl<'r> Parser<'r> {
             }
 
             Expr::Layer(_, ref e) => self.parse_expr(e, b),
-
-            Expr::Rep(ref body, ref skip_until, ref stop_at) => {
-                'outer: loop {
-                    let mut skipped = false;
-                    'inner: loop {
-                        let current = match b.current() {
-                            None => {
-                                if skipped {
-                                    b.finish(Some(ERROR))
-                                }
-                                break 'outer
-                            }
-                            Some(c) => c,
-                        };
-                        if let Some(ref stop_at) = *stop_at {
-                            if stop_at.iter().any(|&it| self.node_type(it) == current.ty) {
-                                if skipped {
-                                    b.finish(Some(ERROR))
-                                }
-                                break 'outer
-                            }
-                        }
-
-                        let skip = match *skip_until {
-                            None => {
-                                if skipped {
-                                    b.finish(Some(ERROR))
-                                }
-                                break 'inner
-                            }
-                            Some(ref s) => s,
-                        };
-                        if skip.iter().any(|&it| self.node_type(it) == current.ty) {
-                            if skipped {
-                                b.finish(Some(ERROR))
-                            }
-                            break 'inner
-                        } else {
-                            if !skipped {
-                                b.start(Some(ERROR))
-                            }
-                            skipped = true;
-                            b.bump();
-                        }
-                    }
-                    if !self.parse_expr(&*body, b) {
-                        if stop_at.is_none() {
-                            break 'outer;
-                        } else {
-                            b.start(Some(ERROR));
-                            b.bump();
-                            b.finish(Some(ERROR));
-                        }
-                    }
-                }
-                true
-            }
         }
     }
 
-    fn parse_exp2(&self, expr: &Expr, tokens: TokenSequence, nf: &mut NodeFactory)
-                  -> Option<(Node, TokenSequence)> {
+    pub fn parse2(&self, tokens: TokenSequence, nf: &mut NodeFactory) -> Node {
+        self.parse_exp2(&Expr::Rule(0), tokens, nf).unwrap().0
+    }
+
+    fn parse_exp2<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, nf: &mut NodeFactory)
+                  -> Option<(Node, TokenSequence<'t>)> {
         match *expr {
             Expr::Or(ref parts) => {
                 for p in parts.iter() {
@@ -261,7 +208,6 @@ impl<'r> Parser<'r> {
             Expr::Rule(id) => {
                 let rule = &self.rules[id];
                 let ty = rule.ty.map(|ty| self.node_type(ty));
-                let mut result = nf.create_node(ty);
                 if let Some((mut node, ts)) = self.parse_exp2(&rule.body, tokens, nf) {
                     node.set_ty(ty);
                     Some((node, ts))
@@ -273,8 +219,7 @@ impl<'r> Parser<'r> {
             Expr::Token(ty) => {
                 if let Some(current) = tokens.current() {
                     if self.token_set_contains(&[ty], current) {
-                        let node = nf.create_leaf_node(current);
-                        return Some((node, tokens.bump()))
+                        return Some(nf.create_leaf_node(tokens))
                     }
                 }
                 None
@@ -289,8 +234,7 @@ impl<'r> Parser<'r> {
             Expr::Not(ref ts) => {
                 if let Some(current) = tokens.current() {
                     if !self.token_set_contains(ts, current) {
-                        let node = nf.create_leaf_node(current);
-                        return Some((node, tokens.bump()))
+                        return Some(nf.create_leaf_node(tokens))
                     }
                 }
                 None
@@ -298,18 +242,18 @@ impl<'r> Parser<'r> {
 
             Expr::Layer(_, ref e) => self.parse_exp2(e, tokens, nf),
 
-            Expr::Rep(ref body, ref skip_until, _) => {
+            Expr::Rep(ref body,  _, _) => {
                 let mut node = nf.create_node(None);
-                let mut toknes = tokens;
+                let mut tokens = tokens;
                 loop {
-                    if let Some((n, t)) = self.parse_exp2(body, toknes, nf) {
+                    if let Some((n, t)) = self.parse_exp2(body, tokens, nf) {
                         node.push_child(n);
-                        toknes = t;
+                        tokens = t;
                     } else {
                         break;
                     }
                 }
-                Some((node, toknes))
+                Some((node, tokens))
             }
         }
     }
