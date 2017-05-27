@@ -76,7 +76,18 @@ impl<'r> Parser<'r> {
                 }
             }
 
-            Expr::Token(ty) => b.try_eat(self.node_type(ty)),
+            Expr::Token(ty) => {
+                if let Some(current) = b.current() {
+                    if self.token_set_contains(&[ty], current) {
+                        b.bump();
+                        true
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            },
             Expr::Rep(ref body, ref skip_until, ref stop_at) => {
                 'outer: loop {
                     let mut skipped = false;

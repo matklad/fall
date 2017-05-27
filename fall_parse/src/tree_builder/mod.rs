@@ -32,21 +32,6 @@ impl TreeBuilder {
     pub fn rollback(&mut self, ty: Option<NodeType>) {
         self.0.rollback(ty)
     }
-
-    pub fn next_is(&mut self, ty: NodeType) -> bool {
-        if let Some(t) = self.current() {
-            t.ty == ty
-        } else {
-            false
-        }
-    }
-
-    pub fn try_eat(&mut self, ty: NodeType) -> bool {
-        self.next_is(ty) && {
-            self.bump();
-            true
-        }
-    }
 }
 
 pub fn parse(
