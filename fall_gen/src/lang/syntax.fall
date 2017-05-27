@@ -24,7 +24,12 @@ tokenizer {
   ident r"\w+"
 }
 
-pub rule file { tokenizer_def <rep syn_rule> <opt verbatim_def> <opt ast_def> }
+pub rule file {
+  tokenizer_def
+  <rep { <skip_until {'pub' | 'rule'}> syn_rule }>
+  <opt verbatim_def>
+  <opt ast_def>
+}
 
 pub rule tokenizer_def {
   'tokenizer' <commit> '{' <rep lex_rule> '}'
