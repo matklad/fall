@@ -127,6 +127,9 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
                     Box::new(compile_expr(arg)),
                     Box::new(compile_expr(args.next().unwrap()))
                 ),
+                "skip_until" => fall_parse::Expr::SkipUntil(arg.token_set().unwrap_or_else(|| {
+                    panic!("Bad token set: `{}`", arg.node().text())
+                })),
                 _ => unimplemented!(),
             }
         }

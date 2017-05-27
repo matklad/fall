@@ -33,55 +33,58 @@ FILE
 "#);
 }
 
-//#[test]
-//fn obj_recovery() {
-//    match_ast(&ast(r##"{"foo": 1, 92, "bar": 3}"##), r##"
-//FILE
-//  OBJECT
-//    LBRACE "{"
-//    FIELD
-//      STRING "\"foo\""
-//      COLON ":"
-//      PRIMITIVE
-//        NUMBER "1"
-//    COMMA ","
-//    ERROR
-//      NUMBER "92"
-//      COMMA ","
-//    FIELD
-//      STRING "\"bar\""
-//      COLON ":"
-//      PRIMITIVE
-//        NUMBER "3"
-//    RBRACE "}"
-//"##);
-//
-//    match_ast(&ast(r##"{"foo": 1, "baz":: 92, "bar": 3}"##), r##"
-//FILE
-//  OBJECT
-//    LBRACE "{"
-//    FIELD
-//      STRING "\"foo\""
-//      COLON ":"
-//      PRIMITIVE
-//        NUMBER "1"
-//    COMMA ","
-//    FIELD
-//      STRING "\"baz\""
-//      COLON ":"
-//      ERROR ""
-//    ERROR
-//      COLON ":"
-//      NUMBER "92"
-//      COMMA ","
-//    FIELD
-//      STRING "\"bar\""
-//      COLON ":"
-//      PRIMITIVE
-//        NUMBER "3"
-//    RBRACE "}"
-//"##);
-//}
+#[test]
+fn obj_recovery1() {
+    match_ast(&ast(r##"{"foo": 1, 92, "bar": 3}"##), r##"
+FILE
+  OBJECT
+    LBRACE "{"
+    FIELD
+      STRING "\"foo\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "1"
+    COMMA ","
+    ERROR
+      NUMBER "92"
+      COMMA ","
+    FIELD
+      STRING "\"bar\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "3"
+    RBRACE "}"
+"##);
+}
+
+#[test]
+fn obj_recovery2() {
+    match_ast(&ast(r##"{"foo": 1, "baz":: 92, "bar": 3}"##), r##"
+FILE
+  OBJECT
+    LBRACE "{"
+    FIELD
+      STRING "\"foo\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "1"
+    COMMA ","
+    FIELD
+      STRING "\"baz\""
+      COLON ":"
+      ERROR ""
+    ERROR
+      COLON ":"
+      NUMBER "92"
+      COMMA ","
+    FIELD
+      STRING "\"bar\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "3"
+    RBRACE "}"
+"##);
+}
 
 #[test]
 fn example() {

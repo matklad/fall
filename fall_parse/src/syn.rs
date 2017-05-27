@@ -24,6 +24,7 @@ pub enum Expr {
     Opt(Box<Expr>),
     Not(Vec<usize>),
     Layer(Box<Expr>, Box<Expr>),
+    SkipUntil(Vec<usize>),
 }
 
 impl<'r> Parser<'r> {
@@ -122,9 +123,9 @@ impl<'r> Parser<'r> {
                     return Some((result, rest));
                 };
                 None
-            },
+            }
 
-            Expr::Rep(ref body,  _, _) => {
+            Expr::Rep(ref body, _, _) => {
                 let mut node = nf.create_composite_node(None);
                 let mut tokens = tokens;
                 loop {
@@ -136,6 +137,32 @@ impl<'r> Parser<'r> {
                     }
                 }
                 Some((node, tokens))
+            }
+
+            Expr::SkipUntil(ref ts) => {
+                let mut result = nf.create_error_node();
+                let mut skipped = false;
+                let mut tokens = tokens;
+                loop {
+                    if let Some(t) = tokens.current() {
+                        if self.token_set_contains(ts, t) {
+                            break;
+                        } else {
+                            skipped = true;
+                            let p = nf.create_leaf_node(tokens);
+                            result.push_child(p.0);
+                            tokens = p.1;
+                        }
+                    } else {
+                        break
+                    }
+                }
+
+                if !skipped {
+                    result = nf.create_composite_node(None);
+                }
+
+                Some((result, tokens))
             }
         }
     }

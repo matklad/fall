@@ -23,7 +23,12 @@ pub rule object {
   '}'
 }
 
-rule object_body { <rep {field <commit> <opt ','> } {string} {'}'}> }
+rule object_body {
+  <rep
+    { <skip_until string> field <commit> <opt ','> }
+    {string} {'}'}
+  >
+}
 
 pub rule field {
   string <commit> ':' value
