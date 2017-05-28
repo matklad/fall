@@ -1,6 +1,6 @@
 extern crate elapsed;
 
-mod text_range;
+mod text;
 mod node_type;
 mod node;
 mod ast;
@@ -9,7 +9,7 @@ mod lang;
 pub mod visitor;
 pub mod search;
 
-pub use text_range::{TextRange, TextOffset, is_offset_in_range};
+pub use text::{TextRange, TextOffset, is_offset_in_range};
 pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
 pub use node::{File, Node, FileBuilder, NodeBuilder};
 pub use lang::{Language, LanguageImpl};
