@@ -3,7 +3,7 @@ use xi_rope::tree::Cursor;
 
 use file;
 use fall_gen::colorize;
-use fall_gen::lang;
+use fall_gen::lang::{self, FallFile};
 use fall_tree::{AstNode, Node, WHITESPACE, TextOffset};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 
@@ -215,7 +215,7 @@ fn do_save_file(state: &mut State) {
     }
 }
 
-fn context(file: lang::File, offset: usize) -> String {
+fn context(file: FallFile, offset: usize) -> String {
     fn go(path: &[Node], level: usize, buff: &mut String) {
         assert!(path.len() > 0);
         if path.len() == 1 {
