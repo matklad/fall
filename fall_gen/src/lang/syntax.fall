@@ -45,14 +45,18 @@ pub rule string { simple_string | hash_string }
 
 pub rule verbatim_def { 'verbatim' hash_string }
 
-pub rule ast_def { 'ast' '{' <rep {ast_node_def | ast_class_def}> '}' }
+pub rule ast_def { 'ast' '{' <rep node_or_class> '}' }
+
+rule node_or_class {
+ <skip_until {'node' | 'class'}> {ast_node_def | ast_class_def}
+}
 
 pub rule ast_node_def {
-  'node' ident '{' <rep method_def> '}'
+  'node' <commit> ident '{' <rep method_def> '}'
 }
 
 pub rule ast_class_def {
-  'class' ident '{' <rep ident> '}'
+  'class' <commit> ident '{' <layer block_body <rep ident>> '}'
 }
 
 pub rule method_def { ident ast_selector }
