@@ -2,10 +2,10 @@ use fall_tree::{AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
-             LexRule, SynRule, File, VerbatimDef, MethodDef,
+             LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
              RefExpr, AstClassDef, AstDef, Expr};
 
-impl<'f> File<'f> {
+impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: &str) -> Option<usize> {
         self.syn_rules().position(|r| r.name() == name)
     }
@@ -64,7 +64,7 @@ impl<'f> LexRule<'f> {
 
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
-        let file = ast_parent_exn::<File>(self.node());
+        let file = ast_parent_exn::<FallFile>(self.node());
         file.resolve_ty(self.name())
     }
 
@@ -131,7 +131,7 @@ pub enum RefKind {
 
 impl<'f> RefExpr<'f> {
     pub fn resolve(&self) -> Option<RefKind> {
-        let file = ast_parent_exn::<File>(self.node());
+        let file = ast_parent_exn::<FallFile>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
             if let Some(idx) = file.resolve_rule(ident.text()) {

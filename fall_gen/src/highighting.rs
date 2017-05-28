@@ -6,7 +6,7 @@ use lang::*;
 
 type Spans = Vec<(u32, u32, &'static str)>;
 
-pub fn colorize(file: File) -> Spans {
+pub fn colorize(file: FallFile) -> Spans {
     let mut spans = vec![];
     Visitor(&mut spans)
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {

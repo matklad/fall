@@ -23,7 +23,7 @@ pub const KW_PUB: NodeType = NodeType(117);
 pub const SIMPLE_STRING: NodeType = NodeType(118);
 pub const HASH_STRING: NodeType = NodeType(119);
 pub const IDENT: NodeType = NodeType(120);
-pub const FILE: NodeType = NodeType(121);
+pub const FALL_FILE: NodeType = NodeType(121);
 pub const TOKENIZER_DEF: NodeType = NodeType(122);
 pub const LEX_RULE: NodeType = NodeType(123);
 pub const SYN_RULE: NodeType = NodeType(124);
@@ -44,7 +44,7 @@ lazy_static! {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            EQ, PIPE, STAR, QUESTION, DOT, LBRACE, RBRACE, LANGLE, RANGLE, LPAREN, RPAREN, KW_NODE, KW_CLASS, KW_TOKENIZER, KW_RULE, KW_VERBATIM, KW_AST, KW_PUB, SIMPLE_STRING, HASH_STRING, IDENT, FILE, TOKENIZER_DEF, LEX_RULE, SYN_RULE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR, REF_EXPR, CALL_EXPR, SEQ_EXPR, BLOCK_EXPR,
+            EQ, PIPE, STAR, QUESTION, DOT, LBRACE, RBRACE, LANGLE, RANGLE, LPAREN, RPAREN, KW_NODE, KW_CLASS, KW_TOKENIZER, KW_RULE, KW_VERBATIM, KW_AST, KW_PUB, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, TOKENIZER_DEF, LEX_RULE, SYN_RULE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR, REF_EXPR, CALL_EXPR, SEQ_EXPR, BLOCK_EXPR,
         ];
         let parser_json = r##"[{"ty":23,"body":{"Or":[{"And":[[{"Rule":1},{"Rep":{"Or":[{"And":[[{"SkipUntil":[19,16]},{"Rule":3}],null]}]}},{"Opt":{"Rule":5}},{"Opt":{"Rule":6}}],null]}]}},{"ty":24,"body":{"Or":[{"And":[[{"Token":15},{"Token":7},{"Rep":{"Rule":2}},{"Token":8}],1]}]}},{"ty":25,"body":{"Or":[{"And":[[{"Token":22},{"Rule":4},{"Opt":{"Rule":4}}],1]}]}},{"ty":26,"body":{"Or":[{"And":[[{"Opt":{"Token":19}},{"Token":16},{"Token":22},{"Rule":16}],2]}]}},{"ty":27,"body":{"Or":[{"And":[[{"Token":20}],null]},{"And":[[{"Token":21}],null]}]}},{"ty":28,"body":{"Or":[{"And":[[{"Token":17},{"Token":21}],null]}]}},{"ty":29,"body":{"Or":[{"And":[[{"Token":18},{"Token":7},{"Rep":{"Or":[{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":8}],null]}]}},{"Token":8}],null]}]}},{"ty":30,"body":{"Or":[{"And":[[{"Token":13},{"Token":22},{"Token":7},{"Rep":{"Rule":9}},{"Token":8}],null]}]}},{"ty":31,"body":{"Or":[{"And":[[{"Token":14},{"Token":22},{"Token":7},{"Rep":{"Token":22}},{"Token":8}],null]}]}},{"ty":32,"body":{"Or":[{"And":[[{"Token":22},{"Rule":10}],null]}]}},{"ty":33,"body":{"Or":[{"And":[[{"Token":22},{"Opt":{"Rule":11}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":6},{"Token":22}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":14}],null]},{"And":[[{"Rule":13}],null]},{"And":[[{"Rule":16}],null]}]}},{"ty":34,"body":{"Or":[{"And":[[{"Token":22}],null]},{"And":[[{"Token":20}],null]}]}},{"ty":35,"body":{"Or":[{"And":[[{"Token":9},{"Token":22},{"Rep":{"Rule":12}},{"Token":10}],null]}]}},{"ty":36,"body":{"Or":[{"And":[[{"Rep":{"Rule":12}}],null]}]}},{"ty":37,"body":{"Or":[{"And":[[{"Token":7},{"Layer":[{"Rule":17},{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Rep":{"Or":[{"And":[[{"Token":3},{"Rule":15}],null]}]}}],null]}]}]},{"Token":8}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rep":{"Rule":18}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":7},{"Rule":17},{"Token":8}],1]},{"And":[[{"Not":[8]}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
@@ -82,7 +82,7 @@ lazy_static! {
                     SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING" },
                     HASH_STRING => NodeTypeInfo { name: "HASH_STRING" },
                     IDENT => NodeTypeInfo { name: "IDENT" },
-                    FILE => NodeTypeInfo { name: "FILE" },
+                    FALL_FILE => NodeTypeInfo { name: "FALL_FILE" },
                     TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF" },
                     LEX_RULE => NodeTypeInfo { name: "LEX_RULE" },
                     SYN_RULE => NodeTypeInfo { name: "SYN_RULE" },
@@ -142,18 +142,18 @@ use fall_tree::{AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use fall_tree::search::child_of_type_exn;
 
 #[derive(Clone, Copy)]
-pub struct File<'f> { node: Node<'f> }
+pub struct FallFile<'f> { node: Node<'f> }
 
-impl<'f> AstNode<'f> for File<'f> {
-    fn ty() -> NodeType { FILE }
+impl<'f> AstNode<'f> for FallFile<'f> {
+    fn ty() -> NodeType { FALL_FILE }
     fn new(node: Node<'f>) -> Self {
         assert_eq!(node.ty(), Self::ty());
-        File { node: node }
+        FallFile { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
 }
 
-impl<'f> File<'f> {
+impl<'f> FallFile<'f> {
     pub fn tokenizer_def(&self) -> Option<TokenizerDef<'f>> {
         AstChildren::new(self.node.children()).next()
     }

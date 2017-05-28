@@ -6,9 +6,9 @@ use lang::{SelectorKind, RefKind, SynRule};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
-use lang::{self, Expr};
+use lang::{Expr, FallFile};
 
-pub fn generate(file: lang::File) -> String {
+pub fn generate(file: FallFile) -> String {
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
 

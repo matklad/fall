@@ -24,7 +24,7 @@ tokenizer {
   ident r"\w+"
 }
 
-pub rule file {
+pub rule fall_file {
   tokenizer_def
   <rep { <skip_until {'pub' | 'rule'}> syn_rule }>
   <opt verbatim_def>
@@ -86,7 +86,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 "#########
 
 ast {
-  node file {
+  node fall_file {
     tokenizer_def tokenizer_def?
     syn_rules syn_rule*
     verbatim_def verbatim_def?

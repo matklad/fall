@@ -17,7 +17,7 @@ pub mod lang;
 mod highighting;
 mod generate;
 
-pub fn generate(file: lang::File) -> String {
+pub fn generate(file: lang::FallFile) -> String {
     generate::generate(file)
 }
 pub use highighting::colorize;
@@ -31,8 +31,8 @@ impl FallFile {
         FallFile { file: lang::LANG.parse(text) }
     }
 
-    pub fn ast(&self) -> lang::File {
-        lang::File::new(self.file.root())
+    pub fn ast(&self) -> lang::FallFile {
+        lang::FallFile::new(self.file.root())
     }
 
     pub fn tree_to_string(&self) -> String {
