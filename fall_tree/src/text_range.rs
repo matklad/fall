@@ -1,7 +1,15 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+use std::fmt;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct TextRange {
     start: u32,
     end: u32,
+}
+
+impl fmt::Debug for TextRange {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}; {})", self.start(), self.end())
+    }
 }
 
 impl TextRange {
@@ -34,6 +42,30 @@ impl TextRange {
         assert_eq!(self.end(), right.start());
         TextRange::from_to(self.start(), right.end())
     }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct TextOffset(u32);
+
+impl TextOffset {
+    pub fn in_range(range: TextRange, off: usize) -> Option<TextOffset> {
+        let off = TextOffset(off as u32);
+        if is_offset_in_range(off, range) {
+            Some(off)
+        } else {
+            None
+        }
+    }
+}
+
+impl fmt::Debug for TextOffset {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+pub fn is_offset_in_range(offset: TextOffset, range: TextRange) -> bool {
+    return range.start <= offset.0 && offset.0 <= range.end
 }
 
 

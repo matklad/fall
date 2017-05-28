@@ -4,7 +4,7 @@ use xi_rope::tree::Cursor;
 use file;
 use fall_gen::colorize;
 use fall_gen::lang;
-use fall_tree::{AstNode, Node, WHITESPACE};
+use fall_tree::{AstNode, Node, WHITESPACE, TextOffset};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 
 use ediproto::{ViewStateReply, Line, StyledText};
@@ -44,29 +44,32 @@ impl Editor for EditorImpl {
             let file = lang::parse(text.clone());
             self.state.file = Some(file);
         }
-        let file = self.state.file.as_ref().unwrap();
-        let ast = lang::ast(&file);
 
-        self.state.spans = match ::std::panic::catch_unwind(|| colorize(ast)) {
-            Ok(spans) => spans,
-            Err(_) => {
-                println!("Highlighter died :(");
-                Vec::new()
-            }
-        };
+        modify_state(&mut self.state,
+                     |state| {
+                         let file = state.file.as_ref().unwrap();
+                         let ast = lang::ast(&file);
+                         colorize(ast)
+                     },
+                     |state, spans| state.spans = spans
+        );
 
-        let mut off = cursor_offset(&self.state);
-        let mut cursor = Cursor::new(&self.state.text, off);
-        while let Some(c) = cursor.next_codepoint() {
-            if !(c == ' ' || c == '\n') {
-                break
-            }
-            off += c.len_utf8()
-        }
-        self.state.syntax_tree = match ::std::panic::catch_unwind(|| {context(ast, off)}) {
-            Ok(st) => st,
-            Err(_) => "Smth died ;( ".to_owned(),
-        };
+        modify_state(&mut self.state,
+                     |state| {
+                         let file = state.file.as_ref().unwrap();
+                         let ast = lang::ast(&file);
+                         let mut off = cursor_offset(state);
+                         let mut cursor = Cursor::new(&state.text, off);
+                         while let Some(c) = cursor.next_codepoint() {
+                             if !(c == ' ' || c == '\n') {
+                                 break
+                             }
+                             off += c.len_utf8()
+                         }
+                         context(ast, off)
+                     },
+                     |state, syntax_tree| state.syntax_tree = syntax_tree
+        );
     }
 
     fn render(&self) -> ViewStateReply {
@@ -244,7 +247,9 @@ fn context(file: lang::File, offset: usize) -> String {
         }
     }
     let mut result = String::new();
-    let leaf = if let Some(leaf) = find_leaf_at_offset(file.node(), offset as u32).right_biased() {
+    let offset = TextOffset::in_range(file.node().range(), offset)
+        .expect("Broken offset");
+    let leaf = if let Some(leaf) = find_leaf_at_offset(file.node(), offset).right_biased() {
         leaf
     } else {
         return String::new()
@@ -253,4 +258,18 @@ fn context(file: lang::File, offset: usize) -> String {
     path.reverse();
     go(&path, 0, &mut result);
     result
+}
+
+fn modify_state<R, F, C>(state: &mut State, f: F, commit: C)
+    where F: FnOnce(&State) -> R + ::std::panic::UnwindSafe,
+          C: FnOnce(&mut State, R) {
+    let changes = {
+        let s: &State = &*state;
+        let s = ::std::panic::AssertUnwindSafe(s);
+        match ::std::panic::catch_unwind(move || f(*s)) {
+            Ok(changes) => changes,
+            Err(_) => return
+        }
+    };
+    commit(state, changes)
 }

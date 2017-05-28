@@ -1,4 +1,4 @@
-use {Node, NodeType, AstNode, TextRange};
+use {Node, NodeType, AstNode, TextOffset};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -71,9 +71,9 @@ impl<'f> LeafAtOffset<'f> {
     }
 }
 
-pub fn find_leaf_at_offset(node: Node, offset: u32) -> LeafAtOffset {
+pub fn find_leaf_at_offset(node: Node, offset: TextOffset) -> LeafAtOffset {
     let range = node.range();
-    assert!(is_offset_in_range(offset, node.range()), "Bad offset: range {:?} offset {:?}", range, offset);
+    assert!(::is_offset_in_range(offset, node.range()), "Bad offset: range {:?} offset {:?}", range, offset);
     if range.is_empty() {
         return LeafAtOffset::None
     }
@@ -84,7 +84,7 @@ pub fn find_leaf_at_offset(node: Node, offset: u32) -> LeafAtOffset {
 
     let mut children = node.children()
         .filter(|child| !child.range().is_empty())
-        .filter(|child| is_offset_in_range(offset, child.range()));
+        .filter(|child| ::is_offset_in_range(offset, child.range()));
 
     let left = children.next().unwrap();
     let right = children.next();
@@ -98,8 +98,4 @@ pub fn find_leaf_at_offset(node: Node, offset: u32) -> LeafAtOffset {
     } else {
         find_leaf_at_offset(left, offset)
     };
-
-    fn is_offset_in_range(offset: u32, range: TextRange) -> bool {
-        range.start() <= offset && offset <= range.end()
-    }
 }
