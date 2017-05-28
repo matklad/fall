@@ -78,8 +78,8 @@ impl Editor for EditorImpl {
         result.cursorY = self.state.cursor.y as i32;
         result.syntax_tree = self.state.syntax_tree.clone();
         if let Some(ref file) = self.state.file {
-            result.lexing_time_nanos = file.lexing_time().nanos() as i64;
-            result.parsing_time_nanos = file.parsing_time().nanos() as i64;
+            result.lexing_time_nanos = file.stats().lexing_time.nanos() as i64;
+            result.parsing_time_nanos = file.stats().parsing_time.nanos() as i64;
         }
         if let Some(ref path) = self.state.file_path {
             result.file = path.display().to_string();

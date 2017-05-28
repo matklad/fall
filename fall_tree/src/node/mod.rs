@@ -11,6 +11,12 @@ pub struct File {
     imp: imp::FileImpl,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct FileStats {
+    pub lexing_time: ElapsedDuration,
+    pub parsing_time: ElapsedDuration,
+}
+
 impl File {
     pub fn language(&self) -> &Language {
         &self.lang
@@ -24,12 +30,8 @@ impl File {
         self.imp.text()
     }
 
-    pub fn lexing_time(&self) -> ElapsedDuration {
-        self.imp.lexing_time()
-    }
-
-    pub fn parsing_time(&self) -> ElapsedDuration {
-        self.imp.parsing_time()
+    pub fn stats(&self) -> FileStats {
+        self.imp.stats()
     }
 }
 
@@ -71,7 +73,10 @@ pub struct NodeBuilder(imp::NodeId);
 
 impl FileBuilder {
     pub fn new(lang: Language, text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilder {
-        FileBuilder(imp::FileBuilderImpl::new(lang, text, lex_time, parse_time))
+        FileBuilder(imp::FileBuilderImpl::new(lang, text, FileStats {
+            lexing_time: lex_time,
+            parsing_time: parse_time,
+        }))
     }
 
     pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)
