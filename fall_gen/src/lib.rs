@@ -10,7 +10,7 @@ extern crate fall_tree;
 extern crate fall_parse;
 
 mod util;
-pub mod lang;
+mod lang;
 
 mod highighting;
 mod generate;
@@ -19,3 +19,4 @@ pub fn generate(file: lang::FallFile) -> String {
     generate::generate(file)
 }
 pub use highighting::colorize;
+pub use lang::{FallFile, parse, ast};

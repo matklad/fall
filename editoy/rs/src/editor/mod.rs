@@ -3,8 +3,8 @@ use xi_rope::tree::Cursor;
 
 use file;
 use fall_gen::colorize;
-use fall_gen::lang::{self, FallFile};
-use fall_tree::{AstNode, Node, WHITESPACE, TextOffset};
+use fall_gen::{parse, ast};
+use fall_tree::{Node, WHITESPACE, TextOffset, File, Language};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 
 use ediproto::{ViewStateReply, Line, StyledText};
@@ -41,14 +41,14 @@ impl Editor for EditorImpl {
         }
         let text: String = self.state.text.clone().into();
         if text_changed || self.state.file.is_none() {
-            let file = lang::parse(text.clone());
+            let file = parse(text.clone());
             self.state.file = Some(file);
         }
 
         modify_state(&mut self.state,
                      |state| {
                          let file = state.file.as_ref().unwrap();
-                         let ast = lang::ast(&file);
+                         let ast = ast(&file);
                          colorize(ast)
                      },
                      |state, spans| state.spans = spans
@@ -56,8 +56,6 @@ impl Editor for EditorImpl {
 
         modify_state(&mut self.state,
                      |state| {
-                         let file = state.file.as_ref().unwrap();
-                         let ast = lang::ast(&file);
                          let mut off = cursor_offset(state);
                          let mut cursor = Cursor::new(&state.text, off);
                          while let Some(c) = cursor.next_codepoint() {
@@ -66,7 +64,8 @@ impl Editor for EditorImpl {
                              }
                              off += c.len_utf8()
                          }
-                         context(ast, off)
+                         let file = state.file.as_ref().unwrap();
+                         context(&file, off)
                      },
                      |state, syntax_tree| state.syntax_tree = syntax_tree
         );
@@ -215,8 +214,9 @@ fn do_save_file(state: &mut State) {
     }
 }
 
-fn context(file: FallFile, offset: usize) -> String {
-    fn go(path: &[Node], level: usize, buff: &mut String) {
+fn context(file: &File, offset: usize) -> String {
+
+    fn go(lang: &Language, path: &[Node], level: usize, buff: &mut String) {
         assert!(path.len() > 0);
         if path.len() == 1 {
             return
@@ -228,7 +228,7 @@ fn context(file: FallFile, offset: usize) -> String {
                 continue
             }
 
-            let name = ::fall_gen::lang::LANG.node_type_info(child.ty()).name;
+            let name = lang.node_type_info(child.ty()).name;
             for _ in 0..level {
                 buff.push_str("  ");
             }
@@ -242,21 +242,22 @@ fn context(file: FallFile, offset: usize) -> String {
             buff.push_str("\n");
 
             if child == next {
-                go(&path[1..], level + 1, buff);
+                go(lang, &path[1..], level + 1, buff);
             }
         }
     }
+    let root = file.root();
     let mut result = String::new();
-    let offset = TextOffset::in_range(file.node().range(), offset)
+    let offset = TextOffset::in_range(root.range(), offset)
         .expect("Broken offset");
-    let leaf = if let Some(leaf) = find_leaf_at_offset(file.node(), offset).right_biased() {
+    let leaf = if let Some(leaf) = find_leaf_at_offset(root, offset).right_biased() {
         leaf
     } else {
         return String::new()
     };
     let mut path: Vec<Node> = ancestors(leaf).collect();
     path.reverse();
-    go(&path, 0, &mut result);
+    go(&file.language(), &path, 0, &mut result);
     result
 }
 
