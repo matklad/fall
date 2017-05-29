@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
+difference = "1.0.0"
 elapsed = "0.1"
 serde = "1.*"

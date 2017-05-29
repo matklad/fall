@@ -1,17 +1,12 @@
-extern crate fall_test;
 extern crate fall_tree;
+extern crate lang_json;
 
-use fall_test::{json, match_ast};
-use fall_tree::dump_file;
-
-
-fn ast(code: &str) -> String {
-    dump_file(&json::LANG.parse(code.to_owned()))
-}
+use fall_tree::test_util::check_syntax;
+use lang_json::LANG_JSON;
 
 #[test]
 fn obj() {
-    match_ast(&ast(r##"{ "foo": [1, 2, 3] }"##), r#"
+    check_syntax(&LANG_JSON, r##"{ "foo": [1, 2, 3] }"##, r#"
 FILE
   OBJECT
     LBRACE "{"
@@ -35,7 +30,7 @@ FILE
 
 #[test]
 fn obj_recovery1() {
-    match_ast(&ast(r##"{"foo": 1, 92, "bar": 3}"##), r##"
+    check_syntax(&LANG_JSON, r##"{"foo": 1, 92, "bar": 3}"##, r##"
 FILE
   OBJECT
     LBRACE "{"
@@ -59,7 +54,7 @@ FILE
 
 #[test]
 fn obj_recovery2() {
-    match_ast(&ast(r##"{"foo": 1, "baz":: 92, "bar": 3}"##), r##"
+    check_syntax(&LANG_JSON, r##"{"foo": 1, "baz":: 92, "bar": 3}"##, r##"
 FILE
   OBJECT
     LBRACE "{"
@@ -88,7 +83,7 @@ FILE
 
 #[test]
 fn array_recovery2() {
-    match_ast(&ast(r##"[1, 2, } 2 3, "foo", null 92]"##), r##"
+    check_syntax(&LANG_JSON, r##"[1, 2, } 2 3, "foo", null 92]"##, r##"
 FILE
   ARRAY
     LBRACK "["
@@ -118,7 +113,7 @@ FILE
 
 #[test]
 fn example() {
-    match_ast(&ast(r#"
+    check_syntax(&LANG_JSON, r#"
 {"widget": {
     "debug": "on",
     "window": {
@@ -144,7 +139,7 @@ fn example() {
         "alignment": "center",
         "onMouseUp": "sun1.opacity = (sun1.opacity / 100) * 90;"
     }
-}}"#), r#"
+}}"#, r#"
 FILE
   OBJECT
     LBRACE "{"
@@ -282,5 +277,3 @@ FILE
     RBRACE "}"
 "#)
 }
-
-
