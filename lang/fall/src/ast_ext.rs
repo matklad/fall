@@ -1,21 +1,21 @@
-use fall_tree::{AstNode, Node, NodeType};
+use fall_tree::{Text, TextRange, AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::lang::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
-             LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-             RefExpr, AstClassDef, AstDef, Expr};
+use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
+       LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
+       RefExpr, AstClassDef, AstDef, Expr};
 
 impl<'f> FallFile<'f> {
-    pub fn resolve_rule(&self, name: &str) -> Option<usize> {
+    pub fn resolve_rule(&self, name: Text<'f>) -> Option<usize> {
         self.syn_rules().position(|r| r.name() == name)
     }
 
-    pub fn resolve_ty(&self, name: &str) -> Option<usize> {
+    pub fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
         self.node_types().iter().position(|&it| it == name)
             .map(|idx| idx + 2)
     }
 
-    pub fn node_types(&self) -> Vec<&'f str> {
+    pub fn node_types(&self) -> Vec<Text<'f>> {
         let mut result = Vec::new();
         if let Some(tokenizer) = self.tokenizer_def() {
             result.extend(
@@ -36,28 +36,28 @@ impl<'f> FallFile<'f> {
 impl<'f> LexRule<'f> {
     pub fn token_re(&self) -> String {
         let raw = self.raw_re();
-        if raw.starts_with('r') {
-            lit_body(raw).to_owned()
+        if raw.starts_with("r") {
+            lit_body(raw).to_string()
         } else {
-            ::regex::escape(lit_body(raw))
+            ::regex::escape(&lit_body(raw).to_cow())
         }
     }
 
-    pub fn extern_fn(&self) -> Option<&'f str> {
+    pub fn extern_fn(&self) -> Option<Text<'f>> {
         children_of_type(self.node(), STRING).nth(1).map(|n| {
             lit_body(n.text())
         })
     }
 
-    pub fn token_name(&self) -> &'f str {
+    pub fn token_name(&self) -> Text<'f> {
         let r = self.raw_re();
-        if r.starts_with('\'') {
+        if r.starts_with("'") {
             return r
         }
         self.node_type()
     }
 
-    fn raw_re(&self) -> &'f str {
+    fn raw_re(&self) -> Text<'f> {
         children_of_type(self.node(), STRING).next().unwrap().text()
     }
 }
@@ -74,7 +74,7 @@ impl<'f> SynRule<'f> {
 }
 
 impl<'f> VerbatimDef<'f> {
-    pub fn contents(&self) -> &'f str {
+    pub fn contents(&self) -> Text<'f> {
         let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
         lit_body(literal_text).trim()
     }
@@ -101,27 +101,27 @@ impl<'f> MethodDef<'f> {
         ast_def.ast_classes().find(|cls| cls.name() == name).is_some()
     }
 
-    fn selector_name(&self) -> &'f str {
+    fn selector_name(&self) -> Text<'f> {
         let selector = child_of_type_exn(self.node(), AST_SELECTOR);
         child_of_type_exn(selector, IDENT).text()
     }
 }
 
 impl<'f> AstClassDef<'f> {
-    pub fn name(&self) -> &'f str {
+    pub fn name(&self) -> Text<'f> {
         child_of_type(self.node(), IDENT).unwrap().text()
     }
 
-    pub fn variants<'a>(&'a self) -> Box<Iterator<Item=&'f str> + 'a> {
+    pub fn variants<'a>(&'a self) -> Box<Iterator<Item=Text<'f>> + 'a> {
         Box::new(children_of_type(self.node(), IDENT).skip(1).map(|it| it.text()))
     }
 }
 
 pub enum SelectorKind<'f> {
-    Single(&'f str),
-    Opt(&'f str),
-    Many(&'f str),
-    Text(&'f str),
+    Single(Text<'f>),
+    Opt(Text<'f>),
+    Many(Text<'f>),
+    Text(Text<'f>),
 }
 
 pub enum RefKind {
@@ -186,11 +186,11 @@ impl<'f> Expr<'f> {
     }
 }
 
-fn lit_body(lit: &str) -> &str {
-    let q = if lit.starts_with('\'') { '\'' } else { '"' };
+fn lit_body(lit: Text) -> Text {
+    let q = if lit.starts_with("'") { "'" } else { "\"" };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();
-    &lit[s + 1..e]
+    lit.slice(TextRange::from_to_off(s + 1, e))
 }
 
 fn has(node: Node, ty: NodeType) -> bool {

@@ -1,16 +1,14 @@
 use serde_json;
 use std::iter::FromIterator;
 use fall_parse;
-use fall_tree::{AstNode, AstClass};
-use lang::{SelectorKind, RefKind, SynRule};
+use fall_tree::{Text, AstNode, AstClass};
+use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
-use lang::{Expr, FallFile};
-
 pub fn generate(file: FallFile) -> String {
     #[derive(Serialize)]
-    struct CtxLexRule<'f> { ty: &'f str, re: String, f: Option<&'f str> };
+    struct CtxLexRule<'f> { ty: Text<'f>, re: String, f: Option<Text<'f>> };
 
     #[derive(Serialize)]
     struct CtxAstNode<'f> { struct_name: String, node_type_name: String, methods: Vec<CtxMethod<'f>> }
@@ -19,7 +17,7 @@ pub fn generate(file: FallFile) -> String {
     struct CtxAstClass { enum_name: String, variants: Vec<(String, String)> }
 
     #[derive(Serialize)]
-    struct CtxMethod<'f> { name: &'f str, ret_type: String, body: String }
+    struct CtxMethod<'f> { name: Text<'f>, ret_type: String, body: String }
 
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
@@ -45,7 +43,7 @@ pub fn generate(file: FallFile) -> String {
                             SelectorKind::Single(name) => format!("{}<'f>", camel(name)),
                             SelectorKind::Opt(name) => format!("Option<{}<'f>>", camel(name)),
                             SelectorKind::Many(name) => format!("{}<'f, {}<'f>>", iter_type, camel(name)),
-                            SelectorKind::Text(_) => "&'f str".to_owned(),
+                            SelectorKind::Text(_) => "Text<'f>".to_owned(),
                         },
                         body: match method.selector_kind() {
                             SelectorKind::Single(_) => format!("{}::new(self.node.children()).next().unwrap()", iter_type),
@@ -99,7 +97,7 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
         Expr::CallExpr(call) => {
             let mut args = call.args();
             let arg = args.next().unwrap();
-            match call.fn_name() {
+            match call.fn_name().to_cow().as_ref() {
                 "rep" => {
                     assert!(args.next().is_none());
                     fall_parse::Expr::Rep(Box::new(compile_expr(arg)))
@@ -177,7 +175,7 @@ lazy_static! {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use fall_tree::{AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use fall_tree::search::child_of_type_exn;
 
 {% for node in ast_nodes %}

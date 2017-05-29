@@ -1,6 +1,7 @@
 extern crate clap;
 extern crate file;
 extern crate fall_gen;
+extern crate lang_fall;
 
 use std::error::Error;
 use std::io::Write;
@@ -25,8 +26,8 @@ fn main() {
 fn main_inner(path: &Path) -> Result<(), Box<Error>> {
     let input = file::get_text(path)?;
 
-    let file = fall_gen::parse(input);
-    let ast = fall_gen::ast(&file);
+    let file = lang_fall::LANG_FALL.parse(input);
+    let ast = lang_fall::ast(&file);
     let result = fall_gen::generate(ast);
 
     file::put_text(path.with_extension("rs"), result)?;

@@ -2,11 +2,11 @@ use {File, Node, WHITESPACE, Language};
 use std::fmt::Write;
 
 pub fn dump_file(f: &File) -> String {
-    dump(f.language(), f.root(), f.text(), false)
+    dump(f.language(), f.root(), &f.text().to_cow(), false)
 }
 
 pub fn dump_file_ws(f: &File) -> String {
-    dump(f.language(), f.root(), f.text(), true)
+    dump(f.language(), f.root(), &f.text().to_cow(), true)
 }
 
 pub fn walk_tree<F: FnMut(Node)>(node: Node, mut f: F) {

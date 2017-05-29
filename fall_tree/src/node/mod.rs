@@ -1,6 +1,6 @@
 use elapsed::ElapsedDuration;
 
-use {TextRange, NodeType, Language};
+use {Text, TextRange, NodeType, Language};
 
 mod imp;
 
@@ -26,7 +26,11 @@ impl File {
         self.imp.root()
     }
 
-    pub fn text(&self) -> &str {
+//    pub fn text(&self) -> &str {
+//        self.imp.text()
+//    }
+
+    pub fn text(&self) -> Text {
         self.imp.text()
     }
 
@@ -53,7 +57,7 @@ impl<'f> Node<'f> {
         self.0.range()
     }
 
-    pub fn text(&self) -> &'f str {
+    pub fn text(&self) -> Text<'f> {
         self.0.text()
     }
 

@@ -1,12 +1,13 @@
-use fall_tree::{AstNode, NodeType, Node};
+use fall_tree::{File, AstNode, NodeType, Node};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type};
-use lang::*;
+use ::*;
 
 
 type Spans = Vec<(u32, u32, &'static str)>;
 
-pub fn colorize(file: FallFile) -> Spans {
+pub fn highlight(file: &File) -> Spans {
+    let file = ast(file);
     let mut spans = vec![];
     Visitor(&mut spans)
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {

@@ -5,3 +5,4 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 elapsed = "0.1"
+serde = "1.*"

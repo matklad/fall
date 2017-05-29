@@ -14,5 +14,5 @@ futures-cpupool = "0.1"
 ediproto = { path = "./proto" }
 file = "*"
 env_logger = "*"
-fall_gen = { path = "../../fall_gen" }
 fall_tree = { path = "../../fall_tree" }
+lang_fall = { path = "../../lang/fall" }

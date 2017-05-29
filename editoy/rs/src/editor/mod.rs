@@ -2,10 +2,9 @@ use std::path::PathBuf;
 use xi_rope::tree::Cursor;
 
 use file;
-use fall_gen::colorize;
-use fall_gen::{parse, ast};
 use fall_tree::{Node, WHITESPACE, TextOffset, File, Language};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
+use lang_fall::{LANG_FALL, highlight};
 
 use ediproto::{ViewStateReply, Line, StyledText};
 use model::{Direction, Amount, State, Editor, InputEvent, CowStr};
@@ -41,15 +40,14 @@ impl Editor for EditorImpl {
         }
         let text: String = self.state.text.clone().into();
         if text_changed || self.state.file.is_none() {
-            let file = parse(text.clone());
+            let file = LANG_FALL.parse(text.clone());
             self.state.file = Some(file);
         }
 
         modify_state(&mut self.state,
                      |state| {
                          let file = state.file.as_ref().unwrap();
-                         let ast = ast(&file);
-                         colorize(ast)
+                         highlight(file)
                      },
                      |state, spans| state.spans = spans
         );

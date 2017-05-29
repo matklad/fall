@@ -138,7 +138,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use fall_tree::{AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use fall_tree::search::child_of_type_exn;
 
 #[derive(Clone, Copy)]
@@ -197,7 +197,7 @@ impl<'f> AstNode<'f> for LexRule<'f> {
 }
 
 impl<'f> LexRule<'f> {
-    pub fn node_type(&self) -> &'f str {
+    pub fn node_type(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
@@ -214,7 +214,7 @@ impl<'f> AstNode<'f> for SynRule<'f> {
 }
 
 impl<'f> SynRule<'f> {
-    pub fn name(&self) -> &'f str {
+    pub fn name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
     pub fn body(&self) -> Expr<'f> {
@@ -269,7 +269,7 @@ impl<'f> AstNode<'f> for AstNodeDef<'f> {
 }
 
 impl<'f> AstNodeDef<'f> {
-    pub fn name(&self) -> &'f str {
+    pub fn name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
     pub fn methods(&self) -> AstChildren<'f, MethodDef<'f>> {
@@ -304,7 +304,7 @@ impl<'f> AstNode<'f> for MethodDef<'f> {
 }
 
 impl<'f> MethodDef<'f> {
-    pub fn name(&self) -> &'f str {
+    pub fn name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
@@ -336,7 +336,7 @@ impl<'f> AstNode<'f> for CallExpr<'f> {
 }
 
 impl<'f> CallExpr<'f> {
-    pub fn fn_name(&self) -> &'f str {
+    pub fn fn_name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
     pub fn args(&self) -> AstClassChildren<'f, Expr<'f>> {

@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use {TextRange, NodeType, Language};
+use {Text, TextRange, NodeType, Language};
 use super::{File, Node, NodeBuilder, FileStats};
 
 pub struct FileImpl {
@@ -15,8 +15,8 @@ impl FileImpl {
         Node(NodeImpl { id: self.root, file: self })
     }
 
-    pub fn text(&self) -> &str {
-        &self.text
+    pub fn text(&self) -> Text {
+        Text::from_owned(&self.text)
     }
 
     pub fn stats(&self) -> FileStats {
@@ -49,8 +49,8 @@ impl<'f> NodeImpl<'f> {
         self.data().range
     }
 
-    pub fn text(&self) -> &'f str {
-        &self.file.text[self.range()]
+    pub fn text(&self) -> Text<'f> {
+        self.file.text().slice(self.range())
     }
 
     pub fn parent(&self) -> Option<Node<'f>> {
