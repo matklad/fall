@@ -23,7 +23,8 @@ fn report_diff(expected: &str, actual: &str) {
     let expected = expected.trim();
     if expected != actual {
         let diff = compare_trees(expected, actual);
-        println!("{}", diff);
+        println!("Actual\n{}\n\nExpected:\n{}\n\nDiff:\n{}\n",
+                 actual, expected, diff);
         panic!("Mismatched trees!")
     }
 }

@@ -23,6 +23,8 @@ pub enum Expr {
     Rep(Box<Expr>),
     Opt(Box<Expr>),
     Not(Vec<usize>),
+    Ahead(Vec<usize>),
+    Eof,
     Layer(Box<Expr>, Box<Expr>),
     SkipUntil(Vec<usize>),
 }
@@ -119,6 +121,21 @@ impl<'r> Parser<'r> {
                 }
                 None
             }
+
+            Expr::Ahead(ref ts) => {
+                if let Some(current) = tokens.current() {
+                    if self.token_set_contains(ts, current) {
+                        return Some((nf.create_composite_node(None), tokens))
+                    }
+                }
+                None
+            }
+
+            Expr::Eof => if tokens.current().is_none() {
+                Some((nf.create_composite_node(None), tokens))
+            } else {
+                None
+            },
 
             Expr::Layer(ref l, ref e) => {
                 if let Some((layer_node, rest)) = self.parse_exp(l, tokens, nf) {

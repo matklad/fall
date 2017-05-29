@@ -29,6 +29,70 @@ FILE
 }
 
 #[test]
+fn comma1() {
+    check_syntax(&LANG_JSON, r##"{ "a": 1 "b": 2 }"##, r#"
+FILE
+  OBJECT
+    LBRACE "{"
+    FIELD
+      STRING "\"a\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "1"
+    ERROR ""
+    FIELD
+      STRING "\"b\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "2"
+    RBRACE "}"
+"#);
+}
+
+#[test]
+fn comma2() {
+    check_syntax(&LANG_JSON, r##"{ "a": 1, "b": 2, }"##, r#"
+FILE
+  OBJECT
+    LBRACE "{"
+    FIELD
+      STRING "\"a\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "1"
+    COMMA ","
+    FIELD
+      STRING "\"b\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "2"
+    ERROR ""
+    ERROR
+      COMMA ","
+    RBRACE "}"
+"#);
+}
+
+#[test]
+fn comma3() { //FIXME
+    check_syntax(&LANG_JSON, r##"[1 2 3,]"##, r#"
+FILE
+  ARRAY
+    LBRACK "["
+    PRIMITIVE
+      NUMBER "1"
+    ERROR ""
+    PRIMITIVE
+      NUMBER "2"
+    ERROR ""
+    PRIMITIVE
+      NUMBER "3"
+    COMMA ","
+    RBRACK "]"
+"#);
+}
+
+#[test]
 fn obj_recovery1() {
     check_syntax(&LANG_JSON, r##"{"foo": 1, 92, "bar": 3}"##, r##"
 FILE
@@ -39,8 +103,9 @@ FILE
       COLON ":"
       PRIMITIVE
         NUMBER "1"
-    COMMA ","
+    ERROR ""
     ERROR
+      COMMA ","
       NUMBER "92"
       COMMA ","
     FIELD
@@ -49,6 +114,7 @@ FILE
       PRIMITIVE
         NUMBER "3"
     RBRACE "}"
+
 "##);
 }
 
@@ -68,6 +134,7 @@ FILE
       STRING "\"baz\""
       COLON ":"
       ERROR ""
+    ERROR ""
     ERROR
       COLON ":"
       NUMBER "92"
@@ -97,6 +164,7 @@ FILE
       RBRACE "}"
     PRIMITIVE
       NUMBER "2"
+    ERROR ""
     PRIMITIVE
       NUMBER "3"
     COMMA ","
@@ -105,6 +173,7 @@ FILE
     COMMA ","
     PRIMITIVE
       NULL "null"
+    ERROR ""
     PRIMITIVE
       NUMBER "92"
     RBRACK "]"

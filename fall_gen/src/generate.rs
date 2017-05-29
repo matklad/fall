@@ -95,26 +95,33 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             None => panic!("Unresolved references: {}", ref_.node().text()),
         },
         Expr::CallExpr(call) => {
+            let fn_name = call.fn_name().to_cow();
+            if fn_name == "eof" {
+                return fall_parse::Expr::Eof
+            }
             let mut args = call.args();
-            let arg = args.next().unwrap();
-            match call.fn_name().to_cow().as_ref() {
+            let first_arg = args.next().unwrap();
+            macro_rules! token_set_arg {
+                () => {
+                    first_arg.token_set().unwrap_or_else(|| {
+                        panic!("Bad token set: `{}`", first_arg.node().text())
+                    })
+                }
+            }
+            match fn_name.as_ref() {
+                "not" => fall_parse::Expr::Not(token_set_arg!()),
+                "ahead" => fall_parse::Expr::Ahead(token_set_arg!()),
+                "skip_until" => fall_parse::Expr::SkipUntil(token_set_arg!()),
+
                 "rep" => {
                     assert!(args.next().is_none());
-                    fall_parse::Expr::Rep(Box::new(compile_expr(arg)))
+                    fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)))
                 }
-                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(arg))),
-                "not" => {
-                    fall_parse::Expr::Not(arg.token_set().unwrap_or_else(|| {
-                        panic!("Bad token set: `{}`", arg.node().text())
-                    }))
-                }
+                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg))),
                 "layer" => fall_parse::Expr::Layer(
-                    Box::new(compile_expr(arg)),
+                    Box::new(compile_expr(first_arg)),
                     Box::new(compile_expr(args.next().unwrap()))
                 ),
-                "skip_until" => fall_parse::Expr::SkipUntil(arg.token_set().unwrap_or_else(|| {
-                    panic!("Bad token set: `{}`", arg.node().text())
-                })),
                 _ => unimplemented!(),
             }
         }
