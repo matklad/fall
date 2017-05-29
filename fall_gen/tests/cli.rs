@@ -1,6 +1,6 @@
+extern crate fall_tree;
 extern crate file;
 extern crate tempdir;
-extern crate difference;
 
 use std::process;
 use std::env;
@@ -46,7 +46,7 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
                 .unwrap_or_else(|_| panic!("Failed to write result to {}", generated_path.display()));
             return
         }
-        let difference = difference::Changeset::new(&expected, &generated, "\n");
+        let difference = fall_tree::test_util::compare_trees(&expected, &generated);
         println!("MISMATCH {}\n{}", grammar_path.display(), difference);
         panic!("Mismatch!")
     }

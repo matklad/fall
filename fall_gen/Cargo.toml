@@ -18,4 +18,3 @@ lang_fall = { path = "../lang/fall" }
 
 [dev-dependencies]
 tempdir = "0.3"
-difference = "1.0.0"

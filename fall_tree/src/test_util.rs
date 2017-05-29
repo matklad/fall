@@ -1,27 +1,29 @@
 use ::{Language, dump_file, dump_file_ws};
-use difference;
+use difference::Changeset;
 
 pub fn check_syntax(lang: &Language, input: &str, expected_tree: &str) {
     let file = lang.parse(input.to_owned());
     let actual_tree = dump_file(&file);
-    compare_trees(&actual_tree, expected_tree);
+    report_diff(expected_tree, &actual_tree);
 }
 
 pub fn check_syntax_ws(lang: &Language, input: &str, expected_tree: &str) {
     let file = lang.parse(input.to_owned());
     let actual_tree = dump_file_ws(&file);
-    compare_trees(&actual_tree, expected_tree);
+    report_diff(expected_tree, &actual_tree);
 }
 
-fn compare_trees(expected: &str, actual: &str) {
+pub fn compare_trees(expected: &str, actual: &str) -> Changeset {
+    Changeset::new(&expected, &actual, "\n")
+}
+
+
+fn report_diff(expected: &str, actual: &str) {
     let actual = actual.trim();
     let expected = expected.trim();
-    if actual == expected {
-        return;
+    if expected != actual {
+        let diff = compare_trees(expected, actual);
+        println!("{}", diff);
+        panic!("Mismatched trees!")
     }
-    let difference = difference::Changeset::new(&expected, &actual, "\n");
-    println!("{}", difference);
-    panic!("Different trees!")
 }
-
-
