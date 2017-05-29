@@ -5,7 +5,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.Text
 
 class Settings {
-    val defaultFile = "/home/matklad/projects/fall/fall_gen/src/lang/syntax.fall"
+    val defaultFile = "/home/matklad/projects/fall/lang/fall/src/syntax.fall"
     val buildCommand = ProcessBuilder("/home/matklad/.cargo/bin/cargo", "build", "--manifest-path", "../rs/Cargo.toml")
     val backendCommand = ProcessBuilder("../rs/target/debug/ediback").apply {
         environment() += "RUST_BACKTRACE" to "short"
