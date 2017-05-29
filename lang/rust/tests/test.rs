@@ -1,22 +1,18 @@
-extern crate fall_test;
 extern crate fall_tree;
+extern crate lang_rust;
 
-use fall_test::{rust, match_ast};
-use fall_tree::dump_file;
+use fall_tree::test_util::check_syntax;
+use lang_rust::LANG_RUST;
 
-
-fn ast(code: &str) -> String {
-    dump_file(&rust::LANG.parse(code.to_owned()))
-}
 
 #[test]
 fn opt_pub() {
-    match_ast(&ast("\
+    check_syntax(&LANG_RUST, "\
 struct Foo {}
 fn bar() {}
 pub struct Baz {}
 pub fn quux() {}
-"), r#"
+", r#"
 FILE
   STRUCT_DEF
     STRUCT "struct"
@@ -49,7 +45,7 @@ FILE
 
 #[test]
 fn missing_token() {
-    match_ast(&ast("fn foo foo"), r#"
+    check_syntax(&LANG_RUST, "fn foo foo", r#"
 FILE
   FN_DEF
     FN "fn"
@@ -62,7 +58,7 @@ FILE
 
 #[test]
 fn skipping() {
-    match_ast(&ast("foo fn foo(){} bar baz struct S {} quuz"), r#"
+    check_syntax(&LANG_RUST, "foo fn foo(){} bar baz struct S {} quuz", r#"
 FILE
   ERROR
     IDENT "foo"

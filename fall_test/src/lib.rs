@@ -6,7 +6,6 @@ extern crate fall_tree;
 
 pub mod sexp;
 pub mod weird;
-pub mod rust;
 
 pub fn match_ast(actual: &str, expected: &str) {
     let actual = actual.trim();

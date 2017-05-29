@@ -55,8 +55,8 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
 #[test]
 fn test_grammars_are_fresh() {
     check_by_path("../fall_test/src/sexp.fall");
-    check_by_path("../fall_test/src/rust.fall");
     check_by_path("../fall_test/src/weird.fall");
+    check_by_path("../lang/rust/src/syntax.fall");
     check_by_path("../lang/json/src/syntax.fall");
 
     check_by_path("../lang/fall/src/syntax.fall")
