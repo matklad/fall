@@ -2,6 +2,7 @@ package ru.matklad
 
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.geometry.VPos
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 import ru.matklad.backend.Backend
@@ -59,6 +60,7 @@ class GridDrawer(
 ) {
     fun drawText(position: GridPosition, text: String, style: TextStyle) {
         g.fill = style.color
+        g.textBaseline = VPos.BOTTOM
         g.fillText(text, position.xx, position.yy + cellSize.height)
     }
 
