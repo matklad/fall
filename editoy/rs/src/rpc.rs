@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use futures::{self, Future, Sink, Stream};
-use grpc::{GrpcRequestOptions, GrpcSingleResponse, GrpcStreamingResponse};
+use grpc::{RequestOptions, SingleResponse, StreamingResponse};
 
 use ediproto::{InputEvent as EventRequest, EventReply, ViewStateRequest, ViewStateReply, Editor as ProtoEditor};
 use model::{Editor, InputEvent};
@@ -23,28 +23,28 @@ impl<E: Default + Editor> Default for EditorServerImpl<E> {
 }
 
 impl<E: Editor> ProtoEditor for EditorServerImpl<E> {
-    fn event(&self, _: GrpcRequestOptions, p: EventRequest) -> GrpcSingleResponse<EventReply> {
+    fn event(&self, _: RequestOptions, p: EventRequest) -> SingleResponse<EventReply> {
         let mut g = self.editor.lock().unwrap();
         g.0.apply(input_event_from_proto(p));
         let view_state = g.0.render();
 
         let reply = futures::finished(EventReply::new());
         let sink = g.1.clone();
-        GrpcSingleResponse::no_metadata(
+        SingleResponse::no_metadata(
             sink.send(view_state)
                 .map_err(|_| unreachable!())
                 .and_then(|_| reply)
         )
     }
 
-    fn updates(&self, _: GrpcRequestOptions, _: ViewStateRequest) -> GrpcStreamingResponse<ViewStateReply> {
+    fn updates(&self, _: RequestOptions, _: ViewStateRequest) -> StreamingResponse<ViewStateReply> {
         let mut g = self.editor.lock().unwrap();
         let mut stream = None;
         ::std::mem::swap(&mut stream, &mut g.2);
         let stream = stream.unwrap();
         let stream = stream.map_err(|_| unreachable!());
 
-        GrpcStreamingResponse::no_metadata(stream)
+        StreamingResponse::no_metadata(stream)
     }
 }
 

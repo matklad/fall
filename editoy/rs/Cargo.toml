@@ -7,7 +7,7 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
 xi-rope = "*"
-grpc = "0.1.4"
+grpc = "0.1.7"
 protobuf        = "1.*"
 futures         = "0.1"
 futures-cpupool = "0.1"
