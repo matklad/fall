@@ -110,13 +110,17 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             }
             match fn_name.as_ref() {
                 "not" => fall_parse::Expr::Not(token_set_arg!()),
-                "ahead" => fall_parse::Expr::Ahead(token_set_arg!()),
                 "skip_until" => fall_parse::Expr::SkipUntil(token_set_arg!()),
 
                 "rep" => {
                     assert!(args.next().is_none());
                     fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)))
                 }
+                "not_ahead" => {
+                    assert!(args.next().is_none());
+                    fall_parse::Expr::NotAhead(Box::new(compile_expr(first_arg)))
+                },
+
                 "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg))),
                 "layer" => fall_parse::Expr::Layer(
                     Box::new(compile_expr(first_arg)),

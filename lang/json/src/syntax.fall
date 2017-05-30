@@ -26,7 +26,7 @@ pub rule object {
 rule object_body {
   <rep {
     <skip_until string>
-    field <commit> {',' <ahead string>| <eof>}
+    field <commit> {',' <not_ahead <eof>> | <eof>}
   }>
 }
 
@@ -43,7 +43,7 @@ pub rule array {
 rule array_body {
   <rep {
     <skip_until { 'null' | number | string | bool | '{' | '[' }>
-    value <commit> {',' | <eof>}
+    value <commit> {',' <not_ahead <eof>> | <eof>}
   }>
 }
 

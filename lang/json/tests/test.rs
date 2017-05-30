@@ -87,7 +87,9 @@ FILE
     ERROR ""
     PRIMITIVE
       NUMBER "3"
-    COMMA ","
+    ERROR ""
+    ERROR
+      COMMA ","
     RBRACK "]"
 "#);
 }
@@ -103,9 +105,8 @@ FILE
       COLON ":"
       PRIMITIVE
         NUMBER "1"
-    ERROR ""
+    COMMA ","
     ERROR
-      COMMA ","
       NUMBER "92"
       COMMA ","
     FIELD
@@ -114,7 +115,6 @@ FILE
       PRIMITIVE
         NUMBER "3"
     RBRACE "}"
-
 "##);
 }
 
