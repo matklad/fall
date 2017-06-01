@@ -122,9 +122,11 @@ pub fn parse(
     lang: Language,
     text: String,
     tokenizer: &[LexRule],
-    parser: &Fn(&TokenSequence, &mut NodeFactory) -> Node
+    parser: &Fn(&TokenSequence, &mut NodeFactory, &mut FileStats) -> Node
 ) -> File {
+    let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
+    stats.lexing_time = lex_time.duration();
     let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, t)| {
         if t.ty == WHITESPACE {
             None
@@ -139,10 +141,11 @@ pub fn parse(
             original_tokens: &owned_tokens,
         };
         let mut nf = NodeFactory {};
-        measure_time(|| { parser(&tokens, &mut nf) })
+        measure_time(|| parser(&tokens, &mut nf, &mut stats))
     };
+    stats.parsing_time = parse_time.duration();
     let pre_node = to_pre_node(node, &owned_tokens);
-    let stats = FileStats { lexing_time: lex_time, parsing_time: parse_time };
+
 
     let mut builder = FileBuilder::new(lang, text, stats);
     go(&mut builder, None, pre_node);

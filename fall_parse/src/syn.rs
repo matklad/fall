@@ -1,4 +1,4 @@
-use fall_tree::{NodeType};
+use fall_tree::{NodeType, FileStats};
 use lex::Token;
 
 use tree_builder::{Node, TokenSequence, NodeFactory};
@@ -29,37 +29,47 @@ pub enum Expr {
     SkipUntil(Vec<usize>),
 }
 
+struct Ctx<'p> {
+    ticks: u64,
+    node_factory: &'p mut NodeFactory,
+}
+
 impl<'r> Parser<'r> {
     pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
         Parser { node_types, rules: rules }
     }
 
-    pub fn parse(&self, tokens: TokenSequence, nf: &mut NodeFactory) -> Node {
-        let (mut file_node, mut leftover) = self.parse_exp(&Expr::Rule(0), tokens, nf).unwrap_or_else(|| {
-            let ty = self.node_type(self.rules[0].ty
-                .expect("First rule must be public"));
-            (nf.create_composite_node(Some(ty)), tokens)
-        });
-        let mut error = nf.create_error_node();
+    pub fn parse(&self, tokens: TokenSequence, nf: &mut NodeFactory, stats: &mut FileStats) -> Node {
+        let mut ctx = Ctx { ticks: 0, node_factory: nf };
+        let (mut file_node, mut leftover) = self
+            .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
+            .unwrap_or_else(|| {
+                let ty = self.node_type(self.rules[0].ty
+                    .expect("First rule must be public"));
+                (ctx.node_factory.create_composite_node(Some(ty)), tokens)
+            });
+        let mut error = ctx.node_factory.create_error_node();
         let mut skipped = false;
         while leftover.current().is_some() {
             skipped = true;
-            let p = nf.create_leaf_node(leftover);
+            let p = ctx.node_factory.create_leaf_node(leftover);
             leftover = p.1;
             error.push_child(p.0)
         }
         if skipped {
             file_node.push_child(error)
         }
+        stats.parsing_ticks = ctx.ticks;
         file_node
     }
 
-    fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, nf: &mut NodeFactory)
+    fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
                      -> Option<(Node, TokenSequence<'t>)> {
+        ctx.ticks += 1;
         match *expr {
             Expr::Or(ref parts) => {
                 for p in parts.iter() {
-                    if let Some(result) = self.parse_exp(p, tokens, nf) {
+                    if let Some(result) = self.parse_exp(p, tokens, ctx) {
                         return Some(result)
                     }
                 }
@@ -67,18 +77,18 @@ impl<'r> Parser<'r> {
             }
 
             Expr::And(ref parts, commit) => {
-                let mut node = nf.create_composite_node(None);
+                let mut node = ctx.node_factory.create_composite_node(None);
                 let commit = commit.unwrap_or(parts.len());
                 let mut tokens = tokens;
                 for (i, p) in parts.iter().enumerate() {
-                    if let Some((n, ts)) = self.parse_exp(p, tokens, nf) {
+                    if let Some((n, ts)) = self.parse_exp(p, tokens, ctx) {
                         tokens = ts;
                         node.push_child(n);
                     } else {
                         if i < commit {
                             return None
                         }
-                        let error_node = nf.create_error_node();
+                        let error_node = ctx.node_factory.create_error_node();
                         node.push_child(error_node);
                         break
                     }
@@ -89,8 +99,8 @@ impl<'r> Parser<'r> {
             Expr::Rule(id) => {
                 let rule = &self.rules[id];
                 let ty = rule.ty.map(|ty| self.node_type(ty));
-                if let Some((node, ts)) = self.parse_exp(&rule.body, tokens, nf) {
-                    let mut result = nf.create_composite_node(ty);
+                if let Some((node, ts)) = self.parse_exp(&rule.body, tokens, ctx) {
+                    let mut result = ctx.node_factory.create_composite_node(ty);
                     result.push_child(node);
                     Some((result, ts))
                 } else {
@@ -101,47 +111,47 @@ impl<'r> Parser<'r> {
             Expr::Token(ty) => {
                 if let Some(current) = tokens.current() {
                     if self.token_set_contains(&[ty], current) {
-                        return Some(nf.create_leaf_node(tokens))
+                        return Some(ctx.node_factory.create_leaf_node(tokens))
                     }
                 }
                 None
             }
 
-            Expr::Opt(ref body) => self.parse_exp(&*body, tokens, nf).or_else(|| {
-                Some(nf.create_success_node(tokens))
+            Expr::Opt(ref body) => self.parse_exp(&*body, tokens, ctx).or_else(|| {
+                Some(ctx.node_factory.create_success_node(tokens))
             }),
 
             Expr::Not(ref ts) => {
                 if let Some(current) = tokens.current() {
                     if !self.token_set_contains(ts, current) {
-                        return Some(nf.create_leaf_node(tokens))
+                        return Some(ctx.node_factory.create_leaf_node(tokens))
                     }
                 }
                 None
             }
 
-            Expr::NotAhead(ref e) => if self.parse_exp(e, tokens, nf).is_some() {
+            Expr::NotAhead(ref e) => if self.parse_exp(e, tokens, ctx).is_some() {
                 None
             } else {
-                Some(nf.create_success_node(tokens))
+                Some(ctx.node_factory.create_success_node(tokens))
             },
 
             Expr::Eof => if tokens.current().is_none() {
-                Some(nf.create_success_node(tokens))
+                Some(ctx.node_factory.create_success_node(tokens))
             } else {
                 None
             },
 
             Expr::Layer(ref l, ref e) => {
-                if let Some((layer_node, rest)) = self.parse_exp(l, tokens, nf) {
-                    let mut result = nf.create_composite_node(None);
+                if let Some((layer_node, rest)) = self.parse_exp(l, tokens, ctx) {
+                    let mut result = ctx.node_factory.create_composite_node(None);
                     let layer = tokens.tokens_of_node(&layer_node);
-                    if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, nf) {
+                    if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, ctx) {
                         result.push_child(layer_contents);
                         if leftovers.current().is_some() {
-                            let mut error = nf.create_error_node();
+                            let mut error = ctx.node_factory.create_error_node();
                             while leftovers.current().is_some() {
-                                let p = nf.create_leaf_node(leftovers);
+                                let p = ctx.node_factory.create_leaf_node(leftovers);
                                 error.push_child(p.0);
                                 leftovers = p.1;
                             }
@@ -154,10 +164,10 @@ impl<'r> Parser<'r> {
             }
 
             Expr::Rep(ref body) => {
-                let mut node = nf.create_composite_node(None);
+                let mut node = ctx.node_factory.create_composite_node(None);
                 let mut tokens = tokens;
                 loop {
-                    if let Some((n, t)) = self.parse_exp(body, tokens, nf) {
+                    if let Some((n, t)) = self.parse_exp(body, tokens, ctx) {
                         node.push_child(n);
                         tokens = t;
                     } else {
@@ -168,7 +178,7 @@ impl<'r> Parser<'r> {
             }
 
             Expr::SkipUntil(ref ts) => {
-                let mut result = nf.create_error_node();
+                let mut result = ctx.node_factory.create_error_node();
                 let mut skipped = false;
                 let mut tokens = tokens;
                 loop {
@@ -177,7 +187,7 @@ impl<'r> Parser<'r> {
                             break;
                         } else {
                             skipped = true;
-                            let p = nf.create_leaf_node(tokens);
+                            let p = ctx.node_factory.create_leaf_node(tokens);
                             result.push_child(p.0);
                             tokens = p.1;
                         }
@@ -187,7 +197,7 @@ impl<'r> Parser<'r> {
                 }
 
                 if !skipped {
-                    return Some(nf.create_success_node(tokens));
+                    return Some(ctx.node_factory.create_success_node(tokens));
                 }
 
                 Some((result, tokens))

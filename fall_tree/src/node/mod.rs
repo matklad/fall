@@ -1,5 +1,4 @@
-use elapsed::ElapsedDuration;
-
+use std::time::Duration;
 use {Text, TextRange, NodeType, Language};
 
 mod imp;
@@ -13,10 +12,21 @@ pub struct File {
 
 #[derive(Clone, Copy, Debug)]
 pub struct FileStats {
-    pub lexing_time: ElapsedDuration,
-    pub parsing_time: ElapsedDuration,
-//    pub parsing_ticks: u64,
+    pub lexing_time: Duration,
+    pub parsing_time: Duration,
+    pub parsing_ticks: u64,
 }
+
+impl FileStats {
+    pub fn new() -> FileStats  {
+        FileStats {
+            lexing_time: Default::default(),
+            parsing_time: Default::default(),
+            parsing_ticks: Default::default(),
+        }
+    }
+}
+
 
 impl File {
     pub fn language(&self) -> &Language {
