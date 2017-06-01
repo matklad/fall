@@ -107,11 +107,9 @@ impl<'r> Parser<'r> {
                 None
             }
 
-            Expr::Opt(ref body) => {
-                self.parse_exp(&*body, tokens, nf).or_else(|| {
-                    Some((nf.create_composite_node(None), tokens))
-                })
-            }
+            Expr::Opt(ref body) => self.parse_exp(&*body, tokens, nf).or_else(|| {
+                Some(nf.create_success_node(tokens))
+            }),
 
             Expr::Not(ref ts) => {
                 if let Some(current) = tokens.current() {
@@ -125,11 +123,11 @@ impl<'r> Parser<'r> {
             Expr::NotAhead(ref e) => if self.parse_exp(e, tokens, nf).is_some() {
                 None
             } else {
-                Some((nf.create_composite_node(None), tokens))
+                Some(nf.create_success_node(tokens))
             },
 
             Expr::Eof => if tokens.current().is_none() {
-                Some((nf.create_composite_node(None), tokens))
+                Some(nf.create_success_node(tokens))
             } else {
                 None
             },
@@ -189,7 +187,7 @@ impl<'r> Parser<'r> {
                 }
 
                 if !skipped {
-                    result = nf.create_composite_node(None);
+                    return Some(nf.create_success_node(tokens));
                 }
 
                 Some((result, tokens))
