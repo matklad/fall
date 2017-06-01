@@ -15,6 +15,7 @@ pub struct File {
 pub struct FileStats {
     pub lexing_time: ElapsedDuration,
     pub parsing_time: ElapsedDuration,
+//    pub parsing_ticks: u64,
 }
 
 impl File {
@@ -76,11 +77,8 @@ pub struct FileBuilder(imp::FileBuilderImpl);
 pub struct NodeBuilder(imp::NodeId);
 
 impl FileBuilder {
-    pub fn new(lang: Language, text: String, lex_time: ElapsedDuration, parse_time: ElapsedDuration) -> FileBuilder {
-        FileBuilder(imp::FileBuilderImpl::new(lang, text, FileStats {
-            lexing_time: lex_time,
-            parsing_time: parse_time,
-        }))
+    pub fn new(lang: Language, text: String, stats: FileStats) -> FileBuilder {
+        FileBuilder(imp::FileBuilderImpl::new(lang, text, stats))
     }
 
     pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)
