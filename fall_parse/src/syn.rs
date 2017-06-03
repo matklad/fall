@@ -143,9 +143,9 @@ impl<'r> Parser<'r> {
             },
 
             Expr::Layer(ref l, ref e) => {
-                if let Some((layer_node, rest)) = self.parse_exp(l, tokens, ctx) {
+                if let Some((_, rest)) = self.parse_exp(l, tokens, ctx) {
                     let mut result = ctx.node_factory.create_composite_node(None);
-                    let layer = tokens.tokens_of_node(&layer_node);
+                    let layer = tokens.prefix(rest);
                     if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, ctx) {
                         result.push_child(layer_contents);
                         if leftovers.current().is_some() {

@@ -20,23 +20,23 @@ pub enum Node {
 }
 
 impl<'a> TokenSequence<'a> {
+    pub fn prefix(&self, suffix: TokenSequence<'a>) -> TokenSequence<'a> {
+        if let Some(&idx) = suffix.non_ws_indexes.first() {
+            let idx = self.non_ws_indexes.iter().position(|&i| i == idx).unwrap();
+            TokenSequence {
+                text: self.text,
+                non_ws_indexes: &self.non_ws_indexes[..idx],
+                original_tokens: self.original_tokens
+            }
+        } else {
+            *self
+        }
+    }
+
     pub fn current(&self) -> Option<Token> {
         self.non_ws_indexes.first().map(|&idx| {
             self.original_tokens[idx]
         })
-    }
-
-    pub fn tokens_of_node(&self, node: &Node) -> TokenSequence<'a> {
-        let idx = match node.right_idx() {
-            Some(tidx) => self.non_ws_indexes.iter().position(|&i| i == tidx).unwrap() + 1,
-            None => 0
-        };
-
-        TokenSequence {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[..idx],
-            original_tokens: self.original_tokens
-        }
     }
 
     fn bump(&self) -> TokenSequence<'a> {
