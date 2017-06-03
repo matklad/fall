@@ -74,12 +74,6 @@ impl NodeFactory {
 
 impl Node {
     pub fn push_child(&mut self, child: Node) {
-        if let Node::Composite(None, ref children) = child {
-            if children.is_empty() {
-                // Microoptimization: don't store empty success nodes
-                return;
-            }
-        }
         match *self {
             Node::Composite(_, ref mut children) => children.push(child),
             Node::Leaf(..) => panic!("Can't add children to a leaf node"),

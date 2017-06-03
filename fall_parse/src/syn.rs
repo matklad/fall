@@ -32,6 +32,7 @@ pub enum Expr {
 struct Ctx<'p> {
     ticks: u64,
     node_factory: &'p mut NodeFactory,
+    predicate_mode: bool,
 }
 
 impl<'p> Ctx<'p> {
@@ -50,6 +51,19 @@ impl<'p> Ctx<'p> {
     fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
         self.node_factory.create_success_node(tokens)
     }
+
+    fn push_child(&self, parent: &mut Node, child: Node) {
+        if self.predicate_mode {
+            return;
+        }
+        if let Node::Composite(None, ref children) = child {
+            if children.is_empty() {
+                // Microoptimization: don't store empty success nodes
+                return;
+            }
+        }
+        parent.push_child(child)
+    }
 }
 
 impl<'r> Parser<'r> {
@@ -58,7 +72,7 @@ impl<'r> Parser<'r> {
     }
 
     pub fn parse(&self, tokens: TokenSequence, nf: &mut NodeFactory, stats: &mut FileStats) -> Node {
-        let mut ctx = Ctx { ticks: 0, node_factory: nf };
+        let mut ctx = Ctx { ticks: 0, node_factory: nf, predicate_mode: false };
         let (mut file_node, mut leftover) = self
             .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
             .unwrap_or_else(|| {
@@ -72,10 +86,10 @@ impl<'r> Parser<'r> {
             skipped = true;
             let p = ctx.create_leaf_node(leftover);
             leftover = p.1;
-            error.push_child(p.0)
+            ctx.push_child(&mut error, p.0)
         }
         if skipped {
-            file_node.push_child(error)
+            ctx.push_child(&mut file_node, error)
         }
         stats.parsing_ticks = ctx.ticks;
         file_node
@@ -101,13 +115,13 @@ impl<'r> Parser<'r> {
                 for (i, p) in parts.iter().enumerate() {
                     if let Some((n, ts)) = self.parse_exp(p, tokens, ctx) {
                         tokens = ts;
-                        node.push_child(n);
+                        ctx.push_child(&mut node, n);
                     } else {
                         if i < commit {
                             return None
                         }
                         let error_node = ctx.create_error_node();
-                        node.push_child(error_node);
+                        ctx.push_child(&mut node, error_node);
                         break
                     }
                 }
@@ -119,7 +133,7 @@ impl<'r> Parser<'r> {
                 let ty = rule.ty.map(|ty| self.node_type(ty));
                 if let Some((node, ts)) = self.parse_exp(&rule.body, tokens, ctx) {
                     let mut result = ctx.create_composite_node(ty);
-                    result.push_child(node);
+                    ctx.push_child(&mut result, node);
                     Some((result, ts))
                 } else {
                     None
@@ -161,19 +175,27 @@ impl<'r> Parser<'r> {
             },
 
             Expr::Layer(ref l, ref e) => {
-                if let Some((_, rest)) = self.parse_exp(l, tokens, ctx) {
+                let layer = {
+                    let old_mode = ctx.predicate_mode;
+                    ctx.predicate_mode = true;
+                    let layer = self.parse_exp(l, tokens, ctx);
+                    ctx.predicate_mode = old_mode;
+                    layer
+                };
+
+                if let Some((_, rest)) = layer {
                     let mut result = ctx.create_composite_node(None);
                     let layer = tokens.prefix(rest);
                     if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, ctx) {
-                        result.push_child(layer_contents);
+                        ctx.push_child(&mut result, layer_contents);
                         if leftovers.current().is_some() {
                             let mut error = ctx.create_error_node();
                             while leftovers.current().is_some() {
                                 let p = ctx.create_leaf_node(leftovers);
-                                error.push_child(p.0);
+                                ctx.push_child(&mut error, p.0);
                                 leftovers = p.1;
                             }
-                            result.push_child(error)
+                            ctx.push_child(&mut result, error)
                         }
                     };
                     return Some((result, rest));
@@ -186,7 +208,7 @@ impl<'r> Parser<'r> {
                 let mut tokens = tokens;
                 loop {
                     if let Some((n, t)) = self.parse_exp(body, tokens, ctx) {
-                        node.push_child(n);
+                        ctx.push_child(&mut node, n);
                         tokens = t;
                     } else {
                         break;
@@ -206,7 +228,7 @@ impl<'r> Parser<'r> {
                         } else {
                             skipped = true;
                             let p = ctx.create_leaf_node(tokens);
-                            result.push_child(p.0);
+                            ctx.push_child(&mut result, p.0);
                             tokens = p.1;
                         }
                     } else {
