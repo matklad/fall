@@ -132,7 +132,7 @@ impl FileBuilderImpl {
                 ty: node.ty(),
                 parent: None,
                 children: Vec::new(),
-                range: TextRange::from_to_off(range_start, range_start + node.len()),
+                range: TextRange::from_to(range_start, range_start + node.len()),
             });
             let mut range_start = range_start;
             for child in node.children() {

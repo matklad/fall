@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
 use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, FileBuilder, TextRange,
-                FileStats, ImmutableNode, ImmutableNodeBuilder};
+                FileStats, ImmutableNode, ImmutableNodeBuilder, TextUnit};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -248,10 +248,10 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
 }
 
 fn extend_range(r: &mut TextRange, right: TextRange) {
-    if right.end() == 0 {
+    if right.end() == TextUnit::zero() {
         return
     }
-    if r.end() == 0 {
+    if r.end() == TextUnit::zero() {
         *r = right;
         return
     }

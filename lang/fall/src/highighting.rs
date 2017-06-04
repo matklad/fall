@@ -17,7 +17,7 @@ pub fn highlight(file: &File) -> Spans {
             colorize_node(node, "keyword", spans)
         })
         .visit_nodes(&[ERROR], |spans, node| {
-            spans.push((node.range().start(), node.range().end() + 1, "error"))
+            spans.push((node.range().start().as_u32(), node.range().end().as_u32() + 1, "error"))
         })
         .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
         .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
@@ -40,7 +40,7 @@ pub fn highlight(file: &File) -> Spans {
 }
 
 fn colorize_node(node: Node, color: &'static str, spans: &mut Spans) {
-    spans.push((node.range().start(), node.range().end(), color))
+    spans.push((node.range().start().as_u32(), node.range().end().as_u32(), color))
 }
 
 fn colorize_child(node: Node, child: NodeType, color: &'static str, spans: &mut Spans) {

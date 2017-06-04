@@ -1,5 +1,5 @@
 use regex::Regex;
-use fall_tree::{NodeType, TextRange, ERROR};
+use fall_tree::{NodeType, TextRange, ERROR, TextUnit};
 
 pub type CustomRule = fn(&str) -> Option<usize>;
 
@@ -81,7 +81,10 @@ impl<'t, 'r> TokenIter<'t, 'r> {
     }
 
     fn token(&mut self, ty: NodeType, len: usize) -> Token {
-        let range = TextRange::from_to(self.offset as u32, (self.offset + len) as u32);
+        let range = TextRange::from_to(
+            TextUnit::from_usize(self.offset),
+            TextUnit::from_usize(self.offset + len)
+        );
         self.rest = &self.rest[len..];
         self.offset += len;
         Token { ty: ty, range: range }

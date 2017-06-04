@@ -190,7 +190,7 @@ fn lit_body(lit: Text) -> Text {
     let q = if lit.starts_with("'") { "'" } else { "\"" };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();
-    lit.slice(TextRange::from_to_off(s + 1, e))
+    lit.slice(TextRange::from_to(s + 1, e))
 }
 
 fn has(node: Node, ty: NodeType) -> bool {

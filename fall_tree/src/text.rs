@@ -13,11 +13,11 @@ impl<'f> Text<'f> {
     pub fn from_owned(owned: &String) -> Text {
         Text {
             owned: owned,
-            range: TextRange::from_to(0, owned.len() as u32)
+            range: TextRange::from_to(TextUnit::zero(), TextUnit::measure(owned))
         }
     }
 
-    pub fn len(&self) -> u32 {
+    pub fn len(&self) -> TextUnit {
         self.range.end() - self.range.start()
     }
 
@@ -60,7 +60,10 @@ impl<'f> Text<'f> {
             .rfind(non_ws)
             .map(|last| last + s[last..].chars().next().unwrap().len_utf8())
             .unwrap_or(0);
-        self.slice(TextRange::from_to(left as u32, (left + right) as u32))
+        self.slice(TextRange::from_to(
+            TextUnit(left as u32),
+            TextUnit((left + right) as u32)
+        ))
     }
 
     pub fn to_string(&self) -> String {
@@ -111,8 +114,8 @@ impl<'f, 's> PartialEq<&'s str> for Text<'f> {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct TextRange {
-    start: u32,
-    end: u32,
+    start: TextUnit,
+    end: TextUnit,
 }
 
 impl fmt::Debug for TextRange {
@@ -122,29 +125,24 @@ impl fmt::Debug for TextRange {
 }
 
 impl TextRange {
-    pub fn from_to(start: u32, end: u32) -> TextRange {
-        assert!(start <= end, "Invalid range, start: {} end: {}", start, end);
+    pub fn from_to(start: TextUnit, end: TextUnit) -> TextRange {
         TextRange { start: start, end: end }
     }
 
-    pub fn from_to_off(start: TextUnit, end: TextUnit) -> TextRange {
-        TextRange::from_to(start.0, end.0)
-    }
-
-    pub fn start(&self) -> u32 {
+    pub fn start(&self) -> TextUnit {
         self.start
     }
 
-    pub fn end(&self) -> u32 {
+    pub fn end(&self) -> TextUnit {
         self.end
     }
 
     pub fn len(&self) -> TextUnit {
-        TextUnit(self.end - self.start)
+        self.end - self.start
     }
 
     pub fn empty() -> TextRange {
-        TextRange::from_to(0, 0)
+        TextRange::from_to(TextUnit::zero(), TextUnit::zero())
     }
 
     pub fn is_subrange_of(self, other: TextRange) -> bool {
@@ -167,6 +165,18 @@ pub struct TextUnit(u32);
 impl TextUnit {
     pub fn zero() -> TextUnit {
         TextUnit(0)
+    }
+
+    pub fn from_usize(n: usize) -> TextUnit {
+        TextUnit(n as u32)
+    }
+
+    pub fn as_u32(&self) -> u32 {
+        self.0
+    }
+
+    pub fn measure(text: &str) -> TextUnit {
+        TextUnit(text.len() as u32)
     }
 
     pub fn in_range(range: TextRange, off: usize) -> Option<TextUnit> {
@@ -212,14 +222,27 @@ impl ops::Sub<u32> for TextUnit {
     }
 }
 
+impl ops::Sub<TextUnit> for TextUnit {
+    type Output = TextUnit;
+    fn sub(self, rhs: TextUnit) -> TextUnit {
+        TextUnit(self.0 - rhs.0)
+    }
+}
+
 impl fmt::Debug for TextUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
     }
 }
 
+impl fmt::Display for TextUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 pub fn is_offset_in_range(offset: TextUnit, range: TextRange) -> bool {
-    return range.start <= offset.0 && offset.0 <= range.end
+    return range.start() <= offset && offset <= range.end()
 }
 
 
@@ -227,7 +250,7 @@ impl ::std::ops::Index<TextRange> for str {
     type Output = str;
 
     fn index(&self, index: TextRange) -> &str {
-        &self[index.start() as usize..index.end() as usize]
+        &self[index.start().0 as usize..index.end().0 as usize]
     }
 }
 
@@ -235,6 +258,6 @@ impl ::std::ops::Index<TextRange> for String {
     type Output = str;
 
     fn index(&self, index: TextRange) -> &str {
-        &self[index.start() as usize..index.end() as usize]
+        &self[index.start().0 as usize..index.end().0 as usize]
     }
 }
