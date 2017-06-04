@@ -32,6 +32,9 @@ pub fn highlight(file: &File) -> Spans {
             colorize_child(call.node(), LANGLE, "builtin", spans);
             colorize_child(call.node(), RANGLE, "builtin", spans);
         })
+        .visit::<Attributes, _>(|spans, attrs| {
+            colorize_node(attrs.node(), "meta", spans)
+        })
         .walk_recursively_children_first(file.node());
     spans
 }

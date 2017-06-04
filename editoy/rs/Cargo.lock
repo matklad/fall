@@ -103,6 +103,7 @@ name = "ediback"
 version = "0.1.0"
 dependencies = [
  "ediproto 0.1.0",
+ "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_tree 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -4,8 +4,12 @@ tokenizer {
   star '*'
   question '?'
   dot '.'
+  comma ','
+  hash '#'
   lbrace '{'
   rbrace '}'
+  lbrack '['
+  rbrack ']'
   langle '<'
   rangle '>'
   lparen '('
@@ -26,7 +30,7 @@ tokenizer {
 
 pub rule fall_file {
   tokenizer_def
-  <rep { <skip_until {'pub' | 'rule'}> syn_rule }>
+  <rep { <skip_until {'pub' | 'rule' | '#'}> syn_rule }>
   <opt verbatim_def>
   <opt ast_def>
 }
@@ -38,7 +42,14 @@ pub rule tokenizer_def {
 pub rule lex_rule { ident <commit> string <opt string> }
 
 pub rule syn_rule {
-  <opt 'pub'> 'rule' <commit> ident block_expr
+  <opt attributes> <opt 'pub'> 'rule'
+  <commit> ident block_expr
+}
+
+pub rule attributes {
+    '#' '['
+     <rep {ident { ',' | &']' } }>
+     ']'
 }
 
 pub rule string { simple_string | hash_string }
@@ -106,8 +117,12 @@ ast {
   }
 
   node syn_rule {
+    attributes attributes
     name IDENT.text
     body expr
+  }
+
+  node attributes {
   }
 
   node verbatim_def { }

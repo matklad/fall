@@ -6,6 +6,7 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [workspace]
 
 [dependencies]
+elapsed = "*"
 xi-rope = "*"
 grpc = "0.1.7"
 protobuf        = "1.*"

@@ -23,6 +23,7 @@ class Settings {
 
     val colors: Map<String, Color> = """
         background 3F3F3F
+        meta BFEBBF
         text DCDCCC
         keyword F0DFAF
         token DFAF8F

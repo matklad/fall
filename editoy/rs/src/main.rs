@@ -1,4 +1,5 @@
 extern crate ediproto;
+extern crate elapsed;
 extern crate futures;
 extern crate grpc;
 extern crate file;
