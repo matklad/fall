@@ -1,4 +1,4 @@
-use {Node, NodeType, AstNode, TextOffset};
+use {Node, NodeType, AstNode, TextUnit};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -71,7 +71,7 @@ impl<'f> LeafAtOffset<'f> {
     }
 }
 
-pub fn find_leaf_at_offset(node: Node, offset: TextOffset) -> LeafAtOffset {
+pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     let range = node.range();
     assert!(::is_offset_in_range(offset, node.range()), "Bad offset: range {:?} offset {:?}", range, offset);
     if range.is_empty() {

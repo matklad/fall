@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use {Text, TextRange, NodeType, Language};
+use {Text, TextRange, NodeType, Language, TextUnit};
 use super::{File, Node, FileStats};
 use super::immutable::ImmutableNode;
 
@@ -115,7 +115,7 @@ impl FileBuilderImpl {
 
     pub fn build_from(self, node: ImmutableNode) -> File {
         let mut nodes = Vec::new();
-        go(0, &node, &mut nodes);
+        go(TextUnit::zero(), &node, &mut nodes);
 
 
         let imp = FileImpl {
@@ -126,13 +126,13 @@ impl FileBuilderImpl {
         };
         return File { lang: self.lang, imp: imp };
 
-        fn go(range_start: u32, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
+        fn go(range_start: TextUnit, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
             let my_idx = nodes.len();
             nodes.push(NodeData {
                 ty: node.ty(),
                 parent: None,
                 children: Vec::new(),
-                range: TextRange::from_to(range_start, range_start + node.len()),
+                range: TextRange::from_to_off(range_start, range_start + node.len()),
             });
             let mut range_start = range_start;
             for child in node.children() {

@@ -39,12 +39,12 @@ impl<'f> Text<'f> {
         self.as_str().ends_with(suffix)
     }
 
-    pub fn find(&self, needle: &str) -> Option<TextOffset> {
-        self.as_str().find(needle).map(|off| TextOffset(off as u32))
+    pub fn find(&self, needle: &str) -> Option<TextUnit> {
+        self.as_str().find(needle).map(|off| TextUnit(off as u32))
     }
 
-    pub fn rfind(&self, needle: &str) -> Option<TextOffset> {
-        self.as_str().rfind(needle).map(|off| TextOffset(off as u32))
+    pub fn rfind(&self, needle: &str) -> Option<TextUnit> {
+        self.as_str().rfind(needle).map(|off| TextUnit(off as u32))
     }
 
     pub fn trim(&self) -> Text<'f> {
@@ -127,7 +127,7 @@ impl TextRange {
         TextRange { start: start, end: end }
     }
 
-    pub fn from_to_off(start: TextOffset, end: TextOffset) -> TextRange {
+    pub fn from_to_off(start: TextUnit, end: TextUnit) -> TextRange {
         TextRange::from_to(start.0, end.0)
     }
 
@@ -139,8 +139,8 @@ impl TextRange {
         self.end
     }
 
-    pub fn len(&self) -> u32 {
-        self.end - self.start
+    pub fn len(&self) -> TextUnit {
+        TextUnit(self.end - self.start)
     }
 
     pub fn empty() -> TextRange {
@@ -162,11 +162,15 @@ impl TextRange {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TextOffset(u32);
+pub struct TextUnit(u32);
 
-impl TextOffset {
-    pub fn in_range(range: TextRange, off: usize) -> Option<TextOffset> {
-        let off = TextOffset(off as u32);
+impl TextUnit {
+    pub fn zero() -> TextUnit {
+        TextUnit(0)
+    }
+
+    pub fn in_range(range: TextRange, off: usize) -> Option<TextUnit> {
+        let off = TextUnit(off as u32);
         if is_offset_in_range(off, range) {
             Some(off)
         } else {
@@ -175,27 +179,46 @@ impl TextOffset {
     }
 }
 
-impl ops::Add<u32> for TextOffset {
-    type Output = TextOffset;
-    fn add(self, rhs: u32) -> TextOffset {
-        TextOffset(self.0 + rhs)
+impl ops::Add<u32> for TextUnit {
+    type Output = TextUnit;
+    fn add(self, rhs: u32) -> TextUnit {
+        TextUnit(self.0 + rhs)
     }
 }
 
-impl ops::Sub<u32> for TextOffset {
-    type Output = TextOffset;
-    fn sub(self, rhs: u32) -> TextOffset {
-        TextOffset(self.0 - rhs)
+impl ops::Add<TextUnit> for TextUnit {
+    type Output = TextUnit;
+    fn add(self, rhs: TextUnit) -> TextUnit {
+        TextUnit(self.0 + rhs.0)
     }
 }
 
-impl fmt::Debug for TextOffset {
+impl ops::AddAssign<TextUnit> for TextUnit {
+    fn add_assign(&mut self, rhs: TextUnit) {
+        self.0 += rhs.0
+    }
+}
+
+impl ::std::iter::Sum for TextUnit {
+    fn sum<I: Iterator<Item=TextUnit>>(iter: I) -> Self {
+        TextUnit(iter.map(|u| u.0).sum())
+    }
+}
+
+impl ops::Sub<u32> for TextUnit {
+    type Output = TextUnit;
+    fn sub(self, rhs: u32) -> TextUnit {
+        TextUnit(self.0 - rhs)
+    }
+}
+
+impl fmt::Debug for TextUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
     }
 }
 
-pub fn is_offset_in_range(offset: TextOffset, range: TextRange) -> bool {
+pub fn is_offset_in_range(offset: TextUnit, range: TextRange) -> bool {
     return range.start <= offset.0 && offset.0 <= range.end
 }
 

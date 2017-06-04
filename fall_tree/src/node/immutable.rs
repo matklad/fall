@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use ::{NodeType};
+use ::{NodeType, TextUnit};
 
 #[derive(Clone)]
 pub struct ImmutableNode {
@@ -10,7 +10,7 @@ pub struct ImmutableNode {
 struct Inner {
     pub ty: NodeType,
     pub children: Vec<ImmutableNode>,
-    pub len: u32,
+    pub len: TextUnit,
 }
 
 impl ImmutableNode {
@@ -18,7 +18,7 @@ impl ImmutableNode {
         self.inner.ty
     }
 
-    pub fn len(&self) -> u32 {
+    pub fn len(&self) -> TextUnit {
         self.inner.len
     }
 
@@ -43,7 +43,7 @@ impl ImmutableNode {
 pub struct ImmutableNodeBuilder {
     ty: NodeType,
     children: Vec<ImmutableNode>,
-    len: Option<u32>,
+    len: Option<TextUnit>,
 }
 
 impl ImmutableNodeBuilder {
@@ -52,7 +52,7 @@ impl ImmutableNodeBuilder {
         ImmutableNodeBuilder { ty: ty, children: Vec::new(), len: None }
     }
 
-    pub fn set_len(&mut self, len: u32) {
+    pub fn set_len(&mut self, len: TextUnit) {
         self.len = Some(len)
     }
 
@@ -62,7 +62,7 @@ impl ImmutableNodeBuilder {
 
     pub fn build(self) -> ImmutableNode {
         let len = self.children.iter().map(|node| node.len()).sum();
-        if len > 0 && self.len.is_some() && self.len.unwrap() != len {
+        if len != TextUnit::zero() && self.len.is_some() && self.len.unwrap() != len {
             panic!("BadLen")
         }
         ImmutableNode {
