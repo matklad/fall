@@ -51,7 +51,6 @@ rule value { primitive | object | array }
 
 pub rule primitive { 'null' | number | string | bool }
 
-#[memoize]
 rule block_body { <rep balanced> }
 rule balanced {
   '{' <commit> block_body '}'

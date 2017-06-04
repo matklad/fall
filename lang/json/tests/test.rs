@@ -183,10 +183,10 @@ FILE
 #[test]
 fn accidentally_quadratic() {
     let n = 20;
-    let input = "{".repeat(n) + &"}".repeat(n);
+    let input = "[".repeat(n) + &"]".repeat(n);
     let file = LANG_JSON.parse(input);
     let ticks = file.stats().parsing_ticks;
-    assert!(ticks < 350, "spend {} ticks", ticks);
+    assert!(4000 < ticks && ticks < 5000, "spend {} ticks", ticks);
 }
 
 #[test]
