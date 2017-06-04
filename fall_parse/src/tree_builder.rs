@@ -11,12 +11,31 @@ pub struct TokenSequence<'a> {
     original_tokens: &'a [Token],
 }
 
-pub struct NodeFactory {}
-
 #[derive(Debug)]
 pub enum Node {
     Leaf(NodeType, usize),
     Composite(Option<NodeType>, Vec<Node>)
+}
+
+impl Node {
+    pub fn error() -> Node {
+        Self::composite(Some(ERROR))
+    }
+
+    pub fn composite(ty: Option<NodeType>) -> Node {
+        Node::Composite(ty, Vec::new())
+    }
+
+    pub fn leaf<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
+        let bumped = ts.bump();
+        let idx = ts.non_ws_indexes[0];
+        let node = Node::Leaf(ts.current().unwrap().ty, idx);
+        (node, bumped)
+    }
+
+    pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
+        (Self::composite(None), ts)
+    }
 }
 
 impl<'a> TokenSequence<'a> {
@@ -48,27 +67,6 @@ impl<'a> TokenSequence<'a> {
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
         }
-    }
-}
-
-impl NodeFactory {
-    pub fn create_composite_node(&mut self, ty: Option<NodeType>) -> Node {
-        Node::Composite(ty, Vec::new())
-    }
-
-    pub fn create_error_node(&mut self) -> Node {
-        self.create_composite_node(Some(ERROR))
-    }
-
-    pub fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        let bumped = tokens.bump();
-        let idx = tokens.non_ws_indexes[0];
-        let node = Node::Leaf(tokens.current().unwrap().ty, idx);
-        (node, bumped)
-    }
-
-    pub fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        (self.create_composite_node(None), tokens)
     }
 }
 
@@ -116,7 +114,7 @@ pub fn parse(
     lang: Language,
     text: String,
     tokenizer: &[LexRule],
-    parser: &Fn(&TokenSequence, &mut NodeFactory, &mut FileStats) -> Node
+    parser: &Fn(TokenSequence, &mut FileStats) -> Node
 ) -> File {
     let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
@@ -134,8 +132,7 @@ pub fn parse(
             non_ws_indexes: &non_ws_indexes,
             original_tokens: &owned_tokens,
         };
-        let mut nf = NodeFactory {};
-        measure_time(|| parser(&tokens, &mut nf, &mut stats))
+        measure_time(|| parser(tokens, &mut stats))
     };
     stats.parsing_time = parse_time.duration();
     let pre_node = to_pre_node(node, &owned_tokens);

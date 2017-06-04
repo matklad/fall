@@ -1,7 +1,7 @@
 use fall_tree::{NodeType, FileStats};
 use lex::Token;
 
-use tree_builder::{Node, TokenSequence, NodeFactory};
+use tree_builder::{Node, TokenSequence};
 
 pub struct Parser<'r> {
     node_types: &'r [NodeType],
@@ -29,27 +29,26 @@ pub enum Expr {
     SkipUntil(Vec<usize>),
 }
 
-struct Ctx<'p> {
+struct Ctx {
     ticks: u64,
-    node_factory: &'p mut NodeFactory,
     predicate_mode: bool,
 }
 
-impl<'p> Ctx<'p> {
+impl Ctx {
     fn create_composite_node(&mut self, ty: Option<NodeType>) -> Node {
-        self.node_factory.create_composite_node(ty)
+        Node::composite(ty)
     }
 
     fn create_error_node(&mut self) -> Node {
-        self.node_factory.create_error_node()
+        Node::error()
     }
 
     fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        self.node_factory.create_leaf_node(tokens)
+        Node::leaf(tokens)
     }
 
     fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        self.node_factory.create_success_node(tokens)
+        Node::success(tokens)
     }
 
     fn push_child(&self, parent: &mut Node, child: Node) {
@@ -71,8 +70,8 @@ impl<'r> Parser<'r> {
         Parser { node_types, rules: rules }
     }
 
-    pub fn parse(&self, tokens: TokenSequence, nf: &mut NodeFactory, stats: &mut FileStats) -> Node {
-        let mut ctx = Ctx { ticks: 0, node_factory: nf, predicate_mode: false };
+    pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
+        let mut ctx = Ctx { ticks: 0, predicate_mode: false };
         let (mut file_node, mut leftover) = self
             .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
             .unwrap_or_else(|| {
