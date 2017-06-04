@@ -44,7 +44,7 @@ impl Ctx {
     }
 
     fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        Node::leaf(tokens)
+        tokens.bump()
     }
 
     fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {

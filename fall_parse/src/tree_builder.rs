@@ -26,13 +26,6 @@ impl Node {
         Node::Composite(ty, Vec::new())
     }
 
-    pub fn leaf<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        let bumped = ts.bump();
-        let idx = ts.non_ws_indexes[0];
-        let node = Node::Leaf(ts.current().unwrap().ty, idx);
-        (node, bumped)
-    }
-
     pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
         (Self::composite(None), ts)
     }
@@ -58,15 +51,15 @@ impl<'a> TokenSequence<'a> {
         })
     }
 
-    fn bump(&self) -> TokenSequence<'a> {
-        if self.non_ws_indexes.is_empty() {
-            panic!("Can't bump empty token sequence")
-        }
-        TokenSequence {
+    pub fn bump(&self) -> (Node, TokenSequence<'a>) {
+        let token = self.current().expect("Can't bump an empty token sequence");
+        let node = Node::Leaf(token.ty, self.non_ws_indexes[0]);
+        let rest = TokenSequence {
             text: self.text,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
-        }
+        };
+        (node, rest)
     }
 }
 
