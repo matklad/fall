@@ -129,6 +129,10 @@ impl TextRange {
         TextRange { start: start, end: end }
     }
 
+    pub fn from_len(start: TextUnit, len: TextUnit) -> TextRange {
+        TextRange::from_to(start, start + len)
+    }
+
     pub fn start(&self) -> TextUnit {
         self.start
     }

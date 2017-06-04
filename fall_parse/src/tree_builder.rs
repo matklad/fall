@@ -75,8 +75,10 @@ impl Node {
             _ => return "EMPTY-NODE".to_owned()
         };
         let mut result = String::new();
+        let mut start = tokens.original_tokens[..l].iter().map(|t| t.len).sum::<TextUnit>();
         for t in tokens.original_tokens[l..r].iter() {
-            result += &tokens.text[t.range];
+            result += &tokens.text[TextRange::from_len(start, t.len)];
+            start += t.len;
         }
         result
     }
@@ -138,7 +140,7 @@ pub fn parse(
 #[derive(Debug)]
 struct PreNode {
     ty: NodeType,
-    range: TextRange,
+    len: TextUnit,
     children: Vec<PreNode>,
     first: Option<usize>,
     last: Option<usize>
@@ -162,7 +164,7 @@ impl PreNode {
     fn push_child_raw(&mut self, child: PreNode) {
         self.last = child.last.or(self.last);
         self.first = self.first.or(child.first);
-        extend_range(&mut self.range, child.range);
+        self.len += child.len;
         self.children.push(child);
     }
 
@@ -171,7 +173,7 @@ impl PreNode {
         for child in self.children {
             builder.push_child(child.into_immutable_node());
         }
-        builder.set_len(self.range.len());
+        builder.set_len(self.len);
         builder.build()
     }
 }
@@ -179,7 +181,7 @@ impl PreNode {
 fn token_pre_node(idx: usize, t: Token) -> PreNode {
     PreNode {
         ty: t.ty,
-        range: t.range,
+        len: t.len,
         children: Vec::new(),
         first: Some(idx),
         last: Some(idx),
@@ -193,7 +195,7 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
     };
     let mut result = PreNode {
         ty: ty,
-        range: TextRange::empty(),
+        len: TextUnit::zero(),
         children: Vec::new(),
         first: None,
         last: None,
@@ -234,7 +236,7 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
             let ty = ty.unwrap();
             let mut p = PreNode {
                 ty: ty,
-                range: TextRange::empty(),
+                len: TextUnit::zero(),
                 children: Vec::new(),
                 first: None,
                 last: None,
@@ -245,16 +247,4 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
             parent.push_child(p, tokens)
         }
     }
-}
-
-fn extend_range(r: &mut TextRange, right: TextRange) {
-    if right.end() == TextUnit::zero() {
-        return
-    }
-    if r.end() == TextUnit::zero() {
-        *r = right;
-        return
-    }
-    assert!(r.end() == right.start());
-    *r = TextRange::from_to(r.start(), right.end())
 }
