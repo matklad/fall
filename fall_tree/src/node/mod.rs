@@ -37,10 +37,6 @@ impl File {
         self.imp.root()
     }
 
-//    pub fn text(&self) -> &str {
-//        self.imp.text()
-//    }
-
     pub fn text(&self) -> Text {
         self.imp.text()
     }
