@@ -81,21 +81,9 @@ impl<'f> Node<'f> {
 
 pub struct FileBuilder(imp::FileBuilderImpl);
 
-#[derive(Clone, Copy)]
-pub struct NodeBuilder(imp::NodeId);
-
 impl FileBuilder {
     pub fn new(lang: Language, text: String, stats: FileStats) -> FileBuilder {
         FileBuilder(imp::FileBuilderImpl::new(lang, text, stats))
-    }
-
-    pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)
-                -> NodeBuilder {
-        self.0.node(parent, ty, range)
-    }
-
-    pub fn build(self) -> File {
-        self.0.build()
     }
 
     pub fn build_from(self, node: ImmutableNode) -> File {

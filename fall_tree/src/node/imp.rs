@@ -1,7 +1,7 @@
 use std::ops::Index;
 
 use {Text, TextRange, NodeType, Language};
-use super::{File, Node, NodeBuilder, FileStats};
+use super::{File, Node, FileStats};
 use super::immutable::ImmutableNode;
 
 pub struct FileImpl {
@@ -101,7 +101,6 @@ pub struct NodeData {
 pub struct FileBuilderImpl {
     lang: Language,
     stats: FileStats,
-    nodes: Vec<NodeData>,
     text: String,
 }
 
@@ -110,37 +109,8 @@ impl FileBuilderImpl {
         FileBuilderImpl {
             lang: lang,
             stats: stats,
-            nodes: vec![],
             text: text
         }
-    }
-
-    pub fn node(&mut self, parent: Option<NodeBuilder>, ty: NodeType, range: TextRange)
-                -> NodeBuilder {
-        let parent = parent.map(|n| n.0);
-        let id = NodeId(self.nodes.len() as u32);
-        self.nodes.push(NodeData {
-            ty: ty,
-            parent: parent,
-            children: vec![],
-            range: range,
-        });
-        if let Some(parent) = parent {
-            self.nodes[parent.0 as usize].children.push(id)
-        }
-
-        NodeBuilder(id)
-    }
-
-    pub fn build(self) -> File {
-        assert!(!self.nodes.is_empty());
-        let imp = FileImpl {
-            stats: self.stats,
-            text: self.text,
-            root: NodeId(0),
-            nodes: self.nodes,
-        };
-        File { lang: self.lang, imp: imp }
     }
 
     pub fn build_from(self, node: ImmutableNode) -> File {
