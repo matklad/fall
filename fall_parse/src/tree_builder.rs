@@ -7,6 +7,7 @@ use lex::{Token, LexRule, tokenize};
 #[derive(Clone, Copy, Debug)]
 pub struct TokenSequence<'a> {
     text: &'a str,
+    start: usize,
     non_ws_indexes: &'a [usize],
     original_tokens: &'a [Token],
 }
@@ -33,15 +34,11 @@ impl Node {
 
 impl<'a> TokenSequence<'a> {
     pub fn prefix(&self, suffix: TokenSequence<'a>) -> TokenSequence<'a> {
-        if let Some(&idx) = suffix.non_ws_indexes.first() {
-            let idx = self.non_ws_indexes.iter().position(|&i| i == idx).unwrap();
-            TokenSequence {
-                text: self.text,
-                non_ws_indexes: &self.non_ws_indexes[..idx],
-                original_tokens: self.original_tokens
-            }
-        } else {
-            *self
+        TokenSequence {
+            text: self.text,
+            start: self.start,
+            non_ws_indexes: &self.non_ws_indexes[..suffix.start - self.start],
+            original_tokens: self.original_tokens
         }
     }
 
@@ -56,6 +53,7 @@ impl<'a> TokenSequence<'a> {
         let node = Node::Leaf(token.ty, self.non_ws_indexes[0]);
         let rest = TokenSequence {
             text: self.text,
+            start: self.start + 1,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
         };
@@ -122,6 +120,7 @@ pub fn parse(
     let (parse_time, node) = {
         let tokens = TokenSequence {
             text: &text,
+            start: 0,
             non_ws_indexes: &non_ws_indexes,
             original_tokens: &owned_tokens,
         };
