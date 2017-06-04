@@ -1,6 +1,6 @@
 use elapsed::measure_time;
 
-use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, FileBuilder, TextRange,
+use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, TextRange,
                 FileStats, ImmutableNode, ImmutableNodeBuilder, TextUnit};
 use lex::{Token, LexRule, tokenize};
 
@@ -131,10 +131,8 @@ pub fn parse(
     stats.parsing_time = parse_time.duration();
     let pre_node = to_pre_node(node, &owned_tokens);
 
-
-    let builder = FileBuilder::new(lang, text, stats);
-
-    return builder.build_from(pre_node.into_immutable_node());
+    let node = pre_node.into_immutable_node();
+    File::new(lang, text, stats, node)
 }
 
 #[derive(Debug)]

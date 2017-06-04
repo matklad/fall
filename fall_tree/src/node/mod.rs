@@ -31,6 +31,13 @@ impl FileStats {
 
 
 impl File {
+    pub fn new(lang: Language, text: String, stats: FileStats, node: ImmutableNode) -> File {
+        File {
+            lang: lang,
+            imp: imp::new_file(text, stats, node),
+        }
+    }
+
     pub fn language(&self) -> &Language {
         &self.lang
     }
@@ -76,17 +83,5 @@ impl<'f> Node<'f> {
 
     pub fn children(&self) -> NodeChildren<'f> {
         self.0.children()
-    }
-}
-
-pub struct FileBuilder(imp::FileBuilderImpl);
-
-impl FileBuilder {
-    pub fn new(lang: Language, text: String, stats: FileStats) -> FileBuilder {
-        FileBuilder(imp::FileBuilderImpl::new(lang, text, stats))
-    }
-
-    pub fn build_from(self, node: ImmutableNode) -> File {
-        self.0.build_from(node)
     }
 }

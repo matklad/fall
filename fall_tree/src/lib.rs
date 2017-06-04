@@ -15,7 +15,7 @@ pub mod test_util;
 
 pub use text::{Text, TextRange, TextUnit, is_offset_in_range};
 pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
-pub use node::{File, Node, FileBuilder, FileStats};
+pub use node::{File, Node, FileStats};
 pub use node::{ImmutableNode, ImmutableNodeBuilder};
 pub use lang::{Language, LanguageImpl};
 pub use ast::{AstNode, AstChildren, AstClass, AstClassChildren};

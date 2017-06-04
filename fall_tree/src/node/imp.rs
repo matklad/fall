@@ -1,7 +1,7 @@
 use std::ops::Index;
 
-use {Text, TextRange, NodeType, Language, TextUnit};
-use super::{File, Node, FileStats};
+use {Text, TextRange, NodeType, TextUnit};
+use super::{Node, FileStats};
 use super::immutable::ImmutableNode;
 
 pub struct FileImpl {
@@ -37,9 +37,7 @@ impl<'f> ::std::cmp::PartialEq for NodeImpl<'f> {
     }
 }
 
-impl <'f> ::std::cmp::Eq for NodeImpl<'f> {
-
-}
+impl<'f> ::std::cmp::Eq for NodeImpl<'f> {}
 
 impl<'f> NodeImpl<'f> {
     pub fn ty(&self) -> NodeType {
@@ -98,51 +96,32 @@ pub struct NodeData {
 }
 
 
-pub struct FileBuilderImpl {
-    lang: Language,
-    stats: FileStats,
-    text: String,
-}
+pub fn new_file(text: String, stats: FileStats, node: ImmutableNode) -> FileImpl {
+    let mut nodes = Vec::new();
+    go(TextUnit::zero(), &node, &mut nodes);
 
-impl FileBuilderImpl {
-    pub fn new(lang: Language, text: String, stats: FileStats) -> FileBuilderImpl {
-        FileBuilderImpl {
-            lang: lang,
-            stats: stats,
-            text: text
+    return FileImpl {
+        stats: stats,
+        text: text,
+        root: NodeId(0),
+        nodes: nodes,
+    };
+
+    fn go(range_start: TextUnit, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
+        let my_idx = nodes.len();
+        nodes.push(NodeData {
+            ty: node.ty(),
+            parent: None,
+            children: Vec::new(),
+            range: TextRange::from_to(range_start, range_start + node.len()),
+        });
+        let mut range_start = range_start;
+        for child in node.children() {
+            let child_idx = nodes.len();
+            nodes[my_idx].children.push(NodeId(child_idx as u32));
+            go(range_start, child, nodes);
+            nodes[child_idx].parent = Some(NodeId(my_idx as u32));
+            range_start += child.len();
         }
     }
-
-    pub fn build_from(self, node: ImmutableNode) -> File {
-        let mut nodes = Vec::new();
-        go(TextUnit::zero(), &node, &mut nodes);
-
-
-        let imp = FileImpl {
-            stats: self.stats,
-            text: self.text,
-            root: NodeId(0),
-            nodes: nodes,
-        };
-        return File { lang: self.lang, imp: imp };
-
-        fn go(range_start: TextUnit, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
-            let my_idx = nodes.len();
-            nodes.push(NodeData {
-                ty: node.ty(),
-                parent: None,
-                children: Vec::new(),
-                range: TextRange::from_to(range_start, range_start + node.len()),
-            });
-            let mut range_start = range_start;
-            for child in node.children() {
-                let child_idx = nodes.len();
-                nodes[my_idx].children.push(NodeId(child_idx as u32));
-                go(range_start, child, nodes);
-                nodes[child_idx].parent = Some(NodeId(my_idx as u32));
-                range_start += child.len();
-            }
-        }
-    }
-
 }
