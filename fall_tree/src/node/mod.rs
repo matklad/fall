@@ -2,8 +2,10 @@ use std::time::Duration;
 use {Text, TextRange, NodeType, Language};
 
 mod imp;
+mod immutable;
 
 pub use self::imp::NodeChildren;
+pub use self::immutable::{ImmutableNode, ImmutableNodeBuilder};
 
 pub struct File {
     lang: Language,
@@ -94,5 +96,9 @@ impl FileBuilder {
 
     pub fn build(self) -> File {
         self.0.build()
+    }
+
+    pub fn build_from(self, node: ImmutableNode) -> File {
+        self.0.build_from(node)
     }
 }

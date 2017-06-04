@@ -139,6 +139,10 @@ impl TextRange {
         self.end
     }
 
+    pub fn len(&self) -> u32 {
+        self.end - self.start
+    }
+
     pub fn empty() -> TextRange {
         TextRange::from_to(0, 0)
     }

@@ -2,6 +2,7 @@ use std::ops::Index;
 
 use {Text, TextRange, NodeType, Language};
 use super::{File, Node, NodeBuilder, FileStats};
+use super::immutable::ImmutableNode;
 
 pub struct FileImpl {
     stats: FileStats,
@@ -141,4 +142,37 @@ impl FileBuilderImpl {
         };
         File { lang: self.lang, imp: imp }
     }
+
+    pub fn build_from(self, node: ImmutableNode) -> File {
+        let mut nodes = Vec::new();
+        go(0, &node, &mut nodes);
+
+
+        let imp = FileImpl {
+            stats: self.stats,
+            text: self.text,
+            root: NodeId(0),
+            nodes: nodes,
+        };
+        return File { lang: self.lang, imp: imp };
+
+        fn go(range_start: u32, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
+            let my_idx = nodes.len();
+            nodes.push(NodeData {
+                ty: node.ty(),
+                parent: None,
+                children: Vec::new(),
+                range: TextRange::from_to(range_start, range_start + node.len()),
+            });
+            let mut range_start = range_start;
+            for child in node.children() {
+                let child_idx = nodes.len();
+                nodes[my_idx].children.push(NodeId(child_idx as u32));
+                go(range_start, child, nodes);
+                nodes[child_idx].parent = Some(NodeId(my_idx as u32));
+                range_start += child.len();
+            }
+        }
+    }
+
 }

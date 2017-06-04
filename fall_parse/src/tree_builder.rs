@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
-use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, FileBuilder, NodeBuilder, TextRange,
-                FileStats};
+use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, FileBuilder, TextRange,
+                FileStats, ImmutableNode, ImmutableNodeBuilder};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -130,20 +130,9 @@ pub fn parse(
     let pre_node = to_pre_node(node, &owned_tokens);
 
 
-    let mut builder = FileBuilder::new(lang, text, stats);
-    go(&mut builder, None, pre_node);
-    return builder.build();
+    let builder = FileBuilder::new(lang, text, stats);
 
-    fn go(
-        builder: &mut FileBuilder,
-        parent: Option<NodeBuilder>,
-        node: PreNode,
-    ) {
-        let id = builder.node(parent, node.ty, node.range);
-        for child in node.children {
-            go(builder, Some(id), child)
-        }
-    }
+    return builder.build_from(pre_node.into_immutable_node());
 }
 
 #[derive(Debug)]
@@ -175,6 +164,15 @@ impl PreNode {
         self.first = self.first.or(child.first);
         extend_range(&mut self.range, child.range);
         self.children.push(child);
+    }
+
+    fn into_immutable_node(self) -> ImmutableNode {
+        let mut builder = ImmutableNodeBuilder::new(self.ty);
+        for child in self.children {
+            builder.push_child(child.into_immutable_node());
+        }
+        builder.set_len(self.range.len());
+        builder.build()
     }
 }
 
