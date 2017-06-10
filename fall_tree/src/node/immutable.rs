@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use ::{NodeType, TextUnit};
+use ::{NodeType, TextUnit, TextRange};
 
 #[derive(Clone)]
 pub struct ImmutableNode {
@@ -8,10 +8,17 @@ pub struct ImmutableNode {
 }
 
 #[derive(Clone)]
+struct ReparseRegion {
+    range: TextRange,
+    parser_id: u32,
+}
+
+#[derive(Clone)]
 struct Inner {
     pub ty: NodeType,
     pub children: Vec<ImmutableNode>,
     pub len: TextUnit,
+    pub reparse_region: Option<ReparseRegion>
 }
 
 impl ImmutableNode {
@@ -21,6 +28,7 @@ impl ImmutableNode {
                 ty: ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
+                reparse_region: None,
             })
         }
     }
@@ -31,6 +39,7 @@ impl ImmutableNode {
                 ty: ty,
                 children: Vec::new(),
                 len: len,
+                reparse_region: None
             })
         }
     }
