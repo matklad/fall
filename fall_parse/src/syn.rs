@@ -40,6 +40,10 @@ impl Ctx {
         Node::composite(ty)
     }
 
+    fn create_layer(&mut self, layer: u32) -> Node {
+        Node::layer(layer)
+    }
+
     fn create_error_node(&mut self) -> Node {
         Node::error()
     }
@@ -56,7 +60,7 @@ impl Ctx {
         if self.predicate_mode {
             return;
         }
-        if let Node::Composite { ty: None, ref children } = child {
+        if let Node::Composite { ty: None, ref children, .. } = child {
             if children.is_empty() {
                 // Microoptimization: don't store empty success nodes
                 return;
@@ -203,7 +207,11 @@ impl<'r> Parser<'r> {
                 };
 
                 if let Some((_, rest)) = layer {
-                    let mut result = ctx.create_composite_node(None);
+                    let layer_id = self.layers.iter()
+                        .position(|&l| l as *const Expr == expr as *const Expr)
+                        .unwrap();
+
+                    let mut result = ctx.create_layer(layer_id as u32);
                     let layer = tokens.prefix(rest);
                     if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, ctx) {
                         ctx.push_child(&mut result, layer_contents);
