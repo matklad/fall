@@ -5,7 +5,7 @@ mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{ImmutableNode};
+pub use self::immutable::{ImmutableNode, ReparseRegion};
 
 pub struct File {
     lang: Language,

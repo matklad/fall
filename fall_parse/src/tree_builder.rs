@@ -234,7 +234,7 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        Node::Composite { ty, ref children, .. } => {
+        Node::Composite { ty, ref children, layer } => {
             if ty.is_none() {
                 for child in children {
                     add_child(parent, child, tokens)

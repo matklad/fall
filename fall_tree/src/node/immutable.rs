@@ -8,7 +8,7 @@ pub struct ImmutableNode {
 }
 
 #[derive(Clone)]
-struct ReparseRegion {
+pub struct ReparseRegion {
     range: TextRange,
     parser_id: u32,
 }
