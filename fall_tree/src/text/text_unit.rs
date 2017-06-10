@@ -6,6 +6,18 @@ use super::{is_offset_in_range, TextRange};
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TextUnit(pub(in super) u32);
 
+impl fmt::Debug for TextUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        <Self as fmt::Display>::fmt(self, f)
+    }
+}
+
+impl fmt::Display for TextUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl TextUnit {
     pub fn zero() -> TextUnit {
         TextUnit(0)
@@ -73,14 +85,3 @@ impl ops::Sub<TextUnit> for TextUnit {
     }
 }
 
-impl fmt::Debug for TextUnit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl fmt::Display for TextUnit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
