@@ -15,7 +15,10 @@ pub struct TokenSequence<'a> {
 #[derive(Debug)]
 pub enum Node {
     Leaf(NodeType, usize),
-    Composite(Option<NodeType>, Vec<Node>)
+    Composite {
+        ty: Option<NodeType>,
+        children: Vec<Node>,
+    }
 }
 
 impl Node {
@@ -24,7 +27,7 @@ impl Node {
     }
 
     pub fn composite(ty: Option<NodeType>) -> Node {
-        Node::Composite(ty, Vec::new())
+        Node::Composite { ty: ty, children: Vec::new() }
     }
 
     pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
@@ -64,7 +67,7 @@ impl<'a> TokenSequence<'a> {
 impl Node {
     pub fn push_child(&mut self, child: Node) {
         match *self {
-            Node::Composite(_, ref mut children) => children.push(child),
+            Node::Composite { ref mut children, .. } => children.push(child),
             Node::Leaf(..) => panic!("Can't add children to a leaf node"),
         }
     }
@@ -86,7 +89,7 @@ impl Node {
     fn right_idx(&self) -> Option<usize> {
         match *self {
             Node::Leaf(_, idx) => Some(idx),
-            Node::Composite(_, ref children) => children.iter().rev().filter_map(|n| {
+            Node::Composite { ref children, .. } => children.iter().rev().filter_map(|n| {
                 n.right_idx()
             }).next(),
         }
@@ -95,7 +98,7 @@ impl Node {
     fn left_idx(&self) -> Option<usize> {
         match *self {
             Node::Leaf(_, idx) => Some(idx),
-            Node::Composite(_, ref children) => match children.first() {
+            Node::Composite { ref children, .. } => match children.first() {
                 None => None,
                 Some(child) => child.left_idx()
             },
@@ -190,7 +193,7 @@ fn token_pre_node(idx: usize, t: Token) -> PreNode {
 
 fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
     let (ty, children) = match file_node {
-        Node::Composite(ty, children) => (ty.unwrap(), children),
+        Node::Composite { ty, children } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
     };
     let mut result = PreNode {
@@ -226,7 +229,7 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        Node::Composite(ty, ref children) => {
+        Node::Composite { ty, ref children } => {
             if ty.is_none() {
                 for child in children {
                     add_child(parent, child, tokens)

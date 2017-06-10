@@ -6,6 +6,7 @@ use tree_builder::{Node, TokenSequence};
 pub struct Parser<'r> {
     node_types: &'r [NodeType],
     rules: &'r [SynRule],
+    layers: Vec<&'r Expr>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -55,7 +56,7 @@ impl Ctx {
         if self.predicate_mode {
             return;
         }
-        if let Node::Composite(None, ref children) = child {
+        if let Node::Composite { ty: None, ref children } = child {
             if children.is_empty() {
                 // Microoptimization: don't store empty success nodes
                 return;
@@ -65,9 +66,31 @@ impl Ctx {
     }
 }
 
+fn find_layers<'r>(rules: &'r [SynRule]) -> Vec<&'r Expr> {
+    let mut result = Vec::new();
+    for r in rules {
+        go(&r.body, &mut result);
+    }
+    return result;
+    fn go<'r>(expr: &'r Expr, acc: &mut Vec<&'r Expr>) {
+        match *expr {
+            Expr::Rule(_) | Expr::Token(_) | Expr::Not(_) |
+            Expr::NotAhead(_) | Expr::Eof | Expr::SkipUntil(_) => return,
+            Expr::Or(ref exprs) | Expr::And(ref exprs, _) => {
+                for e in exprs {
+                    go(e, acc)
+                }
+            }
+            Expr::Rep(ref e) | Expr::Opt(ref e) => go(e, acc),
+            Expr::Layer(..) => acc.push(expr)
+        }
+    }
+}
+
 impl<'r> Parser<'r> {
     pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
-        Parser { node_types, rules: rules }
+        let layers = find_layers(rules);
+        Parser { node_types, rules: rules, layers: layers }
     }
 
     pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
@@ -151,7 +174,6 @@ impl<'r> Parser<'r> {
             Expr::Opt(ref body) => self.parse_exp(&*body, tokens, ctx).or_else(|| {
                 Some(ctx.create_success_node(tokens))
             }),
-
             Expr::Not(ref ts) => {
                 if let Some(current) = tokens.current() {
                     if !self.token_set_contains(ts, current) {
@@ -166,13 +188,11 @@ impl<'r> Parser<'r> {
             } else {
                 Some(ctx.create_success_node(tokens))
             },
-
             Expr::Eof => if tokens.current().is_none() {
                 Some(ctx.create_success_node(tokens))
             } else {
                 None
             },
-
             Expr::Layer(ref l, ref e) => {
                 let layer = {
                     let old_mode = ctx.predicate_mode;
