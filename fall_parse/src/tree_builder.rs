@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
 use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, TextRange,
-                FileStats, ImmutableNode, TextUnit};
+                FileStats, ImmutableNode, TextUnit, ReparseRegion};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -148,6 +148,7 @@ struct PreNode {
     ty: NodeType,
     len: TextUnit,
     children: Vec<PreNode>,
+    reparse_region: Option<ReparseRegion>,
     first: Option<usize>,
     last: Option<usize>
 }
@@ -178,7 +179,7 @@ impl PreNode {
         if self.children.is_empty() {
             return ImmutableNode::new_leaf(self.ty, self.len)
         }
-        let mut node = ImmutableNode::new(self.ty);
+        let mut node = ImmutableNode::new(self.ty, self.reparse_region);
         for child in self.children {
             node.push_child(child.into_immutable_node());
         }
@@ -191,6 +192,7 @@ fn token_pre_node(idx: usize, t: Token) -> PreNode {
         ty: t.ty,
         len: t.len,
         children: Vec::new(),
+        reparse_region: None,
         first: Some(idx),
         last: Some(idx),
     }
@@ -205,6 +207,7 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
         ty: ty,
         len: TextUnit::zero(),
         children: Vec::new(),
+        reparse_region: None,
         first: None,
         last: None,
     };
@@ -236,8 +239,28 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
         }
         Node::Composite { ty, ref children, layer } => {
             if ty.is_none() {
+                let mut children = children.iter();
+
+                let first_child = children.next().unwrap();
+                add_child(parent, first_child, tokens);
+
+                let start: TextUnit = parent.children[..parent.children.len() - 1].iter()
+                    .map(|child| child.len)
+                    .sum();
+
                 for child in children {
                     add_child(parent, child, tokens)
+                }
+
+                let end: TextUnit = parent.children.iter()
+                    .map(|child| child.len)
+                    .sum();
+
+                if let Some(layer) = layer {
+                    parent.reparse_region = Some(ReparseRegion {
+                        range: TextRange::from_to(start, end),
+                        parser_id: layer,
+                    })
                 }
                 return
             }
@@ -246,6 +269,7 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
                 ty: ty,
                 len: TextUnit::zero(),
                 children: Vec::new(),
+                reparse_region: None,
                 first: None,
                 last: None,
             };

@@ -7,10 +7,10 @@ pub struct ImmutableNode {
     inner: Rc<Inner>
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ReparseRegion {
-    range: TextRange,
-    parser_id: u32,
+    pub range: TextRange,
+    pub parser_id: u32,
 }
 
 #[derive(Clone)]
@@ -22,13 +22,13 @@ struct Inner {
 }
 
 impl ImmutableNode {
-    pub fn new(ty: NodeType) -> ImmutableNode {
+    pub fn new(ty: NodeType, reparse_region: Option<ReparseRegion>) -> ImmutableNode {
         ImmutableNode {
             inner: Rc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
-                reparse_region: None,
+                reparse_region: reparse_region,
             })
         }
     }
