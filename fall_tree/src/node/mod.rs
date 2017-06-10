@@ -5,30 +5,12 @@ mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{ImmutableNode, ImmutableNodeBuilder};
+pub use self::immutable::{ImmutableNode};
 
 pub struct File {
     lang: Language,
     imp: imp::FileImpl,
 }
-
-#[derive(Clone, Copy, Debug)]
-pub struct FileStats {
-    pub lexing_time: Duration,
-    pub parsing_time: Duration,
-    pub parsing_ticks: u64,
-}
-
-impl FileStats {
-    pub fn new() -> FileStats  {
-        FileStats {
-            lexing_time: Default::default(),
-            parsing_time: Default::default(),
-            parsing_ticks: Default::default(),
-        }
-    }
-}
-
 
 impl File {
     pub fn new(lang: Language, text: String, stats: FileStats, node: ImmutableNode) -> File {
@@ -83,5 +65,22 @@ impl<'f> Node<'f> {
 
     pub fn children(&self) -> NodeChildren<'f> {
         self.0.children()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct FileStats {
+    pub lexing_time: Duration,
+    pub parsing_time: Duration,
+    pub parsing_ticks: u64,
+}
+
+impl FileStats {
+    pub fn new() -> FileStats  {
+        FileStats {
+            lexing_time: Default::default(),
+            parsing_time: Default::default(),
+            parsing_ticks: Default::default(),
+        }
     }
 }

@@ -15,8 +15,7 @@ pub mod test_util;
 
 pub use text::{Text, TextRange, TextUnit};
 pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
-pub use node::{File, Node, FileStats};
-pub use node::{ImmutableNode, ImmutableNodeBuilder};
+pub use node::{File, Node, FileStats, ImmutableNode};
 pub use lang::{Language, LanguageImpl};
 pub use ast::{AstNode, AstChildren, AstClass, AstClassChildren};
 pub use util::{dump_file, dump_file_ws, walk_tree};

@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
 use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, TextRange,
-                FileStats, ImmutableNode, ImmutableNodeBuilder, TextUnit};
+                FileStats, ImmutableNode, TextUnit};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -167,12 +167,14 @@ impl PreNode {
     }
 
     fn into_immutable_node(self) -> ImmutableNode {
-        let mut builder = ImmutableNodeBuilder::new(self.ty);
-        for child in self.children {
-            builder.push_child(child.into_immutable_node());
+        if self.children.is_empty() {
+            return ImmutableNode::new_leaf(self.ty, self.len)
         }
-        builder.set_len(self.len);
-        builder.build()
+        let mut node = ImmutableNode::new(self.ty);
+        for child in self.children {
+            node.push_child(child.into_immutable_node());
+        }
+        node
     }
 }
 
