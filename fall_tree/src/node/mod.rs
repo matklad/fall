@@ -10,13 +10,15 @@ pub use self::immutable::{ImmutableNode};
 pub struct File {
     lang: Language,
     imp: imp::FileImpl,
+    immutable_node: ImmutableNode,
 }
 
 impl File {
     pub fn new(lang: Language, text: String, stats: FileStats, node: ImmutableNode) -> File {
         File {
             lang: lang,
-            imp: imp::new_file(text, stats, node),
+            imp: imp::new_file(text, stats, &node),
+            immutable_node: node,
         }
     }
 
@@ -34,6 +36,10 @@ impl File {
 
     pub fn stats(&self) -> FileStats {
         self.imp.stats()
+    }
+
+    pub fn immutable_node(&self) -> ImmutableNode {
+        self.immutable_node.clone()
     }
 }
 

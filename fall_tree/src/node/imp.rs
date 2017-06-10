@@ -96,9 +96,9 @@ pub struct NodeData {
 }
 
 
-pub fn new_file(text: String, stats: FileStats, node: ImmutableNode) -> FileImpl {
+pub fn new_file(text: String, stats: FileStats, node: &ImmutableNode) -> FileImpl {
     let mut nodes = Vec::new();
-    go(TextUnit::zero(), &node, &mut nodes);
+    go(TextUnit::zero(), node, &mut nodes);
 
     return FileImpl {
         stats: stats,
