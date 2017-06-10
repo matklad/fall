@@ -116,7 +116,3 @@ impl<'f, 's> PartialEq<&'s str> for Text<'f> {
         &self.owned[self.range] == *other
     }
 }
-
-pub fn is_offset_in_range(offset: TextUnit, range: TextRange) -> bool {
-    return range.start() <= offset && offset <= range.end()
-}

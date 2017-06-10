@@ -73,7 +73,7 @@ impl<'f> LeafAtOffset<'f> {
 
 pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     let range = node.range();
-    assert!(::is_offset_in_range(offset, node.range()), "Bad offset: range {:?} offset {:?}", range, offset);
+    assert!(node.range().contains_offset_nonstrict(offset), "Bad offset: range {:?} offset {:?}", range, offset);
     if range.is_empty() {
         return LeafAtOffset::None
     }
@@ -84,7 +84,7 @@ pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
 
     let mut children = node.children()
         .filter(|child| !child.range().is_empty())
-        .filter(|child| ::is_offset_in_range(offset, child.range()));
+        .filter(|child| child.range().contains_offset_nonstrict(offset));
 
     let left = children.next().unwrap();
     let right = children.next();

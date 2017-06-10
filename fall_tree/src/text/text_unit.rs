@@ -1,10 +1,8 @@
 use std::ops;
 use std::fmt;
-use super::{is_offset_in_range, TextRange};
-
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TextUnit(pub(in super) u32);
+pub struct TextUnit(pub(super) u32);
 
 impl fmt::Debug for TextUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -33,15 +31,6 @@ impl TextUnit {
 
     pub fn measure(text: &str) -> TextUnit {
         TextUnit(text.len() as u32)
-    }
-
-    pub fn in_range(range: TextRange, off: usize) -> Option<TextUnit> {
-        let off = TextUnit(off as u32);
-        if is_offset_in_range(off, range) {
-            Some(off)
-        } else {
-            None
-        }
     }
 }
 

@@ -50,8 +50,12 @@ impl TextRange {
         self.start() == self.end()
     }
 
-    pub fn is_subrange_of(self, other: TextRange) -> bool {
+    pub fn is_subrange_of(&self, other: TextRange) -> bool {
         other.start() <= self.start() && self.end() <= other.end()
+    }
+
+    pub fn contains_offset_nonstrict(&self, offset: TextUnit) -> bool {
+        self.start() <= offset && offset <= self.end()
     }
 
     pub fn glue(&self, right: TextRange) -> TextRange {
