@@ -3,7 +3,7 @@ use xi_rope::tree::Cursor;
 use elapsed::ElapsedDuration;
 
 use file;
-use fall_tree::{Node, WHITESPACE, TextUnit, File, Language};
+use fall_tree::{Node, WHITESPACE, TextUnit, File, Language, Edit, TextRange};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 use lang_fall::{LANG_FALL, highlight};
 
@@ -21,28 +21,39 @@ pub struct EditorImpl {
 
 impl Editor for EditorImpl {
     fn apply(&mut self, event: InputEvent) {
-        let mut text_changed = false;
+        let mut text_changed = None;
         match event {
             InputEvent::Ready => {}
             InputEvent::MoveCursor(d, a) => do_move_cursor(&mut self.state, d, a),
             InputEvent::InsertText(text) => {
-                text_changed = true;
-                if text == "\x08" {
-                    do_backspace(&mut self.state);
+                text_changed = if text == "\x08" {
+                    do_backspace(&mut self.state)
                 } else {
-                    do_insert(&mut self.state, text);
-                }
+                    Some(do_insert(&mut self.state, text))
+                };
             }
             InputEvent::OpenFile(path) => {
-                text_changed = true;
                 do_open_file(&mut self.state, path);
+                let text: String = self.state.text.clone().into();
+                let file = LANG_FALL.parse(text.clone());
+                self.state.file = Some(file);
             }
             InputEvent::SaveFile => do_save_file(&mut self.state),
         }
         let text: String = self.state.text.clone().into();
-        if text_changed || self.state.file.is_none() {
+        let new_file = if let Some(ref file) = self.state.file {
+            if let Some(edit) = text_changed {
+                Some(file.edit(&edit))
+            } else {
+                None
+            }
+        } else {
             let file = LANG_FALL.parse(text.clone());
-            self.state.file = Some(file);
+            Some(file)
+        };
+
+        if let Some(file) = new_file {
+            self.state.file = Some(file)
         }
 
         modify_state(&mut self.state,
@@ -180,20 +191,28 @@ fn do_move_cursor(state: &mut State, direction: Direction, amount: Amount) {
     move_cursor_by(state, dx, dy)
 }
 
-fn do_backspace(state: &mut State) {
+fn do_backspace(state: &mut State) -> Option<Edit> {
     let off = cursor_offset(state);
-    if off == 0 { return }
+    if off == 0 { return None }
     state.text.edit_str(off - 1, off, "");
     state.dirty = true;
     move_cursor_by(state, -1, 0);
+    Some(Edit {
+        delete: TextRange::from_len(TextUnit::from_usize(off - 1), TextUnit::from_usize(1)),
+        insert: "".to_string(),
+    })
 }
 
-fn do_insert(state: &mut State, text: String) {
+fn do_insert(state: &mut State, text: String) -> Edit {
     let dx = text.len();
     let off = cursor_offset(state);
     state.text.edit_str(off, off, &text);
     state.dirty = true;
     move_cursor_by(state, dx as i32, 0);
+    Edit {
+        delete: TextRange::from_len(TextUnit::from_usize(off), TextUnit::zero()),
+        insert: text,
+    }
 }
 
 fn do_open_file(state: &mut State, path: PathBuf) {
@@ -215,7 +234,6 @@ fn do_save_file(state: &mut State) {
 }
 
 fn context(file: &File, offset: usize) -> String {
-
     fn go(lang: &Language, path: &[Node], level: usize, buff: &mut String) {
         assert!(path.len() > 0);
         if path.len() == 1 {
