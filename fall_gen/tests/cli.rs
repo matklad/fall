@@ -8,7 +8,9 @@ use std::path::{PathBuf, Path};
 
 use tempdir::TempDir;
 
-const OVERWRITE: bool = false;
+fn should_rewrite() -> bool {
+    ::std::env::var("rewrite").is_ok()
+}
 
 fn generator_path() -> PathBuf {
     let test_exe = env::current_exe().unwrap();
@@ -40,7 +42,7 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
     };
 
     if expected != generated {
-        if OVERWRITE {
+        if should_rewrite() {
             println!("UPDATING {}", grammar_path.display());
             file::put_text(generated_path, generated)
                 .unwrap_or_else(|_| panic!("Failed to write result to {}", generated_path.display()));
