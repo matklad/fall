@@ -1,4 +1,4 @@
-use ::{Language, dump_file, dump_file_ws, TextRange, TextUnit};
+use ::{Language, dump_file, dump_file_ws, TextRange, TextUnit, Edit};
 use difference::Changeset;
 
 pub fn check_syntax(lang: &Language, input: &str, expected_tree: &str) {
@@ -16,8 +16,8 @@ pub fn check_reparse(
 ) {
     let before_file = lang.parse(before_input.to_owned());
 
-    let (range, new_text) = make_edit(before_input, after_input);
-    let after_file = before_file.edit(range, new_text);
+    let edit = make_edit(before_input, after_input);
+    let after_file = before_file.edit(&edit);
     let after_tree = dump_file(&after_file);
     report_diff(after_edit, &after_tree);
 
@@ -25,7 +25,7 @@ pub fn check_reparse(
     report_diff(reparsed, &actual_reparsed);
 }
 
-fn make_edit(before: &str, after: &str) -> (TextRange, String) {
+fn make_edit(before: &str, after: &str) -> Edit {
     let prefix = {
         before.as_bytes().iter()
             .zip(after.as_bytes())
@@ -37,14 +37,13 @@ fn make_edit(before: &str, after: &str) -> (TextRange, String) {
             .zip(after.as_bytes().iter().rev())
             .position(|(a, b)| a != b)
             .unwrap()
-
     };
-    let range = TextRange::from_to(
+    let delete = TextRange::from_to(
         TextUnit::from_usize(prefix),
         TextUnit::from_usize(before.len() - suffix)
     );
-    let edit = after[prefix..after.len() - suffix].to_string();
-    (range, edit)
+    let insert = after[prefix..after.len() - suffix].to_string();
+    Edit { delete: delete, insert: insert }
 }
 
 pub fn check_syntax_ws(lang: &Language, input: &str, expected_tree: &str) {

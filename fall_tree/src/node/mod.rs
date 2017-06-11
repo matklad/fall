@@ -1,11 +1,16 @@
 use std::time::Duration;
-use {Text, TextRange, NodeType, Language, TextUnit};
+use {Text, TextRange, NodeType, Language};
 
 mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
 pub use self::immutable::{INode, ReparseRegion};
+
+pub struct Edit {
+    pub delete: TextRange,
+    pub insert: String,
+}
 
 pub struct File {
     lang: Language,
@@ -42,11 +47,8 @@ impl File {
         self.inode.clone()
     }
 
-    pub fn edit(&self, range: TextRange, edit: String) -> File {
-        let before = self.text().slice(TextRange::from_to(TextUnit::zero(), range.start()));
-        let after = self.text().slice(TextRange::from_to(range.end(), self.text().len()));
-        let new_text = before.to_string() + &edit + &after.to_string();
-        self.language().parse(new_text)
+    pub fn edit(&self, edit: &Edit) -> File {
+        self.language().reparse(self, edit)
     }
 }
 
