@@ -133,15 +133,16 @@ pub fn parse(
         measure_time(|| parser(tokens, &mut stats))
     };
     stats.parsing_time = parse_time.duration();
-    let pre_node = to_pre_node(node, &owned_tokens);
 
-    let node = pre_node.into_immutable_node();
-    File::new(lang, text, stats, node)
+    let ws_node = to_ws_node(node, &owned_tokens);
+    let inode = ws_node.into_immutable_node().unwrap();
+
+    File::new(lang, text, stats, inode)
 }
 
 #[derive(Debug)]
 struct WsNode {
-    ty: NodeType,
+    ty: Option<NodeType>,
     len: TextUnit,
     children: Vec<WsNode>,
     reparse_region: Option<ReparseRegion>,
@@ -171,21 +172,35 @@ impl WsNode {
         self.children.push(child);
     }
 
-    fn into_immutable_node(self) -> ImmutableNode {
+    fn attach_to_immutable_node(self, parent: &mut ImmutableNode) {
         if self.children.is_empty() {
-            return ImmutableNode::new_leaf(self.ty, self.len)
+            parent.push_child(ImmutableNode::new_leaf(self.ty.unwrap(), self.len));
+            return;
         }
-        let mut node = ImmutableNode::new(self.ty, self.reparse_region);
-        for child in self.children {
-            node.push_child(child.into_immutable_node());
+        match self.into_immutable_node() {
+            Ok(node) => parent.push_child(node),
+            Err(this) => for child in this.children {
+                child.attach_to_immutable_node(parent);
+            }
         }
-        node
+    }
+
+    fn into_immutable_node(self) -> Result<ImmutableNode, WsNode> {
+        if let Some(ty) = self.ty {
+            let mut node = ImmutableNode::new(ty, self.reparse_region);
+            for child in self.children {
+                child.attach_to_immutable_node(&mut node);
+            }
+            Ok(node)
+        } else {
+            Err(self)
+        }
     }
 }
 
 fn token_pre_node(idx: usize, t: Token) -> WsNode {
     WsNode {
-        ty: t.ty,
+        ty: Some(t.ty),
         len: t.len,
         children: Vec::new(),
         reparse_region: None,
@@ -194,13 +209,13 @@ fn token_pre_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-fn to_pre_node(file_node: Node, tokens: &[Token]) -> WsNode {
+fn to_ws_node(file_node: Node, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
-        Node::Composite { ty, children , .. } => (ty.unwrap(), children),
+        Node::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
     };
     let mut result = WsNode {
-        ty: ty,
+        ty: Some(ty),
         len: TextUnit::zero(),
         children: Vec::new(),
         reparse_region: None,
@@ -233,34 +248,7 @@ fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        Node::Composite { ty, ref children, layer } => {
-            if ty.is_none() {
-                let mut children = children.iter();
-
-                let first_child = children.next().unwrap();
-                add_child(parent, first_child, tokens);
-
-                let start: TextUnit = parent.children[..parent.children.len() - 1].iter()
-                    .map(|child| child.len)
-                    .sum();
-
-                for child in children {
-                    add_child(parent, child, tokens)
-                }
-
-                let end: TextUnit = parent.children.iter()
-                    .map(|child| child.len)
-                    .sum();
-
-                if let Some(layer) = layer {
-                    parent.reparse_region = Some(ReparseRegion {
-                        range: TextRange::from_to(start, end),
-                        parser_id: layer,
-                    })
-                }
-                return
-            }
-            let ty = ty.unwrap();
+        Node::Composite { ty, ref children, layer: _layer } => {
             let mut p = WsNode {
                 ty: ty,
                 len: TextUnit::zero(),
