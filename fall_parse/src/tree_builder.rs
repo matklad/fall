@@ -179,15 +179,23 @@ impl WsNode {
         }
         match self.into_inode() {
             Ok(node) => parent.push_child(node),
-            Err(this) => for child in this.children {
-                child.attach_to_inode(parent);
+            Err(this) => {
+                if let Some(region) = this.reparse_region {
+                    parent.set_reparse_region(region)
+                }
+                for child in this.children {
+                    child.attach_to_inode(parent);
+                }
             }
         }
     }
 
     fn into_inode(self) -> Result<INode, WsNode> {
         if let Some(ty) = self.ty {
-            let mut node = INode::new(ty, self.reparse_region);
+            let mut node = INode::new(ty);
+            if let Some(region) = self.reparse_region {
+                node.set_reparse_region(region)
+            }
             for child in self.children {
                 child.attach_to_inode(&mut node);
             }

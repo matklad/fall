@@ -22,13 +22,13 @@ struct Inner {
 }
 
 impl INode {
-    pub fn new(ty: NodeType, reparse_region: Option<ReparseRegion>) -> INode {
+    pub fn new(ty: NodeType) -> INode {
         INode {
             inner: Rc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
-                reparse_region: reparse_region,
+                reparse_region: None,
             })
         }
     }
@@ -51,6 +51,11 @@ impl INode {
         let inner = Rc::make_mut(&mut self.inner);
         inner.len += child.len();
         inner.children.push(child);
+    }
+
+    pub fn set_reparse_region(&mut self, region: ReparseRegion) {
+        let inner = Rc::make_mut(&mut self.inner);
+        inner.reparse_region = Some(region);
     }
 
     pub fn ty(&self) -> NodeType {
