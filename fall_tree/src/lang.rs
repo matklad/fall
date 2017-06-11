@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use {File, NodeType, NodeTypeInfo};
+use {File, NodeType, NodeTypeInfo, FileStats, INode};
 
 #[derive(Clone)]
 pub struct Language {
@@ -12,7 +12,8 @@ impl Language {
     }
 
     pub fn parse(&self, text: String) -> File {
-        self.imp.parse(self.clone(), text)
+        let (stats, inode) = self.imp.parse(&text);
+        File::new(self.clone(), text, stats, inode)
     }
 
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -21,7 +22,7 @@ impl Language {
 }
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn parse(&self, this: Language, text: String) -> File;
+    fn parse(&self, text: &str) -> (FileStats, INode);
 
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }

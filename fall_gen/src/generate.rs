@@ -134,7 +134,7 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
 
 const TEMPLATE: &'static str = r#####"
 use serde_json;
-use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl};
+use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
 pub use fall_tree::{ERROR, WHITESPACE};
 
 {% for node_type in node_types %}
@@ -153,8 +153,8 @@ lazy_static! {
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
-            fn parse(&self, lang: Language, text: String) -> ::fall_tree::File {
-                ::fall_parse::parse(lang, text, &self.tokenizer, &|tokens, stats| {
+            fn parse(&self, text: &str) -> (FileStats, INode) {
+                ::fall_parse::parse(text, &self.tokenizer, &|tokens, stats| {
                     Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
                 })
             }

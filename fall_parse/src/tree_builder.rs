@@ -1,7 +1,6 @@
 use elapsed::measure_time;
 
-use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, TextRange,
-                FileStats, INode, TextUnit, ReparseRegion};
+use fall_tree::{NodeType, ERROR, WHITESPACE, TextRange, FileStats, INode, TextUnit, ReparseRegion};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -112,11 +111,10 @@ impl Node {
 }
 
 pub fn parse(
-    lang: Language,
-    text: String,
+    text: &str,
     tokenizer: &[LexRule],
     parser: &Fn(TokenSequence, &mut FileStats) -> Node
-) -> File {
+) -> (FileStats, INode) {
     let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
     stats.lexing_time = lex_time.duration();
@@ -137,8 +135,7 @@ pub fn parse(
 
     let ws_node = to_ws_node(node, &owned_tokens);
     let inode = ws_node.into_inode().unwrap();
-
-    File::new(lang, text, stats, inode)
+    (stats, inode)
 }
 
 #[derive(Debug)]
