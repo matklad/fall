@@ -29,7 +29,7 @@ lazy_static! {
             ERROR, WHITESPACE,
             LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, KW_PUB, KW_LET, STRUCT, FN, IDENT, NUMBER, FILE, FN_DEF, STRUCT_DEF, BLOCK_EXPR, STMT, PATTERN, EXPR,
         ];
-        let parser_json = r##"[{"ty":14,"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"SkipUntil":[8,11,10]},{"Rule":1}],null]}]}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":15,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":8}],null]}]}},{"Token":11},{"Token":12},{"Token":2},{"Token":3},{"Rule":4}],2]}]}},{"ty":16,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":8}],null]}]}},{"Token":10},{"Token":12},{"Token":4},{"Token":5}],2]}]}},{"ty":17,"body":{"Or":[{"And":[[{"Token":4},{"Rep":{"Rule":5}},{"Token":5}],null]}]}},{"ty":18,"body":{"Or":[{"And":[[{"Token":9},{"Rule":6},{"Token":6},{"Rule":7},{"Token":7}],1]}]}},{"ty":19,"body":{"Or":[{"And":[[{"Token":12}],null]}]}},{"ty":20,"body":{"Or":[{"And":[[{"Token":13}],null]}]}}]"##;
+        let parser_json = r##"[{"ty":14,"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"SkipUntil":[8,11,10]},{"Rule":1}],null]}]}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]}},{"ty":15,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":8}],null]}]}},{"Token":11},{"Token":12},{"Token":2},{"Token":3},{"Rule":4}],2]}]}},{"ty":16,"body":{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":8}],null]}]}},{"Token":10},{"Token":12},{"Token":4},{"Token":5}],2]}]}},{"ty":17,"body":{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":5},{"Rep":{"Rule":7}}]},{"Token":5}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Rep":{"Rule":6}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":4},{"Rule":5},{"Token":5}],1]},{"And":[[{"Not":[5]}],null]}]}},{"ty":18,"body":{"Or":[{"And":[[{"Token":9},{"Rule":8},{"Token":6},{"Rule":9},{"Token":7}],1]}]}},{"ty":19,"body":{"Or":[{"And":[[{"Token":12}],null]}]}},{"ty":20,"body":{"Or":[{"And":[[{"Token":13}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -37,6 +37,12 @@ lazy_static! {
             fn parse(&self, text: &str) -> (FileStats, INode) {
                 ::fall_parse::parse(text, &self.tokenizer, &|tokens, stats| {
                     Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
+                })
+            }
+
+            fn reparse(&self, text: &str, parser_id: u32) -> Option<(FileStats, Vec<INode>)> {
+                ::fall_parse::reparse(text, &self.tokenizer, &|tokens, stats| {
+                    Parser::new(ALL_NODE_TYPES, &self.parser).reparse(parser_id, tokens, stats)
                 })
             }
 

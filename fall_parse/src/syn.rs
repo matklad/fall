@@ -120,6 +120,19 @@ impl<'r> Parser<'r> {
         file_node
     }
 
+    pub fn reparse(&self, parser_id: u32, tokens: TokenSequence, stats: &mut FileStats) -> Option<Node> {
+        let expr = self.layers[parser_id as usize];
+        let mut ctx = Ctx { ticks: 0, predicate_mode: false };
+        if let Some((node, rest)) = self.parse_exp(expr, tokens, &mut ctx) {
+            if rest.current().is_some() {
+                return None
+            }
+            stats.parsing_ticks = ctx.ticks;
+            return Some(node)
+        }
+        None
+    }
+
     fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
                      -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;

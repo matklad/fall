@@ -139,5 +139,5 @@ FILE
           NUMBER "1"
         SEMI ";"
       RBRACE "}""#,
-        "fn foo() { let a = 1; }",)
+        "let a = 1;",)
 }

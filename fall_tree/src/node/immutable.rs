@@ -2,18 +2,18 @@ use std::rc::Rc;
 
 use ::{NodeType, TextUnit, TextRange};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct INode {
     inner: Rc<Inner>
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct ReparseRegion {
     pub range: TextRange,
     pub parser_id: u32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Inner {
     pub ty: NodeType,
     pub children: Vec<INode>,
@@ -66,7 +66,16 @@ impl INode {
         self.inner.len
     }
 
+    pub fn reparse_region(&self) -> Option<ReparseRegion> {
+        self.inner.reparse_region
+    }
+
     pub fn children(&self) -> &[INode] {
         &self.inner.children
+    }
+
+    pub fn children_mut(&mut self) -> &mut Vec<INode> {
+        let inner = Rc::make_mut(&mut self.inner);
+        &mut inner.children
     }
 }

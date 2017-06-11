@@ -138,12 +138,53 @@ pub fn parse(
     (stats, inode)
 }
 
+pub fn reparse(
+    text: &str,
+    tokenizer: &[LexRule],
+    parser: &Fn(TokenSequence, &mut FileStats) -> Option<Node>
+) -> Option<(FileStats, Vec<INode>)> {
+    let mut stats = FileStats::new();
+    let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
+    stats.lexing_time = lex_time.duration();
+    stats.reparsed_region = TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len()));
+    let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, t)| {
+        if t.ty == WHITESPACE { None } else { Some(i) }
+    }).collect();
+    let (parse_time, node) = {
+        let tokens = TokenSequence {
+            text: &text,
+            start: 0,
+            non_ws_indexes: &non_ws_indexes,
+            original_tokens: &owned_tokens,
+        };
+        measure_time(|| parser(tokens, &mut stats))
+    };
+    let mut node = match node {
+        Some(node) => node,
+        None => return None,
+    };
+
+    match node {
+        Node::Composite { ref mut ty, ..} => {
+            *ty = Some(WHITESPACE);
+        }
+        _ => {}
+    }
+
+    stats.parsing_time = parse_time.duration();
+
+    let ws_node = to_ws_node(node, &owned_tokens);
+    let inode = ws_node.into_inode().unwrap();
+    let children = inode.children().iter().cloned().collect();
+    Some((stats, children))
+}
+
 #[derive(Debug)]
 struct WsNode {
     ty: Option<NodeType>,
     len: TextUnit,
     children: Vec<WsNode>,
-    reparse_region: Option<ReparseRegion>,
+    layer: Option<u32>,
     first: Option<usize>,
     last: Option<usize>
 }
@@ -175,11 +216,15 @@ impl WsNode {
             parent.push_child(INode::new_leaf(self.ty.unwrap(), self.len));
             return;
         }
+        let parent_len = parent.len();
         match self.into_inode() {
             Ok(node) => parent.push_child(node),
             Err(this) => {
-                if let Some(region) = this.reparse_region {
-                    parent.set_reparse_region(region)
+                if let Some(layer) = this.layer {
+                    parent.set_reparse_region(ReparseRegion {
+                        range: TextRange::from_len(parent_len, this.len),
+                        parser_id: layer,
+                    })
                 }
                 for child in this.children {
                     child.attach_to_inode(parent);
@@ -191,8 +236,11 @@ impl WsNode {
     fn into_inode(self) -> Result<INode, WsNode> {
         if let Some(ty) = self.ty {
             let mut node = INode::new(ty);
-            if let Some(region) = self.reparse_region {
-                node.set_reparse_region(region)
+            if let Some(layer) = self.layer {
+                node.set_reparse_region(ReparseRegion {
+                    range: TextRange::from_len(TextUnit::zero(), self.len),
+                    parser_id: layer,
+                })
             }
             for child in self.children {
                 child.attach_to_inode(&mut node);
@@ -209,7 +257,7 @@ fn token_pre_node(idx: usize, t: Token) -> WsNode {
         ty: Some(t.ty),
         len: t.len,
         children: Vec::new(),
-        reparse_region: None,
+        layer: None,
         first: Some(idx),
         last: Some(idx),
     }
@@ -224,7 +272,7 @@ fn to_ws_node(file_node: Node, tokens: &[Token]) -> WsNode {
         ty: Some(ty),
         len: TextUnit::zero(),
         children: Vec::new(),
-        reparse_region: None,
+        layer: None,
         first: None,
         last: None,
     };
@@ -254,12 +302,12 @@ fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        Node::Composite { ty, ref children, layer: _layer } => {
+        Node::Composite { ty, ref children, layer } => {
             let mut p = WsNode {
                 ty: ty,
                 len: TextUnit::zero(),
                 children: Vec::new(),
-                reparse_region: None,
+                layer: layer,
                 first: None,
                 last: None,
             };

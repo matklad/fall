@@ -62,6 +62,10 @@ impl TextRange {
         assert_eq!(self.end(), right.start());
         TextRange::from_to(self.start(), right.end())
     }
+
+    pub fn shift_right(&self, offset: TextUnit) -> TextRange {
+        TextRange::from_len(self.start() + offset, self.len())
+    }
 }
 
 

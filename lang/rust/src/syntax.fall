@@ -32,8 +32,15 @@ pub rule struct_def {
 
 
 pub rule block_expr {
-  '{' <rep stmt> '}'
+  '{' <layer block_body <rep stmt>> '}'
 }
+
+rule block_body { <rep balanced> }
+rule balanced {
+  '{' <commit> block_body '}'
+| <not '}'>
+}
+
 
 pub rule stmt {
   'let' <commit> pattern '=' expr ';'
