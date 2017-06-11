@@ -26,7 +26,8 @@ pub fn generate(file: FallFile) -> String {
     let parser = serde_json::to_string(&parser).unwrap();
     context.add("parser_json", &parser);
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
-        CtxLexRule { ty: r.node_type(), re: format!("{:?}", r.token_re()), f: r.extern_fn() }
+        let re = r.token_re().expect("Bad token");
+        CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() }
     }).collect::<Vec<_>>());
     context.add("verbatim", &file.verbatim_def().map(|v| v.contents()));
 

@@ -1,10 +1,10 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use ::{NodeType, TextUnit, TextRange};
 
 #[derive(Clone, Debug)]
 pub struct INode {
-    inner: Rc<Inner>
+    inner: Arc<Inner>
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -24,7 +24,7 @@ struct Inner {
 impl INode {
     pub fn new(ty: NodeType) -> INode {
         INode {
-            inner: Rc::new(Inner {
+            inner: Arc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
@@ -35,7 +35,7 @@ impl INode {
 
     pub fn new_leaf(ty: NodeType, len: TextUnit) -> INode {
         INode {
-            inner: Rc::new(Inner {
+            inner: Arc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
                 len: len,
@@ -48,13 +48,13 @@ impl INode {
         if self.children().is_empty() {
             assert!(self.len() == TextUnit::zero());
         }
-        let inner = Rc::make_mut(&mut self.inner);
+        let inner = Arc::make_mut(&mut self.inner);
         inner.len += child.len();
         inner.children.push(child);
     }
 
     pub fn set_reparse_region(&mut self, region: ReparseRegion) {
-        let inner = Rc::make_mut(&mut self.inner);
+        let inner = Arc::make_mut(&mut self.inner);
         inner.reparse_region = Some(region);
     }
 
@@ -75,7 +75,7 @@ impl INode {
     }
 
     pub fn children_mut(&mut self) -> &mut Vec<INode> {
-        let inner = Rc::make_mut(&mut self.inner);
+        let inner = Arc::make_mut(&mut self.inner);
         &mut inner.children
     }
 }

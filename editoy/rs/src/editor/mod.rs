@@ -3,7 +3,7 @@ use xi_rope::tree::Cursor;
 use elapsed::ElapsedDuration;
 
 use file;
-use fall_tree::{Node, WHITESPACE, TextOffset, File, Language};
+use fall_tree::{Node, WHITESPACE, TextUnit, File, Language};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 use lang_fall::{LANG_FALL, highlight};
 
@@ -247,8 +247,7 @@ fn context(file: &File, offset: usize) -> String {
     }
     let root = file.root();
     let mut result = String::new();
-    let offset = TextOffset::in_range(root.range(), offset)
-        .expect("Broken offset");
+    let offset = TextUnit::from_usize(offset);
     let leaf = if let Some(leaf) = find_leaf_at_offset(root, offset).right_biased() {
         leaf
     } else {

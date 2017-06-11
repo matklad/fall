@@ -34,12 +34,16 @@ impl<'f> FallFile<'f> {
 }
 
 impl<'f> LexRule<'f> {
-    pub fn token_re(&self) -> String {
-        let raw = self.raw_re();
+    pub fn token_re(&self) -> Option<String> {
+        let raw = match self.raw_re() {
+            Some(raw) => raw,
+            None => return None,
+        };
+
         if raw.starts_with("r") {
-            lit_body(raw).to_string()
+            Some(lit_body(raw).to_string())
         } else {
-            ::regex::escape(&lit_body(raw).to_cow())
+            Some(::regex::escape(&lit_body(raw).to_cow()))
         }
     }
 
@@ -50,15 +54,16 @@ impl<'f> LexRule<'f> {
     }
 
     pub fn token_name(&self) -> Text<'f> {
-        let r = self.raw_re();
-        if r.starts_with("'") {
-            return r
+        if let Some(r) = self.raw_re() {
+            if r.starts_with("'") {
+                return r
+            }
         }
         self.node_type()
     }
 
-    fn raw_re(&self) -> Text<'f> {
-        children_of_type(self.node(), STRING).next().unwrap().text()
+    fn raw_re(&self) -> Option<Text<'f>> {
+        children_of_type(self.node(), STRING).next().map(|child| child.text())
     }
 }
 
