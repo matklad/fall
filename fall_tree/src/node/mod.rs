@@ -5,20 +5,20 @@ mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{ImmutableNode, ReparseRegion};
+pub use self::immutable::{INode, ReparseRegion};
 
 pub struct File {
     lang: Language,
     imp: imp::FileImpl,
-    immutable_node: ImmutableNode,
+    inode: INode,
 }
 
 impl File {
-    pub fn new(lang: Language, text: String, stats: FileStats, node: ImmutableNode) -> File {
+    pub fn new(lang: Language, text: String, stats: FileStats, node: INode) -> File {
         File {
             lang: lang,
             imp: imp::new_file(text, stats, &node),
-            immutable_node: node,
+            inode: node,
         }
     }
 
@@ -38,8 +38,8 @@ impl File {
         self.imp.stats()
     }
 
-    pub fn immutable_node(&self) -> ImmutableNode {
-        self.immutable_node.clone()
+    pub fn inode(&self) -> INode {
+        self.inode.clone()
     }
 }
 

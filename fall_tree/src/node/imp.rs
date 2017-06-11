@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use {Text, TextRange, NodeType, TextUnit};
 use super::{Node, FileStats};
-use super::immutable::ImmutableNode;
+use super::immutable::INode;
 
 pub struct FileImpl {
     stats: FileStats,
@@ -96,7 +96,7 @@ pub struct NodeData {
 }
 
 
-pub fn new_file(text: String, stats: FileStats, node: &ImmutableNode) -> FileImpl {
+pub fn new_file(text: String, stats: FileStats, node: &INode) -> FileImpl {
     let mut nodes = Vec::new();
     go(TextUnit::zero(), node, &mut nodes);
 
@@ -107,7 +107,7 @@ pub fn new_file(text: String, stats: FileStats, node: &ImmutableNode) -> FileImp
         nodes: nodes,
     };
 
-    fn go(range_start: TextUnit, node: &ImmutableNode, nodes: &mut Vec<NodeData>) {
+    fn go(range_start: TextUnit, node: &INode, nodes: &mut Vec<NodeData>) {
         let my_idx = nodes.len();
         nodes.push(NodeData {
             ty: node.ty(),

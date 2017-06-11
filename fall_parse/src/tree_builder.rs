@@ -1,7 +1,7 @@
 use elapsed::measure_time;
 
 use fall_tree::{Language, NodeType, File, ERROR, WHITESPACE, TextRange,
-                FileStats, ImmutableNode, TextUnit, ReparseRegion};
+                FileStats, INode, TextUnit, ReparseRegion};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -135,7 +135,7 @@ pub fn parse(
     stats.parsing_time = parse_time.duration();
 
     let ws_node = to_ws_node(node, &owned_tokens);
-    let inode = ws_node.into_immutable_node().unwrap();
+    let inode = ws_node.into_inode().unwrap();
 
     File::new(lang, text, stats, inode)
 }
@@ -172,24 +172,24 @@ impl WsNode {
         self.children.push(child);
     }
 
-    fn attach_to_immutable_node(self, parent: &mut ImmutableNode) {
+    fn attach_to_inode(self, parent: &mut INode) {
         if self.children.is_empty() {
-            parent.push_child(ImmutableNode::new_leaf(self.ty.unwrap(), self.len));
+            parent.push_child(INode::new_leaf(self.ty.unwrap(), self.len));
             return;
         }
-        match self.into_immutable_node() {
+        match self.into_inode() {
             Ok(node) => parent.push_child(node),
             Err(this) => for child in this.children {
-                child.attach_to_immutable_node(parent);
+                child.attach_to_inode(parent);
             }
         }
     }
 
-    fn into_immutable_node(self) -> Result<ImmutableNode, WsNode> {
+    fn into_inode(self) -> Result<INode, WsNode> {
         if let Some(ty) = self.ty {
-            let mut node = ImmutableNode::new(ty, self.reparse_region);
+            let mut node = INode::new(ty, self.reparse_region);
             for child in self.children {
-                child.attach_to_immutable_node(&mut node);
+                child.attach_to_inode(&mut node);
             }
             Ok(node)
         } else {

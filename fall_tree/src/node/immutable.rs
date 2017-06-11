@@ -3,7 +3,7 @@ use std::rc::Rc;
 use ::{NodeType, TextUnit, TextRange};
 
 #[derive(Clone)]
-pub struct ImmutableNode {
+pub struct INode {
     inner: Rc<Inner>
 }
 
@@ -16,14 +16,14 @@ pub struct ReparseRegion {
 #[derive(Clone)]
 struct Inner {
     pub ty: NodeType,
-    pub children: Vec<ImmutableNode>,
+    pub children: Vec<INode>,
     pub len: TextUnit,
     pub reparse_region: Option<ReparseRegion>
 }
 
-impl ImmutableNode {
-    pub fn new(ty: NodeType, reparse_region: Option<ReparseRegion>) -> ImmutableNode {
-        ImmutableNode {
+impl INode {
+    pub fn new(ty: NodeType, reparse_region: Option<ReparseRegion>) -> INode {
+        INode {
             inner: Rc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
@@ -33,8 +33,8 @@ impl ImmutableNode {
         }
     }
 
-    pub fn new_leaf(ty: NodeType, len: TextUnit) -> ImmutableNode {
-        ImmutableNode {
+    pub fn new_leaf(ty: NodeType, len: TextUnit) -> INode {
+        INode {
             inner: Rc::new(Inner {
                 ty: ty,
                 children: Vec::new(),
@@ -44,7 +44,7 @@ impl ImmutableNode {
         }
     }
 
-    pub fn push_child(&mut self, child: ImmutableNode) {
+    pub fn push_child(&mut self, child: INode) {
         if self.children().is_empty() {
             assert!(self.len() == TextUnit::zero());
         }
@@ -61,7 +61,7 @@ impl ImmutableNode {
         self.inner.len
     }
 
-    pub fn children(&self) -> &[ImmutableNode] {
+    pub fn children(&self) -> &[INode] {
         &self.inner.children
     }
 }
