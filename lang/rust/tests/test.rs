@@ -137,24 +137,7 @@ FILE
         EQ "="
         EXPR
           NUMBER "1"
-        ERROR ""
-      RBRACE "}""#,
-        r#"
-FILE
-  FN_DEF
-    FN "fn"
-    IDENT "foo"
-    LPAREN "("
-    RPAREN ")"
-    BLOCK_EXPR
-      LBRACE "{"
-      STMT
-        KW_LET "let"
-        PATTERN
-          IDENT "a"
-        EQ "="
-        EXPR
-          NUMBER "1"
         SEMI ";"
-      RBRACE "}""#)
+      RBRACE "}""#,
+        "fn foo() { let a = 1; }",)
 }

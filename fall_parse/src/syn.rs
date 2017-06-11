@@ -279,4 +279,3 @@ impl<'r> Parser<'r> {
         self.node_types[idx]
     }
 }
-

@@ -11,17 +11,18 @@ pub fn check_reparse(
     lang: &Language,
     before_input: &str,
     after_input: &str,
-    before_edit: &str,
-    after_edit: &str
+    after_edit: &str,
+    reparsed: &str
 ) {
     let before_file = lang.parse(before_input.to_owned());
-    let before_tree = dump_file(&before_file);
-    report_diff(before_edit, &before_tree);
 
     let (range, new_text) = make_edit(before_input, after_input);
     let after_file = before_file.edit(range, new_text);
     let after_tree = dump_file(&after_file);
-    report_diff(after_edit, &after_tree)
+    report_diff(after_edit, &after_tree);
+
+    let actual_reparsed = after_file.text().slice(after_file.stats().reparsed_region).to_string();
+    report_diff(reparsed, &actual_reparsed);
 }
 
 fn make_edit(before: &str, after: &str) -> (TextRange, String) {

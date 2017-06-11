@@ -86,6 +86,7 @@ pub struct FileStats {
     pub lexing_time: Duration,
     pub parsing_time: Duration,
     pub parsing_ticks: u64,
+    pub reparsed_region: TextRange,
 }
 
 impl FileStats {
@@ -94,6 +95,7 @@ impl FileStats {
             lexing_time: Default::default(),
             parsing_time: Default::default(),
             parsing_ticks: Default::default(),
+            reparsed_region: TextRange::empty()
         }
     }
 }

@@ -120,6 +120,7 @@ pub fn parse(
     let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
     stats.lexing_time = lex_time.duration();
+    stats.reparsed_region = TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len()));
     let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, t)| {
         if t.ty == WHITESPACE { None } else { Some(i) }
     }).collect();
