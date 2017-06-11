@@ -60,11 +60,10 @@ impl Ctx {
         if self.predicate_mode {
             return;
         }
-        if let Node::Composite { ty: None, ref children, .. } = child {
-            if children.is_empty() {
-                // Microoptimization: don't store empty success nodes
-                return;
-            }
+        match child {
+            // Microoptimization: don't store empty success nodes
+            Node::Composite { ty: None, ref children, .. } if children.is_empty() => return,
+            _ => {}
         }
         parent.push_child(child)
     }
