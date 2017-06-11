@@ -140,17 +140,17 @@ pub fn parse(
 }
 
 #[derive(Debug)]
-struct PreNode {
+struct WsNode {
     ty: NodeType,
     len: TextUnit,
-    children: Vec<PreNode>,
+    children: Vec<WsNode>,
     reparse_region: Option<ReparseRegion>,
     first: Option<usize>,
     last: Option<usize>
 }
 
-impl PreNode {
-    fn push_child(&mut self, child: PreNode, tokens: &[Token]) {
+impl WsNode {
+    fn push_child(&mut self, child: WsNode, tokens: &[Token]) {
         match (self.last, child.first) {
             (Some(l), Some(r)) if l + 1 < r => {
                 for idx in l + 1..r {
@@ -164,7 +164,7 @@ impl PreNode {
         self.push_child_raw(child)
     }
 
-    fn push_child_raw(&mut self, child: PreNode) {
+    fn push_child_raw(&mut self, child: WsNode) {
         self.last = child.last.or(self.last);
         self.first = self.first.or(child.first);
         self.len += child.len;
@@ -183,8 +183,8 @@ impl PreNode {
     }
 }
 
-fn token_pre_node(idx: usize, t: Token) -> PreNode {
-    PreNode {
+fn token_pre_node(idx: usize, t: Token) -> WsNode {
+    WsNode {
         ty: t.ty,
         len: t.len,
         children: Vec::new(),
@@ -194,12 +194,12 @@ fn token_pre_node(idx: usize, t: Token) -> PreNode {
     }
 }
 
-fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
+fn to_pre_node(file_node: Node, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
         Node::Composite { ty, children , .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
     };
-    let mut result = PreNode {
+    let mut result = WsNode {
         ty: ty,
         len: TextUnit::zero(),
         children: Vec::new(),
@@ -228,7 +228,7 @@ fn to_pre_node(file_node: Node, tokens: &[Token]) -> PreNode {
     result
 }
 
-fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
+fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
     match *node {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
@@ -261,7 +261,7 @@ fn add_child(parent: &mut PreNode, node: &Node, tokens: &[Token]) {
                 return
             }
             let ty = ty.unwrap();
-            let mut p = PreNode {
+            let mut p = WsNode {
                 ty: ty,
                 len: TextUnit::zero(),
                 children: Vec::new(),
