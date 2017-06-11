@@ -121,11 +121,7 @@ pub fn parse(
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
     stats.lexing_time = lex_time.duration();
     let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, t)| {
-        if t.ty == WHITESPACE {
-            None
-        } else {
-            Some(i)
-        }
+        if t.ty == WHITESPACE { None } else { Some(i) }
     }).collect();
     let (parse_time, node) = {
         let tokens = TokenSequence {
