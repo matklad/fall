@@ -1,7 +1,7 @@
 extern crate fall_tree;
 extern crate lang_rust;
 
-use fall_tree::test_util::check_syntax;
+use fall_tree::test_util::{check_syntax, check_reparse};
 use lang_rust::LANG_RUST;
 
 
@@ -113,4 +113,48 @@ FILE
         SEMI ";"
       RBRACE "}"
 "#);
+}
+
+#[test]
+fn check_reparse_in_block_body() {
+    check_reparse(
+        &LANG_RUST,
+        "fn foo() { let a = 1 }",
+        "fn foo() { let a = 1; }",
+        r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      STMT
+        KW_LET "let"
+        PATTERN
+          IDENT "a"
+        EQ "="
+        EXPR
+          NUMBER "1"
+        ERROR ""
+      RBRACE "}""#,
+        r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      STMT
+        KW_LET "let"
+        PATTERN
+          IDENT "a"
+        EQ "="
+        EXPR
+          NUMBER "1"
+        SEMI ";"
+      RBRACE "}""#)
 }
