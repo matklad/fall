@@ -1,3 +1,3 @@
 [workspace]
 members = ["fall_gen", "fall_tree", "fall_parse", "fall_test",
-           "lang/fall", "lang/json"]
+           "lang/fall", "lang/json", "lang/rust" ]

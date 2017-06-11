@@ -1,5 +1,5 @@
 use std::time::Duration;
-use {Text, TextRange, NodeType, Language};
+use {Text, TextRange, NodeType, Language, TextUnit};
 
 mod imp;
 mod immutable;
@@ -40,6 +40,13 @@ impl File {
 
     pub fn inode(&self) -> INode {
         self.inode.clone()
+    }
+
+    pub fn edit(&self, range: TextRange, edit: String) -> File {
+        let before = self.text().slice(TextRange::from_to(TextUnit::zero(), range.start()));
+        let after = self.text().slice(TextRange::from_to(range.end(), self.text().len()));
+        let new_text = before.to_string() + &edit + &after.to_string();
+        self.language().parse(new_text)
     }
 }
 

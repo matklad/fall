@@ -3,24 +3,41 @@ tokenizer {
   rparen ')'
   lbrace '{'
   rbrace '}'
+  eq '='
+  semi ';'
   kw_pub 'pub'
+  kw_let 'let'
   struct 'struct'
   fn 'fn'
   whitespace r"\s+"
-  ident r"\w+"
+      ident r"\p{XID_Start}\w*"
+  number r"\d+"
 }
 
 pub rule file {
-  <rep { <skip_until { 'pub' | 'fn' | 'struct' }> fn_or_struct} >
+  <rep {<skip_until { 'pub' | 'fn' | 'struct' }> item}>
 }
-rule fn_or_struct { fn_def | struct_def }
+
+rule item { fn_def | struct_def }
 
 pub rule fn_def {
   <opt {'pub'}> 'fn' <commit> ident
-  '(' ')' '{' '}'
+  '(' ')' block_expr
 }
 
 pub rule struct_def {
   <opt {'pub'}> 'struct' <commit> ident
   '{' '}'
 }
+
+
+pub rule block_expr {
+  '{' <rep stmt> '}'
+}
+
+pub rule stmt {
+  'let' <commit> pattern '=' expr ';'
+}
+
+pub rule pattern { ident }
+pub rule expr { number }

@@ -24,8 +24,9 @@ FILE
     IDENT "bar"
     LPAREN "("
     RPAREN ")"
-    LBRACE "{"
-    RBRACE "}"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
   STRUCT_DEF
     KW_PUB "pub"
     STRUCT "struct"
@@ -38,8 +39,9 @@ FILE
     IDENT "quux"
     LPAREN "("
     RPAREN ")"
-    LBRACE "{"
-    RBRACE "}"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
 "#)
 }
 
@@ -67,8 +69,9 @@ FILE
     IDENT "foo"
     LPAREN "("
     RPAREN ")"
-    LBRACE "{"
-    RBRACE "}"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
   ERROR
     IDENT "bar"
     IDENT "baz"
@@ -79,4 +82,35 @@ FILE
     RBRACE "}"
   ERROR
     IDENT "quuz""#);
+}
+
+#[test]
+fn lets() {
+    check_syntax(&LANG_RUST, "fn foo() { let a = 1; let b = 2; }", r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      STMT
+        KW_LET "let"
+        PATTERN
+          IDENT "a"
+        EQ "="
+        EXPR
+          NUMBER "1"
+        SEMI ";"
+      STMT
+        KW_LET "let"
+        PATTERN
+          IDENT "b"
+        EQ "="
+        EXPR
+          NUMBER "2"
+        SEMI ";"
+      RBRACE "}"
+"#);
 }
