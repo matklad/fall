@@ -70,10 +70,11 @@ class ToyView : View() {
                         left = null, right = null, bottom = null
                 )
             }
-            left = label(Bindings.format("%3d lex %3d parse %3d draw %s",
+            left = label(Bindings.format("%3d lex %3d parse %3d draw %5d reparse %s",
                     viewModel.map { it.lexingTime / 1_000_000 },
                     viewModel.map { it.parsingTime / 1_000_000 },
                     lastFrameTime.divide(1_000_000),
+                    viewModel.map { it.reparseLen },
                     viewModel.map { it.openedFile?.toString() + (if (it.isDirty) "*" else "") }
             ))
             right = label(Bindings.select<GridPosition>(viewModel, "cursor"))

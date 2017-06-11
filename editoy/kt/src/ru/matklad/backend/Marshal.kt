@@ -15,6 +15,7 @@ fun viewStateFromProto(viewStateReply: ViewStateReply): ViewState {
             viewStateReply.syntaxTree,
             viewStateReply.lexingTimeNanos,
             viewStateReply.parsingTimeNanos,
+            viewStateReply.reparseLen,
             viewStateReply.file.takeIf { it.isNotEmpty() }?.let { Paths.get(it) },
             viewStateReply.dirty
     )

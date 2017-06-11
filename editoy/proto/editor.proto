@@ -70,6 +70,7 @@ message ViewStateReply {
     int64 parsing_time_nanos = 6;
     string file = 7;
     bool dirty = 8;
+    int32 reparse_len = 9;
 }
 
 message Line {

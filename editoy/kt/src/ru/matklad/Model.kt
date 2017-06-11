@@ -11,6 +11,7 @@ data class ViewState(
         val syntaxTree: String = "",
         val lexingTime: Long = 0,
         val parsingTime: Long = 0,
+        val reparseLen: Int = 0,
         val openedFile: Path? = null,
         val isDirty: Boolean = false
 )

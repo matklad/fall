@@ -79,6 +79,7 @@ impl Editor for EditorImpl {
         if let Some(ref file) = self.state.file {
             result.lexing_time_nanos = ElapsedDuration::new(file.stats().lexing_time).nanos() as i64;
             result.parsing_time_nanos = ElapsedDuration::new(file.stats().parsing_time).nanos() as i64;
+            result.reparse_len = file.stats().reparsed_region.len().as_u32() as i32;
         }
         if let Some(ref path) = self.state.file_path {
             result.file = path.display().to_string();
