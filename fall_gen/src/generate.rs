@@ -129,6 +129,10 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
                     Box::new(compile_expr(first_arg)),
                     Box::new(compile_expr(args.next().unwrap()))
                 ),
+                "with_skip" => fall_parse::Expr::WithSkip(
+                    Box::new(compile_expr(first_arg)),
+                    Box::new(compile_expr(args.next().unwrap()))
+                ),
                 _ => unimplemented!(),
             }
         }

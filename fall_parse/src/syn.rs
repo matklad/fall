@@ -22,6 +22,7 @@ pub enum Expr {
     Rule(usize),
     Token(usize),
     Rep(Box<Expr>),
+    WithSkip(Box<Expr>, Box<Expr>),
     Opt(Box<Expr>),
     Not(Vec<usize>),
     NotAhead(Box<Expr>),
@@ -84,7 +85,7 @@ fn find_layers<'r>(rules: &'r [SynRule]) -> Vec<&'r Expr> {
                     go(e, acc)
                 }
             }
-            Expr::Rep(ref e) | Expr::Opt(ref e) => go(e, acc),
+            Expr::Rep(ref e) | Expr::Opt(ref e) | Expr::WithSkip(_, ref e) => go(e, acc),
             Expr::Layer(..) => acc.push(expr)
         }
     }
@@ -210,15 +211,7 @@ impl<'r> Parser<'r> {
                 None
             },
             Expr::Layer(ref l, ref e) => {
-                let layer = {
-                    let old_mode = ctx.predicate_mode;
-                    ctx.predicate_mode = true;
-                    let layer = self.parse_exp(l, tokens, ctx);
-                    ctx.predicate_mode = old_mode;
-                    layer
-                };
-
-                if let Some((_, rest)) = layer {
+                if let Some(rest) = self.parse_exp_pred(l, tokens, ctx) {
                     let layer_id = self.layers.iter()
                         .position(|&l| l as *const Expr == expr as *const Expr)
                         .unwrap();
@@ -256,6 +249,32 @@ impl<'r> Parser<'r> {
                 Some((node, tokens))
             }
 
+            Expr::WithSkip(ref first, ref body) => {
+                let mut error = ctx.create_error_node();
+                let mut result = ctx.create_composite_node(None);
+                let mut skipped = false;
+                let mut tokens = tokens;
+                loop {
+                    if tokens.current().is_none() {
+                        return None;
+                    }
+                    if let Some(_) = self.parse_exp_pred(first, tokens, ctx) {
+                        if let Some((node, ts)) = self.parse_exp(body, tokens, ctx) {
+                            if skipped {
+                                ctx.push_child(&mut result, error);
+                            }
+                            ctx.push_child(&mut result, node);
+                            return Some((result, ts));
+                        }
+                    }
+
+                    skipped = true;
+                    let (node, new_tokens) = ctx.create_leaf_node(tokens);
+                    tokens = new_tokens;
+                    ctx.push_child(&mut error, node);
+                }
+            }
+
             Expr::SkipUntil(ref ts) => {
                 let mut result = ctx.create_error_node();
                 let mut skipped = false;
@@ -282,6 +301,15 @@ impl<'r> Parser<'r> {
                 Some((result, tokens))
             }
         }
+    }
+
+    fn parse_exp_pred<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
+                          -> Option<(TokenSequence<'t>)> {
+        let old_mode = ctx.predicate_mode;
+        ctx.predicate_mode = true;
+        let result = self.parse_exp(expr, tokens, ctx);
+        ctx.predicate_mode = old_mode;
+        result.map(|(_, ts)| ts)
     }
 
     fn token_set_contains(&self, ts: &[usize], token: Token) -> bool {

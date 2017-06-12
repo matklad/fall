@@ -29,7 +29,7 @@ tokenizer {
 }
 
 pub rule fall_file {
-  <rep { <skip_until { 'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' }> file_entry }>
+  <rep <with_skip file_entry_first file_entry>>
 }
 
 rule file_entry {
@@ -37,6 +37,10 @@ rule file_entry {
 | syn_rule
 | verbatim_def
 | ast_def
+}
+
+rule file_entry_first {
+  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast'
 }
 
 pub rule tokenizer_def {
