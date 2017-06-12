@@ -29,10 +29,14 @@ tokenizer {
 }
 
 pub rule fall_file {
+  <rep { <skip_until { 'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' }> file_entry }>
+}
+
+rule file_entry {
   tokenizer_def
-  <rep { <skip_until {'pub' | 'rule' | '#'}> syn_rule }>
-  <opt verbatim_def>
-  <opt ast_def>
+| syn_rule
+| verbatim_def
+| ast_def
 }
 
 pub rule tokenizer_def {
@@ -54,9 +58,9 @@ pub rule attributes {
 
 pub rule string { simple_string | hash_string }
 
-pub rule verbatim_def { 'verbatim' hash_string }
+pub rule verbatim_def { 'verbatim' <commit> hash_string }
 
-pub rule ast_def { 'ast' '{' <rep node_or_class> '}' }
+pub rule ast_def { 'ast' <commit> '{' <rep node_or_class> '}' }
 
 rule node_or_class {
  <skip_until {'node' | 'class'}> {ast_node_def | ast_class_def}
