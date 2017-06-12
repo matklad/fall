@@ -113,8 +113,6 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             }
             match fn_name.as_ref() {
                 "not" => fall_parse::Expr::Not(token_set_arg!()),
-                "skip_until" => fall_parse::Expr::SkipUntil(token_set_arg!()),
-
                 "rep" => {
                     assert!(args.next().is_none());
                     fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)))

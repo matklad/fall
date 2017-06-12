@@ -28,7 +28,6 @@ pub enum Expr {
     NotAhead(Box<Expr>),
     Eof,
     Layer(Box<Expr>, Box<Expr>),
-    SkipUntil(Vec<usize>),
 }
 
 struct Ctx {
@@ -79,7 +78,7 @@ fn find_layers<'r>(rules: &'r [SynRule]) -> Vec<&'r Expr> {
     fn go<'r>(expr: &'r Expr, acc: &mut Vec<&'r Expr>) {
         match *expr {
             Expr::Rule(_) | Expr::Token(_) | Expr::Not(_) |
-            Expr::NotAhead(_) | Expr::Eof | Expr::SkipUntil(_) => return,
+            Expr::NotAhead(_) | Expr::Eof => return,
             Expr::Or(ref exprs) | Expr::And(ref exprs, _) => {
                 for e in exprs {
                     go(e, acc)
@@ -273,32 +272,6 @@ impl<'r> Parser<'r> {
                     tokens = new_tokens;
                     ctx.push_child(&mut error, node);
                 }
-            }
-
-            Expr::SkipUntil(ref ts) => {
-                let mut result = ctx.create_error_node();
-                let mut skipped = false;
-                let mut tokens = tokens;
-                loop {
-                    if let Some(t) = tokens.current() {
-                        if self.token_set_contains(ts, t) {
-                            break;
-                        } else {
-                            skipped = true;
-                            let p = ctx.create_leaf_node(tokens);
-                            ctx.push_child(&mut result, p.0);
-                            tokens = p.1;
-                        }
-                    } else {
-                        return None
-                    }
-                }
-
-                if !skipped {
-                    return Some(ctx.create_success_node(tokens));
-                }
-
-                Some((result, tokens))
             }
         }
     }

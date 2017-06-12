@@ -15,10 +15,10 @@ tokenizer {
 }
 
 pub rule file {
-  <rep {<skip_until { 'pub' | 'fn' | 'struct' }> item}>
+  <rep <with_skip 
+    { 'pub' | 'fn' | 'struct' } 
+    { fn_def | struct_def }>>
 }
-
-rule item { fn_def | struct_def }
 
 pub rule fn_def {
   <opt {'pub'}> 'fn' <commit> ident

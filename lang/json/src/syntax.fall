@@ -24,10 +24,9 @@ pub rule object {
 }
 
 rule object_body {
-  <rep {
-    <skip_until string>
-    field <commit> {',' <not_ahead <eof>> | <eof>}
-  }>
+  <rep <with_skip
+    string
+    {field <commit> {',' <not_ahead <eof>> | <eof>}}>>
 }
 
 pub rule field {
@@ -41,10 +40,9 @@ pub rule array {
 }
 
 rule array_body {
-  <rep {
-    <skip_until { 'null' | number | string | bool | '{' | '[' }>
-    value <commit> {',' <not_ahead <eof>> | <eof>}
-  }>
+  <rep <with_skip
+    { 'null' | number | string | bool | '{' | '[' }
+    {value <commit> {',' <not_ahead <eof>> | <eof>}}>>
 }
 
 rule value { primitive | object | array }
