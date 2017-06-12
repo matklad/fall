@@ -45,12 +45,14 @@ pub fn generate(file: FallFile) -> String {
                             SelectorKind::Opt(name) => format!("Option<{}<'f>>", camel(name)),
                             SelectorKind::Many(name) => format!("{}<'f, {}<'f>>", iter_type, camel(name)),
                             SelectorKind::Text(_) => "Text<'f>".to_owned(),
+                            SelectorKind::OptText(_) => "Option<Text<'f>>".to_owned(),
                         },
                         body: match method.selector_kind() {
                             SelectorKind::Single(_) => format!("{}::new(self.node.children()).next().unwrap()", iter_type),
                             SelectorKind::Opt(_) => format!("{}::new(self.node.children()).next()", iter_type),
                             SelectorKind::Many(_) => format!("{}::new(self.node.children())", iter_type),
                             SelectorKind::Text(name) => format!("child_of_type_exn(self.node, {}).text()", name),
+                            SelectorKind::OptText(name) => format!("child_of_type(self.node, {}).map(|n| n.text())", name),
                         }
                     }
                 }).collect()
@@ -194,7 +196,7 @@ lazy_static! {
 
 {% if ast_nodes is defined %}
 use fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
-use fall_tree::search::child_of_type_exn;
+use fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
 #[derive(Clone, Copy)]

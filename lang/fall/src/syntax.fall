@@ -42,8 +42,8 @@ pub rule tokenizer_def {
 pub rule lex_rule { ident <commit> string <opt string> }
 
 pub rule syn_rule {
-  <opt attributes> <opt 'pub'> 'rule'
-  <commit> ident block_expr
+  <opt attributes> <opt 'pub'> 'rule' <commit>
+  ident block_expr
 }
 
 pub rule attributes {
@@ -72,7 +72,7 @@ pub rule ast_class_def {
 
 pub rule method_def { ident ast_selector }
 pub rule ast_selector { ident <opt ast_selector_suffix> }
-rule ast_selector_suffix { '*' | '?' | '.' ident }
+rule ast_selector_suffix { '?' '.' ident  | '.' ident | '*' | '?' }
 
 rule expr { call_expr | ref_expr | block_expr }
 pub rule ref_expr { ident | simple_string }
@@ -118,7 +118,7 @@ ast {
 
   node syn_rule {
     attributes attributes
-    name IDENT.text
+    name IDENT?.text
     body expr
   }
 

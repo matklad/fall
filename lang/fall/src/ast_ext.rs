@@ -7,7 +7,8 @@ use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, S
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<usize> {
-        self.syn_rules().position(|r| r.name() == name)
+        self.syn_rules()
+            .position(|r| r.name().is_some() && r.name().unwrap() == name)
     }
 
     pub fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
@@ -27,7 +28,7 @@ impl<'f> FallFile<'f> {
         result.extend(
             self.syn_rules()
                 .filter(|r| r.is_pub())
-                .map(|r| r.name())
+                .filter_map(|r| r.name())
         );
         result
     }
@@ -70,7 +71,11 @@ impl<'f> LexRule<'f> {
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
         let file = ast_parent_exn::<FallFile>(self.node());
-        file.resolve_ty(self.name())
+        if let Some(name) = self.name() {
+            file.resolve_ty(name)
+        } else {
+            None
+        }
     }
 
     pub fn is_pub(&self) -> bool {
@@ -89,7 +94,9 @@ impl<'f> MethodDef<'f> {
     pub fn selector_kind(&self) -> SelectorKind<'f> {
         let selector = child_of_type_exn(self.node(), AST_SELECTOR);
         let name = self.selector_name();
-        if has(selector, QUESTION) {
+        if has(selector, QUESTION) && has(selector, DOT) {
+            SelectorKind::OptText(name)
+        } else if has(selector, QUESTION) {
             SelectorKind::Opt(name)
         } else if has(selector, STAR) {
             SelectorKind::Many(name)
@@ -127,6 +134,7 @@ pub enum SelectorKind<'f> {
     Opt(Text<'f>),
     Many(Text<'f>),
     Text(Text<'f>),
+    OptText(Text<'f>),
 }
 
 pub enum RefKind {
