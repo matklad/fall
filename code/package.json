@@ -1,0 +1,46 @@
+{
+    "name": "fall-code",
+    "displayName": "fall-code",
+    "description": "",
+    "version": "0.0.1",
+    "publisher": "matklad",
+    "engines": {
+        "vscode": "^1.0.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onLanguage:fall"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "fall",
+                "extensions": [ ".fall" ] 
+            }
+        ],
+        "commands": [{
+            "command": "extension.showSyntaxTree",
+            "title": "Syntax Tree"
+        }]
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "install": "neon build",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "dependencies": {
+        "neon-cli": "^0.1.15"
+    },
+    "devDependencies": {
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0",
+        "mocha": "^2.3.3",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32"
+    }
+}
