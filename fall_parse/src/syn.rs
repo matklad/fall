@@ -271,7 +271,7 @@ impl<'r> Parser<'r> {
                             tokens = p.1;
                         }
                     } else {
-                        break
+                        return None
                     }
                 }
 
