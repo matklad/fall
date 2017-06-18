@@ -106,7 +106,6 @@ pub fn generate(file: FallFile) -> Result<String> {
 
 fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
     let expr = match ast.attributes() {
-        Some(attrs) if attrs.is_atom() => return Ok(None),
         Some(attrs) if attrs.is_pratt() => {
             match ast.body() {
                 Expr::BlockExpr(block) => fall_parse::Expr::Pratt(compile_pratt(block)?),
@@ -145,8 +144,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
         let attrs = rule.attributes().ok_or(error!("pratt rule without attributes"))?;
         if attrs.is_atom() {
             result.push(fall_parse::PrattVariant::Atom {
-                ty: ty,
-                body: Box::new(compile_expr(rule.body())?),
+                body: Box::new(compile_rule(rule)?.unwrap().body),
             })
         }
 

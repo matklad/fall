@@ -32,10 +32,7 @@ pub enum Expr {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum PrattVariant {
-    Atom {
-        ty: usize,
-        body: Box<Expr>
-    },
+    Atom { body: Box<Expr> },
     Binary {
         ty: usize,
         op: Box<Expr>,
@@ -256,19 +253,13 @@ impl<'r> Parser<'r> {
                        -> Option<(Node, TokenSequence<'t>)> {
         let atoms = expr_grammar.iter().filter_map(|v| {
             match *v {
-                PrattVariant::Atom { ty, ref body } => Some((self.node_type(ty), body.as_ref())),
+                PrattVariant::Atom { ref body } => Some(body.as_ref()),
                 _ => None
             }
         });
 
-        let (mut lhs, mut tokens) = match atoms.filter_map(|(ty, body)| {
-            if let Some((n, rest)) = self.parse_exp(body, tokens, ctx) {
-                let mut lhs_node = ctx.create_composite_node(Some(ty));
-                ctx.push_child(&mut lhs_node, n);
-                return Some((lhs_node, rest));
-            }
-            None
-        }).next() {
+
+        let (mut lhs, mut tokens) = match self.parse_any(atoms, tokens, ctx) {
             Some(p) => p,
             None => return None
         };
