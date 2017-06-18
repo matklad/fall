@@ -1,16 +1,10 @@
 use std::sync::Arc;
 
-use ::{NodeType, TextUnit, TextRange};
+use ::{NodeType, TextUnit};
 
 #[derive(Clone, Debug)]
 pub struct INode {
     inner: Arc<Inner>
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct ReparseRegion {
-    pub range: TextRange,
-    pub parser_id: u32,
 }
 
 #[derive(Clone, Debug)]
@@ -18,7 +12,6 @@ struct Inner {
     pub ty: NodeType,
     pub children: Vec<INode>,
     pub len: TextUnit,
-    pub reparse_region: Option<ReparseRegion>
 }
 
 impl INode {
@@ -28,7 +21,6 @@ impl INode {
                 ty: ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
-                reparse_region: None,
             })
         }
     }
@@ -39,7 +31,6 @@ impl INode {
                 ty: ty,
                 children: Vec::new(),
                 len: len,
-                reparse_region: None
             })
         }
     }
@@ -53,21 +44,12 @@ impl INode {
         inner.children.push(child);
     }
 
-    pub fn set_reparse_region(&mut self, region: ReparseRegion) {
-        let inner = Arc::make_mut(&mut self.inner);
-        inner.reparse_region = Some(region);
-    }
-
     pub fn ty(&self) -> NodeType {
         self.inner.ty
     }
 
     pub fn len(&self) -> TextUnit {
         self.inner.len
-    }
-
-    pub fn reparse_region(&self) -> Option<ReparseRegion> {
-        self.inner.reparse_region
     }
 
     pub fn children(&self) -> &[INode] {

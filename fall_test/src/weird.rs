@@ -35,12 +35,6 @@ lazy_static! {
                 })
             }
 
-            fn reparse(&self, text: &str, parser_id: u32) -> Option<(FileStats, Vec<INode>)> {
-                ::fall_parse::reparse(text, &self.tokenizer, &|tokens, stats| {
-                    Parser::new(ALL_NODE_TYPES, &self.parser).reparse(parser_id, tokens, stats)
-                })
-            }
-
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
                 match ty {
                     ERROR => NodeTypeInfo { name: "ERROR" },

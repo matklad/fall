@@ -6,7 +6,6 @@ use tree_builder::{Node, TokenSequence};
 pub struct Parser<'r> {
     node_types: &'r [NodeType],
     rules: &'r [SynRule],
-    layers: Vec<&'r Expr>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,10 +39,6 @@ impl Ctx {
         Node::composite(ty)
     }
 
-    fn create_layer(&mut self, layer: u32) -> Node {
-        Node::layer(layer)
-    }
-
     fn create_error_node(&mut self) -> Node {
         Node::error()
     }
@@ -69,31 +64,9 @@ impl Ctx {
     }
 }
 
-fn find_layers<'r>(rules: &'r [SynRule]) -> Vec<&'r Expr> {
-    let mut result = Vec::new();
-    for r in rules {
-        go(&r.body, &mut result);
-    }
-    return result;
-    fn go<'r>(expr: &'r Expr, acc: &mut Vec<&'r Expr>) {
-        match *expr {
-            Expr::Rule(_) | Expr::Token(_) | Expr::Not(_) |
-            Expr::NotAhead(_) | Expr::Eof => return,
-            Expr::Or(ref exprs) | Expr::And(ref exprs, _) => {
-                for e in exprs {
-                    go(e, acc)
-                }
-            }
-            Expr::Rep(ref e) | Expr::Opt(ref e) | Expr::WithSkip(_, ref e) => go(e, acc),
-            Expr::Layer(..) => acc.push(expr)
-        }
-    }
-}
-
 impl<'r> Parser<'r> {
     pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
-        let layers = find_layers(rules);
-        Parser { node_types, rules: rules, layers: layers }
+        Parser { node_types, rules: rules }
     }
 
     pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
@@ -118,19 +91,6 @@ impl<'r> Parser<'r> {
         }
         stats.parsing_ticks = ctx.ticks;
         file_node
-    }
-
-    pub fn reparse(&self, parser_id: u32, tokens: TokenSequence, stats: &mut FileStats) -> Option<Node> {
-        let expr = self.layers[parser_id as usize];
-        let mut ctx = Ctx { ticks: 0, predicate_mode: false };
-        if let Some((node, rest)) = self.parse_exp(expr, tokens, &mut ctx) {
-            if rest.current().is_some() {
-                return None
-            }
-            stats.parsing_ticks = ctx.ticks;
-            return Some(node)
-        }
-        None
     }
 
     fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
@@ -211,11 +171,7 @@ impl<'r> Parser<'r> {
             },
             Expr::Layer(ref l, ref e) => {
                 if let Some(rest) = self.parse_exp_pred(l, tokens, ctx) {
-                    let layer_id = self.layers.iter()
-                        .position(|&l| l as *const Expr == expr as *const Expr)
-                        .unwrap();
-
-                    let mut result = ctx.create_layer(layer_id as u32);
+                    let mut result = ctx.create_composite_node(None);
                     let layer = tokens.prefix(rest);
                     if let Some((layer_contents, mut leftovers)) = self.parse_exp(e, layer, ctx) {
                         ctx.push_child(&mut result, layer_contents);
