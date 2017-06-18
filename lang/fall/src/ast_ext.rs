@@ -3,12 +3,12 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstClassDef, AstDef, Expr};
+       RefExpr, AstClassDef, AstDef, Expr, Attributes};
 
 impl<'f> FallFile<'f> {
-    pub fn resolve_rule(&self, name: Text<'f>) -> Option<usize> {
+    pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
         self.syn_rules()
-            .position(|r| r.name().is_some() && r.name().unwrap() == name)
+            .find(|r| r.name().is_some() && r.name().unwrap() == name)
     }
 
     pub fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
@@ -81,6 +81,11 @@ impl<'f> SynRule<'f> {
     pub fn is_pub(&self) -> bool {
         child_of_type(self.node(), KW_PUB).is_some()
     }
+
+    pub fn index(&self) -> usize {
+        let file = ast_parent_exn::<FallFile>(self.node());
+        file.syn_rules().position(|r| r.node() == self.node()).unwrap()
+    }
 }
 
 impl<'f> VerbatimDef<'f> {
@@ -137,18 +142,18 @@ pub enum SelectorKind<'f> {
     OptText(Text<'f>),
 }
 
-pub enum RefKind {
+pub enum RefKind<'f> {
     Token(usize),
-    RuleReference { idx: usize },
+    RuleReference(SynRule<'f>),
 }
 
 impl<'f> RefExpr<'f> {
-    pub fn resolve(&self) -> Option<RefKind> {
+    pub fn resolve(&self) -> Option<RefKind<'f>> {
         let file = ast_parent_exn::<FallFile>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
-            if let Some(idx) = file.resolve_rule(ident.text()) {
-                return Some(RefKind::RuleReference { idx: idx })
+            if let Some(rule) = file.resolve_rule(ident.text()) {
+                return Some(RefKind::RuleReference(rule))
             }
         }
         let token_name = child_of_type(self.node(), IDENT)
@@ -197,6 +202,23 @@ impl<'f> Expr<'f> {
             }
         }
     }
+}
+
+impl<'f> Attributes<'f> {
+    pub fn is_atom(&self) -> bool {
+        self.attributes().any(|attr| attr.name() == "atom")
+    }
+
+    pub fn is_pratt(&self) -> bool {
+        self.attributes().any(|attr| attr.name() == "pratt")
+    }
+
+    pub fn bin_priority(&self) -> Option<u32> {
+        self.attributes()
+            .find(|attr| attr.name() == "bin")
+            .map(|attr| attr.value().unwrap().to_cow().parse().unwrap())
+    }
+
 }
 
 fn lit_body(lit: Text) -> Text {

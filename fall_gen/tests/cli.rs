@@ -22,7 +22,7 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
     let generated_path = &grammar_path.with_extension("rs");
     let grammar_text = file::get_text(grammar_path).unwrap();
 
-    let expected = file::get_text(generated_path).unwrap();
+    let expected = file::get_text(generated_path).unwrap_or_default();
 
     let generated = {
         let dir = TempDir::new("gen-tests").unwrap();
@@ -35,8 +35,11 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
             .expect("Failed to execute process");
 
         if !output.status.success() {
-            panic!("Generator exited with code {:?}\n----\n{}\n----\n",
-                   output.status.code(), std::str::from_utf8(&output.stderr).unwrap())
+            panic!("Generator exited with code {:?}\nERR:\n----\n{}\nOUT:\n----\n{}\n---\n",
+                   output.status.code(),
+                   std::str::from_utf8(&output.stderr).unwrap(),
+                   std::str::from_utf8(&output.stdout).unwrap(),
+            )
         }
         file::get_text(tmp_file.with_extension("rs")).unwrap()
     };
@@ -58,6 +61,7 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T) {
 fn test_grammars_are_fresh() {
     check_by_path("../fall_test/src/sexp.fall");
     check_by_path("../fall_test/src/weird.fall");
+    check_by_path("../fall_test/src/arith.fall");
     check_by_path("../lang/rust/src/syntax.fall");
     check_by_path("../lang/json/src/syntax.fall");
 

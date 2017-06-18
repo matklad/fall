@@ -4,6 +4,7 @@ extern crate lazy_static;
 extern crate fall_parse;
 extern crate fall_tree;
 
+pub mod arith;
 pub mod sexp;
 pub mod weird;
 

@@ -2,7 +2,7 @@ use serde_json;
 use std::iter::FromIterator;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile};
+use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, };
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -22,7 +22,7 @@ pub fn generate(file: FallFile) -> String {
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
 
-    let parser = Vec::from_iter(file.syn_rules().map(compile_rule));
+    let parser = Vec::from_iter(file.syn_rules().filter_map(compile_rule));
     let parser = serde_json::to_string(&parser).unwrap();
     context.add("parser_json", &parser);
     context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
@@ -70,11 +70,70 @@ pub fn generate(file: FallFile) -> String {
     Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
 }
 
-fn compile_rule(ast: SynRule) -> fall_parse::SynRule {
-    fall_parse::SynRule {
+fn compile_rule(ast: SynRule) -> Option<fall_parse::SynRule> {
+    let expr = match ast.attributes() {
+        Some(attrs) if attrs.is_atom() => return None,
+        Some(attrs) if attrs.is_pratt() => {
+            match ast.body() {
+                Expr::BlockExpr(block) => fall_parse::Expr::Pratt(compile_pratt(block)),
+                _ => unreachable!()
+            }
+        }
+        _ => compile_expr(ast.body())
+    };
+
+    Some(fall_parse::SynRule {
         ty: ast.resolve_ty(),
-        body: compile_expr(ast.body()),
+        body: expr,
+    })
+}
+
+fn compile_pratt(ast: BlockExpr) -> Vec<fall_parse::PrattVariant> {
+    fn alt_to_rule<'f>(alt: Expr<'f>) -> SynRule<'f> {
+        println!("alt = {:?}", alt.node());
+        match alt {
+            Expr::SeqExpr(expr) => match expr.parts().next() {
+                Some(Expr::RefExpr(r)) => match r.resolve() {
+                    Some(RefKind::RuleReference(rule)) => rule,
+                    _ => panic!("Bad pratt spec")
+                },
+                _ => panic!("Bad pratt spec"),
+            },
+            _ => panic!("Bad pratt spec")
+        }
     }
+
+    let mut result = Vec::new();
+    for alt in ast.alts() {
+        let rule = alt_to_rule(alt);
+        let ty = rule.resolve_ty().unwrap();
+        let attrs = rule.attributes().expect("pratt rule without attributes");
+        if attrs.is_atom() {
+            result.push(fall_parse::PrattVariant::Atom {
+                ty:ty,
+                body: Box::new(compile_expr(rule.body())),
+            })
+        }
+
+        if let Some(priority) = attrs.bin_priority() {
+            let alt = match rule.body() {
+                Expr::BlockExpr(block) => block.alts().next().unwrap(),
+                _ => panic!("bad pratt")
+            };
+            let op = match alt {
+                Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
+                _ => panic!("bad pratt")
+            };
+
+            result.push(fall_parse::PrattVariant::Binary {
+                ty: ty,
+                op: Box::new(compile_expr(op)),
+                priority: priority
+            })
+        }
+    }
+
+    result
 }
 
 fn compile_expr(ast: Expr) -> fall_parse::Expr {
@@ -94,7 +153,7 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
         }
         Expr::RefExpr(ref_) => match ref_.resolve() {
             Some(RefKind::Token(idx)) => fall_parse::Expr::Token(idx),
-            Some(RefKind::RuleReference { idx }) => fall_parse::Expr::Rule(idx),
+            Some(RefKind::RuleReference(rule)) => fall_parse::Expr::Rule(rule.index()),
             None => panic!("Unresolved references: {}", ref_.node().text()),
         },
         Expr::CallExpr(call) => {
@@ -120,7 +179,7 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
                 "not_ahead" => {
                     assert!(args.next().is_none());
                     fall_parse::Expr::NotAhead(Box::new(compile_expr(first_arg)))
-                },
+                }
 
                 "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg))),
                 "layer" => fall_parse::Expr::Layer(

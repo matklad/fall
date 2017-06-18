@@ -13,7 +13,6 @@ pub struct Edit {
 }
 
 pub struct File {
-    lang: Language,
     imp: imp::FileImpl,
     inode: INode,
 }
@@ -21,14 +20,13 @@ pub struct File {
 impl File {
     pub fn new(lang: Language, text: String, stats: FileStats, node: INode) -> File {
         File {
-            lang: lang,
-            imp: imp::new_file(text, stats, &node),
+            imp: imp::new_file(lang, text, stats, &node),
             inode: node,
         }
     }
 
     pub fn language(&self) -> &Language {
-        &self.lang
+        &self.imp.lang
     }
 
     pub fn root(&self) -> Node {
@@ -57,7 +55,7 @@ pub struct Node<'f>(imp::NodeImpl<'f>);
 
 impl<'f> ::std::fmt::Debug for Node<'f> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        self.ty().fmt(f)
+        self.0.debug(f)
     }
 }
 

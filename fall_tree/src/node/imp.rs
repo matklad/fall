@@ -1,10 +1,11 @@
 use std::ops::Index;
 
-use {Text, TextRange, NodeType, TextUnit};
+use {Text, TextRange, NodeType, TextUnit, Language};
 use super::{Node, FileStats};
 use super::immutable::INode;
 
 pub struct FileImpl {
+    pub lang: Language,
     stats: FileStats,
     text: String,
     root: NodeId,
@@ -60,6 +61,10 @@ impl<'f> NodeImpl<'f> {
         NodeChildren { file: self.file, inner: self.data().children.iter() }
     }
 
+    pub fn debug(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Node({})", self.file.lang.node_type_info(self.ty()).name)
+    }
+
     fn data(&self) -> &'f NodeData {
         &self.file[self.id]
     }
@@ -96,11 +101,12 @@ pub struct NodeData {
 }
 
 
-pub fn new_file(text: String, stats: FileStats, node: &INode) -> FileImpl {
+pub fn new_file(lang: Language, text: String, stats: FileStats, node: &INode) -> FileImpl {
     let mut nodes = Vec::new();
     go(TextUnit::zero(), node, &mut nodes);
 
     return FileImpl {
+        lang: lang,
         stats: stats,
         text: text,
         root: NodeId(0),

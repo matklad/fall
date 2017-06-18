@@ -9,5 +9,5 @@ mod syn;
 mod tree_builder;
 
 pub use lex::{LexRule};
-pub use syn::{SynRule, Expr, Parser};
+pub use syn::{SynRule, Expr, Parser, PrattVariant};
 pub use tree_builder::{parse, reparse};

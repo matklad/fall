@@ -14,7 +14,7 @@ pub struct SynRule {
     pub body: Expr,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Expr {
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
@@ -27,6 +27,20 @@ pub enum Expr {
     NotAhead(Box<Expr>),
     Eof,
     Layer(Box<Expr>, Box<Expr>),
+    Pratt(Vec<PrattVariant>),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum PrattVariant {
+    Atom {
+        ty: usize,
+        body: Box<Expr>
+    },
+    Binary {
+        ty: usize,
+        op: Box<Expr>,
+        priority: u32,
+    }
 }
 
 struct Ctx {
@@ -97,14 +111,7 @@ impl<'r> Parser<'r> {
                      -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;
         match *expr {
-            Expr::Or(ref parts) => {
-                for p in parts.iter() {
-                    if let Some(result) = self.parse_exp(p, tokens, ctx) {
-                        return Some(result)
-                    }
-                }
-                None
-            }
+            Expr::Or(ref parts) => self.parse_any(parts.iter(), tokens, ctx),
 
             Expr::And(ref parts, commit) => {
                 let mut node = ctx.create_composite_node(None);
@@ -229,7 +236,68 @@ impl<'r> Parser<'r> {
                     ctx.push_child(&mut error, node);
                 }
             }
+
+            Expr::Pratt(ref g) => self.parse_pratt(&*g, tokens, ctx, 0),
         }
+    }
+
+    fn parse_any<'t, 'e, I: Iterator<Item=&'e Expr>>(&self, options: I, tokens: TokenSequence<'t>, ctx: &mut Ctx)
+                                                     -> Option<(Node, TokenSequence<'t>)> {
+        for p in options {
+            if let Some(result) = self.parse_exp(p, tokens, ctx) {
+                return Some(result)
+            }
+        }
+        None
+    }
+
+    fn parse_pratt<'t>(&self, expr_grammar: &[PrattVariant], tokens: TokenSequence<'t>, ctx: &mut Ctx, min_prior: u32)
+                       -> Option<(Node, TokenSequence<'t>)> {
+        let atoms = expr_grammar.iter().filter_map(|v| {
+            match *v {
+                PrattVariant::Atom { ty, ref body } => Some((self.node_type(ty), body.as_ref())),
+                _ => None
+            }
+        });
+
+        let (mut lhs, mut tokens) = match atoms.filter_map(|(ty, body)| {
+            if let Some((n, rest)) = self.parse_exp(body, tokens, ctx) {
+                let mut lhs_node = ctx.create_composite_node(Some(ty));
+                ctx.push_child(&mut lhs_node, n);
+                return Some((lhs_node, rest));
+            }
+            None
+        }).next() {
+            Some(p) => p,
+            None => return None
+        };
+
+        'outer: loop {
+            let bins = expr_grammar.iter().filter_map(|v| {
+                match *v {
+                    PrattVariant::Binary { ty, ref op, priority } if priority > min_prior => {
+                        Some((self.node_type(ty), op.as_ref(), priority))
+                    }
+                    _ => None
+                }
+            });
+
+            for (ty, op, p) in bins {
+                if let Some((op_node, rest)) = self.parse_exp(op, tokens, ctx) {
+                    if let Some((rhs_node, rest)) = self.parse_pratt(expr_grammar, rest, ctx, p) {
+                        let mut node = ctx.create_composite_node(Some(ty));
+                        ::std::mem::swap(&mut node, &mut lhs);
+                        ctx.push_child(&mut lhs, node);
+                        ctx.push_child(&mut lhs, op_node);
+                        ctx.push_child(&mut lhs, rhs_node);
+                        tokens = rest;
+                        continue 'outer;
+                    }
+                }
+            }
+            break
+        }
+        Some((lhs, tokens))
     }
 
     fn parse_exp_pred<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)

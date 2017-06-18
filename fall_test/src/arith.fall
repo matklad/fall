@@ -1,0 +1,29 @@
+tokenizer {
+  whitespace r"\s+"
+  number r"\d+"
+  plus '+'
+  minus '-'
+  star '*'
+  slash '/'
+  lparen '('
+  rparen ')'
+}
+
+pub rule file { expr }
+
+#[pratt]
+rule expr {
+  sum_expr | product_expr | constant_expr | paren_expr
+}
+
+#[bin(2)]
+pub rule product_expr { expr {'*' | '/'} expr }
+
+#[bin(1)]
+pub rule sum_expr { expr {'+' | '-'} expr }
+
+#[atom]
+pub rule constant_expr { number }
+
+#[atom]
+pub rule paren_expr { '(' expr ')' }

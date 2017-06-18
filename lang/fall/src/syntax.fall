@@ -23,6 +23,7 @@ tokenizer {
   kw_pub 'pub'
 
   whitespace r"\s+"
+  number r"\d+"
   simple_string r#"'([^'\\]|\\.)*'"#
   hash_string r"r#*" 'parse_raw_string'
   ident r"\w+"
@@ -56,8 +57,12 @@ pub rule syn_rule {
 
 pub rule attributes {
     '#' '['
-     <rep {ident { ',' | &']' } }>
+     <rep {attribute { ',' | &']' } }>
      ']'
+}
+
+pub rule attribute { 
+  ident <opt {'(' number ')'}>
 }
 
 pub rule string { simple_string | hash_string }
@@ -128,12 +133,18 @@ ast {
   }
 
   node syn_rule {
-    attributes attributes
+    attributes attributes?
     name IDENT?.text
     body expr
   }
 
   node attributes {
+    attributes attribute*
+  }
+
+  node attribute {
+    name IDENT.text
+    value NUMBER?.text
   }
 
   node verbatim_def { }
