@@ -11,6 +11,6 @@ extern crate lang_fall;
 mod util;
 mod generate;
 
-pub fn generate(file: lang_fall::FallFile) -> String {
+pub fn generate(file: lang_fall::FallFile) -> generate::Result<String> {
     generate::generate(file)
 }

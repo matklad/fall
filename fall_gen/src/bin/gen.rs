@@ -28,7 +28,7 @@ fn main_inner(path: &Path) -> Result<(), Box<Error>> {
 
     let file = lang_fall::LANG_FALL.parse(input);
     let ast = lang_fall::ast(&file);
-    let result = fall_gen::generate(ast);
+    let result = fall_gen::generate(ast)?;
 
     file::put_text(path.with_extension("rs"), result)?;
     Ok(())

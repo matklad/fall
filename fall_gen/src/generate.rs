@@ -6,7 +6,25 @@ use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, };
 use util::{scream, camel};
 use tera::{Tera, Context};
 
-pub fn generate(file: FallFile) -> String {
+pub type Result<T> = ::std::result::Result<T, Error>;
+
+#[derive(Debug)]
+pub struct Error {
+    msg: String
+}
+
+impl ::std::fmt::Display for Error {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        self.msg.fmt(f)
+    }
+}
+impl ::std::error::Error for Error {
+    fn description(&self) -> &str {
+        &self.msg
+    }
+}
+
+pub fn generate(file: FallFile) -> Result<String> {
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: Text<'f>, re: String, f: Option<Text<'f>> };
 
@@ -67,7 +85,7 @@ pub fn generate(file: FallFile) -> String {
         }).collect::<Vec<_>>());
     }
 
-    Tera::one_off(TEMPLATE.trim(), &context, false).unwrap()
+    Ok(Tera::one_off(TEMPLATE.trim(), &context, false).unwrap())
 }
 
 fn compile_rule(ast: SynRule) -> Option<fall_parse::SynRule> {
