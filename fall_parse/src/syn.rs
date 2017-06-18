@@ -10,12 +10,12 @@ pub struct Parser<'r> {
 
 #[derive(Serialize, Deserialize)]
 pub struct SynRule {
-    pub ty: Option<usize>,
     pub body: Expr,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Expr {
+    Pub(usize, Box<Expr>),
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
@@ -88,8 +88,11 @@ impl<'r> Parser<'r> {
         let (mut file_node, mut leftover) = self
             .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
             .unwrap_or_else(|| {
-                let ty = self.node_type(self.rules[0].ty
-                    .expect("First rule must be public"));
+                let ty = match self.rules[0].body {
+                    Expr::Pub(ty, _) => ty,
+                    _ => panic!("First rule must be public"),
+                };
+                let ty = self.node_type(ty);
                 (ctx.create_composite_node(Some(ty)), tokens)
             });
         let mut error = ctx.create_error_node();
@@ -111,6 +114,14 @@ impl<'r> Parser<'r> {
                      -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;
         match *expr {
+            Expr::Pub(ty, ref body) => if let Some((node, ts)) = self.parse_exp(body, tokens, ctx) {
+                let mut result = ctx.create_composite_node(Some(self.node_type(ty)));
+                ctx.push_child(&mut result, node);
+                Some((result, ts))
+            } else {
+                None
+            },
+
             Expr::Or(ref parts) => self.parse_any(parts.iter(), tokens, ctx),
 
             Expr::And(ref parts, commit) => {
@@ -133,17 +144,7 @@ impl<'r> Parser<'r> {
                 Some((node, tokens))
             }
 
-            Expr::Rule(id) => {
-                let rule = &self.rules[id];
-                let ty = rule.ty.map(|ty| self.node_type(ty));
-                if let Some((node, ts)) = self.parse_exp(&rule.body, tokens, ctx) {
-                    let mut result = ctx.create_composite_node(ty);
-                    ctx.push_child(&mut result, node);
-                    Some((result, ts))
-                } else {
-                    None
-                }
-            }
+            Expr::Rule(id) => self.parse_exp(&self.rules[id].body, tokens, ctx),
 
             Expr::Token(ty) => {
                 if let Some(current) = tokens.current() {

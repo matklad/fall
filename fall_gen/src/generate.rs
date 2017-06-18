@@ -1,5 +1,4 @@
 use serde_json;
-use std::iter::FromIterator;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
 use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, };
@@ -18,10 +17,15 @@ impl ::std::fmt::Display for Error {
         self.msg.fmt(f)
     }
 }
+
 impl ::std::error::Error for Error {
     fn description(&self) -> &str {
         &self.msg
     }
+}
+
+macro_rules! error {
+    ( $($tt:tt)* ) => { Error { msg: format!($($tt)*) } };
 }
 
 pub fn generate(file: FallFile) -> Result<String> {
@@ -40,13 +44,24 @@ pub fn generate(file: FallFile) -> Result<String> {
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
 
-    let parser = Vec::from_iter(file.syn_rules().filter_map(compile_rule));
+    let mut parser = Vec::new();
+    for r in file.syn_rules() {
+        if let Some(r) = compile_rule(r)? {
+            parser.push(r)
+        }
+    }
     let parser = serde_json::to_string(&parser).unwrap();
     context.add("parser_json", &parser);
-    context.add("lex_rules", &file.tokenizer_def().expect("no tokens defined").lex_rules().map(|r| {
-        let re = r.token_re().expect("Bad token");
-        CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() }
-    }).collect::<Vec<_>>());
+
+    let lex_rules = file.tokenizer_def()
+        .ok_or(error!("no tokens defined"))?
+        .lex_rules()
+        .map(|r| {
+            let re = r.token_re().ok_or(error!("Bad token"))?;
+            Ok(CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() })
+        }).collect::<Result<Vec<_>>>()?;
+
+    context.add("lex_rules", &lex_rules);
     context.add("verbatim", &file.verbatim_def().map(|v| v.contents()));
 
     if let Some(ast) = file.ast_def() {
@@ -85,80 +100,82 @@ pub fn generate(file: FallFile) -> Result<String> {
         }).collect::<Vec<_>>());
     }
 
-    Ok(Tera::one_off(TEMPLATE.trim(), &context, false).unwrap())
+    Tera::one_off(TEMPLATE.trim(), &context, false)
+        .map_err(|_| error!("Failed to format template"))
 }
 
-fn compile_rule(ast: SynRule) -> Option<fall_parse::SynRule> {
+fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
     let expr = match ast.attributes() {
-        Some(attrs) if attrs.is_atom() => return None,
+        Some(attrs) if attrs.is_atom() => return Ok(None),
         Some(attrs) if attrs.is_pratt() => {
             match ast.body() {
-                Expr::BlockExpr(block) => fall_parse::Expr::Pratt(compile_pratt(block)),
+                Expr::BlockExpr(block) => fall_parse::Expr::Pratt(compile_pratt(block)?),
                 _ => unreachable!()
             }
         }
-        _ => compile_expr(ast.body())
+        _ => compile_expr(ast.body())?
+    };
+    let expr = if let Some(idx) = ast.resolve_ty() {
+        fall_parse::Expr::Pub(idx, Box::new(expr))
+    } else {
+        expr
     };
 
-    Some(fall_parse::SynRule {
-        ty: ast.resolve_ty(),
-        body: expr,
-    })
+    Ok(Some(fall_parse::SynRule { body: expr }))
 }
 
-fn compile_pratt(ast: BlockExpr) -> Vec<fall_parse::PrattVariant> {
-    fn alt_to_rule<'f>(alt: Expr<'f>) -> SynRule<'f> {
-        println!("alt = {:?}", alt.node());
+fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
+    fn alt_to_rule<'f>(alt: Expr<'f>) -> Result<SynRule<'f>> {
         match alt {
             Expr::SeqExpr(expr) => match expr.parts().next() {
                 Some(Expr::RefExpr(r)) => match r.resolve() {
-                    Some(RefKind::RuleReference(rule)) => rule,
-                    _ => panic!("Bad pratt spec")
+                    Some(RefKind::RuleReference(rule)) => Ok(rule),
+                    _ => return Err(error!("Bad pratt spec")),
                 },
-                _ => panic!("Bad pratt spec"),
+                _ => return Err(error!("Bad pratt spec"))
             },
-            _ => panic!("Bad pratt spec")
+            _ => return Err(error!("Bad pratt spec"))
         }
     }
 
     let mut result = Vec::new();
     for alt in ast.alts() {
-        let rule = alt_to_rule(alt);
-        let ty = rule.resolve_ty().unwrap();
-        let attrs = rule.attributes().expect("pratt rule without attributes");
+        let rule = alt_to_rule(alt)?;
+        let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
+        let attrs = rule.attributes().ok_or(error!("pratt rule without attributes"))?;
         if attrs.is_atom() {
             result.push(fall_parse::PrattVariant::Atom {
-                ty:ty,
-                body: Box::new(compile_expr(rule.body())),
+                ty: ty,
+                body: Box::new(compile_expr(rule.body())?),
             })
         }
 
         if let Some(priority) = attrs.bin_priority() {
             let alt = match rule.body() {
-                Expr::BlockExpr(block) => block.alts().next().unwrap(),
-                _ => panic!("bad pratt")
+                Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
+                "bad pratt rule"
+                ))?,
+                _ => return Err(error!("bad pratt rule"))
             };
             let op = match alt {
                 Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
-                _ => panic!("bad pratt")
+                _ => return Err(error!("bad pratt rule"))
             };
 
             result.push(fall_parse::PrattVariant::Binary {
                 ty: ty,
-                op: Box::new(compile_expr(op)),
+                op: Box::new(compile_expr(op)?),
                 priority: priority
             })
         }
     }
 
-    result
+    Ok(result)
 }
 
-fn compile_expr(ast: Expr) -> fall_parse::Expr {
-    match ast {
-        Expr::BlockExpr(block) => {
-            fall_parse::Expr::Or(block.alts().map(compile_expr).collect())
-        }
+fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
+    let result = match ast {
+        Expr::BlockExpr(block) => fall_parse::Expr::Or(block.alts().map(compile_expr).collect::<Result<Vec<_>>>()?),
         Expr::SeqExpr(seq) => {
             fn is_commit(part: Expr) -> bool {
                 part.node().text() == "<commit>"
@@ -167,51 +184,61 @@ fn compile_expr(ast: Expr) -> fall_parse::Expr {
             let parts = seq.parts()
                 .filter(|&p| !is_commit(p))
                 .map(compile_expr);
-            fall_parse::Expr::And(parts.collect(), commit)
+            fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
         Expr::RefExpr(ref_) => match ref_.resolve() {
             Some(RefKind::Token(idx)) => fall_parse::Expr::Token(idx),
             Some(RefKind::RuleReference(rule)) => fall_parse::Expr::Rule(rule.index()),
-            None => panic!("Unresolved references: {}", ref_.node().text()),
+            None => return Err(error!("Unresolved references: {}", ref_.node().text())),
         },
         Expr::CallExpr(call) => {
             let fn_name = call.fn_name().to_cow();
             if fn_name == "eof" {
-                return fall_parse::Expr::Eof
+                return Ok(fall_parse::Expr::Eof)
             }
             let mut args = call.args();
-            let first_arg = args.next().unwrap();
+            let first_arg = args.next().ok_or(error!("expected an argument"))?;
             macro_rules! token_set_arg {
                 () => {
-                    first_arg.token_set().unwrap_or_else(|| {
-                        panic!("Bad token set: `{}`", first_arg.node().text())
-                    })
+                    first_arg.token_set().ok_or(
+                        error!("Bad token set: `{}`", first_arg.node().text())
+                    )?
                 }
             }
             match fn_name.as_ref() {
                 "not" => fall_parse::Expr::Not(token_set_arg!()),
                 "rep" => {
-                    assert!(args.next().is_none());
-                    fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)))
+                    if args.next().is_some() {
+                        return Err(error!("extra argument to rep"))
+                    }
+                    fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)?))
                 }
                 "not_ahead" => {
-                    assert!(args.next().is_none());
-                    fall_parse::Expr::NotAhead(Box::new(compile_expr(first_arg)))
+                    if args.next().is_some() {
+                        return Err(error!("extra argument to not_ahead"))
+                    }
+                    fall_parse::Expr::NotAhead(Box::new(compile_expr(first_arg)?))
                 }
 
-                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg))),
+                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg)?)),
                 "layer" => fall_parse::Expr::Layer(
-                    Box::new(compile_expr(first_arg)),
-                    Box::new(compile_expr(args.next().unwrap()))
+                    Box::new(compile_expr(first_arg)?),
+                    Box::new(compile_expr(args.next().ok_or(
+                        error!("not enough arguments to layer")
+                    )?)?)
                 ),
                 "with_skip" => fall_parse::Expr::WithSkip(
-                    Box::new(compile_expr(first_arg)),
-                    Box::new(compile_expr(args.next().unwrap()))
+                    Box::new(compile_expr(first_arg)?),
+                    Box::new(compile_expr(args.next().ok_or((
+                        error!("not enough arguments to layer")
+                    ))?)?)
                 ),
                 _ => unimplemented!(),
             }
         }
-    }
+    };
+
+    Ok(result)
 }
 
 const TEMPLATE: &'static str = r#####"

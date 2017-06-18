@@ -15,7 +15,7 @@ lazy_static! {
             ERROR, WHITESPACE,
             LPAREN, RPAREN, ATOM, FILE, LIST,
         ];
-        let parser_json = r##"[{"ty":5,"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Rule":1}],null]}]}}],null]}]}},{"ty":null,"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"ty":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Or":[{"And":[[{"Rule":1}],null]}]}},{"Token":3}],null]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[5,{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Rule":1}],null]}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":[6,{"Or":[{"And":[[{"Token":2},{"Rep":{"Or":[{"And":[[{"Rule":1}],null]}]}},{"Token":3}],null]}]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
