@@ -69,6 +69,14 @@ impl<'f> LeafAtOffset<'f> {
             LeafAtOffset::Between(_, right) => Some(right)
         }
     }
+
+    pub fn left_biased(self) -> Option<Node<'f>> {
+        match self {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => Some(node),
+            LeafAtOffset::Between(left, _) => Some(left)
+        }
+    }
 }
 
 pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {

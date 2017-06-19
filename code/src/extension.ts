@@ -16,6 +16,9 @@ var backend = (() => {
                 reparse_range: [stats.reparse_start, stats.reparse_end]
             }
         },
+        extendSelection: ([start, end]) => {
+            return native.file_extend_selection(start, end);
+        },
         tree: (): string => native.file_tree()
     }
 })()
@@ -59,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
         status.hide()
         if (!activeEditor) return
         if (activeEditor.document.languageId != "fall") return
-        
+
         let decorationSets = {}
         for (let key in decorations) {
             decorationSets[key] = []
@@ -105,13 +108,26 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions)
 
-    
+
     let registration = vscode.workspace.registerTextDocumentContentProvider('fall-tree', provider)
-    var disposable = vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
+    var showSyntaxTree = vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
         let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
         vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
     });
-    context.subscriptions.push(disposable, registration)
+    var semanticSelection = vscode.commands.registerCommand('extension.semanticSelection', () => {
+        if (!activeEditor) return
+        if (activeEditor.document.languageId != "fall") return
+
+        let doc = activeEditor.document;
+        let start = doc.offsetAt(activeEditor.selection.start)
+        let end = doc.offsetAt(activeEditor.selection.end)
+        let range = backend.extendSelection([start, end])
+        if (range == null) return
+        let [newStart, newEnd] = range
+        let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
+        activeEditor.selection = newSelection
+    });
+    context.subscriptions.push(showSyntaxTree, semanticSelection, registration)
     highlight()
 }
 

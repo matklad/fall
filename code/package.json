@@ -18,13 +18,28 @@
         "languages": [
             {
                 "id": "fall",
-                "extensions": [ ".fall" ] 
+                "extensions": [
+                    ".fall"
+                ]
             }
         ],
-        "commands": [{
-            "command": "extension.showSyntaxTree",
-            "title": "Syntax Tree"
-        }]
+        "commands": [
+            {
+                "command": "extension.showSyntaxTree",
+                "title": "Syntax Tree"
+            },
+            {
+                "command": "extension.semanticSelection",
+                "title": "Semantic Selection"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "extension.semanticSelection",
+                "key": "ctrl+w",
+                "when": "editorTextFocus && editorLangId == fall"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
