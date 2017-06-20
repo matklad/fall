@@ -5,6 +5,8 @@ tokenizer {
   rbrace '}'
   eq '='
   semi ';'
+  colon ':'
+  comma ','
   kw_pub 'pub'
   kw_let 'let'
   struct 'struct'
@@ -34,8 +36,17 @@ pub rule fn_def {
 
 
 pub rule struct_def {
-  <opt {'pub'}> 'struct' <commit> ident
-  '{' '}'
+  <opt 'pub'> 'struct' <commit> ident
+  '{' <layer block_body <rep struct_field>>'}'
+}
+
+pub rule struct_field {
+  <opt 'pub'> ident <commit> ':' type { <eof> | ',' }
+}
+
+
+pub rule type {
+  ident
 }
 
 
