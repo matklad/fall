@@ -1,7 +1,9 @@
 extern crate fall_tree;
 extern crate lang_rust;
 
-use fall_tree::test_util::{check_syntax, check_reparse};
+use std::path::PathBuf;
+
+use fall_tree::test_util::{check_syntax, check_reparse, check_directory};
 use lang_rust::LANG_RUST;
 
 
@@ -140,4 +142,12 @@ FILE
         SEMI ";"
       RBRACE "}""#,
         "fn foo() { let a = 1; }")
+}
+
+
+#[test]
+fn check_by_data() {
+    let dir = env!("CARGO_MANIFEST_DIR");
+    let test_data_path = PathBuf::from(dir).join("tests").join("data");
+    check_directory(&LANG_RUST, &test_data_path)
 }

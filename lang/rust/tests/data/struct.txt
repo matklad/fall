@@ -1,0 +1,44 @@
+FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "A"
+    LBRACE "{"
+    RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "B"
+    LBRACE "{"
+    STRUCT_FIELD
+      IDENT "f"
+      COLON ":"
+      TYPE
+        IDENT "A"
+    RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "C"
+    LBRACE "{"
+    STRUCT_FIELD
+      IDENT "f"
+      COLON ":"
+      TYPE
+        IDENT "A"
+      COMMA ","
+    RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "D"
+    LBRACE "{"
+    STRUCT_FIELD
+      IDENT "f"
+      COLON ":"
+      TYPE
+        IDENT "A"
+      COMMA ","
+    STRUCT_FIELD
+      KW_PUB "pub"
+      IDENT "j"
+      COLON ":"
+      TYPE
+        IDENT "B"
+    RBRACE "}"

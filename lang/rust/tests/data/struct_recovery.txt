@@ -1,0 +1,24 @@
+FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "A"
+    LBRACE "{"
+    ERROR
+      COMMA ","
+    RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "B"
+    LBRACE "{"
+    STRUCT_FIELD
+      IDENT "a"
+      COLON ":"
+      TYPE
+        IDENT "A"
+      ERROR ""
+    STRUCT_FIELD
+      IDENT "b"
+      COLON ":"
+      TYPE
+        IDENT "A"
+    RBRACE "}"
