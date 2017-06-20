@@ -1,6 +1,7 @@
 extern crate difference;
 extern crate elapsed;
 extern crate serde;
+extern crate file;
 
 mod text;
 mod node_type;
