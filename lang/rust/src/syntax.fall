@@ -15,15 +15,23 @@ tokenizer {
 }
 
 pub rule file {
-  <rep <with_skip 
-    { 'pub' | 'fn' | 'struct' } 
-    { fn_def | struct_def }>>
+  <rep <with_skip file_form_first file_form>>
 }
+
+rule file_form_first { 
+  'pub' | 'fn' | 'struct' 
+}
+
+rule file_form { 
+  fn_def | struct_def
+}
+
 
 pub rule fn_def {
   <opt {'pub'}> 'fn' <commit> ident
   '(' ')' block_expr
 }
+
 
 pub rule struct_def {
   <opt {'pub'}> 'struct' <commit> ident
