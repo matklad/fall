@@ -21,6 +21,7 @@ tokenizer {
   kw_verbatim 'verbatim'
   kw_ast 'ast'
   kw_pub 'pub'
+  kw_example 'example'
 
   whitespace r"\s+"
   number r"\d+"
@@ -30,17 +31,18 @@ tokenizer {
 }
 
 pub rule fall_file {
-  <rep <with_skip file_entry_first file_entry>>
+  <rep <with_skip file_form_first file_form>>
 }
 
-rule file_entry {
+rule file_form {
   tokenizer_def
 | syn_rule
 | verbatim_def
 | ast_def
+| example_def
 }
 
-rule file_entry_first {
+rule file_form_first {
   'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast'
 }
 
@@ -68,6 +70,8 @@ pub rule attribute {
 pub rule string { simple_string | hash_string }
 
 pub rule verbatim_def { 'verbatim' <commit> hash_string }
+
+pub rule example_def { 'example' <commit> hash_string }
 
 pub rule ast_def { 
   'ast' <commit> '{' 
@@ -122,6 +126,7 @@ ast {
     syn_rules syn_rule*
     verbatim_def verbatim_def?
     ast_def ast_def?
+    examples example_def*
   }
 
   node tokenizer_def {
@@ -184,4 +189,6 @@ ast {
   class expr {
     ref_expr call_expr seq_expr block_expr
   }
+
+  node example_def { }
 }
