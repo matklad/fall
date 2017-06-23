@@ -107,7 +107,7 @@ fn check_file(lang: &Language, source: &Path, tree: &Path, rewrite: bool) {
         }
         (false, None) => panic!("{} does not exist", tree.display()),
         (true, Some(expected_tree)) => {
-            if let Some(diff) = compute_diff(&expected_tree, &actual_tree) {
+            if let Some(_) = compute_diff(&expected_tree, &actual_tree) {
                 println!("Rewriting {}", tree.display());
                 file::put_text(tree, actual_tree).unwrap();
             }

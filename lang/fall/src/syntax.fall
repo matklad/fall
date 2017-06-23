@@ -43,7 +43,7 @@ rule file_form {
 }
 
 rule file_form_first {
-  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast'
+  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' | 'example'
 }
 
 pub rule tokenizer_def {

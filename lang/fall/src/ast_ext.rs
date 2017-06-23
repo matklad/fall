@@ -3,7 +3,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstClassDef, AstDef, Expr, Attributes};
+       RefExpr, AstClassDef, AstDef, Expr, Attributes, ExampleDef};
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
@@ -89,6 +89,13 @@ impl<'f> SynRule<'f> {
 }
 
 impl<'f> VerbatimDef<'f> {
+    pub fn contents(&self) -> Text<'f> {
+        let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
+        lit_body(literal_text).trim()
+    }
+}
+
+impl<'f> ExampleDef<'f> {
     pub fn contents(&self) -> Text<'f> {
         let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
         lit_body(literal_text).trim()
