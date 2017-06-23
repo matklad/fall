@@ -137,7 +137,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
 }
 
 fn base_directory() -> Result<PathBuf, Box<Error>> {
-    let result = PathBuf::from("./fall-examples");
+    let result = ::std::env::temp_dir().join("fall-examples");
     fs::create_dir_all(&result)?;
     fs::create_dir_all(&result.join("src"))?;
     Ok(result)
