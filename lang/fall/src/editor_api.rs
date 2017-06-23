@@ -34,10 +34,13 @@ pub fn highlight(file: &File) -> Spans {
         .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
         .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-        .visit::<RefExpr, _>(|spans, ref_| match ref_.resolve() {
-            Some(RefKind::Token(_)) => colorize_node(ref_.node(), "token", spans),
-            Some(RefKind::RuleReference { .. }) => colorize_node(ref_.node(), "rule", spans),
-            None => {}
+        .visit::<RefExpr, _>(|spans, ref_| {
+            let color = match ref_.resolve() {
+                Some(RefKind::Token(_)) => "token",
+                Some(RefKind::RuleReference { .. }) => "rule",
+                None => "unresolved"
+            };
+            colorize_node(ref_.node(), color, spans)
         })
         .visit::<CallExpr, _>(|spans, call| {
             colorize_child(call.node(), IDENT, "builtin", spans);
