@@ -11,8 +11,9 @@ tokenizer {
   kw_let 'let'
   struct 'struct'
   fn 'fn'
+  use 'use'
   whitespace r"\s+"
-      ident r"\p{XID_Start}\w*"
+  ident r"\p{XID_Start}\w*"
   number r"\d+"
 }
 
@@ -21,12 +22,20 @@ pub rule file {
 }
 
 rule file_form_first { 
-  'pub' | 'fn' | 'struct' 
+  'pub' | 'fn' | 'struct' | 'use'
 }
 
 rule file_form { 
-  fn_def | struct_def
+  fn_def | struct_def | use_decl
 }
+
+pub rule use_decl {
+  'use' path ';'
+}
+
+example r"
+  use foo;
+"
 
 
 pub rule fn_def {
@@ -42,6 +51,10 @@ pub rule struct_def {
 
 pub rule struct_field {
   <opt 'pub'> ident <commit> ':' type { <eof> | ',' }
+}
+
+pub rule path {
+  ident
 }
 
 
