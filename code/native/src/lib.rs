@@ -8,13 +8,12 @@ extern crate lang_fall;
 use std::sync::Mutex;
 
 use neon::vm::{Call, JsResult};
+use neon::scope::Scope;
+use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, Object};
 
-use lang_fall::{LANG_FALL, highlight};
-use fall_tree::{TextRange, TextUnit, File, dump_file};
-use fall_tree::search::ancestors;
-
-mod util;
+use lang_fall::editor_api;
+use fall_tree::{TextRange, TextUnit, File};
 
 lazy_static! {
     static ref FILE: Mutex<Option<File>> = Mutex::new(None);
@@ -33,8 +32,7 @@ fn file_create(call: Call) -> JsResult<JsNull> {
     let scope = call.scope;
     let text = call.arguments.require(scope, 0)?.check::<JsString>()?;
     let text = text.value();
-    let file = LANG_FALL.parse(text);
-    *FILE.lock().unwrap() = Some(file);
+    *FILE.lock().unwrap() = Some(editor_api::parse(text));
     Ok(JsNull::new())
 }
 
@@ -42,18 +40,23 @@ fn file_highlight(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
     let file = get_file_or_return_null!(file);
-    let spans = highlight(&file);
+    let spans = editor_api::highlight(&file);
 
     let result = JsArray::new(scope, spans.len() as u32);
-    for (i, &(start, end, color)) in spans.iter().enumerate() {
+    for (i, &(range, color)) in spans.iter().enumerate() {
         let arr = JsArray::new(scope, 3);
-        arr.set(0, JsInteger::new(scope, start as i32))?;
-        arr.set(1, JsInteger::new(scope, end as i32))?;
+        arr.set(0, text_unit_to_js(scope, range.start()))?;
+        arr.set(1, text_unit_to_js(scope, range.end()))?;
         arr.set(2, JsString::new(scope, color).unwrap())?;
         result.set(i as u32, arr)?;
     }
     Ok(result.upcast())
 }
+
+pub fn text_unit_to_js<'a, T: Scope<'a>>(scope: &mut T, u: TextUnit) -> Handle<'a, JsInteger> {
+    JsInteger::new(scope, u.as_u32() as i32)
+}
+
 
 fn file_stats(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
@@ -66,9 +69,9 @@ fn file_stats(call: Call) -> JsResult<JsValue> {
     result.set("parsing_time",
                JsInteger::new(scope, stats.parsing_time.subsec_nanos() as i32))?;
     result.set("reparse_start",
-               JsInteger::new(scope, stats.reparsed_region.start().as_u32() as i32))?;
+               text_unit_to_js(scope, stats.reparsed_region.start()))?;
     result.set("reparse_end",
-               JsInteger::new(scope, stats.reparsed_region.end().as_u32() as i32))?;
+               text_unit_to_js(scope, stats.reparsed_region.end()))?;
     Ok(result.upcast())
 }
 
@@ -76,7 +79,7 @@ fn file_tree(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
     let file = get_file_or_return_null!(file);
-    let tree = dump_file(file);
+    let tree = editor_api::tree_as_text(&file);
     let result = JsString::new(scope, &tree).unwrap();
     Ok(result.upcast())
 }
@@ -91,15 +94,9 @@ fn file_extend_selection(call: Call) -> JsResult<JsValue> {
         TextUnit::from_usize(start.value() as usize),
         TextUnit::from_usize(end.value() as usize),
     );
-    let node = match util::find_node_at_range(&file, range) {
-        Some(node) => node,
-        None => return Ok(JsNull::new().upcast()),
-    };
-
-    match ancestors(node).skip_while(|n| n.range() == range).next() {
+    match editor_api::extend_selection(&file, range) {
         None => Ok(JsNull::new().upcast()),
-        Some(parent) => {
-            let range = parent.range();
+        Some(range) => {
             let arr = JsArray::new(scope, 3);
             arr.set(0, JsInteger::new(scope, range.start().as_u32() as i32))?;
             arr.set(1, JsInteger::new(scope, range.end().as_u32() as i32))?;
