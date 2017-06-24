@@ -6,7 +6,7 @@ extern crate fall_tree;
 
 use std::error::Error;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::fs;
 use std::process::{Command, Stdio};
 
@@ -70,7 +70,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
     let syntax = base_dir.join("src").join("syntax.rs");
     file::put_text(&syntax, parser)?;
     let toml = base_dir.join("Cargo.toml");
-    file::put_text(&toml, format!(r##"
+    put_text_if_changed(&toml, format!(r##"
         [package]
         name = "fall_examples"
         version = "0.1.0"
@@ -86,7 +86,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         fall_tree = {{ path = "{fall_dir}/fall_tree" }}
         fall_parse = {{ path = "{fall_dir}/fall_parse" }}
     "##, fall_dir = fall_dir().display()))?;
-    file::put_text(&base_dir.join("src").join("main.rs"), r##"
+    put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
         extern crate regex;
         extern crate fall_tree;
         extern crate fall_parse;
@@ -146,4 +146,14 @@ fn base_directory() -> Result<PathBuf, Box<Error>> {
 fn fall_dir() -> PathBuf {
     let dir = env!("CARGO_MANIFEST_DIR");
     PathBuf::from(dir).parent().unwrap().to_owned()
+}
+
+fn put_text_if_changed(path: &Path, text: &str) -> ::std::io::Result<()> {
+    if path.exists() {
+        let old_text = file::get_text(path)?;
+        if old_text == text {
+            return Ok(())
+        }
+    }
+    file::put_text(path, text)
 }
