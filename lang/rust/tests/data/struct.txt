@@ -36,7 +36,8 @@ FILE
         IDENT "A"
       COMMA ","
     STRUCT_FIELD
-      PUB "pub"
+      VISIBILITY
+        PUB "pub"
       IDENT "j"
       COLON ":"
       TYPE

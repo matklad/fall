@@ -13,13 +13,15 @@ FILE
       LBRACE "{"
       RBRACE "}"
   STRUCT_DEF
-    PUB "pub"
+    VISIBILITY
+      PUB "pub"
     STRUCT "struct"
     IDENT "Baz"
     LBRACE "{"
     RBRACE "}"
   FN_DEF
-    PUB "pub"
+    VISIBILITY
+      PUB "pub"
     FN "fn"
     IDENT "quux"
     LPAREN "("

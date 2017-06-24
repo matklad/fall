@@ -29,7 +29,7 @@ rule file_form_first {
 }
 
 rule file_form { 
-  fn_def | struct_def | use_decl
+  use_decl | fn_def | struct_def
 }
 
 pub rule use_decl {
@@ -37,13 +37,13 @@ pub rule use_decl {
 }
 
 pub rule fn_def {
-  <opt {'pub'}> 'fn' <commit> ident
+  <opt visibility> 'fn' <commit> ident
   '(' ')' block_expr
 }
 
 
 pub rule struct_def {
-  <opt 'pub'> 'struct' <commit> ident {
+  <opt visibility> 'struct' <commit> ident {
     '{' <layer in_braces <rep struct_field>> '}'
   | ';'
   | '(' <layer in_parens <rep tuple_field>> ')' ';'
@@ -51,11 +51,15 @@ pub rule struct_def {
 }
 
 pub rule struct_field {
-  <opt 'pub'> ident <commit> ':' type { <eof> | ',' }
+  <opt visibility> ident <commit> ':' type { <eof> | ',' }
 }
 
 pub rule tuple_field {
-  <opt 'pub'> type <commit> { <eof> | ',' }
+  <opt visibility> type <commit> { <eof> | ',' }
+}
+
+pub rule visibility {
+  'pub'
 }
 
 
