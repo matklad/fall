@@ -164,4 +164,14 @@ it will only reparse the block itself.
 ### VS Code plugin
 
 There is a VS Code plugin in the `code` director, which demonstrates how `fall` can be used from an editor. The plugin
-currently supports only the `fall` language itself.
+currently supports only the `fall` language itself. All features are implemented in Rust in an editor agnostic way in
+`lang/fall/src/editor_api.rs`. It should be possible to hook up this code with any editor, by either dynamically or
+statically linking in the Rust crate, or by wrapping it into an RPC.
+
+## Current status
+
+Something works :)
+
+Here's a screenshoot showing fall parsing its own syntax with error recovery:
+
+![Fall file with syntax tree](https://user-images.githubusercontent.com/1711539/27507725-a248b5f4-58dd-11e7-8e34-db6331a145c3.png)
