@@ -54,12 +54,30 @@ impl<'a> TokenSequence<'a> {
         let token = self.current().expect("Can't bump an empty token sequence");
         let node = Node::Leaf(token.ty, self.non_ws_indexes[0]);
         let rest = TokenSequence {
-            text: self.text,
+            text: &self.text[token.len.as_u32() as usize..],
             start: self.start + 1,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
         };
         (node, rest)
+    }
+
+    pub fn bump_by_text(&self, ty: NodeType, text: &str) -> Option<(Node, TokenSequence<'a>)> {
+        if let Some(t) = self.current_text() {
+            if t == text {
+                let node = Node::Leaf(ty, self.non_ws_indexes[0]);
+                let (_, rest) = self.bump();
+                return Some((node, rest));
+            }
+        }
+        None
+    }
+
+    fn current_text(&self) -> Option<&'a str> {
+        match self.current() {
+            Some(token) => Some(&self.text[..token.len.as_u32() as usize]),
+            None => None,
+        }
     }
 }
 
@@ -160,7 +178,7 @@ pub fn reparse(
     };
 
     match node {
-        Node::Composite { ref mut ty, ..} => {
+        Node::Composite { ref mut ty, .. } => {
             *ty = Some(WHITESPACE);
         }
         _ => {}
@@ -281,7 +299,7 @@ fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
         Node::Leaf(_, idx) => {
             parent.push_child(token_pre_node(idx, tokens[idx]), tokens)
         }
-        Node::Composite { ty, ref children} => {
+        Node::Composite { ty, ref children } => {
             let mut p = WsNode {
                 ty: ty,
                 len: TextUnit::zero(),

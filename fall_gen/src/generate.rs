@@ -182,7 +182,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
         Expr::RefExpr(ref_) => match ref_.resolve() {
-            Some(RefKind::Token(idx)) => fall_parse::Expr::Token(idx),
+            Some(RefKind::Token(rule)) => fall_parse::Expr::Token(rule.node_type_index()),
             Some(RefKind::RuleReference(rule)) => fall_parse::Expr::Rule(rule.index()),
             None => return Err(error!("Unresolved references: {}", ref_.node().text())),
         },

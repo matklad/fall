@@ -20,6 +20,7 @@ pub enum Expr {
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
     Token(usize),
+    ContextualToken(usize, String),
     Rep(Box<Expr>),
     WithSkip(Box<Expr>, Box<Expr>),
     Opt(Box<Expr>),
@@ -56,6 +57,11 @@ impl Ctx {
 
     fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
         tokens.bump()
+    }
+
+    fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>, ty: NodeType, text: &str)
+                                       -> Option<(Node, TokenSequence<'t>)> {
+        tokens.bump_by_text(ty, text)
     }
 
     fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
@@ -150,6 +156,10 @@ impl<'r> Parser<'r> {
                     }
                 }
                 None
+            }
+
+            Expr::ContextualToken(ty, ref text) => {
+                ctx.create_contextual_leaf_node(tokens, self.node_type(ty), &*text)
             }
 
             Expr::Opt(ref body) => self.parse_exp(&*body, tokens, ctx).or_else(|| {

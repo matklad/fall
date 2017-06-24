@@ -70,6 +70,11 @@ impl<'f> LexRule<'f> {
         false
     }
 
+    pub fn node_type_index(&self) -> usize {
+        let file = ast_parent_exn::<FallFile>(self.node());
+        file.resolve_ty(self.node_type()).unwrap()
+    }
+
     fn raw_re(&self) -> Option<Text<'f>> {
         children_of_type(self.node(), STRING).next().map(|child| child.text())
     }
@@ -183,7 +188,7 @@ pub enum SelectorKind<'f> {
 }
 
 pub enum RefKind<'f> {
-    Token(usize),
+    Token(LexRule<'f>),
     RuleReference(SynRule<'f>),
 }
 
@@ -200,13 +205,9 @@ impl<'f> RefExpr<'f> {
             .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
             .text();
 
-        match file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name)) {
-            Some(rule) => {
-                let ty_name = rule.node_type();
-                file.resolve_ty(ty_name).map(RefKind::Token)
-            }
-            None => None,
-        }
+        file.tokenizer_def()
+            .and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name))
+            .map(|rule| RefKind::Token(rule))
     }
 }
 
@@ -214,8 +215,8 @@ impl<'f> Expr<'f> {
     pub fn token_set(&self) -> Option<Vec<usize>> {
         match *self {
             Expr::RefExpr(ref_) => {
-                if let Some(RefKind::Token(idx)) = ref_.resolve() {
-                    Some(vec![idx])
+                if let Some(RefKind::Token(rule)) = ref_.resolve() {
+                    Some(vec![rule.node_type_index()])
                 } else {
                     None
                 }
