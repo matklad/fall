@@ -12,6 +12,7 @@ tokenizer {
   eq '='
   semi ';'
   colon ':'
+  coloncolon '::'
   comma ','
 
   whitespace r"\s+"
@@ -32,7 +33,7 @@ rule file_form {
 }
 
 pub rule use_decl {
-  'use' path ';'
+  'use' <commit> path ';'
 }
 
 pub rule fn_def {
@@ -46,19 +47,29 @@ pub rule struct_def {
   '{' <layer block_body <rep struct_field>>'}'
 }
 
-example r"
-  struct Foo {
-    a: A,
-    pub b: B,
-  }
-"
-
 pub rule struct_field {
   <opt 'pub'> ident <commit> ':' type { <eof> | ',' }
 }
 
-pub rule path {
-  ident
+example r"
+  use foo;
+  use foo::bar;
+  use ::foo::bar::baz;
+"
+
+#[pratt]
+rule path {
+  unqualified_path | qualified_path
+}
+
+#[atom]
+pub rule unqualified_path {
+  <opt '::'> ident
+}
+
+#[postfix]
+pub rule qualified_path {
+  path {'::' ident}
 }
 
 

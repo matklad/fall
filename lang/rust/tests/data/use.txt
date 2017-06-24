@@ -1,0 +1,26 @@
+FILE
+  USE_DECL
+    USE "use"
+    UNQUALIFIED_PATH
+      IDENT "foo"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    QUALIFIED_PATH
+      UNQUALIFIED_PATH
+        IDENT "foo"
+      COLONCOLON "::"
+      IDENT "bar"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    QUALIFIED_PATH
+      QUALIFIED_PATH
+        UNQUALIFIED_PATH
+          COLONCOLON "::"
+          IDENT "foo"
+        COLONCOLON "::"
+        IDENT "bar"
+      COLONCOLON "::"
+      IDENT "baz"
+    SEMI ";"
