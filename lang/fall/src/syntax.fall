@@ -50,7 +50,9 @@ pub rule tokenizer_def {
   'tokenizer' <commit> '{' <rep lex_rule> '}'
 }
 
-pub rule lex_rule { ident <commit> string <opt string> }
+pub rule lex_rule { 
+  <opt attributes> ident <commit> string <opt string> 
+}
 
 pub rule syn_rule {
   <opt attributes> <opt 'pub'> 'rule' <commit>
@@ -134,6 +136,7 @@ ast {
   }
 
   node lex_rule {
+    attributes attributes
     node_type IDENT.text
   }
 
