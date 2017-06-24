@@ -63,6 +63,13 @@ impl<'f> LexRule<'f> {
         self.node_type()
     }
 
+    pub fn is_contextual(&self) -> bool {
+        if let Some(attrs) = self.attributes() {
+            return attrs.has_attribute("contextual")
+        }
+        false
+    }
+
     fn raw_re(&self) -> Option<Text<'f>> {
         children_of_type(self.node(), STRING).next().map(|child| child.text())
     }
@@ -85,6 +92,32 @@ impl<'f> SynRule<'f> {
     pub fn index(&self) -> usize {
         let file = ast_parent_exn::<FallFile>(self.node());
         file.syn_rules().position(|r| r.node() == self.node()).unwrap()
+    }
+
+    pub fn is_atom(&self) -> bool {
+        self.has_attribute("atom")
+    }
+
+    pub fn is_pratt(&self) -> bool {
+        self.has_attribute("pratt")
+    }
+
+    pub fn bin_priority(&self) -> Option<u32> {
+        if let Some(attrs) = self.attributes() {
+            attrs.attributes()
+                .find(|attr| attr.name() == "bin")
+                .map(|attr| attr.value().unwrap().to_cow().parse().unwrap())
+        } else {
+            None
+        }
+    }
+
+    fn has_attribute(&self, attribute: &str) -> bool {
+        if let Some(attrs) = self.attributes() {
+            attrs.has_attribute(attribute)
+        } else {
+            false
+        }
     }
 }
 
@@ -215,21 +248,6 @@ impl<'f> Attributes<'f> {
     pub fn has_attribute(&self, name: &str) -> bool {
         self.attributes().any(|attr| attr.name() == name)
     }
-
-    pub fn is_atom(&self) -> bool {
-        self.has_attribute("atom")
-    }
-
-    pub fn is_pratt(&self) -> bool {
-        self.has_attribute("pratt")
-    }
-
-    pub fn bin_priority(&self) -> Option<u32> {
-        self.attributes()
-            .find(|attr| attr.name() == "bin")
-            .map(|attr| attr.value().unwrap().to_cow().parse().unwrap())
-    }
-
 }
 
 fn lit_body(lit: Text) -> Text {

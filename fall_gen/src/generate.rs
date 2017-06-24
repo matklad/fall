@@ -56,13 +56,7 @@ pub fn generate(file: FallFile) -> Result<String> {
     let lex_rules = file.tokenizer_def()
         .ok_or(error!("no tokens defined"))?
         .lex_rules()
-        .filter(|r| {
-            if let Some(attrs) = r.attributes() {
-                !attrs.has_attribute("contextual")
-            } else {
-                true
-            }
-        })
+        .filter(|r| !r.is_contextual())
         .map(|r| {
             let re = r.token_re().ok_or(error!("Bad token"))?;
             Ok(CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() })
@@ -112,15 +106,12 @@ pub fn generate(file: FallFile) -> Result<String> {
 }
 
 fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
-    let expr = match ast.attributes() {
-        Some(attrs) if attrs.is_pratt() => {
-            match ast.body() {
-                Expr::BlockExpr(block) => fall_parse::Expr::Pratt(compile_pratt(block)?),
-                _ => unreachable!()
-            }
-        }
-        _ => compile_expr(ast.body())?
+    let expr = match (ast.is_pratt(), ast.body()) {
+        (true, Expr::BlockExpr(block)) => fall_parse::Expr::Pratt(compile_pratt(block)?),
+        (true, _) => unreachable!(),
+        (false, body) => compile_expr(body)?
     };
+
     let expr = if let Some(idx) = ast.resolve_ty() {
         fall_parse::Expr::Pub(idx, Box::new(expr))
     } else {
@@ -148,14 +139,11 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
     for alt in ast.alts() {
         let rule = alt_to_rule(alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
-        let attrs = rule.attributes().ok_or(error!("pratt rule without attributes"))?;
-        if attrs.is_atom() {
+        if rule.is_atom() {
             result.push(fall_parse::PrattVariant::Atom {
                 body: Box::new(compile_rule(rule)?.unwrap().body),
             })
-        }
-
-        if let Some(priority) = attrs.bin_priority() {
+        } else if let Some(priority) = rule.bin_priority() {
             let alt = match rule.body() {
                 Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
                 "bad pratt rule"
@@ -172,6 +160,8 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                 op: Box::new(compile_expr(op)?),
                 priority: priority
             })
+        } else {
+            return Err(error!("Non atom non bin pratt rule"))
         }
     }
 
