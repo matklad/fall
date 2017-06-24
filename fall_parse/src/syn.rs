@@ -38,6 +38,10 @@ pub enum PrattVariant {
         ty: usize,
         op: Box<Expr>,
         priority: u32,
+    },
+    Postfix {
+        ty: usize,
+        op: Box<Expr>
     }
 }
 
@@ -275,6 +279,25 @@ impl<'r> Parser<'r> {
         };
 
         'outer: loop {
+            let postfix = expr_grammar.iter().filter_map(|v| {
+                match *v {
+                    PrattVariant::Postfix { ty, ref op } => {
+                        Some((self.node_type(ty), op.as_ref()))
+                    }
+                    _ => None
+                }
+            });
+            for (ty, op) in postfix {
+                if let Some((op_node, rest)) = self.parse_exp(op, tokens, ctx) {
+                    let mut node = ctx.create_composite_node(Some(ty));
+                    ::std::mem::swap(&mut node, &mut lhs);
+                    ctx.push_child(&mut lhs, node);
+                    ctx.push_child(&mut lhs, op_node);
+                    tokens = rest;
+                    continue 'outer;
+                }
+            }
+
             let bins = expr_grammar.iter().filter_map(|v| {
                 match *v {
                     PrattVariant::Binary { ty, ref op, priority } if priority > min_prior => {

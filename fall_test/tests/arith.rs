@@ -91,3 +91,41 @@ FILE
       NUMBER "4"
 "#);
 }
+
+#[test]
+fn postfix() {
+    match_ast(&ast("1! + 2!! + 3*4! * (5)!"), r#"
+FILE
+  SUM_EXPR
+    SUM_EXPR
+      FACTORIAL_EXPR
+        CONSTANT_EXPR
+          NUMBER "1"
+        BANG "!"
+      PLUS "+"
+      FACTORIAL_EXPR
+        FACTORIAL_EXPR
+          CONSTANT_EXPR
+            NUMBER "2"
+          BANG "!"
+        BANG "!"
+    PLUS "+"
+    PRODUCT_EXPR
+      PRODUCT_EXPR
+        CONSTANT_EXPR
+          NUMBER "3"
+        STAR "*"
+        FACTORIAL_EXPR
+          CONSTANT_EXPR
+            NUMBER "4"
+          BANG "!"
+      STAR "*"
+      FACTORIAL_EXPR
+        PAREN_EXPR
+          LPAREN "("
+          CONSTANT_EXPR
+            NUMBER "5"
+          RPAREN ")"
+        BANG "!"
+"#)
+}

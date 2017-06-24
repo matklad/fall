@@ -80,6 +80,12 @@ impl<'f> LexRule<'f> {
     }
 }
 
+pub enum PratKind {
+    Atom,
+    Bin(u32),
+    Postfix
+}
+
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
         let file = ast_parent_exn::<FallFile>(self.node());
@@ -97,6 +103,26 @@ impl<'f> SynRule<'f> {
     pub fn index(&self) -> usize {
         let file = ast_parent_exn::<FallFile>(self.node());
         file.syn_rules().position(|r| r.node() == self.node()).unwrap()
+    }
+
+    pub fn pratt_kind(&self) -> Option<PratKind> {
+        let attrs = match self.attributes() {
+            Some(attrs) => attrs,
+            None => return None,
+        };
+
+        if attrs.has_attribute("atom") {
+            Some(PratKind::Atom)
+        } else if attrs.has_attribute("postfix") {
+            Some(PratKind::Postfix)
+        } else if let Some(priority) = attrs.attributes()
+            .find(|attr| attr.name() == "bin")
+            .map(|attr| attr.value().unwrap().to_cow().parse().unwrap()) {
+
+            Some(PratKind::Bin(priority))
+        } else {
+            None
+        }
     }
 
     pub fn is_atom(&self) -> bool {

@@ -5,6 +5,7 @@ tokenizer {
   minus '-'
   star '*'
   slash '/'
+  bang '!'
   lparen '('
   rparen ')'
 }
@@ -13,7 +14,9 @@ pub rule file { expr }
 
 #[pratt]
 rule expr {
-  sum_expr | product_expr | constant_expr | paren_expr
+  sum_expr | product_expr 
+  | factorial_expr
+  | constant_expr | paren_expr
 }
 
 #[bin(2)]
@@ -27,3 +30,6 @@ pub rule constant_expr { number }
 
 #[atom]
 pub rule paren_expr { '(' expr ')' }
+
+#[postfix]
+pub rule factorial_expr { expr '!' }

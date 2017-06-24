@@ -1,7 +1,7 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, };
+use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -139,30 +139,47 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
     for alt in ast.alts() {
         let rule = alt_to_rule(alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
-        if rule.is_atom() {
-            result.push(fall_parse::PrattVariant::Atom {
+        let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
+        let variant =match prat_kind {
+            PratKind::Atom => fall_parse::PrattVariant::Atom {
                 body: Box::new(compile_rule(rule)?.unwrap().body),
-            })
-        } else if let Some(priority) = rule.bin_priority() {
-            let alt = match rule.body() {
-                Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                "bad pratt rule"
-                ))?,
-                _ => return Err(error!("bad pratt rule"))
-            };
-            let op = match alt {
-                Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
-                _ => return Err(error!("bad pratt rule"))
-            };
+            },
+            PratKind::Postfix => {
+                let alt = match rule.body() {
+                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
+                    "bad pratt rule"
+                    ))?,
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                let op = match alt {
+                    Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                fall_parse::PrattVariant::Postfix {
+                    ty: ty,
+                    op: Box::new(compile_expr(op)?),
+                }
+            },
+            PratKind::Bin(priority) => {
+                let alt = match rule.body() {
+                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
+                    "bad pratt rule"
+                    ))?,
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                let op = match alt {
+                    Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                fall_parse::PrattVariant::Binary {
+                    ty: ty,
+                    op: Box::new(compile_expr(op)?),
+                    priority: priority
+                }
+            }
+        };
 
-            result.push(fall_parse::PrattVariant::Binary {
-                ty: ty,
-                op: Box::new(compile_expr(op)?),
-                priority: priority
-            })
-        } else {
-            return Err(error!("Non atom non bin pratt rule"))
-        }
+        result.push(variant)
     }
 
     Ok(result)
@@ -189,7 +206,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 } else {
                     fall_parse::Expr::Token(rule.node_type_index())
                 }
-            },
+            }
             Some(RefKind::RuleReference(rule)) => fall_parse::Expr::Rule(rule.index()),
             None => return Err(error!("Unresolved references: {}", ref_.node().text())),
         },
