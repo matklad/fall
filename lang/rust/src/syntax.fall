@@ -23,10 +23,6 @@ pub rule file {
   <rep <with_skip file_form_first file_form>>
 }
 
-example r##"
-    pub struct Foo {}
-"##
-
 rule file_form_first { 
   'pub' | 'fn' | 'struct' | 'use'
 }
@@ -39,11 +35,6 @@ pub rule use_decl {
   'use' path ';'
 }
 
-example r"
-  use foo;
-"
-
-
 pub rule fn_def {
   <opt {'pub'}> 'fn' <commit> ident
   '(' ')' block_expr
@@ -54,6 +45,13 @@ pub rule struct_def {
   <opt 'pub'> 'struct' <commit> ident
   '{' <layer block_body <rep struct_field>>'}'
 }
+
+example r"
+  struct Foo {
+    a: A,
+    pub b: B,
+  }
+"
 
 pub rule struct_field {
   <opt 'pub'> ident <commit> ':' type { <eof> | ',' }

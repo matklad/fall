@@ -161,6 +161,25 @@ outside of the blocks will continue as usual. Moreover, if the user types anythi
 check if the block's borders do not change (this would be the case unless `{` or `}` is typed) and if it is the case,
 it will only reparse the block itself.
 
+The `example` blocks allow to quickly get feedback about the current grammar. You can write something like
+
+```
+pub rule struct_def {
+  <opt 'pub'> 'struct' <commit> ident
+  '{' <layer block_body <rep struct_field>>'}'
+}
+
+example r"
+  struct Foo {
+    a: A,
+    pub b: B,
+  }
+"
+```
+
+and then run `cargo run --bin gen --example rust.fall` to render the syntax tree of the example block. `watch.sh`
+wraps this into convenient "rerender example on save" script.
+
 ### VS Code plugin
 
 There is a VS Code plugin in the `code` director, which demonstrates how `fall` can be used from an editor. The plugin
