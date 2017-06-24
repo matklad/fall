@@ -68,9 +68,9 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
 
     let base_dir = base_directory()?;
     let syntax = base_dir.join("src").join("syntax.rs");
-    file::put_text(&syntax, parser)?;
+    put_text_if_changed(&syntax, &parser)?;
     let toml = base_dir.join("Cargo.toml");
-    put_text_if_changed(&toml, format!(r##"
+    put_text_if_changed(&toml, &format!(r##"
         [package]
         name = "fall_examples"
         version = "0.1.0"
@@ -87,6 +87,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         fall_parse = {{ path = "{fall_dir}/fall_parse" }}
     "##, fall_dir = fall_dir().display()))?;
     put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
+        #![allow(warnings)]
         extern crate regex;
         extern crate fall_tree;
         extern crate fall_parse;
