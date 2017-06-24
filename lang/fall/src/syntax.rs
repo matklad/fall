@@ -224,8 +224,8 @@ impl<'f> AstNode<'f> for LexRule<'f> {
 }
 
 impl<'f> LexRule<'f> {
-    pub fn attributes(&self) -> Attributes<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+    pub fn attributes(&self) -> Option<Attributes<'f>> {
+        AstChildren::new(self.node.children()).next()
     }
     pub fn node_type(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()

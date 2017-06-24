@@ -212,12 +212,16 @@ impl<'f> Expr<'f> {
 }
 
 impl<'f> Attributes<'f> {
+    pub fn has_attribute(&self, name: &str) -> bool {
+        self.attributes().any(|attr| attr.name() == name)
+    }
+
     pub fn is_atom(&self) -> bool {
-        self.attributes().any(|attr| attr.name() == "atom")
+        self.has_attribute("atom")
     }
 
     pub fn is_pratt(&self) -> bool {
-        self.attributes().any(|attr| attr.name() == "pratt")
+        self.has_attribute("pratt")
     }
 
     pub fn bin_priority(&self) -> Option<u32> {

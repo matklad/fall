@@ -136,7 +136,7 @@ ast {
   }
 
   node lex_rule {
-    attributes attributes
+    attributes attributes?
     node_type IDENT.text
   }
 

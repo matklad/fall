@@ -56,6 +56,13 @@ pub fn generate(file: FallFile) -> Result<String> {
     let lex_rules = file.tokenizer_def()
         .ok_or(error!("no tokens defined"))?
         .lex_rules()
+        .filter(|r| {
+            if let Some(attrs) = r.attributes() {
+                !attrs.has_attribute("contextual")
+            } else {
+                true
+            }
+        })
         .map(|r| {
             let re = r.token_re().ok_or(error!("Bad token"))?;
             Ok(CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() })
