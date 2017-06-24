@@ -43,19 +43,21 @@ pub rule fn_def {
 
 
 pub rule struct_def {
-  <opt 'pub'> 'struct' <commit> ident
-  '{' <layer block_body <rep struct_field>>'}'
+  <opt 'pub'> 'struct' <commit> ident {
+    '{' <layer in_braces <rep struct_field>> '}'
+  | ';'
+  | '(' <layer in_parens <rep tuple_field>> ')' ';'
+  }
 }
 
 pub rule struct_field {
   <opt 'pub'> ident <commit> ':' type { <eof> | ',' }
 }
 
-example r"
-  use foo;
-  use foo::bar;
-  use ::foo::bar::baz;
-"
+pub rule tuple_field {
+  <opt 'pub'> type <commit> { <eof> | ',' }
+}
+
 
 #[pratt]
 pub rule path {
@@ -79,13 +81,19 @@ pub rule type {
 
 
 pub rule block_expr {
-  '{' <layer block_body <rep stmt>> '}'
+  '{' <layer in_braces <rep stmt>> '}'
 }
 
-rule block_body { <rep balanced> }
-rule balanced {
-  '{' <commit> block_body '}'
+rule in_braces { <rep brace_balanced> }
+rule brace_balanced {
+  '{' <commit> in_braces '}'
 | <not '}'>
+}
+
+rule in_parens { <rep paren_balanced> }
+rule paren_balanced {
+  '(' <commit> in_parens ')'
+| <not ')'>
 }
 
 

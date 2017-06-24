@@ -42,3 +42,39 @@ FILE
       TYPE
         IDENT "B"
     RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "E"
+    LPAREN "("
+    TUPLE_FIELD
+      TYPE
+        IDENT "u32"
+    RPAREN ")"
+    SEMI ";"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "F"
+    LPAREN "("
+    TUPLE_FIELD
+      TYPE
+        IDENT "u32"
+      COMMA ","
+    RPAREN ")"
+    SEMI ";"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "G"
+    LPAREN "("
+    TUPLE_FIELD
+      TYPE
+        IDENT "u32"
+      COMMA ","
+    TUPLE_FIELD
+      TYPE
+        IDENT "String"
+    RPAREN ")"
+    SEMI ";"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "H"
+    SEMI ";"
