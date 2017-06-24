@@ -53,8 +53,13 @@ impl<'a> TokenSequence<'a> {
     pub fn bump(&self) -> (Node, TokenSequence<'a>) {
         let token = self.current().expect("Can't bump an empty token sequence");
         let node = Node::Leaf(token.ty, self.non_ws_indexes[0]);
+        let mut text_len = 0;
+        let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
+        for i in self.non_ws_indexes[0] ..next_idx {
+            text_len += self.original_tokens[i].len.as_u32() as usize;
+        }
         let rest = TokenSequence {
-            text: &self.text[token.len.as_u32() as usize..],
+            text: &self.text[text_len..],
             start: self.start + 1,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,

@@ -1,4 +1,13 @@
 tokenizer {
+  #[contextual] kw_node 'node'
+  #[contextual] kw_class 'class'
+  #[contextual] kw_tokenizer 'tokenizer'
+  #[contextual] kw_rule 'rule'
+  #[contextual] kw_verbatim 'verbatim'
+  #[contextual] kw_ast 'ast'
+  #[contextual] kw_pub 'pub'
+  #[contextual] kw_example 'example'
+
   eq '='
   pipe '|'
   star '*'
@@ -14,14 +23,6 @@ tokenizer {
   rangle '>'
   lparen '('
   rparen ')'
-  kw_node 'node'
-  kw_class 'class'
-  kw_tokenizer 'tokenizer'
-  kw_rule 'rule'
-  kw_verbatim 'verbatim'
-  kw_ast 'ast'
-  kw_pub 'pub'
-  kw_example 'example'
 
   whitespace r"\s+"
   number r"\d+"
