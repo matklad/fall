@@ -1,7 +1,7 @@
 use fall_tree::{Text, TextRange, AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, KW_PUB,
+use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstClassDef, AstDef, Expr, Attributes, ExampleDef};
 
@@ -91,7 +91,7 @@ impl<'f> SynRule<'f> {
     }
 
     pub fn is_pub(&self) -> bool {
-        child_of_type(self.node(), KW_PUB).is_some()
+        child_of_type(self.node(), PUB).is_some()
     }
 
     pub fn index(&self) -> usize {

@@ -20,7 +20,7 @@ pub fn highlight(file: &File) -> Spans {
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
             colorize_node(node, "string", spans)
         })
-        .visit_nodes(&[KW_RULE, KW_VERBATIM, KW_TOKENIZER, KW_AST, KW_NODE, KW_CLASS, KW_PUB], |spans, node| {
+        .visit_nodes(&[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB], |spans, node| {
             colorize_node(node, "keyword", spans)
         })
         .visit_nodes(&[ERROR], |spans, node| {
