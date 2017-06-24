@@ -1,4 +1,9 @@
 FILE
+  EXTERN_CRATE_DECL
+    EXTERN "extern"
+    CRATE "crate"
+    IDENT "spam"
+    SEMI ";"
   USE_DECL
     USE "use"
     PATH

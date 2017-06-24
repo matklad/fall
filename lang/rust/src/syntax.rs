@@ -7,39 +7,42 @@ pub const LET: NodeType = NodeType(101);
 pub const STRUCT: NodeType = NodeType(102);
 pub const FN: NodeType = NodeType(103);
 pub const USE: NodeType = NodeType(104);
-pub const LPAREN: NodeType = NodeType(105);
-pub const RPAREN: NodeType = NodeType(106);
-pub const LBRACE: NodeType = NodeType(107);
-pub const RBRACE: NodeType = NodeType(108);
-pub const EQ: NodeType = NodeType(109);
-pub const SEMI: NodeType = NodeType(110);
-pub const COLON: NodeType = NodeType(111);
-pub const COLONCOLON: NodeType = NodeType(112);
-pub const COMMA: NodeType = NodeType(113);
-pub const IDENT: NodeType = NodeType(114);
-pub const NUMBER: NodeType = NodeType(115);
-pub const FILE: NodeType = NodeType(116);
-pub const USE_DECL: NodeType = NodeType(117);
-pub const FN_DEF: NodeType = NodeType(118);
-pub const STRUCT_DEF: NodeType = NodeType(119);
-pub const STRUCT_FIELD: NodeType = NodeType(120);
-pub const TUPLE_FIELD: NodeType = NodeType(121);
-pub const VISIBILITY: NodeType = NodeType(122);
-pub const PATH: NodeType = NodeType(123);
-pub const TYPE: NodeType = NodeType(124);
-pub const BLOCK_EXPR: NodeType = NodeType(125);
-pub const STMT: NodeType = NodeType(126);
-pub const PATTERN: NodeType = NodeType(127);
-pub const EXPR: NodeType = NodeType(128);
+pub const EXTERN: NodeType = NodeType(105);
+pub const CRATE: NodeType = NodeType(106);
+pub const LPAREN: NodeType = NodeType(107);
+pub const RPAREN: NodeType = NodeType(108);
+pub const LBRACE: NodeType = NodeType(109);
+pub const RBRACE: NodeType = NodeType(110);
+pub const EQ: NodeType = NodeType(111);
+pub const SEMI: NodeType = NodeType(112);
+pub const COLON: NodeType = NodeType(113);
+pub const COLONCOLON: NodeType = NodeType(114);
+pub const COMMA: NodeType = NodeType(115);
+pub const IDENT: NodeType = NodeType(116);
+pub const NUMBER: NodeType = NodeType(117);
+pub const FILE: NodeType = NodeType(118);
+pub const USE_DECL: NodeType = NodeType(119);
+pub const EXTERN_CRATE_DECL: NodeType = NodeType(120);
+pub const FN_DEF: NodeType = NodeType(121);
+pub const STRUCT_DEF: NodeType = NodeType(122);
+pub const STRUCT_FIELD: NodeType = NodeType(123);
+pub const TUPLE_FIELD: NodeType = NodeType(124);
+pub const VISIBILITY: NodeType = NodeType(125);
+pub const PATH: NodeType = NodeType(126);
+pub const TYPE: NodeType = NodeType(127);
+pub const BLOCK_EXPR: NodeType = NodeType(128);
+pub const STMT: NodeType = NodeType(129);
+pub const PATTERN: NodeType = NodeType(130);
+pub const EXPR: NodeType = NodeType(131);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            PUB, LET, STRUCT, FN, USE, LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COLONCOLON, COMMA, IDENT, NUMBER, FILE, USE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, TUPLE_FIELD, VISIBILITY, PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
+            PUB, LET, STRUCT, FN, USE, EXTERN, CRATE, LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COLONCOLON, COMMA, IDENT, NUMBER, FILE, USE_DECL, EXTERN_CRATE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, TUPLE_FIELD, VISIBILITY, PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[18,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":6}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]}]}},{"body":{"Pub":[19,{"Or":[{"And":[[{"Token":6},{"Rule":9},{"Token":12}],1]}]}]}},{"body":{"Pub":[20,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Token":5},{"Token":16},{"Token":7},{"Token":8},{"Rule":13}],2]}]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Token":4},{"Token":16},{"Or":[{"And":[[{"Token":9},{"Layer":[{"Rule":14},{"Rep":{"Rule":6}}]},{"Token":10}],null]},{"And":[[{"Token":12}],null]},{"And":[[{"Token":7},{"Layer":[{"Rule":16},{"Rep":{"Rule":7}}]},{"Token":8},{"Token":12}],null]}]}],2]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Token":16},{"Token":13},{"Rule":12},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":15}],null]}]}],2]}]}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rule":12},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":15}],null]}]}],2]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Token":2}],null]}]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[25,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}}},{"Postfix":{"ty":25,"op":{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}}}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Rule":9},{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}],null]}]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":9},{"Layer":[{"Rule":14},{"Rep":{"Rule":18}}]},{"Token":10}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":15}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":14},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":17}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":7},{"Rule":16},{"Token":8}],1]},{"And":[[{"Not":[8]}],null]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Token":3},{"Rule":19},{"Token":11},{"Rule":20},{"Token":12}],1]}]}]}},{"body":{"Pub":[29,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[30,{"Or":[{"And":[[{"Token":17}],null]}]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[20,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":6}],null]},{"And":[[{"Token":7}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":6}],null]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Token":6},{"Rule":10},{"Token":14}],1]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Token":7},{"Token":8},{"Token":18},{"Token":14}],2]}]}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Rule":9}},{"Token":5},{"Token":18},{"Token":9},{"Token":10},{"Rule":14}],2]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Opt":{"Rule":9}},{"Token":4},{"Token":18},{"Or":[{"And":[[{"Token":11},{"Layer":[{"Rule":15},{"Rep":{"Rule":7}}]},{"Token":12}],null]},{"And":[[{"Token":14}],null]},{"And":[[{"Token":9},{"Layer":[{"Rule":17},{"Rep":{"Rule":8}}]},{"Token":10},{"Token":14}],null]}]}],2]}]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Opt":{"Rule":9}},{"Token":18},{"Token":15},{"Rule":13},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":17}],null]}]}],2]}]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Opt":{"Rule":9}},{"Rule":13},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":17}],null]}]}],2]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":2}],null]}]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[28,{"Or":[{"And":[[{"Opt":{"Token":16}},{"Token":18}],null]}]}]}}},{"Postfix":{"ty":28,"op":{"Or":[{"And":[[{"Token":16},{"Token":18}],null]}]}}}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Opt":{"Token":16}},{"Token":18}],null]}]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Rule":10},{"Or":[{"And":[[{"Token":16},{"Token":18}],null]}]}],null]}]}]}},{"body":{"Pub":[29,{"Or":[{"And":[[{"Token":18}],null]}]}]}},{"body":{"Pub":[30,{"Or":[{"And":[[{"Token":11},{"Layer":[{"Rule":15},{"Rep":{"Rule":19}}]},{"Token":12}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":16}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":11},{"Rule":15},{"Token":12}],1]},{"And":[[{"Not":[12]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":18}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":17},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Token":3},{"Rule":20},{"Token":13},{"Rule":21},{"Token":14}],1]}]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Token":18}],null]}]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Token":19}],null]}]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -59,6 +62,8 @@ lazy_static! {
                     STRUCT => NodeTypeInfo { name: "STRUCT" },
                     FN => NodeTypeInfo { name: "FN" },
                     USE => NodeTypeInfo { name: "USE" },
+                    EXTERN => NodeTypeInfo { name: "EXTERN" },
+                    CRATE => NodeTypeInfo { name: "CRATE" },
                     LPAREN => NodeTypeInfo { name: "LPAREN" },
                     RPAREN => NodeTypeInfo { name: "RPAREN" },
                     LBRACE => NodeTypeInfo { name: "LBRACE" },
@@ -72,6 +77,7 @@ lazy_static! {
                     NUMBER => NodeTypeInfo { name: "NUMBER" },
                     FILE => NodeTypeInfo { name: "FILE" },
                     USE_DECL => NodeTypeInfo { name: "USE_DECL" },
+                    EXTERN_CRATE_DECL => NodeTypeInfo { name: "EXTERN_CRATE_DECL" },
                     FN_DEF => NodeTypeInfo { name: "FN_DEF" },
                     STRUCT_DEF => NodeTypeInfo { name: "STRUCT_DEF" },
                     STRUCT_FIELD => NodeTypeInfo { name: "STRUCT_FIELD" },
@@ -95,6 +101,8 @@ lazy_static! {
                 LexRule::new(STRUCT, "struct", None),
                 LexRule::new(FN, "fn", None),
                 LexRule::new(USE, "use", None),
+                LexRule::new(EXTERN, "extern", None),
+                LexRule::new(CRATE, "crate", None),
                 LexRule::new(LPAREN, "\\(", None),
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(LBRACE, "\\{", None),

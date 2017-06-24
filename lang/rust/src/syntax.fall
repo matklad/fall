@@ -4,6 +4,8 @@ tokenizer {
   struct 'struct'
   fn 'fn'
   use 'use'
+  extern 'extern'
+  crate 'crate'
 
   lparen '('
   rparen ')'
@@ -25,15 +27,19 @@ pub rule file {
 }
 
 rule file_form_first { 
-  'pub' | 'fn' | 'struct' | 'use'
+  'pub' | 'fn' | 'struct' | 'use' | 'extern'
 }
 
 rule file_form { 
-  use_decl | fn_def | struct_def
+  use_decl | extern_crate_decl | fn_def | struct_def
 }
 
 pub rule use_decl {
   'use' <commit> path ';'
+}
+
+pub rule extern_crate_decl {
+  'extern' 'crate' <commit> ident ';'
 }
 
 pub rule fn_def {
