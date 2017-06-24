@@ -60,7 +60,10 @@ fn main_inner(command: Task) -> Result<(), Box<Error>> {
 fn render_examples(grammar: String) -> Result<String, Box<Error>> {
     let file = lang_fall::LANG_FALL.parse(grammar);
     let ast = lang_fall::ast(&file);
-    let parser = fall_gen::generate(ast)?;
+    let parser = match fall_gen::generate(ast) {
+        Ok(parser) => parser,
+        Err(e) => return Ok(format!("error:\n{}", e))
+    };
     let example = match ast.examples().next() {
         Some(ex) => ex.contents().to_string(),
         None => return Ok("".to_owned())
@@ -133,8 +136,13 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
 
     let rendered = child.wait_with_output()?;
     assert!(rendered.status.success());
-    let out = String::from_utf8(rendered.stdout).unwrap();
-    Ok(out)
+    let mut result = String::new();
+    if !rendered.stderr.is_empty() {
+        result += &::std::str::from_utf8(&rendered.stderr).unwrap();
+        result += "\n\n";
+    }
+    result += &::std::str::from_utf8(&rendered.stdout).unwrap();
+    Ok(result)
 }
 
 fn base_directory() -> Result<PathBuf, Box<Error>> {
