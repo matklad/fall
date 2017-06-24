@@ -67,7 +67,11 @@ pub rule attributes {
 }
 
 pub rule attribute { 
-  ident <opt {'(' number ')'}>
+  ident <opt {'(' attribute_value ')'}>
+}
+
+pub rule attribute_value {
+  number | ident
 }
 
 pub rule string { simple_string | hash_string }
@@ -153,8 +157,10 @@ ast {
 
   node attribute {
     name IDENT.text
-    value NUMBER?.text
+    value attribute_value?
   }
+
+  node attribute_value { }
 
   node verbatim_def { }
 

@@ -3,7 +3,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstClassDef, AstDef, Expr, Attributes, ExampleDef};
+       RefExpr, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef};
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
@@ -117,7 +117,7 @@ impl<'f> SynRule<'f> {
             Some(PratKind::Postfix)
         } else if let Some(priority) = attrs.attributes()
             .find(|attr| attr.name() == "bin")
-            .map(|attr| attr.value().unwrap().to_cow().parse().unwrap()) {
+            .and_then(|attr| attr.u32_value()) {
 
             Some(PratKind::Bin(priority))
         } else {
@@ -125,23 +125,10 @@ impl<'f> SynRule<'f> {
         }
     }
 
-    pub fn is_atom(&self) -> bool {
-        self.has_attribute("atom")
-    }
-
     pub fn is_pratt(&self) -> bool {
         self.has_attribute("pratt")
     }
 
-    pub fn bin_priority(&self) -> Option<u32> {
-        if let Some(attrs) = self.attributes() {
-            attrs.attributes()
-                .find(|attr| attr.name() == "bin")
-                .map(|attr| attr.value().unwrap().to_cow().parse().unwrap())
-        } else {
-            None
-        }
-    }
 
     fn has_attribute(&self, attribute: &str) -> bool {
         if let Some(attrs) = self.attributes() {
@@ -274,6 +261,17 @@ impl<'f> Expr<'f> {
 impl<'f> Attributes<'f> {
     pub fn has_attribute(&self, name: &str) -> bool {
         self.attributes().any(|attr| attr.name() == name)
+    }
+}
+
+impl<'f> Attribute<'f> {
+    pub fn u32_value(&self) -> Option<u32> {
+        self.text_value()
+            .and_then(|text| text.to_cow().parse().ok())
+    }
+
+    pub fn text_value(&self) -> Option<Text<'f>> {
+        self.value().map(|v| v.node().text())
     }
 }
 
