@@ -10,4 +10,4 @@ mod tree_builder;
 
 pub use lex::{LexRule};
 pub use syn::{SynRule, Expr, Parser, PrattVariant};
-pub use tree_builder::{parse, reparse};
+pub use tree_builder::parse;
