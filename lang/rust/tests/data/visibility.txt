@@ -1,0 +1,29 @@
+FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "Foo"
+    LBRACE "{"
+    RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "bar"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
+  STRUCT_DEF
+    PUB "pub"
+    STRUCT "struct"
+    IDENT "Baz"
+    LBRACE "{"
+    RBRACE "}"
+  FN_DEF
+    PUB "pub"
+    FN "fn"
+    IDENT "quux"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
