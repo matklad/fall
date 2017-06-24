@@ -27,7 +27,7 @@ impl<'f> FallFile<'f> {
         }
         result.extend(
             self.syn_rules()
-                .filter(|r| r.is_pub())
+                .filter(|r| r.is_pub() && r.type_attr().is_none())
                 .filter_map(|r| r.name())
         );
         result
@@ -88,8 +88,12 @@ pub enum PratKind {
 
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
+        if !self.is_pub() || self.is_pratt() {
+            return None
+        }
+
         let file = ast_parent_exn::<FallFile>(self.node());
-        if let Some(name) = self.name() {
+        if let Some(name) = self.ty_name() {
             file.resolve_ty(name)
         } else {
             None
@@ -115,10 +119,7 @@ impl<'f> SynRule<'f> {
             Some(PratKind::Atom)
         } else if attrs.has_attribute("postfix") {
             Some(PratKind::Postfix)
-        } else if let Some(priority) = attrs.attributes()
-            .find(|attr| attr.name() == "bin")
-            .and_then(|attr| attr.u32_value()) {
-
+        } else if let Some(priority) = attrs.find("bin").and_then(|attr| attr.u32_value()) {
             Some(PratKind::Bin(priority))
         } else {
             None
@@ -136,6 +137,17 @@ impl<'f> SynRule<'f> {
         } else {
             false
         }
+    }
+
+    fn type_attr(&self) -> Option<Attribute<'f>> {
+        self.attributes().and_then(|attrs| attrs.find("type"))
+    }
+
+    fn ty_name(&self) -> Option<Text<'f>> {
+        if let Some(ty) = self.type_attr() {
+            return ty.text_value();
+        }
+        self.name()
     }
 }
 
@@ -260,7 +272,11 @@ impl<'f> Expr<'f> {
 
 impl<'f> Attributes<'f> {
     pub fn has_attribute(&self, name: &str) -> bool {
-        self.attributes().any(|attr| attr.name() == name)
+        self.find(name).is_some()
+    }
+
+    pub fn find(&self, name: &str) -> Option<Attribute<'f>> {
+        self.attributes().find(|a| a.name() == name)
     }
 }
 

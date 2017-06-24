@@ -1,22 +1,22 @@
 FILE
   USE_DECL
     USE "use"
-    UNQUALIFIED_PATH
+    PATH
       IDENT "foo"
     SEMI ";"
   USE_DECL
     USE "use"
-    QUALIFIED_PATH
-      UNQUALIFIED_PATH
+    PATH
+      PATH
         IDENT "foo"
       COLONCOLON "::"
       IDENT "bar"
     SEMI ";"
   USE_DECL
     USE "use"
-    QUALIFIED_PATH
-      QUALIFIED_PATH
-        UNQUALIFIED_PATH
+    PATH
+      PATH
+        PATH
           COLONCOLON "::"
           IDENT "foo"
         COLONCOLON "::"

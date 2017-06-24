@@ -23,22 +23,21 @@ pub const USE_DECL: NodeType = NodeType(117);
 pub const FN_DEF: NodeType = NodeType(118);
 pub const STRUCT_DEF: NodeType = NodeType(119);
 pub const STRUCT_FIELD: NodeType = NodeType(120);
-pub const UNQUALIFIED_PATH: NodeType = NodeType(121);
-pub const QUALIFIED_PATH: NodeType = NodeType(122);
-pub const TYPE: NodeType = NodeType(123);
-pub const BLOCK_EXPR: NodeType = NodeType(124);
-pub const STMT: NodeType = NodeType(125);
-pub const PATTERN: NodeType = NodeType(126);
-pub const EXPR: NodeType = NodeType(127);
+pub const PATH: NodeType = NodeType(121);
+pub const TYPE: NodeType = NodeType(122);
+pub const BLOCK_EXPR: NodeType = NodeType(123);
+pub const STMT: NodeType = NodeType(124);
+pub const PATTERN: NodeType = NodeType(125);
+pub const EXPR: NodeType = NodeType(126);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            PUB, LET, STRUCT, FN, USE, LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COLONCOLON, COMMA, IDENT, NUMBER, FILE, USE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, UNQUALIFIED_PATH, QUALIFIED_PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
+            PUB, LET, STRUCT, FN, USE, LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COLONCOLON, COMMA, IDENT, NUMBER, FILE, USE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[18,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":6}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":3}],null]}]}},{"body":{"Pub":[19,{"Or":[{"And":[[{"Token":6},{"Rule":7},{"Token":12}],1]}]}]}},{"body":{"Pub":[20,{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":2}],null]}]}},{"Token":5},{"Token":16},{"Token":7},{"Token":8},{"Rule":11}],2]}]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":4},{"Token":16},{"Token":9},{"Layer":[{"Rule":12},{"Rep":{"Rule":6}}]},{"Token":10}],2]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":16},{"Token":13},{"Rule":10},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":15}],null]}]}],2]}]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}}},{"Postfix":{"ty":24,"op":{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}}}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Rule":7},{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}],null]}]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":9},{"Layer":[{"Rule":12},{"Rep":{"Rule":14}}]},{"Token":10}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":13}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":12},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":3},{"Rule":15},{"Token":11},{"Rule":16},{"Token":12}],1]}]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[29,{"Or":[{"And":[[{"Token":17}],null]}]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[18,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":6}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":3}],null]}]}},{"body":{"Pub":[19,{"Or":[{"And":[[{"Token":6},{"Rule":7},{"Token":12}],1]}]}]}},{"body":{"Pub":[20,{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":2}],null]}]}},{"Token":5},{"Token":16},{"Token":7},{"Token":8},{"Rule":11}],2]}]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":4},{"Token":16},{"Token":9},{"Layer":[{"Rule":12},{"Rep":{"Rule":6}}]},{"Token":10}],2]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":16},{"Token":13},{"Rule":10},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":15}],null]}]}],2]}]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}}},{"Postfix":{"ty":23,"op":{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}}}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Opt":{"Token":14}},{"Token":16}],null]}]}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Rule":7},{"Or":[{"And":[[{"Token":14},{"Token":16}],null]}]}],null]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Token":9},{"Layer":[{"Rule":12},{"Rep":{"Rule":14}}]},{"Token":10}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":13}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":12},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":3},{"Rule":15},{"Token":11},{"Rule":16},{"Token":12}],1]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":16}],null]}]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Token":17}],null]}]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -74,8 +73,7 @@ lazy_static! {
                     FN_DEF => NodeTypeInfo { name: "FN_DEF" },
                     STRUCT_DEF => NodeTypeInfo { name: "STRUCT_DEF" },
                     STRUCT_FIELD => NodeTypeInfo { name: "STRUCT_FIELD" },
-                    UNQUALIFIED_PATH => NodeTypeInfo { name: "UNQUALIFIED_PATH" },
-                    QUALIFIED_PATH => NodeTypeInfo { name: "QUALIFIED_PATH" },
+                    PATH => NodeTypeInfo { name: "PATH" },
                     TYPE => NodeTypeInfo { name: "TYPE" },
                     BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR" },
                     STMT => NodeTypeInfo { name: "STMT" },

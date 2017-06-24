@@ -58,16 +58,16 @@ example r"
 "
 
 #[pratt]
-rule path {
+pub rule path {
   unqualified_path | qualified_path
 }
 
-#[atom]
+#[atom, type(path)]
 pub rule unqualified_path {
   <opt '::'> ident
 }
 
-#[postfix]
+#[postfix, type(path)]
 pub rule qualified_path {
   path {'::' ident}
 }
