@@ -30,13 +30,13 @@ FILE
       LBRACE "{"
       RBRACE "}"
   STRUCT_DEF
-    KW_PUB "pub"
+    PUB "pub"
     STRUCT "struct"
     IDENT "Baz"
     LBRACE "{"
     RBRACE "}"
   FN_DEF
-    KW_PUB "pub"
+    PUB "pub"
     FN "fn"
     IDENT "quux"
     LPAREN "("
@@ -98,7 +98,7 @@ FILE
     BLOCK_EXPR
       LBRACE "{"
       STMT
-        KW_LET "let"
+        LET "let"
         PATTERN
           IDENT "a"
         EQ "="
@@ -106,7 +106,7 @@ FILE
           NUMBER "1"
         SEMI ";"
       STMT
-        KW_LET "let"
+        LET "let"
         PATTERN
           IDENT "b"
         EQ "="
@@ -133,7 +133,7 @@ FILE
     BLOCK_EXPR
       LBRACE "{"
       STMT
-        KW_LET "let"
+        LET "let"
         PATTERN
           IDENT "a"
         EQ "="

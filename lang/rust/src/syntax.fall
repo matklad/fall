@@ -1,4 +1,10 @@
 tokenizer {
+  pub 'pub'
+  let 'let'
+  struct 'struct'
+  fn 'fn'
+  use 'use'
+
   lparen '('
   rparen ')'
   lbrace '{'
@@ -7,11 +13,7 @@ tokenizer {
   semi ';'
   colon ':'
   comma ','
-  kw_pub 'pub'
-  kw_let 'let'
-  struct 'struct'
-  fn 'fn'
-  use 'use'
+
   whitespace r"\s+"
   ident r"\p{XID_Start}\w*"
   number r"\d+"
@@ -20,6 +22,10 @@ tokenizer {
 pub rule file {
   <rep <with_skip file_form_first file_form>>
 }
+
+example r##"
+    pub struct Foo {}
+"##
 
 rule file_form_first { 
   'pub' | 'fn' | 'struct' | 'use'

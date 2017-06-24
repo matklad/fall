@@ -36,7 +36,7 @@ FILE
         IDENT "A"
       COMMA ","
     STRUCT_FIELD
-      KW_PUB "pub"
+      PUB "pub"
       IDENT "j"
       COLON ":"
       TYPE

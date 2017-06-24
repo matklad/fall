@@ -2,19 +2,19 @@ use serde_json;
 use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
 pub use fall_tree::{ERROR, WHITESPACE};
 
-pub const LPAREN: NodeType = NodeType(100);
-pub const RPAREN: NodeType = NodeType(101);
-pub const LBRACE: NodeType = NodeType(102);
-pub const RBRACE: NodeType = NodeType(103);
-pub const EQ: NodeType = NodeType(104);
-pub const SEMI: NodeType = NodeType(105);
-pub const COLON: NodeType = NodeType(106);
-pub const COMMA: NodeType = NodeType(107);
-pub const KW_PUB: NodeType = NodeType(108);
-pub const KW_LET: NodeType = NodeType(109);
-pub const STRUCT: NodeType = NodeType(110);
-pub const FN: NodeType = NodeType(111);
-pub const USE: NodeType = NodeType(112);
+pub const PUB: NodeType = NodeType(100);
+pub const LET: NodeType = NodeType(101);
+pub const STRUCT: NodeType = NodeType(102);
+pub const FN: NodeType = NodeType(103);
+pub const USE: NodeType = NodeType(104);
+pub const LPAREN: NodeType = NodeType(105);
+pub const RPAREN: NodeType = NodeType(106);
+pub const LBRACE: NodeType = NodeType(107);
+pub const RBRACE: NodeType = NodeType(108);
+pub const EQ: NodeType = NodeType(109);
+pub const SEMI: NodeType = NodeType(110);
+pub const COLON: NodeType = NodeType(111);
+pub const COMMA: NodeType = NodeType(112);
 pub const IDENT: NodeType = NodeType(113);
 pub const NUMBER: NodeType = NodeType(114);
 pub const FILE: NodeType = NodeType(115);
@@ -34,9 +34,9 @@ lazy_static! {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR, WHITESPACE,
-            LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COMMA, KW_PUB, KW_LET, STRUCT, FN, USE, IDENT, NUMBER, FILE, USE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
+            PUB, LET, STRUCT, FN, USE, LPAREN, RPAREN, LBRACE, RBRACE, EQ, SEMI, COLON, COMMA, IDENT, NUMBER, FILE, USE_DECL, FN_DEF, STRUCT_DEF, STRUCT_FIELD, PATH, TYPE, BLOCK_EXPR, STMT, PATTERN, EXPR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[17,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":10}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":12}],null]},{"And":[[{"Token":14}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":3}],null]}]}},{"body":{"Pub":[18,{"Or":[{"And":[[{"Token":14},{"Rule":7},{"Token":7}],null]}]}]}},{"body":{"Pub":[19,{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":10}],null]}]}},{"Token":13},{"Token":15},{"Token":2},{"Token":3},{"Rule":9}],2]}]}]}},{"body":{"Pub":[20,{"Or":[{"And":[[{"Opt":{"Token":10}},{"Token":12},{"Token":15},{"Token":4},{"Layer":[{"Rule":10},{"Rep":{"Rule":6}}]},{"Token":5}],2]}]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Opt":{"Token":10}},{"Token":15},{"Token":8},{"Rule":8},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":9}],null]}]}],2]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":10},{"Rep":{"Rule":12}}]},{"Token":5}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":4},{"Rule":10},{"Token":5}],1]},{"And":[[{"Not":[5]}],null]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Token":11},{"Rule":13},{"Token":6},{"Rule":14},{"Token":7}],1]}]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":16}],null]}]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[17,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":2}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":6}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":3}],null]}]}},{"body":{"Pub":[18,{"Or":[{"And":[[{"Token":6},{"Rule":7},{"Token":12}],null]}]}]}},{"body":{"Pub":[19,{"Or":[{"And":[[{"Opt":{"Or":[{"And":[[{"Token":2}],null]}]}},{"Token":5},{"Token":15},{"Token":7},{"Token":8},{"Rule":9}],2]}]}]}},{"body":{"Pub":[20,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":4},{"Token":15},{"Token":9},{"Layer":[{"Rule":10},{"Rep":{"Rule":6}}]},{"Token":10}],2]}]}]}},{"body":{"Pub":[21,{"Or":[{"And":[[{"Opt":{"Token":2}},{"Token":15},{"Token":13},{"Rule":8},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":14}],null]}]}],2]}]}]}},{"body":{"Pub":[22,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[23,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[24,{"Or":[{"And":[[{"Token":9},{"Layer":[{"Rule":10},{"Rep":{"Rule":12}}]},{"Token":10}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":10},{"Token":10}],1]},{"And":[[{"Not":[10]}],null]}]}},{"body":{"Pub":[25,{"Or":[{"And":[[{"Token":3},{"Rule":13},{"Token":11},{"Rule":14},{"Token":12}],1]}]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":15}],null]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":16}],null]}]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -51,6 +51,11 @@ lazy_static! {
                 match ty {
                     ERROR => NodeTypeInfo { name: "ERROR" },
                     WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    PUB => NodeTypeInfo { name: "PUB" },
+                    LET => NodeTypeInfo { name: "LET" },
+                    STRUCT => NodeTypeInfo { name: "STRUCT" },
+                    FN => NodeTypeInfo { name: "FN" },
+                    USE => NodeTypeInfo { name: "USE" },
                     LPAREN => NodeTypeInfo { name: "LPAREN" },
                     RPAREN => NodeTypeInfo { name: "RPAREN" },
                     LBRACE => NodeTypeInfo { name: "LBRACE" },
@@ -59,11 +64,6 @@ lazy_static! {
                     SEMI => NodeTypeInfo { name: "SEMI" },
                     COLON => NodeTypeInfo { name: "COLON" },
                     COMMA => NodeTypeInfo { name: "COMMA" },
-                    KW_PUB => NodeTypeInfo { name: "KW_PUB" },
-                    KW_LET => NodeTypeInfo { name: "KW_LET" },
-                    STRUCT => NodeTypeInfo { name: "STRUCT" },
-                    FN => NodeTypeInfo { name: "FN" },
-                    USE => NodeTypeInfo { name: "USE" },
                     IDENT => NodeTypeInfo { name: "IDENT" },
                     NUMBER => NodeTypeInfo { name: "NUMBER" },
                     FILE => NodeTypeInfo { name: "FILE" },
@@ -84,6 +84,11 @@ lazy_static! {
 
         Language::new(Impl {
             tokenizer: vec![
+                LexRule::new(PUB, "pub", None),
+                LexRule::new(LET, "let", None),
+                LexRule::new(STRUCT, "struct", None),
+                LexRule::new(FN, "fn", None),
+                LexRule::new(USE, "use", None),
                 LexRule::new(LPAREN, "\\(", None),
                 LexRule::new(RPAREN, "\\)", None),
                 LexRule::new(LBRACE, "\\{", None),
@@ -92,11 +97,6 @@ lazy_static! {
                 LexRule::new(SEMI, ";", None),
                 LexRule::new(COLON, ":", None),
                 LexRule::new(COMMA, ",", None),
-                LexRule::new(KW_PUB, "pub", None),
-                LexRule::new(KW_LET, "let", None),
-                LexRule::new(STRUCT, "struct", None),
-                LexRule::new(FN, "fn", None),
-                LexRule::new(USE, "use", None),
                 LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(IDENT, "\\p{XID_Start}\\w*", None),
                 LexRule::new(NUMBER, "\\d+", None),
