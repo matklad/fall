@@ -52,8 +52,8 @@ pub rule tokenizer_def {
   'tokenizer' <commit> '{' <rep lex_rule> '}'
 }
 
-pub rule lex_rule { 
-  <opt attributes> ident <commit> string <opt string> 
+pub rule lex_rule {
+  <opt attributes> ident <commit> string <opt string>
 }
 
 pub rule syn_rule {
@@ -67,7 +67,7 @@ pub rule attributes {
      ']'
 }
 
-pub rule attribute { 
+pub rule attribute {
   ident <opt {'(' attribute_value ')'}>
 }
 
@@ -81,12 +81,12 @@ pub rule verbatim_def { 'verbatim' <commit> hash_string }
 
 pub rule example_def { 'example' <commit> hash_string }
 
-pub rule ast_def { 
-  'ast' <commit> '{' 
-    <rep <with_skip 
-      {'node'|'class'} 
-      {ast_node_def | ast_class_def}>> 
-  '}' 
+pub rule ast_def {
+  'ast' <commit> '{'
+    <rep <with_skip
+      {'node'|'class'}
+      {ast_node_def | ast_class_def}>>
+  '}'
 }
 
 

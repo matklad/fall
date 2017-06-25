@@ -145,9 +145,14 @@ pub fn parse(
     let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, &t)| {
         if is_ws(lang, t) { None } else { Some(i) }
     }).collect();
+
+    let ws_len = owned_tokens.iter()
+        .take_while(|&&t| is_ws(lang, t))
+        .map(|t| t.len.as_u32() as usize)
+        .sum();
     let (parse_time, node) = {
         let tokens = TokenSequence {
-            text: &text,
+            text: &text[ws_len..],
             start: 0,
             non_ws_indexes: &non_ws_indexes,
             original_tokens: &owned_tokens,
