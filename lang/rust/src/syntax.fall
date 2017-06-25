@@ -53,7 +53,7 @@ pub rule use_spec_entry {
 }
 
 pub rule extern_crate_decl {
-  'extern' 'crate' <commit> ident ';'
+  'extern' 'crate' <commit> ident <opt alias> ';'
 }
 
 pub rule fn_def {

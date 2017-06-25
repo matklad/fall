@@ -4,6 +4,14 @@ FILE
     CRATE "crate"
     IDENT "spam"
     SEMI ";"
+  EXTERN_CRATE_DECL
+    EXTERN "extern"
+    CRATE "crate"
+    IDENT "eggs"
+    ALIAS
+      AS "as"
+      IDENT "yolk"
+    SEMI ";"
   USE_DECL
     USE "use"
     PATH

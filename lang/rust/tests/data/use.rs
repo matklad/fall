@@ -1,4 +1,5 @@
 extern crate spam;
+extern crate eggs as yolk;
 
 use foo::bar;
 use ::foo::bar::baz;
