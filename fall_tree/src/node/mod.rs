@@ -1,5 +1,6 @@
 use std::time::Duration;
 use {Text, TextRange, NodeType, Language};
+use edit::TextEdit;
 
 mod imp;
 mod immutable;
@@ -7,10 +8,6 @@ mod immutable;
 pub use self::imp::NodeChildren;
 pub use self::immutable::INode;
 
-pub struct Edit {
-    pub delete: TextRange,
-    pub insert: String,
-}
 
 pub struct File {
     imp: imp::FileImpl,
@@ -45,7 +42,7 @@ impl File {
         self.inode.clone()
     }
 
-    pub fn edit(&self, edit: &Edit) -> File {
+    pub fn edit(&self, edit: &TextEdit) -> File {
         self.language().reparse(self, edit)
     }
 }

@@ -4,6 +4,10 @@ use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
 use ::{ast, LANG_FALL, RefKind};
 use ::syntax::*;
 
+mod actions;
+pub use self::actions::FileChange;
+
+
 pub fn parse(text: String) -> File {
     LANG_FALL.parse(text)
 }
@@ -74,7 +78,16 @@ pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
         None => None,
         Some(parent) => Some(parent.range()),
     }
+}
 
+pub struct ContextActionId(String);
+
+pub fn collect_applicable_context_actions(file: &File, offset: TextUnit) -> Vec<ContextActionId> {
+    unimplemented!()
+}
+
+pub fn apply_context_action(file: &File, offset: TextUnit, action_id: ContextActionId) -> FileChange {
+    unimplemented!()
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {

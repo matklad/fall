@@ -1,7 +1,8 @@
 use std::path::Path;
 
 use file;
-use ::{Language, dump_file, dump_file_ws, TextRange, TextUnit, Edit};
+use {Language, dump_file, dump_file_ws, TextRange, TextUnit};
+use edit::TextEdit;
 use difference::Changeset;
 
 pub fn check_syntax(lang: &Language, input: &str, expected_tree: &str) {
@@ -53,7 +54,7 @@ pub fn check_directory(lang: &Language, directory: &Path) {
 }
 
 
-fn make_edit(before: &str, after: &str) -> Edit {
+fn make_edit(before: &str, after: &str) -> TextEdit {
     let prefix = {
         before.as_bytes().iter()
             .zip(after.as_bytes())
@@ -71,7 +72,7 @@ fn make_edit(before: &str, after: &str) -> Edit {
         TextUnit::from_usize(before.len() - suffix)
     );
     let insert = after[prefix..after.len() - suffix].to_string();
-    Edit { delete: delete, insert: insert }
+    TextEdit { delete: delete, insert: insert }
 }
 
 
