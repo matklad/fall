@@ -1,12 +1,12 @@
 use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
+use fall_tree::edit::TextEdit;
 use ::{ast, LANG_FALL, RefKind};
 use ::syntax::*;
 
 mod actions;
-pub use self::actions::FileChange;
-
+use self::actions::{ACTIONS, ContextActionId};
 
 pub fn parse(text: String) -> File {
     LANG_FALL.parse(text)
@@ -80,14 +80,17 @@ pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
     }
 }
 
-pub struct ContextActionId(String);
 
 pub fn collect_applicable_context_actions(file: &File, offset: TextUnit) -> Vec<ContextActionId> {
-    unimplemented!()
+    ACTIONS.iter()
+        .filter(|action| action.apply(file, offset).is_some())
+        .map(|action| action.id())
+        .collect()
 }
 
-pub fn apply_context_action(file: &File, offset: TextUnit, action_id: ContextActionId) -> FileChange {
-    unimplemented!()
+pub fn apply_context_action<'f>(file: &'f File, offset: TextUnit, action_id: &str) -> TextEdit {
+    let action = ACTIONS.iter().find(|action| action.id().0 == action_id).unwrap();
+    action.apply(file, offset).unwrap().into_text_edit()
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {

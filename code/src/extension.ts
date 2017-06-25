@@ -22,7 +22,9 @@ var backend = (() => {
         extendSelection: ([start, end]) => {
             return native.file_extend_selection(start, end);
         },
-        tree: (): string => native.file_tree()
+        tree: (): string => native.file_tree(),
+        findContextActions: (offset: Number): [string] => native.file_find_context_actions(offset),
+        applyContextAction: (offset: Number, id: string) => native.file_apply_context_action(offset, id),
     }
 })()
 
@@ -63,10 +65,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     class CodeActionProvider implements vscode.CodeActionProvider {
         provideCodeActions(document: TextDocument, range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
-            return [{
-                title: "Show Syntax Tree",
-                command: "extension.showSyntaxTree"
-            }]
+            let offset = document.offsetAt(range.start);
+            let actions = backend.findContextActions(offset);
+            return actions.map((id) => {
+                return {
+                    title: id,
+                    command: 'extension.applyContextAction',
+                    arguments: [offset, id]
+                }
+            })
         }
     }
 
@@ -143,6 +150,20 @@ export function activate(context: vscode.ExtensionContext) {
             let [newStart, newEnd] = range
             let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
             activeEditor.selection = newSelection
+        }),
+        vscode.commands.registerCommand('extension.applyContextAction', (offset, id) => {
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+
+            let edit = backend.applyContextAction(offset, id);
+            
+            let range = new Range(
+                activeEditor.document.positionAt(edit[0]),
+                activeEditor.document.positionAt(edit[1]),
+            )
+            activeEditor.edit((bulder) => {
+                bulder.replace(range, edit[2])
+            })
         })
     ]
     context.subscriptions.push(...commands)

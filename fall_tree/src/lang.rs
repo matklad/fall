@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use edit::TextEdit;
-use {File, NodeType, NodeTypeInfo, FileStats, INode, TextRange, TextUnit};
+use {File, NodeType, NodeTypeInfo, FileStats, INode};
 
 #[derive(Clone)]
 pub struct Language {
@@ -18,9 +18,7 @@ impl Language {
     }
 
     pub fn reparse(&self, file: &File, edit: &TextEdit) -> File {
-        let before = file.text().slice(TextRange::from_to(TextUnit::zero(), edit.delete.start()));
-        let after = file.text().slice(TextRange::from_to(edit.delete.end(), file.text().len()));
-        let new_text = before.to_string() + &edit.insert + &after.to_string();
+        let new_text = edit.apply(file.text());
         let (stats, inode) = self.imp.parse(&new_text);
         let result = File::new(self.clone(), new_text, stats, inode);
         return result;

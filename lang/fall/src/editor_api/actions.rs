@@ -1,52 +1,34 @@
-use fall_tree::{File, Node, TextRange, TextUnit};
-use fall_tree::edit::TextEdit;
+use fall_tree::{AstNode, AstClass, File, Node, TextUnit};
+use fall_tree::edit::FiledEdit;
+use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
+use syntax::{PIPE, BlockExpr};
 
-pub struct FileChange<'f> {
-    edit: TextEdit,
-    file: &'f File
-}
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct ContextActionId(pub &'static str);
 
-impl<'f> FileChange<'f> {
-    fn empty(file: &File) -> FileChange {
-        FileChange {
-            edit: TextEdit { delete: TextRange::empty(), insert: String::new() },
-            file: file
-        }
-    }
+pub const ACTIONS: &[&ContextAction] = &[
+    &SwapAlternatives
+];
 
-    fn replace(&mut self, source: Node<'f>, target: Node) {
-        if !(source.range().is_disjoint(self.edit.delete)) {
-            panic!("Invalid edit")
-        }
-        if is_empty_edit(&self.edit) {
-            self.edit = TextEdit {
-                delete: source.range(),
-                insert: target.text().to_string(),
-            };
-            return;
-        }
-        
-    }
-}
-
-fn is_empty_edit(edit: &TextEdit) -> bool {
-    edit.delete.is_empty() && edit.insert.is_empty()
-}
-
-trait ContextAction {
-    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FileChange<'f>>;
+pub trait ContextAction {
+    fn id(&self) -> ContextActionId;
+    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FiledEdit<'f>>;
 }
 
 
 struct SwapAlternatives;
 
 impl ContextAction for SwapAlternatives {
-    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FileChange<'f>> {
+    fn id(&self) -> ContextActionId {
+        ContextActionId("Swap Alternatives")
+    }
+
+    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FiledEdit<'f>> {
         let (left, right) = match find_swappable_nodes(file, offset) {
             Some((left, right)) => (left, right),
             None => return None
         };
-        let mut change = FileChange::empty(file);
+        let mut change = FiledEdit::new(file);
         change.replace(left, right);
         change.replace(right, left);
         Some(change)
@@ -54,6 +36,35 @@ impl ContextAction for SwapAlternatives {
 }
 
 fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f>, Node<'f>)> {
-    unimplemented!()
+    let pipe = match find_leaf_at_offset(file.root(), offset) {
+        LeafAtOffset::None => return None,
+        LeafAtOffset::Single(n) => if n.ty() == PIPE { n } else { return None },
+        LeafAtOffset::Between(n1, n2) => if n1.ty() == PIPE {
+            n1
+        } else if n2.ty() == PIPE {
+            n2
+        } else {
+            return None
+        },
+    };
+
+    let parent = match pipe.parent() {
+        None => return None,
+        Some(n) => if n.ty() == BlockExpr::ty() {
+            BlockExpr::new(n)
+        } else {
+            return None;
+        }
+    };
+
+    for (alt1, alt2) in parent.alts().zip(parent.alts().skip(1)) {
+        let n1 = alt1.node();
+        let n2 = alt2.node();
+        if n1.range() < pipe.range() && pipe.range() < n2.range() {
+            return Some((n1, n2));
+        }
+    };
+
+    None
 }
 

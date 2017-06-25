@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 use std::ops;
 
@@ -54,10 +55,6 @@ impl TextRange {
         other.start() <= self.start() && self.end() <= other.end()
     }
 
-    pub fn is_disjoint(&self, other: TextRange) -> bool {
-        self.end() <= other.start() && other.end() <= self.start()
-    }
-
     pub fn contains_offset_nonstrict(&self, offset: TextUnit) -> bool {
         self.start() <= offset && offset <= self.end()
     }
@@ -86,5 +83,19 @@ impl ops::Index<TextRange> for String {
 
     fn index(&self, index: TextRange) -> &str {
         &self[index.start().0 as usize..index.end().0 as usize]
+    }
+}
+
+impl PartialOrd for TextRange {
+    fn partial_cmp(&self, other: &TextRange) -> Option<Ordering> {
+        if self.end() <= other.start() {
+            Some(Ordering::Less)
+        } else if other.end() <= self.start() {
+            Some(Ordering::Greater)
+        } else if self == other {
+            Some(Ordering::Equal)
+        } else {
+            None
+        }
     }
 }

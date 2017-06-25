@@ -105,7 +105,38 @@ fn file_extend_selection(call: Call) -> JsResult<JsValue> {
     }
 }
 
+fn file_find_context_actions(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let offset = TextUnit::from_usize(offset.value() as usize);
 
+    let actions = editor_api::collect_applicable_context_actions(file, offset);
+    let arr = JsArray::new(scope, actions.len() as u32);
+    for (i, id) in actions.into_iter().enumerate() {
+        let s = JsString::new(scope, id.0).unwrap();
+        arr.set(i as u32, s)?;
+    }
+    Ok(arr.upcast())
+}
+
+fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let offset = TextUnit::from_usize(offset.value() as usize);
+    let id = call.arguments.require(scope, 1)?.check::<JsString>()?;
+
+    let edit = editor_api::apply_context_action(file, offset, &id.value());
+
+    let arr = JsArray::new(scope, 3);
+    arr.set(0, JsInteger::new(scope, edit.delete.start().as_u32() as i32))?;
+    arr.set(1, JsInteger::new(scope, edit.delete.end().as_u32() as i32))?;
+    arr.set(2, JsString::new(scope, &edit.insert).unwrap())?;
+    Ok(arr.upcast())
+}
 
 register_module!(m, {
     m.export("file_create", file_create)?;
@@ -113,5 +144,7 @@ register_module!(m, {
     m.export("file_stats", file_stats)?;
     m.export("file_tree", file_tree)?;
     m.export("file_extend_selection", file_extend_selection)?;
+    m.export("file_find_context_actions", file_find_context_actions)?;
+    m.export("file_apply_context_action", file_apply_context_action)?;
     Ok(())
 });
