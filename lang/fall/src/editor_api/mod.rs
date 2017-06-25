@@ -21,6 +21,9 @@ pub fn highlight(file: &File) -> Spans {
     let file = ast(file);
     let mut spans = vec![];
     Visitor(&mut spans)
+        .visit_nodes(&[EOL_COMMENT], |spans, node| {
+            colorize_node(node, "comment", spans)
+        })
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
             colorize_node(node, "string", spans)
         })

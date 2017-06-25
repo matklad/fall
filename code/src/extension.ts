@@ -43,6 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
         rule: decor("#93E0E3"),
         string: decor("#CC9393"),
         builtin: decor("#DD6718"),
+        comment: decor("#7F9F7F"),
         unresolved: decor('#FF0000'),
         error: vscode.window.createTextEditorDecorationType({
             borderColor: "red",
