@@ -1,6 +1,6 @@
-use serde_json;
-use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
-pub use fall_tree::{ERROR, WHITESPACE};
+use fall_parse::runtime::*;
+use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
+pub use self::fall_tree::{ERROR, WHITESPACE};
 
 pub const AS: NodeType = NodeType(100);
 pub const CRATE: NodeType = NodeType(101);

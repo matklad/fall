@@ -3,9 +3,6 @@ name = "lang_rust"
 version = "0.1.0"
 
 [dependencies]
-regex = "0.2"
 fall_tree = { path = "../../fall_tree" }
 fall_parse = { path = "../../fall_parse" }
-serde_json = "1.*"
-lazy_static= "0.2"
 

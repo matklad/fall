@@ -1,6 +1,6 @@
-use serde_json;
-use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
-pub use fall_tree::{ERROR, WHITESPACE};
+use fall_parse::runtime::*;
+use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
+pub use self::fall_tree::{ERROR, WHITESPACE};
 
 pub const NODE: NodeType = NodeType(100);
 pub const CLASS: NodeType = NodeType(101);
@@ -156,8 +156,8 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
-use fall_tree::search::{child_of_type_exn, child_of_type};
+use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 #[derive(Clone, Copy)]
 pub struct FallFile<'f> { node: Node<'f> }

@@ -261,9 +261,9 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
 }
 
 const TEMPLATE: &'static str = r#####"
-use serde_json;
-use fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
-pub use fall_tree::{ERROR, WHITESPACE};
+use fall_parse::runtime::*;
+use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
+pub use self::fall_tree::{ERROR, WHITESPACE};
 
 {% for node_type in node_types %}
 pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
@@ -314,8 +314,8 @@ lazy_static! {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
-use fall_tree::search::{child_of_type_exn, child_of_type};
+use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
 #[derive(Clone, Copy)]

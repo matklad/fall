@@ -82,21 +82,13 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         [workspace]
 
         [dependencies]
-        regex = "0.2"
-        serde_json = "1.*"
-        lazy_static = "0.2"
-
         fall_tree = {{ path = "{fall_dir}/fall_tree" }}
         fall_parse = {{ path = "{fall_dir}/fall_parse" }}
     "##, fall_dir = fall_dir().display()))?;
     put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
         #![allow(warnings)]
-        extern crate regex;
         extern crate fall_tree;
         extern crate fall_parse;
-        #[macro_use]
-        extern crate lazy_static;
-        extern crate serde_json;
         mod syntax;
 
         use std::io::Read;

@@ -1,6 +1,3 @@
-extern crate serde_json;
-#[macro_use]
-extern crate lazy_static;
 extern crate fall_parse;
 extern crate fall_tree;
 

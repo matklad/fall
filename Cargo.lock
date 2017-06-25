@@ -4,9 +4,6 @@ version = "0.1.0"
 dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
- "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -128,8 +125,6 @@ dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
  "lang_json 0.1.0",
- "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -155,9 +150,11 @@ version = "0.1.0"
 dependencies = [
  "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_tree 0.1.0",
+ "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -220,9 +217,7 @@ version = "0.1.0"
 dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
- "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -231,9 +226,6 @@ version = "0.1.0"
 dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
- "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
