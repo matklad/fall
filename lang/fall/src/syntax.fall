@@ -1,5 +1,6 @@
 tokenizer {
   #[skip] whitespace r"\s+"
+  #[skip] eol_comment r"//.*"
   #[contextual] node 'node'
   #[contextual] class 'class'
   #[contextual] tokenizer 'tokenizer'
