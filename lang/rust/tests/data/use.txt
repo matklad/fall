@@ -7,11 +7,6 @@ FILE
   USE_DECL
     USE "use"
     PATH
-      IDENT "foo"
-    SEMI ";"
-  USE_DECL
-    USE "use"
-    PATH
       PATH
         IDENT "foo"
       COLONCOLON "::"
@@ -60,4 +55,33 @@ FILE
     ALIAS
       AS "as"
       IDENT "bar"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    PATH
+      IDENT "foo"
+    COLONCOLON "::"
+    USE_SPEC
+      LBRACE "{"
+      USE_SPEC_ENTRY
+        IDENT "bar"
+        COMMA ","
+      USE_SPEC_ENTRY
+        IDENT "baz"
+        ALIAS
+          AS "as"
+          IDENT "quux"
+      RBRACE "}"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    PATH
+      IDENT "foo"
+    COLONCOLON "::"
+    USE_SPEC
+      LBRACE "{"
+      USE_SPEC_ENTRY
+        IDENT "bar"
+        COMMA ","
+      RBRACE "}"
     SEMI ";"

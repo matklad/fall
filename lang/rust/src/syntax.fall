@@ -38,7 +38,7 @@ rule file_form {
 
 pub rule use_decl {
   'use' <commit> { 
-    path {alias | <opt '::' use_spec>}
+    path {alias | <opt {'::' use_spec}>}
   | <opt '::'> use_spec 
   } ';'
 }
@@ -49,7 +49,7 @@ pub rule use_spec {
 }
 
 pub rule use_spec_entry {
-  ident {<eof> | ','}
+  ident <commit> <opt alias> {<eof> | ','}
 }
 
 pub rule extern_crate_decl {
