@@ -29,3 +29,35 @@ FILE
       COLONCOLON "::"
       IDENT "baz"
     SEMI ";"
+  USE_DECL
+    USE "use"
+    USE_SPEC
+      LBRACE "{"
+      RBRACE "}"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    COLONCOLON "::"
+    USE_SPEC
+      STAR "*"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    USE_SPEC
+      STAR "*"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    COLONCOLON "::"
+    USE_SPEC
+      LBRACE "{"
+      RBRACE "}"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    PATH
+      IDENT "foo"
+    ALIAS
+      AS "as"
+      IDENT "bar"
+    SEMI ";"

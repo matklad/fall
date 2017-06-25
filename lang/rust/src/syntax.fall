@@ -38,15 +38,10 @@ rule file_form {
 
 pub rule use_decl {
   'use' <commit> { 
-    path {alias | <opt '::' use_spec>}';'
-  | '::' use_spec ';'
-  | <not_ahead '*'> use_spec ';'
-  }
+    path {alias | <opt '::' use_spec>}
+  | <opt '::'> use_spec 
+  } ';'
 }
-
-example r#"
-  use ::foo::bar::baz as spam;
-"#
 
 pub rule use_spec {
   '*'
