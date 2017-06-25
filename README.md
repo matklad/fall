@@ -110,12 +110,10 @@ of parsing PEG.
 
 ### Grammar
 
-To learn the details of the grammar spec, it is best to look at the examples (sorry, no docs yet because
-everything is in flux). The examples are in the `lang` subdirectory, look for the `syntax.fall` files.  The most
-complete is `lang/fall`, which is the language of the parser generator itself: fall was bootstraped fully, starting from
-`split_lines`, `split_whitespace` style parser.
+To learn the details of the grammar spec, it's best to read the (literalish) [grammar of the fall language itself](./lang/fall/src/syntax.fall )
+Other examples are also in the `lang` subdirectory, look for the `syntax.fall` files.
 
-Here are some interesting bits of the grammar.
+Here are some interesting highlights of the grammar.
 
 The `<commit>` specifier allows parser to recognize incomplete syntactic constructs. For example, for the
 

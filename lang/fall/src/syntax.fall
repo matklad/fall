@@ -1,6 +1,30 @@
+// This is the grammar for the Fall parser generator input language.
+// It is itself written in Fall and serves as the primary
+// tutorial / documentation.
+
+// The syntax is Rust inspired.
+
+// In Fall, lexical and syntactical analyses are conducted in separate
+// phases, because it's in theory much simpler to make lexical analysis
+// incremental. Nevertheless, both lexical and syntactical grammars
+// are specified in a single file.
+
+// Lexical tokens are specified inside `tokenizer` block.
 tokenizer {
+  // Each token consists of a name and a regular expression pattern,
+  // optionally preceded by attributes.
+
+  // The `#[skip]` attribute is used for whitespace and comments.
+  // The parser does not see `#[skip]` tokens, they are attached
+  // to the relevant nodes automatically.
   #[skip] whitespace r"\s+"
   #[skip] eol_comment r"//.*"
+
+  // Contextual attribute is required to support contextual keywords.
+  // The lexer ignores contextual token and, for example, parses `node`
+  // as an identifier. The parser however will remap identifier to the
+  // node keyword. You typical don't need `#[contextual]`, but we use
+  // it in Fall to avoid clashes with keywords in the target language.
   #[contextual] node 'node'
   #[contextual] class 'class'
   #[contextual] tokenizer 'tokenizer'
@@ -10,6 +34,8 @@ tokenizer {
   #[contextual] pub 'pub'
   #[contextual] example 'example'
 
+  // If you use `''` to specify the pattern, it will be interpreted "as is",
+  // and not as a regular expression.
   eq '='
   pipe '|'
   star '*'
@@ -27,13 +53,26 @@ tokenizer {
   rparen ')'
 
   number r"\d+"
+  // Raw literals like `r###"contains "a string" inside "###` are supported.
   simple_string r#"'([^'\\]|\\.)*'"#
+
+  // Besides the name and the pattern, you can optionally provide
+  // a name of a Rust function which will be used to parse the token.
+  // See `verbatim` block below.
   hash_string r"r#*" 'parse_raw_string'
   ident r"\w+"
 }
 
+// After the `tokenizer` block syntactical grammar rules follows.
+
+// The first rule is special: it is implicitly used as an entry
+// point for the grammar.
 pub rule fall_file {
   <rep <with_skip file_form_first file_form>>
+}
+
+rule file_form_first {
+  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' | 'example'
 }
 
 rule file_form {
@@ -44,22 +83,85 @@ rule file_form {
 | example_def
 }
 
-rule file_form_first {
-  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' | 'example'
+// Each rule has the following pattern:
+pub rule syn_rule {
+  // Optional `#[foo]` style attributes
+  <opt attributes>
+
+  // Each `pub` rule creates a separate node type.
+  // That is, each `pub` rule has a dedicated node in the resulting
+  // parse tree. In theory, you can inline all non-`pub` rules and
+  // get functionally the same parser.
+  <opt 'pub'>
+
+  'rule' <commit>
+
+  // Each rule has a name. `pub` rule `foo_bar` will create a
+  // `FOO_BAR` NodeType constant.
+  ident
+
+  // The body of the rule is enclosed in `{`,
+  // see expression grammar below for details.
+  block_expr
 }
+
+rule expr { call_expr | ref_expr | block_expr }
+
+// The simplest rule is just a reference to another rule or token.
+pub rule ref_expr {
+  ident         // <- this is the reference to the `ident` token
+| simple_string // To refer to tokens like keywords or operators, use `'+'` syntax
+}
+
+// You can write `A B` to match A and then B.
+pub rule seq_expr { <rep expr> }
+
+// Or you can write `{ A | B }` to match either of A or B.
+// Note that B will be tried only if A didn't match.
+// Corollary: if A can match an empty sting (e.g. it is optional),
+// B will never be matched!
+pub rule block_expr {
+  '{' // Note how we refer to `lbrace` token using a `simple_string` `'{'`.
+    <layer block_body
+      // We use outer `{}` purely for grouping here. There's no `()`.
+      { <opt seq_expr> <rep {'|' seq_expr}> }
+    >
+  '}'
+}
+
+// Another, very powerful construct is to invoke a predefined
+// function using other expressions as arguments.
+// Some predefined functions are
+//
+//   * `<opt arg>`: match `arg` or an empty string,
+//   * `<rep arg>`: match zero, one or more repetitions of `arg`.
+pub rule call_expr { '<' ident <rep expr> '>' }
+
 
 pub rule tokenizer_def {
-  'tokenizer' <commit> '{' <rep lex_rule> '}'
+  // Commit is a special special rule. It allows parser to produce
+  // a node even if some input is missing.
+  // In this case, as long as parser passes `tokenizer` keyword,
+  // it will produce `tokenizer_def` node, even if it is not followed
+  // by the `{}` block.
+
+  // If you are using VS Code plugin, the best way to understand commit
+  // is to invoke **Syntax Tree* VS Code action to view the syntax
+  // tree of the current file and type garbage before and after various
+  // commit points.
+  'tokenizer' <commit>
+  '{' <rep lex_rule> '}'
 }
 
+// Now then you know how rules work, can you see how `lex_rule` rule
+// allows us to parse `tokenizer` block? What will happen if you
+// omit the required regular expression pattern?
 pub rule lex_rule {
   <opt attributes> ident <commit> string <opt string>
 }
 
-pub rule syn_rule {
-  <opt attributes> <opt 'pub'> 'rule' <commit>
-  ident block_expr
-}
+pub rule example_def { 'example' <commit> hash_string }
+
 
 pub rule attributes {
     '#' '['
@@ -75,11 +177,34 @@ pub rule attribute_value {
   number | ident
 }
 
+
 pub rule string { simple_string | hash_string }
 
+rule block_body { <rep balanced> }
+rule balanced {
+  '{' <commit> block_body '}'
+| <not '}'>
+}
+
+// Verbatim block is pasted as is into the generated parser.
+// You can use it to provide custom tokenizer rules.
+// For example, the grammar for rust-style raw string literals
+// is not regular (in fact, it is not even context free! o_O),
+// so we use a hand written `parse_raw_string` function to deal
+// with them.
 pub rule verbatim_def { 'verbatim' <commit> hash_string }
 
-pub rule example_def { 'example' <commit> hash_string }
+verbatim r#########"
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    // Who needs more then 25 hashes anyway? :)
+    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
+    let closing = &q_hashes[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
+}
+
+"#########
 
 pub rule ast_def {
   'ast' <commit> '{'
@@ -88,7 +213,6 @@ pub rule ast_def {
       {ast_node_def | ast_class_def}>>
   '}'
 }
-
 
 pub rule ast_node_def {
   'node' <commit> ident '{' <rep method_def> '}'
@@ -102,33 +226,24 @@ pub rule method_def { ident ast_selector }
 pub rule ast_selector { ident <opt ast_selector_suffix> }
 rule ast_selector_suffix { '?' '.' ident  | '.' ident | '*' | '?' }
 
-rule expr { call_expr | ref_expr | block_expr }
-pub rule ref_expr { ident | simple_string }
-pub rule call_expr { '<' ident <rep expr> '>' }
-pub rule seq_expr { <rep expr> }
-pub rule block_expr {
-  '{' <layer block_body {<opt seq_expr> <rep {'|' seq_expr}>}> '}'
-}
-
-rule block_body { <rep balanced> }
-rule balanced {
-  '{' <commit> block_body '}'
-| <not '}'>
-}
-
-
-verbatim r#########"
-
-fn parse_raw_string(s: &str) -> Option<usize> {
-    let quote_start = s.find('"').unwrap();
-    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
-    let closing = &q_hashes[..quote_start];
-    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
-}
-
-"#########
-
+// The last (optional) block in the file is AST definition.
+// Parser produces untyped concrete syntax tree, with all comments
+// and whitespaces. However to add semantics to the language, it is
+// convenient to get a typed view into the syntax tree structure.
+// ast block does exactly that! It does not change the parser in any way,
+// but it generates a bunch of structs with convenient methods.
 ast {
+
+  // This definition will result in the following struct:
+  //
+  //  struct FallFile { ... }
+  //  impl FallFile {
+  //      pub fn tokenizer_def(&self) -> Option<TokenizerDef>
+  //      pub fn syn_rules(&self) -> impl Iterator<Item=SynRule>
+  //      pub fn verbatim_def(&self) -> Option<VerbatimDef>
+  //      pub fn ast_def(&self) -> Option<AstDef>
+  //      pub fn examples(&self) -> impl Iterator<Item=ExampleDef>
+  //  }
   node fall_file {
     tokenizer_def tokenizer_def?
     syn_rules syn_rule*
