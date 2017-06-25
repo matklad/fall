@@ -1,11 +1,12 @@
 tokenizer {
-  pub 'pub'
-  let 'let'
-  struct 'struct'
-  fn 'fn'
-  use 'use'
-  extern 'extern'
+  as 'as'
   crate 'crate'
+  extern 'extern'
+  fn 'fn'
+  let 'let'
+  pub 'pub'
+  struct 'struct'
+  use 'use'
 
   lparen '('
   rparen ')'
@@ -16,6 +17,7 @@ tokenizer {
   colon ':'
   coloncolon '::'
   comma ','
+  star '*'
 
   whitespace r"\s+"
   ident r"\p{XID_Start}\w*"
@@ -35,7 +37,24 @@ rule file_form {
 }
 
 pub rule use_decl {
-  'use' <commit> path ';'
+  'use' <commit> { 
+    path {<opt '::' use_spec> | alias}';'
+  | '::' use_spec ';'
+  | <not_ahead '*'> use_spec ';'
+  }
+}
+
+example r#"
+  use ::foo::bar::baz;
+"#
+
+pub rule use_spec {
+  '*'
+| '{' <layer in_braces <rep use_spec_entry>> '}'
+}
+
+pub rule use_spec_entry {
+  ident {<eof> | ','}
 }
 
 pub rule extern_crate_decl {
@@ -84,11 +103,18 @@ pub rule qualified_path {
   path {'::' ident}
 }
 
+pub rule alias { 'as' ident }
 
 pub rule type {
   ident
 }
 
+pub rule stmt {
+  'let' <commit> pattern '=' expr ';'
+}
+
+pub rule pattern { ident }
+pub rule expr { number }
 
 pub rule block_expr {
   '{' <layer in_braces <rep stmt>> '}'
@@ -105,11 +131,3 @@ rule paren_balanced {
   '(' <commit> in_parens ')'
 | <not ')'>
 }
-
-
-pub rule stmt {
-  'let' <commit> pattern '=' expr ';'
-}
-
-pub rule pattern { ident }
-pub rule expr { number }

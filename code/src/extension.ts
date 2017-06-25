@@ -1,6 +1,9 @@
 'use strict';
 import * as vscode from 'vscode';
-import { window, DecorationRenderOptions, StatusBarAlignment } from 'vscode';
+import {
+    window, DecorationRenderOptions, StatusBarAlignment, TextDocument,
+    Range, CodeActionContext, CancellationToken, Command
+} from 'vscode';
 
 var backend = (() => {
     var native = require('../../native')
@@ -25,8 +28,8 @@ var backend = (() => {
 
 export function activate(context: vscode.ExtensionContext) {
     var status = window.createStatusBarItem(StatusBarAlignment.Left)
-
     var activeEditor = window.activeTextEditor;
+    let syntaxTreeUri = vscode.Uri.parse('fall-tree://foo/bar')
 
     const decor = (obj) => vscode.window.createTextEditorDecorationType({ color: obj })
     const decorations = {
@@ -45,7 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     }
 
-    let syntaxTreeUri = vscode.Uri.parse('fall-tree://foo/bar')
     class TextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
@@ -57,7 +59,16 @@ export function activate(context: vscode.ExtensionContext) {
             return this.eventEmitter.event
         }
     }
-    let provider = new TextDocumentProvider();
+    let textDocumentProvider = new TextDocumentProvider();
+
+    class CodeActionProvider implements vscode.CodeActionProvider {
+        provideCodeActions(document: TextDocument, range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
+            return [{
+                title: "Show Syntax Tree",
+                command: "extension.showSyntaxTree"
+            }]
+        }
+    }
 
     function highlight() {
         status.hide()
@@ -70,7 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         let text = activeEditor.document.getText()
         backend.create(text)
-        provider.eventEmitter.fire(syntaxTreeUri)
+        textDocumentProvider.eventEmitter.fire(syntaxTreeUri)
         let stats = backend.stats()
         const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
         status.text = `lexing: ${to_ms(stats.lexing_time)}`
@@ -110,25 +121,32 @@ export function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions)
 
 
-    let registration = vscode.workspace.registerTextDocumentContentProvider('fall-tree', provider)
-    var showSyntaxTree = vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
-        let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
-        vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
-    });
-    var semanticSelection = vscode.commands.registerCommand('extension.semanticSelection', () => {
-        if (!activeEditor) return
-        if (activeEditor.document.languageId != "fall") return
+    let providers = [
+        vscode.workspace.registerTextDocumentContentProvider('fall-tree', textDocumentProvider),
+        vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider())
+    ]
 
-        let doc = activeEditor.document;
-        let start = doc.offsetAt(activeEditor.selection.start)
-        let end = doc.offsetAt(activeEditor.selection.end)
-        let range = backend.extendSelection([start, end])
-        if (range == null) return
-        let [newStart, newEnd] = range
-        let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
-        activeEditor.selection = newSelection
-    });
-    context.subscriptions.push(showSyntaxTree, semanticSelection, registration)
+    let commands = [
+        vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
+            let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
+            vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
+        }),
+        vscode.commands.registerCommand('extension.semanticSelection', () => {
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+
+            let doc = activeEditor.document;
+            let start = doc.offsetAt(activeEditor.selection.start)
+            let end = doc.offsetAt(activeEditor.selection.end)
+            let range = backend.extendSelection([start, end])
+            if (range == null) return
+            let [newStart, newEnd] = range
+            let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
+            activeEditor.selection = newSelection
+        })
+    ]
+    context.subscriptions.push(...commands)
+    context.subscriptions.push(...providers)
     highlight()
 }
 
