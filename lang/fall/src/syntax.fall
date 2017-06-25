@@ -1,6 +1,7 @@
 // This is the grammar for the Fall parser generator input language.
 // It is itself written in Fall and serves as the primary
-// tutorial / documentation.
+// tutorial / documentation. To get syntax highlighting for this file,
+// use VS Code plugin from the `code` subdirectory.
 
 // The syntax is Rust inspired.
 
