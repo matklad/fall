@@ -6,5 +6,6 @@ pub const WHITESPACE: NodeType = NodeType(1);
 
 #[derive(Clone, Copy)]
 pub struct NodeTypeInfo {
-    pub name: &'static str
+    pub name: &'static str,
+    pub whitespace_like: bool,
 }

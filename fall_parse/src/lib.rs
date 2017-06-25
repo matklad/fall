@@ -14,11 +14,11 @@ mod tree_builder;
 
 pub use lex::{LexRule};
 pub use syn::{SynRule, Expr, Parser, PrattVariant};
-pub use tree_builder::parse;
 
 pub mod runtime {
     pub use serde_json;
     pub use regex;
     pub use fall_tree;
     pub use lazy_static::*;
+    pub use tree_builder::parse;
 }

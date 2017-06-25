@@ -1,60 +1,61 @@
 use fall_parse::runtime::*;
 use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
-pub use self::fall_tree::{ERROR, WHITESPACE};
+pub use self::fall_tree::ERROR;
 
-pub const NODE: NodeType = NodeType(100);
-pub const CLASS: NodeType = NodeType(101);
-pub const TOKENIZER: NodeType = NodeType(102);
-pub const RULE: NodeType = NodeType(103);
-pub const VERBATIM: NodeType = NodeType(104);
-pub const AST: NodeType = NodeType(105);
-pub const PUB: NodeType = NodeType(106);
-pub const EXAMPLE: NodeType = NodeType(107);
-pub const EQ: NodeType = NodeType(108);
-pub const PIPE: NodeType = NodeType(109);
-pub const STAR: NodeType = NodeType(110);
-pub const QUESTION: NodeType = NodeType(111);
-pub const DOT: NodeType = NodeType(112);
-pub const COMMA: NodeType = NodeType(113);
-pub const HASH: NodeType = NodeType(114);
-pub const LBRACE: NodeType = NodeType(115);
-pub const RBRACE: NodeType = NodeType(116);
-pub const LBRACK: NodeType = NodeType(117);
-pub const RBRACK: NodeType = NodeType(118);
-pub const LANGLE: NodeType = NodeType(119);
-pub const RANGLE: NodeType = NodeType(120);
-pub const LPAREN: NodeType = NodeType(121);
-pub const RPAREN: NodeType = NodeType(122);
-pub const NUMBER: NodeType = NodeType(123);
-pub const SIMPLE_STRING: NodeType = NodeType(124);
-pub const HASH_STRING: NodeType = NodeType(125);
-pub const IDENT: NodeType = NodeType(126);
-pub const FALL_FILE: NodeType = NodeType(127);
-pub const TOKENIZER_DEF: NodeType = NodeType(128);
-pub const LEX_RULE: NodeType = NodeType(129);
-pub const SYN_RULE: NodeType = NodeType(130);
-pub const ATTRIBUTES: NodeType = NodeType(131);
-pub const ATTRIBUTE: NodeType = NodeType(132);
-pub const ATTRIBUTE_VALUE: NodeType = NodeType(133);
-pub const STRING: NodeType = NodeType(134);
-pub const VERBATIM_DEF: NodeType = NodeType(135);
-pub const EXAMPLE_DEF: NodeType = NodeType(136);
-pub const AST_DEF: NodeType = NodeType(137);
-pub const AST_NODE_DEF: NodeType = NodeType(138);
-pub const AST_CLASS_DEF: NodeType = NodeType(139);
-pub const METHOD_DEF: NodeType = NodeType(140);
-pub const AST_SELECTOR: NodeType = NodeType(141);
-pub const REF_EXPR: NodeType = NodeType(142);
-pub const CALL_EXPR: NodeType = NodeType(143);
-pub const SEQ_EXPR: NodeType = NodeType(144);
-pub const BLOCK_EXPR: NodeType = NodeType(145);
+pub const WHITESPACE: NodeType = NodeType(100);
+pub const NODE: NodeType = NodeType(101);
+pub const CLASS: NodeType = NodeType(102);
+pub const TOKENIZER: NodeType = NodeType(103);
+pub const RULE: NodeType = NodeType(104);
+pub const VERBATIM: NodeType = NodeType(105);
+pub const AST: NodeType = NodeType(106);
+pub const PUB: NodeType = NodeType(107);
+pub const EXAMPLE: NodeType = NodeType(108);
+pub const EQ: NodeType = NodeType(109);
+pub const PIPE: NodeType = NodeType(110);
+pub const STAR: NodeType = NodeType(111);
+pub const QUESTION: NodeType = NodeType(112);
+pub const DOT: NodeType = NodeType(113);
+pub const COMMA: NodeType = NodeType(114);
+pub const HASH: NodeType = NodeType(115);
+pub const LBRACE: NodeType = NodeType(116);
+pub const RBRACE: NodeType = NodeType(117);
+pub const LBRACK: NodeType = NodeType(118);
+pub const RBRACK: NodeType = NodeType(119);
+pub const LANGLE: NodeType = NodeType(120);
+pub const RANGLE: NodeType = NodeType(121);
+pub const LPAREN: NodeType = NodeType(122);
+pub const RPAREN: NodeType = NodeType(123);
+pub const NUMBER: NodeType = NodeType(124);
+pub const SIMPLE_STRING: NodeType = NodeType(125);
+pub const HASH_STRING: NodeType = NodeType(126);
+pub const IDENT: NodeType = NodeType(127);
+pub const FALL_FILE: NodeType = NodeType(128);
+pub const TOKENIZER_DEF: NodeType = NodeType(129);
+pub const LEX_RULE: NodeType = NodeType(130);
+pub const SYN_RULE: NodeType = NodeType(131);
+pub const ATTRIBUTES: NodeType = NodeType(132);
+pub const ATTRIBUTE: NodeType = NodeType(133);
+pub const ATTRIBUTE_VALUE: NodeType = NodeType(134);
+pub const STRING: NodeType = NodeType(135);
+pub const VERBATIM_DEF: NodeType = NodeType(136);
+pub const EXAMPLE_DEF: NodeType = NodeType(137);
+pub const AST_DEF: NodeType = NodeType(138);
+pub const AST_NODE_DEF: NodeType = NodeType(139);
+pub const AST_CLASS_DEF: NodeType = NodeType(140);
+pub const METHOD_DEF: NodeType = NodeType(141);
+pub const AST_SELECTOR: NodeType = NodeType(142);
+pub const REF_EXPR: NodeType = NodeType(143);
+pub const CALL_EXPR: NodeType = NodeType(144);
+pub const SEQ_EXPR: NodeType = NodeType(145);
+pub const BLOCK_EXPR: NodeType = NodeType(146);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
-            ERROR, WHITESPACE,
-            NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, EXAMPLE, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, LBRACE, RBRACE, LBRACK, RBRACK, LANGLE, RANGLE, LPAREN, RPAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, TOKENIZER_DEF, LEX_RULE, SYN_RULE, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, EXAMPLE_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR, REF_EXPR, CALL_EXPR, SEQ_EXPR, BLOCK_EXPR,
+            ERROR,
+            WHITESPACE, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, EXAMPLE, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, LBRACE, RBRACE, LBRACK, RBRACK, LANGLE, RANGLE, LPAREN, RPAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, TOKENIZER_DEF, LEX_RULE, SYN_RULE, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, EXAMPLE_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR, REF_EXPR, CALL_EXPR, SEQ_EXPR, BLOCK_EXPR,
         ];
         let parser_json = r##"[{"body":{"Pub":[29,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":2},{"Rule":1}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":5}],null]},{"And":[[{"Rule":10}],null]},{"And":[[{"Rule":12}],null]},{"And":[[{"Rule":11}],null]}]}},{"body":{"Or":[{"And":[[{"ContextualToken":[4,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[8,"pub"]}],null]},{"And":[[{"ContextualToken":[5,"rule"]}],null]},{"And":[[{"Token":16}],null]},{"And":[[{"ContextualToken":[6,"verbatim"]}],null]},{"And":[[{"ContextualToken":[7,"ast"]}],null]},{"And":[[{"ContextualToken":[9,"example"]}],null]}]}},{"body":{"Pub":[30,{"Or":[{"And":[[{"ContextualToken":[4,"tokenizer"]},{"Token":17},{"Rep":{"Rule":4}},{"Token":18}],1]}]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Opt":{"Rule":6}},{"Token":28},{"Rule":9},{"Opt":{"Rule":9}}],2]}]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Opt":{"Rule":6}},{"Opt":{"ContextualToken":[8,"pub"]}},{"ContextualToken":[5,"rule"]},{"Token":28},{"Rule":22}],3]}]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Token":16},{"Token":19},{"Rep":{"Or":[{"And":[[{"Rule":7},{"Or":[{"And":[[{"Token":15}],null]},{"And":[[],null]}]}],null]}]}},{"Token":20}],null]}]}]}},{"body":{"Pub":[34,{"Or":[{"And":[[{"Token":28},{"Opt":{"Or":[{"And":[[{"Token":23},{"Rule":8},{"Token":24}],null]}]}}],null]}]}]}},{"body":{"Pub":[35,{"Or":[{"And":[[{"Token":25}],null]},{"And":[[{"Token":28}],null]}]}]}},{"body":{"Pub":[36,{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":27}],null]}]}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"ContextualToken":[6,"verbatim"]},{"Token":27}],1]}]}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"ContextualToken":[9,"example"]},{"Token":27}],1]}]}]}},{"body":{"Pub":[39,{"Or":[{"And":[[{"ContextualToken":[7,"ast"]},{"Token":17},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[2,"node"]}],null]},{"And":[[{"ContextualToken":[3,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":13}],null]},{"And":[[{"Rule":14}],null]}]}]}},{"Token":18}],1]}]}]}},{"body":{"Pub":[40,{"Or":[{"And":[[{"ContextualToken":[2,"node"]},{"Token":28},{"Token":17},{"Rep":{"Rule":15}},{"Token":18}],1]}]}]}},{"body":{"Pub":[41,{"Or":[{"And":[[{"ContextualToken":[3,"class"]},{"Token":28},{"Token":17},{"Layer":[{"Rule":23},{"Rep":{"Token":28}}]},{"Token":18}],1]}]}]}},{"body":{"Pub":[42,{"Or":[{"And":[[{"Token":28},{"Rule":16}],null]}]}]}},{"body":{"Pub":[43,{"Or":[{"And":[[{"Token":28},{"Opt":{"Rule":17}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":13},{"Token":14},{"Token":28}],null]},{"And":[[{"Token":14},{"Token":28}],null]},{"And":[[{"Token":12}],null]},{"And":[[{"Token":13}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":20}],null]},{"And":[[{"Rule":19}],null]},{"And":[[{"Rule":22}],null]}]}},{"body":{"Pub":[44,{"Or":[{"And":[[{"Token":28}],null]},{"And":[[{"Token":26}],null]}]}]}},{"body":{"Pub":[45,{"Or":[{"And":[[{"Token":21},{"Token":28},{"Rep":{"Rule":18}},{"Token":22}],null]}]}]}},{"body":{"Pub":[46,{"Or":[{"And":[[{"Rep":{"Rule":18}}],null]}]}]}},{"body":{"Pub":[47,{"Or":[{"And":[[{"Token":17},{"Layer":[{"Rule":23},{"Or":[{"And":[[{"Opt":{"Rule":21}},{"Rep":{"Or":[{"And":[[{"Token":11},{"Rule":21}],null]}]}}],null]}]}]},{"Token":18}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":24}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":17},{"Rule":23},{"Token":18}],1]},{"And":[[{"Not":[18]}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
@@ -62,61 +63,64 @@ lazy_static! {
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                ::fall_parse::parse(text, &self.tokenizer, &|tokens, stats| {
-                    Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                })
+                parse(
+                    text,
+                    &LANG,
+                    &self.tokenizer,
+                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
+                )
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
                 match ty {
-                    ERROR => NodeTypeInfo { name: "ERROR" },
-                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
-                    NODE => NodeTypeInfo { name: "NODE" },
-                    CLASS => NodeTypeInfo { name: "CLASS" },
-                    TOKENIZER => NodeTypeInfo { name: "TOKENIZER" },
-                    RULE => NodeTypeInfo { name: "RULE" },
-                    VERBATIM => NodeTypeInfo { name: "VERBATIM" },
-                    AST => NodeTypeInfo { name: "AST" },
-                    PUB => NodeTypeInfo { name: "PUB" },
-                    EXAMPLE => NodeTypeInfo { name: "EXAMPLE" },
-                    EQ => NodeTypeInfo { name: "EQ" },
-                    PIPE => NodeTypeInfo { name: "PIPE" },
-                    STAR => NodeTypeInfo { name: "STAR" },
-                    QUESTION => NodeTypeInfo { name: "QUESTION" },
-                    DOT => NodeTypeInfo { name: "DOT" },
-                    COMMA => NodeTypeInfo { name: "COMMA" },
-                    HASH => NodeTypeInfo { name: "HASH" },
-                    LBRACE => NodeTypeInfo { name: "LBRACE" },
-                    RBRACE => NodeTypeInfo { name: "RBRACE" },
-                    LBRACK => NodeTypeInfo { name: "LBRACK" },
-                    RBRACK => NodeTypeInfo { name: "RBRACK" },
-                    LANGLE => NodeTypeInfo { name: "LANGLE" },
-                    RANGLE => NodeTypeInfo { name: "RANGLE" },
-                    LPAREN => NodeTypeInfo { name: "LPAREN" },
-                    RPAREN => NodeTypeInfo { name: "RPAREN" },
-                    NUMBER => NodeTypeInfo { name: "NUMBER" },
-                    SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING" },
-                    HASH_STRING => NodeTypeInfo { name: "HASH_STRING" },
-                    IDENT => NodeTypeInfo { name: "IDENT" },
-                    FALL_FILE => NodeTypeInfo { name: "FALL_FILE" },
-                    TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF" },
-                    LEX_RULE => NodeTypeInfo { name: "LEX_RULE" },
-                    SYN_RULE => NodeTypeInfo { name: "SYN_RULE" },
-                    ATTRIBUTES => NodeTypeInfo { name: "ATTRIBUTES" },
-                    ATTRIBUTE => NodeTypeInfo { name: "ATTRIBUTE" },
-                    ATTRIBUTE_VALUE => NodeTypeInfo { name: "ATTRIBUTE_VALUE" },
-                    STRING => NodeTypeInfo { name: "STRING" },
-                    VERBATIM_DEF => NodeTypeInfo { name: "VERBATIM_DEF" },
-                    EXAMPLE_DEF => NodeTypeInfo { name: "EXAMPLE_DEF" },
-                    AST_DEF => NodeTypeInfo { name: "AST_DEF" },
-                    AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF" },
-                    AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF" },
-                    METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF" },
-                    AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR" },
-                    REF_EXPR => NodeTypeInfo { name: "REF_EXPR" },
-                    CALL_EXPR => NodeTypeInfo { name: "CALL_EXPR" },
-                    SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR" },
-                    BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR" },
+                    ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
+                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE", whitespace_like: true },
+                    NODE => NodeTypeInfo { name: "NODE", whitespace_like: false },
+                    CLASS => NodeTypeInfo { name: "CLASS", whitespace_like: false },
+                    TOKENIZER => NodeTypeInfo { name: "TOKENIZER", whitespace_like: false },
+                    RULE => NodeTypeInfo { name: "RULE", whitespace_like: false },
+                    VERBATIM => NodeTypeInfo { name: "VERBATIM", whitespace_like: false },
+                    AST => NodeTypeInfo { name: "AST", whitespace_like: false },
+                    PUB => NodeTypeInfo { name: "PUB", whitespace_like: false },
+                    EXAMPLE => NodeTypeInfo { name: "EXAMPLE", whitespace_like: false },
+                    EQ => NodeTypeInfo { name: "EQ", whitespace_like: false },
+                    PIPE => NodeTypeInfo { name: "PIPE", whitespace_like: false },
+                    STAR => NodeTypeInfo { name: "STAR", whitespace_like: false },
+                    QUESTION => NodeTypeInfo { name: "QUESTION", whitespace_like: false },
+                    DOT => NodeTypeInfo { name: "DOT", whitespace_like: false },
+                    COMMA => NodeTypeInfo { name: "COMMA", whitespace_like: false },
+                    HASH => NodeTypeInfo { name: "HASH", whitespace_like: false },
+                    LBRACE => NodeTypeInfo { name: "LBRACE", whitespace_like: false },
+                    RBRACE => NodeTypeInfo { name: "RBRACE", whitespace_like: false },
+                    LBRACK => NodeTypeInfo { name: "LBRACK", whitespace_like: false },
+                    RBRACK => NodeTypeInfo { name: "RBRACK", whitespace_like: false },
+                    LANGLE => NodeTypeInfo { name: "LANGLE", whitespace_like: false },
+                    RANGLE => NodeTypeInfo { name: "RANGLE", whitespace_like: false },
+                    LPAREN => NodeTypeInfo { name: "LPAREN", whitespace_like: false },
+                    RPAREN => NodeTypeInfo { name: "RPAREN", whitespace_like: false },
+                    NUMBER => NodeTypeInfo { name: "NUMBER", whitespace_like: false },
+                    SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING", whitespace_like: false },
+                    HASH_STRING => NodeTypeInfo { name: "HASH_STRING", whitespace_like: false },
+                    IDENT => NodeTypeInfo { name: "IDENT", whitespace_like: false },
+                    FALL_FILE => NodeTypeInfo { name: "FALL_FILE", whitespace_like: false },
+                    TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF", whitespace_like: false },
+                    LEX_RULE => NodeTypeInfo { name: "LEX_RULE", whitespace_like: false },
+                    SYN_RULE => NodeTypeInfo { name: "SYN_RULE", whitespace_like: false },
+                    ATTRIBUTES => NodeTypeInfo { name: "ATTRIBUTES", whitespace_like: false },
+                    ATTRIBUTE => NodeTypeInfo { name: "ATTRIBUTE", whitespace_like: false },
+                    ATTRIBUTE_VALUE => NodeTypeInfo { name: "ATTRIBUTE_VALUE", whitespace_like: false },
+                    STRING => NodeTypeInfo { name: "STRING", whitespace_like: false },
+                    VERBATIM_DEF => NodeTypeInfo { name: "VERBATIM_DEF", whitespace_like: false },
+                    EXAMPLE_DEF => NodeTypeInfo { name: "EXAMPLE_DEF", whitespace_like: false },
+                    AST_DEF => NodeTypeInfo { name: "AST_DEF", whitespace_like: false },
+                    AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF", whitespace_like: false },
+                    AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF", whitespace_like: false },
+                    METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF", whitespace_like: false },
+                    AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR", whitespace_like: false },
+                    REF_EXPR => NodeTypeInfo { name: "REF_EXPR", whitespace_like: false },
+                    CALL_EXPR => NodeTypeInfo { name: "CALL_EXPR", whitespace_like: false },
+                    SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR", whitespace_like: false },
+                    BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR", whitespace_like: false },
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }
             }
@@ -124,6 +128,7 @@ lazy_static! {
 
         Language::new(Impl {
             tokenizer: vec![
+                LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(EQ, "=", None),
                 LexRule::new(PIPE, "\\|", None),
                 LexRule::new(STAR, "\\*", None),
@@ -139,7 +144,6 @@ lazy_static! {
                 LexRule::new(RANGLE, ">", None),
                 LexRule::new(LPAREN, "\\(", None),
                 LexRule::new(RPAREN, "\\)", None),
-                LexRule::new(WHITESPACE, "\\s+", None),
                 LexRule::new(NUMBER, "\\d+", None),
                 LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
                 LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),

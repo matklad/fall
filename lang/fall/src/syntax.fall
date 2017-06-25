@@ -1,4 +1,5 @@
 tokenizer {
+  #[skip] whitespace r"\s+"
   #[contextual] node 'node'
   #[contextual] class 'class'
   #[contextual] tokenizer 'tokenizer'
@@ -24,7 +25,6 @@ tokenizer {
   lparen '('
   rparen ')'
 
-  whitespace r"\s+"
   number r"\d+"
   simple_string r#"'([^'\\]|\\.)*'"#
   hash_string r"r#*" 'parse_raw_string'

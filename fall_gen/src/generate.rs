@@ -102,7 +102,7 @@ pub fn generate(file: FallFile) -> Result<String> {
     }
 
     Tera::one_off(TEMPLATE.trim(), &context, false)
-        .map_err(|_| error!("Failed to format template"))
+        .map_err(|e| error!("Failed to format template:\n{:?}", e))
 }
 
 fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
@@ -263,18 +263,18 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
 const TEMPLATE: &'static str = r#####"
 use fall_parse::runtime::*;
 use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
-pub use self::fall_tree::{ERROR, WHITESPACE};
+pub use self::fall_tree::ERROR;
 
 {% for node_type in node_types %}
-pub const {{ node_type | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
+pub const {{ node_type.0 | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 {% endfor %}
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
-            ERROR, WHITESPACE,
-            {% for node_type in node_types %}{{ node_type | upper }}, {% endfor %}
+            ERROR,
+            {% for node_type in node_types %}{{ node_type.0 | upper }}, {% endfor %}
         ];
         let parser_json = r##"{{ parser_json }}"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
@@ -282,17 +282,19 @@ lazy_static! {
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                ::fall_parse::parse(text, &self.tokenizer, &|tokens, stats| {
-                    Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                })
+                parse(
+                    text,
+                    &LANG,
+                    &self.tokenizer,
+                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
+                )
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
                 match ty {
-                    ERROR => NodeTypeInfo { name: "ERROR" },
-                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE" },
+                    ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
                     {% for node_type in node_types %}
-                    {{ node_type | upper }} => NodeTypeInfo { name: "{{ node_type | upper }}" },
+                    {{ node_type.0 | upper }} => NodeTypeInfo { name: "{{ node_type.0 | upper }}", whitespace_like: {{ node_type.1 }} },
                     {% endfor %}
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }

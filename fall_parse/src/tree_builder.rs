@@ -1,6 +1,6 @@
 use elapsed::measure_time;
 
-use fall_tree::{NodeType, ERROR, WHITESPACE, TextRange, FileStats, INode, TextUnit};
+use fall_tree::{NodeType, ERROR, TextRange, FileStats, INode, TextUnit, Language};
 use lex::{Token, LexRule, tokenize};
 
 #[derive(Clone, Copy, Debug)]
@@ -128,8 +128,13 @@ impl Node {
     }
 }
 
+fn is_ws(lang: &Language, token: Token) -> bool {
+    lang.node_type_info(token.ty).whitespace_like
+}
+
 pub fn parse(
     text: &str,
+    lang: &Language,
     tokenizer: &[LexRule],
     parser: &Fn(TokenSequence, &mut FileStats) -> Node
 ) -> (FileStats, INode) {
@@ -137,8 +142,8 @@ pub fn parse(
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
     stats.lexing_time = lex_time.duration();
     stats.reparsed_region = TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len()));
-    let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, t)| {
-        if t.ty == WHITESPACE { None } else { Some(i) }
+    let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, &t)| {
+        if is_ws(lang, t) { None } else { Some(i) }
     }).collect();
     let (parse_time, node) = {
         let tokens = TokenSequence {
@@ -151,7 +156,7 @@ pub fn parse(
     };
     stats.parsing_time = parse_time.duration();
 
-    let ws_node = to_ws_node(node, &owned_tokens);
+    let ws_node = to_ws_node(lang, node, &owned_tokens);
     let inode = ws_node.into_inode().unwrap();
     (stats, inode)
 }
@@ -166,12 +171,12 @@ struct WsNode {
 }
 
 impl WsNode {
-    fn push_child(&mut self, child: WsNode, tokens: &[Token]) {
+    fn push_child(&mut self, lang: &Language, child: WsNode, tokens: &[Token]) {
         match (self.last, child.first) {
             (Some(l), Some(r)) if l + 1 < r => {
                 for idx in l + 1..r {
                     let t = tokens[idx];
-                    assert!(t.ty == WHITESPACE, "expected whitespace, got {:?}", t.ty);
+                    assert!(is_ws(lang, t), "expected whitespace, got {:?}", t.ty);
                     self.push_child_raw(token_ws_node(idx, t))
                 }
             }
@@ -225,7 +230,7 @@ fn token_ws_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-fn to_ws_node(file_node: Node, tokens: &[Token]) -> WsNode {
+fn to_ws_node(lang: &Language, file_node: Node, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
         Node::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
@@ -239,31 +244,31 @@ fn to_ws_node(file_node: Node, tokens: &[Token]) -> WsNode {
     };
 
     for (i, &t) in tokens.iter().enumerate() {
-        if t.ty != WHITESPACE {
+        if !is_ws(lang, t) {
             break
         }
         result.push_child_raw(token_ws_node(i, t))
     }
 
     for child in children {
-        add_child(&mut result, &child, tokens)
+        add_child(lang, &mut result, &child, tokens)
     }
     if let Some(idx) = result.last {
         for idx in idx + 1..tokens.len() {
             let t = tokens[idx];
-            assert!(t.ty == WHITESPACE);
+            assert!(is_ws(lang, t));
             result.push_child_raw(token_ws_node(idx, t))
         }
     }
     result
 }
 
-fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
+fn add_child(lang: &Language, parent: &mut WsNode, node: &Node, tokens: &[Token]) {
     match *node {
         Node::Leaf(ty, idx) => {
             let mut node = token_ws_node(idx, tokens[idx]);
             node.ty = Some(ty);
-            parent.push_child(node, tokens)
+            parent.push_child(lang, node, tokens)
         }
         Node::Composite { ty, ref children } => {
             let mut p = WsNode {
@@ -274,9 +279,9 @@ fn add_child(parent: &mut WsNode, node: &Node, tokens: &[Token]) {
                 last: None,
             };
             for child in children {
-                add_child(&mut p, child, tokens);
+                add_child(lang, &mut p, child, tokens);
             }
-            parent.push_child(p, tokens)
+            parent.push_child(lang, p, tokens)
         }
     }
 }

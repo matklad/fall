@@ -1,7 +1,8 @@
 tokenizer {
+  #[skip] whitespace r"\s+"
+
   lparen     '('
   rparen     ')'
-  whitespace r"\s+"
   atom       r"\w+"
 }
 

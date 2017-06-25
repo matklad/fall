@@ -1,4 +1,4 @@
-use {File, Node, WHITESPACE, Language};
+use {File, Node, Language};
 use std::fmt::Write;
 
 pub fn dump_file(f: &File) -> String {
@@ -27,7 +27,7 @@ fn dump(lang: &Language, root: Node, text: &str, include_whitespace: bool) -> St
     return buf;
 
     fn go(lang: &Language, level: usize, n: Node, text: &str, buf: &mut String, include_whitespace: bool) {
-        if n.ty() == WHITESPACE && !include_whitespace {
+        if lang.node_type_info(n.ty()).whitespace_like && !include_whitespace {
             return
         }
 

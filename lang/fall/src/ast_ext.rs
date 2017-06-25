@@ -12,23 +12,23 @@ impl<'f> FallFile<'f> {
     }
 
     pub fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
-        self.node_types().iter().position(|&it| it == name)
-            .map(|idx| idx + 2)
+        self.node_types().iter().position(|&it| it.0 == name)
+            .map(|idx| idx + 1)
     }
 
-    pub fn node_types(&self) -> Vec<Text<'f>> {
+    pub fn node_types(&self) -> Vec<(Text<'f>, bool)> {
         let mut result = Vec::new();
         if let Some(tokenizer) = self.tokenizer_def() {
             result.extend(
                 tokenizer.lex_rules()
-                    .map(|r| r.node_type())
-                    .filter(|&n| n != "whitespace")
+                    .map(|r| (r.node_type(), r.is_skip()))
             )
         }
         result.extend(
             self.syn_rules()
                 .filter(|r| r.is_pub() && r.type_attr().is_none())
                 .filter_map(|r| r.name())
+                .map(|n| (n, false))
         );
         result
     }
@@ -66,6 +66,13 @@ impl<'f> LexRule<'f> {
     pub fn is_contextual(&self) -> bool {
         if let Some(attrs) = self.attributes() {
             return attrs.has_attribute("contextual")
+        }
+        false
+    }
+
+    pub fn is_skip(&self) -> bool {
+        if let Some(attrs) = self.attributes() {
+            return attrs.has_attribute("skip")
         }
         false
     }

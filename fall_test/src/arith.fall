@@ -1,5 +1,6 @@
 tokenizer {
-  whitespace r"\s+"
+  #[skip] whitespace r"\s+"
+
   number r"\d+"
   plus '+'
   minus '-'

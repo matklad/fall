@@ -1,5 +1,5 @@
 tokenizer {
-  whitespace r"\s+"
+  #[skip] whitespace r"\s+"
   raw_string r#"r#+""# 'parse_raw_string'
   foo 'foo'
   bar 'bar'

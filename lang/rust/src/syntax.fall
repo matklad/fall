@@ -1,4 +1,6 @@
 tokenizer {
+  #[skip] whitespace r"\s+"
+
   as 'as'
   crate 'crate'
   extern 'extern'
@@ -19,7 +21,6 @@ tokenizer {
   comma ','
   star '*'
 
-  whitespace r"\s+"
   ident r"\p{XID_Start}\w*"
   number r"\d+"
 }

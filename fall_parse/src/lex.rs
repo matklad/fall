@@ -90,7 +90,7 @@ impl<'t, 'r> TokenIter<'t, 'r> {
 #[test]
 fn tokenize_longest_first_wins() {
     let rules = &[
-        LexRule::new(::fall_tree::WHITESPACE, r"\s+", None),
+        LexRule::new(NodeType(1), r"\s+", None),
         LexRule::new(NodeType(10), "foo", None),
         LexRule::new(NodeType(11), r"\w+", None),
         LexRule::new(NodeType(12), "foobar", None),
