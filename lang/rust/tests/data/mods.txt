@@ -1,0 +1,45 @@
+FILE
+  MOD_DEF
+    MOD "mod"
+    IDENT "foo"
+    SEMI ";"
+  MOD_DEF
+    VISIBILITY
+      PUB "pub"
+    MOD "mod"
+    IDENT "pfoo"
+    SEMI ";"
+  MOD_DEF
+    MOD "mod"
+    IDENT "bar"
+    LBRACE "{"
+    RBRACE "}"
+  MOD_DEF
+    VISIBILITY
+      PUB "pub"
+    MOD "mod"
+    IDENT "pbar"
+    LBRACE "{"
+    RBRACE "}"
+  MOD_DEF
+    MOD "mod"
+    IDENT "baz"
+    LBRACE "{"
+    FN_DEF
+      FN "fn"
+      IDENT "spam"
+      LPAREN "("
+      RPAREN ")"
+      BLOCK_EXPR
+        LBRACE "{"
+        RBRACE "}"
+    MOD_DEF
+      MOD "mod"
+      IDENT "quux"
+      LBRACE "{"
+      STRUCT_DEF
+        STRUCT "struct"
+        IDENT "Eggs"
+        SEMI ";"
+      RBRACE "}"
+    RBRACE "}"

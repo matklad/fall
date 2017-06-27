@@ -9,6 +9,7 @@ tokenizer {
   pub 'pub'
   struct 'struct'
   use 'use'
+  mod 'mod'
 
   lparen '('
   rparen ')'
@@ -25,16 +26,19 @@ tokenizer {
   number r"\d+"
 }
 
-pub rule file {
-  <rep <with_skip file_form_first file_form>>
+pub rule file { mod_contents }
+
+rule mod_contents {
+  <rep <with_skip mod_form_first mod_form>>
 }
 
-rule file_form_first { 
-  'pub' | 'fn' | 'struct' | 'use' | 'extern'
+
+rule mod_form_first { 
+  'pub' | 'fn' | 'struct' | 'use' | 'extern' | 'mod'
 }
 
-rule file_form { 
-  use_decl | extern_crate_decl | fn_def | struct_def
+rule mod_form { 
+  use_decl | extern_crate_decl | fn_def | struct_def | mod_def
 }
 
 pub rule use_decl {
@@ -70,6 +74,18 @@ pub rule struct_def {
   | '(' <layer in_parens <rep tuple_field>> ')' ';'
   }
 }
+
+pub rule mod_def {
+  <opt visibility> 'mod' <commit> ident {
+    ';'
+  | '{' <layer in_braces mod_contents> '}'
+  }
+}
+
+example r"
+  pub mod foo;
+  pub mod bar {}
+"
 
 pub rule struct_field {
   <opt visibility> ident <commit> ':' type { <eof> | ',' }
