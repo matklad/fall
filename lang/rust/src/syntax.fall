@@ -63,7 +63,16 @@ pub rule extern_crate_decl {
 
 pub rule fn_def {
   <opt visibility> 'fn' <commit> ident
-  '(' ')' block_expr
+  '(' <layer in_parens value_params> ')'
+  block_expr
+}
+
+rule value_params {
+  <rep value_param>
+}
+
+pub rule value_param {
+  pattern ':' type {<eof> | ','}
 }
 
 
@@ -81,11 +90,6 @@ pub rule mod_def {
   | '{' <layer in_braces mod_contents> '}'
   }
 }
-
-example r"
-  pub mod foo;
-  pub mod bar {}
-"
 
 pub rule struct_field {
   <opt visibility> ident <commit> ':' type { <eof> | ',' }

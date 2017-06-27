@@ -1,0 +1,59 @@
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "bar"
+    LPAREN "("
+    VALUE_PARAM
+      PATTERN
+        IDENT "x"
+      COLON ":"
+      TYPE
+        IDENT "i32"
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "baz"
+    LPAREN "("
+    VALUE_PARAM
+      PATTERN
+        IDENT "x"
+      COLON ":"
+      TYPE
+        IDENT "i32"
+      COMMA ","
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "quux"
+    LPAREN "("
+    VALUE_PARAM
+      PATTERN
+        IDENT "x"
+      COLON ":"
+      TYPE
+        IDENT "i32"
+      COMMA ","
+    VALUE_PARAM
+      PATTERN
+        IDENT "z"
+      COLON ":"
+      TYPE
+        IDENT "String"
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
