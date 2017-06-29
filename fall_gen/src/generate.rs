@@ -1,6 +1,7 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
+use fall_tree::search;
 use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind};
 use util::{scream, camel};
 use tera::{Tera, Context};
@@ -186,6 +187,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
 }
 
 fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
+    let file: FallFile = search::ast_parent_exn(ast.node());
     let result = match ast {
         Expr::BlockExpr(block) => fall_parse::Expr::Or(block.alts().map(compile_expr).collect::<Result<Vec<_>>>()?),
         Expr::SeqExpr(seq) => {
@@ -225,6 +227,17 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 }
             }
             match fn_name.as_ref() {
+                "enter" => {
+                    let ctx = call.context().ok_or(error!("bad enter"))?;
+                    let arg = call.args().nth(1).ok_or(error!("bad enter"))?;
+                    let idx = file.contexts().into_iter().position(|c| c == ctx).unwrap();
+                    fall_parse::Expr::Enter(idx as u32, Box::new(compile_expr(arg)?))
+                }
+                "is_in" => {
+                    let ctx = call.context().ok_or(error!("bad is in"))?;
+                    let idx = file.contexts().into_iter().position(|c| c == ctx).unwrap();
+                    fall_parse::Expr::IsIn(idx as u32)
+                }
                 "not" => fall_parse::Expr::Not(token_set_arg!()),
                 "rep" => {
                     if args.next().is_some() {

@@ -1,9 +1,11 @@
+use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::{Text, TextRange, AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef};
+       RefExpr, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
+       CallExpr};
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
@@ -30,6 +32,20 @@ impl<'f> FallFile<'f> {
                 .filter_map(|r| r.name())
                 .map(|n| (n, false))
         );
+        result
+    }
+
+    pub fn contexts(&self) -> Vec<Text<'f>> {
+        let mut result = Vec::new();
+        Visitor(&mut result)
+            .visit::<CallExpr, _>(|contexts, call| {
+                if call.fn_name() == "is_in" || call.fn_name() == "enter" {
+                    if let Some(ctx) = call.context() {
+                        contexts.push(ctx);
+                    }
+                }
+            })
+            .walk_recursively_children_first(self.node());
         result
     }
 }
@@ -240,6 +256,17 @@ impl<'f> RefExpr<'f> {
         file.tokenizer_def()
             .and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name))
             .map(|rule| RefKind::Token(rule))
+    }
+}
+
+impl<'f> CallExpr<'f> {
+    pub fn context(&self) -> Option<Text<'f>> {
+        if let Some(Expr::RefExpr(e)) = self.args().next() {
+            if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
+                return Some(lit_body(context.text()))
+            }
+        }
+        None
     }
 }
 

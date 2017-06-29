@@ -16,7 +16,8 @@ FILE
         IDENT "x"
       COLON ":"
       TYPE
-        IDENT "i32"
+        PATH
+          IDENT "i32"
     RPAREN ")"
     BLOCK_EXPR
       LBRACE "{"
@@ -30,7 +31,8 @@ FILE
         IDENT "x"
       COLON ":"
       TYPE
-        IDENT "i32"
+        PATH
+          IDENT "i32"
       COMMA ","
     RPAREN ")"
     BLOCK_EXPR
@@ -45,14 +47,16 @@ FILE
         IDENT "x"
       COLON ":"
       TYPE
-        IDENT "i32"
+        PATH
+          IDENT "i32"
       COMMA ","
     VALUE_PARAM
       PATTERN
         IDENT "z"
       COLON ":"
       TYPE
-        IDENT "String"
+        PATH
+          IDENT "String"
     RPAREN ")"
     BLOCK_EXPR
       LBRACE "{"

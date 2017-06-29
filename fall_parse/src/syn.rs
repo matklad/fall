@@ -29,6 +29,8 @@ pub enum Expr {
     Eof,
     Layer(Box<Expr>, Box<Expr>),
     Pratt(Vec<PrattVariant>),
+    Enter(u32, Box<Expr>),
+    IsIn(u32)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -48,6 +50,7 @@ pub enum PrattVariant {
 struct Ctx {
     ticks: u64,
     predicate_mode: bool,
+    contexts: [bool; 16],
 }
 
 impl Ctx {
@@ -91,7 +94,7 @@ impl<'r> Parser<'r> {
     }
 
     pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
-        let mut ctx = Ctx { ticks: 0, predicate_mode: false };
+        let mut ctx = Ctx { ticks: 0, predicate_mode: false, contexts: [false; 16] };
         let (mut file_node, mut leftover) = self
             .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
             .unwrap_or_else(|| {
@@ -250,6 +253,21 @@ impl<'r> Parser<'r> {
             }
 
             Expr::Pratt(ref g) => self.parse_pratt(&*g, tokens, ctx, 0),
+
+            Expr::Enter(idx, ref e) => {
+                let idx = idx as usize;
+                let old = ctx.contexts[idx];
+                ctx.contexts[idx] = true;
+                let result = self.parse_exp(&*e, tokens, ctx);
+                ctx.contexts[idx] = old;
+                result
+            }
+
+            Expr::IsIn(idx) => if ctx.contexts[idx as usize] {
+                Some(ctx.create_success_node(tokens))
+            } else {
+                None
+            },
         }
     }
 

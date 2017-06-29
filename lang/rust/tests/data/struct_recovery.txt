@@ -14,11 +14,13 @@ FILE
       IDENT "a"
       COLON ":"
       TYPE
-        IDENT "A"
+        PATH
+          IDENT "A"
       ERROR ""
     STRUCT_FIELD
       IDENT "b"
       COLON ":"
       TYPE
-        IDENT "A"
+        PATH
+          IDENT "A"
     RBRACE "}"

@@ -12,7 +12,8 @@ FILE
       IDENT "f"
       COLON ":"
       TYPE
-        IDENT "A"
+        PATH
+          IDENT "A"
     RBRACE "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -22,7 +23,8 @@ FILE
       IDENT "f"
       COLON ":"
       TYPE
-        IDENT "A"
+        PATH
+          IDENT "A"
       COMMA ","
     RBRACE "}"
   STRUCT_DEF
@@ -33,7 +35,8 @@ FILE
       IDENT "f"
       COLON ":"
       TYPE
-        IDENT "A"
+        PATH
+          IDENT "A"
       COMMA ","
     STRUCT_FIELD
       VISIBILITY
@@ -41,7 +44,8 @@ FILE
       IDENT "j"
       COLON ":"
       TYPE
-        IDENT "B"
+        PATH
+          IDENT "B"
     RBRACE "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -49,7 +53,8 @@ FILE
     LPAREN "("
     TUPLE_FIELD
       TYPE
-        IDENT "u32"
+        PATH
+          IDENT "u32"
     RPAREN ")"
     SEMI ";"
   STRUCT_DEF
@@ -58,7 +63,8 @@ FILE
     LPAREN "("
     TUPLE_FIELD
       TYPE
-        IDENT "u32"
+        PATH
+          IDENT "u32"
       COMMA ","
     RPAREN ")"
     SEMI ";"
@@ -68,11 +74,13 @@ FILE
     LPAREN "("
     TUPLE_FIELD
       TYPE
-        IDENT "u32"
+        PATH
+          IDENT "u32"
       COMMA ","
     TUPLE_FIELD
       TYPE
-        IDENT "String"
+        PATH
+          IDENT "String"
     RPAREN ")"
     SEMI ";"
   STRUCT_DEF
