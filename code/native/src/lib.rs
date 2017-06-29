@@ -7,12 +7,13 @@ extern crate lang_fall;
 
 use std::sync::Mutex;
 
-use neon::vm::{Call, JsResult};
+use neon::vm::{Call, JsResult, };
 use neon::scope::Scope;
 use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, Object};
 
 use lang_fall::editor_api;
+use lang_fall::editor_api::FileStructureNode;
 use fall_tree::{TextRange, TextUnit, File};
 
 lazy_static! {
@@ -138,6 +139,36 @@ fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
     Ok(arr.upcast())
 }
 
+fn file_structure(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let nodes = editor_api::file_structure(file);
+    let arr = JsArray::new(scope, nodes.len() as u32);
+    for (i, node) in nodes.into_iter().enumerate() {
+        let node_js = to_js(scope, node);
+        arr.set(i as u32, node_js?)?;
+    }
+    return Ok(arr.upcast());
+
+    fn to_js<'s, S: Scope<'s>>(scope: &mut S, node: FileStructureNode) -> JsResult<'s, JsValue> {
+        let result = JsObject::new(scope);
+        let children = JsArray::new(scope, node.children.len() as u32);
+        for (i, node) in node.children.into_iter().enumerate() {
+            let node_js = to_js(scope, node);
+            children.set(i as u32, node_js?)?;
+        }
+        result.set("name", JsString::new(scope, &node.name).unwrap())?;
+        result.set("children", children)?;
+
+        let range = JsArray::new(scope, 2);
+        range.set(0, text_unit_to_js(scope, node.range.start()))?;
+        range.set(1, text_unit_to_js(scope, node.range.end()))?;
+        result.set("range", range)?;
+        Ok(result.upcast())
+    }
+}
+
 register_module!(m, {
     m.export("file_create", file_create)?;
     m.export("file_highlight", file_highlight)?;
@@ -146,5 +177,6 @@ register_module!(m, {
     m.export("file_extend_selection", file_extend_selection)?;
     m.export("file_find_context_actions", file_find_context_actions)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
+    m.export("file_structure", file_structure)?;
     Ok(())
 });

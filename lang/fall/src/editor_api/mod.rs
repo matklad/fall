@@ -91,9 +91,32 @@ pub fn collect_applicable_context_actions(file: &File, offset: TextUnit) -> Vec<
         .collect()
 }
 
-pub fn apply_context_action<'f>(file: &'f File, offset: TextUnit, action_id: &str) -> TextEdit {
+pub fn apply_context_action(file: &File, offset: TextUnit, action_id: &str) -> TextEdit {
     let action = ACTIONS.iter().find(|action| action.id().0 == action_id).unwrap();
     action.apply(file, offset).unwrap().into_text_edit()
+}
+
+pub struct FileStructureNode {
+    pub name: String,
+    pub range: TextRange,
+    pub children: Vec<FileStructureNode>
+}
+
+pub fn file_structure(file: & File) -> Vec<FileStructureNode> {
+    let mut nodes = Vec::new();
+    Visitor(&mut nodes)
+        .visit::<SynRule, _>(|nodes, rule| {
+            if let Some(name) = rule.name() {
+                nodes.push(FileStructureNode {
+                    name: name.to_string(),
+                    range: rule.node().range(),
+                    children: Vec::new(),
+                })
+            }
+        })
+        .walk_recursively_children_first(file.root());
+
+    nodes
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {

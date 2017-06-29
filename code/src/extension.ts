@@ -2,8 +2,14 @@
 import * as vscode from 'vscode';
 import {
     window, DecorationRenderOptions, StatusBarAlignment, TextDocument,
-    Range, CodeActionContext, CancellationToken, Command
+    Range, CodeActionContext, CancellationToken, Command, SymbolInformation
 } from 'vscode';
+
+interface FileStructureNode {
+    name: string,
+    range: [number, number],
+    children: [FileStructureNode]
+}
 
 var backend = (() => {
     var native = require('../../native')
@@ -23,8 +29,9 @@ var backend = (() => {
             return native.file_extend_selection(start, end);
         },
         tree: (): string => native.file_tree(),
-        findContextActions: (offset: Number): [string] => native.file_find_context_actions(offset),
-        applyContextAction: (offset: Number, id: string) => native.file_apply_context_action(offset, id),
+        findContextActions: (offset: number): [string] => native.file_find_context_actions(offset),
+        applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
+        fileStructure: (): [FileStructureNode] => native.file_structure(),
     }
 })()
 
@@ -76,6 +83,29 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             })
         }
+    }
+
+    class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+        provideDocumentSymbols(document: TextDocument, token: CancellationToken) {
+            console.log("A");
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+            if (document != activeEditor.document) return null
+            let offsetToPostion = (x) => document.positionAt(x)
+            return backend.fileStructure().map((node) => {
+                return new SymbolInformation(
+                    node.name,
+                    vscode.SymbolKind.Function,
+                    new Range(
+                        offsetToPostion(node.range[0]),
+                        offsetToPostion(node.range[1])
+                    ),
+                    null,
+                    null
+                )
+            })
+        }
+
     }
 
     function highlight() {
@@ -131,7 +161,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall-tree', textDocumentProvider),
-        vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider())
+        vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
+        vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider())
     ]
 
     let commands = [
@@ -157,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (activeEditor.document.languageId != "fall") return
 
             let edit = backend.applyContextAction(offset, id);
-            
+
             let range = new Range(
                 activeEditor.document.positionAt(edit[0]),
                 activeEditor.document.positionAt(edit[1]),
