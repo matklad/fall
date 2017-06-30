@@ -1,8 +1,7 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use fall_tree::search;
-use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind};
+use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind, CallKind};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -141,7 +140,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
         let rule = alt_to_rule(alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
         let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
-        let variant =match prat_kind {
+        let variant = match prat_kind {
             PratKind::Atom => fall_parse::PrattVariant::Atom {
                 body: Box::new(compile_rule(rule)?.unwrap().body),
             },
@@ -160,7 +159,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     ty: ty,
                     op: Box::new(compile_expr(op)?),
                 }
-            },
+            }
             PratKind::Bin(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
@@ -187,7 +186,6 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
 }
 
 fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
-    let file: FallFile = search::ast_parent_exn(ast.node());
     let result = match ast {
         Expr::BlockExpr(block) => fall_parse::Expr::Or(block.alts().map(compile_expr).collect::<Result<Vec<_>>>()?),
         Expr::SeqExpr(seq) => {
@@ -213,60 +211,24 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             None => return Err(error!("Unresolved references: {}", ref_.node().text())),
         },
         Expr::CallExpr(call) => {
-            let fn_name = call.fn_name().to_cow();
-            if fn_name == "eof" {
-                return Ok(fall_parse::Expr::Eof)
-            }
-            let mut args = call.args();
-            let first_arg = args.next().ok_or(error!("expected an argument"))?;
-            macro_rules! token_set_arg {
-                () => {
-                    first_arg.token_set().ok_or(
-                        error!("Bad token set: `{}`", first_arg.node().text())
-                    )?
-                }
-            }
-            match fn_name.as_ref() {
-                "enter" => {
-                    let ctx = call.context().ok_or(error!("bad enter"))?;
-                    let arg = call.args().nth(1).ok_or(error!("bad enter"))?;
-                    let idx = file.contexts().into_iter().position(|c| c == ctx).unwrap();
-                    fall_parse::Expr::Enter(idx as u32, Box::new(compile_expr(arg)?))
-                }
-                "is_in" => {
-                    let ctx = call.context().ok_or(error!("bad is in"))?;
-                    let idx = file.contexts().into_iter().position(|c| c == ctx).unwrap();
-                    fall_parse::Expr::IsIn(idx as u32)
-                }
-                "not" => fall_parse::Expr::Not(token_set_arg!()),
-                "rep" => {
-                    if args.next().is_some() {
-                        return Err(error!("extra argument to rep"))
-                    }
-                    fall_parse::Expr::Rep(Box::new(compile_expr(first_arg)?))
-                }
-                "not_ahead" => {
-                    if args.next().is_some() {
-                        return Err(error!("extra argument to not_ahead"))
-                    }
-                    fall_parse::Expr::NotAhead(Box::new(compile_expr(first_arg)?))
-                }
-
-                "opt" => fall_parse::Expr::Opt(Box::new(compile_expr(first_arg)?)),
-                "layer" => fall_parse::Expr::Layer(
-                    Box::new(compile_expr(first_arg)?),
-                    Box::new(compile_expr(args.next().ok_or(
-                        error!("not enough arguments to layer")
-                    )?)?)
+            let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {
+                CallKind::Eof => fall_parse::Expr::Eof,
+                CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(expr)?)),
+                CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
+                CallKind::Not(token_set) => fall_parse::Expr::Not(token_set),
+                CallKind::Rep(expr) => fall_parse::Expr::Rep(Box::new(compile_expr(expr)?)),
+                CallKind::NotAhead(expr) => fall_parse::Expr::NotAhead(Box::new(compile_expr(expr)?)),
+                CallKind::Opt(expr) => fall_parse::Expr::Opt(Box::new(compile_expr(expr)?)),
+                CallKind::Layer(e1, e2) => fall_parse::Expr::Layer(
+                    Box::new(compile_expr(e1)?),
+                    Box::new(compile_expr(e2)?)
                 ),
-                "with_skip" => fall_parse::Expr::WithSkip(
-                    Box::new(compile_expr(first_arg)?),
-                    Box::new(compile_expr(args.next().ok_or((
-                        error!("not enough arguments to layer")
-                    ))?)?)
-                ),
-                _ => unimplemented!(),
-            }
+                CallKind::WithSkip(e1, e2) => fall_parse::Expr::WithSkip(
+                    Box::new(compile_expr(e1)?),
+                    Box::new(compile_expr(e2)?)
+                )
+            };
+            return Ok(r)
         }
     };
 

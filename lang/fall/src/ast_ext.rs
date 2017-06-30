@@ -259,6 +259,18 @@ impl<'f> RefExpr<'f> {
     }
 }
 
+pub enum CallKind<'f> {
+    Eof,
+    Enter(u32, Expr<'f>),
+    IsIn(u32),
+    Not(Vec<usize>),
+    Rep(Expr<'f>),
+    NotAhead(Expr<'f>),
+    Opt(Expr<'f>),
+    Layer(Expr<'f>, Expr<'f>),
+    WithSkip(Expr<'f>, Expr<'f>),
+}
+
 impl<'f> CallExpr<'f> {
     pub fn context(&self) -> Option<Text<'f>> {
         if let Some(Expr::RefExpr(e)) = self.args().next() {
@@ -267,6 +279,75 @@ impl<'f> CallExpr<'f> {
             }
         }
         None
+    }
+
+    pub fn resolve_context(&self) -> Option<u32> {
+        if let Some(Expr::RefExpr(e)) = self.args().next() {
+            if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
+                let ctx_name = lit_body(context.text());
+                let file: FallFile = ast_parent_exn(self.node());
+                return file.contexts().into_iter().position(|c| c == ctx_name).map(|i| i as u32)
+            }
+        }
+        None
+    }
+
+    pub fn kind(&self) -> Result<CallKind<'f>, &'static str> {
+        macro_rules! check_args {
+            ($n:expr) => {
+                if self.args().count() != $n {
+                    return Err(concat!("expected ", $n, " arguments"))
+                }
+            }
+        };
+
+        let kind = match self.fn_name().to_cow().as_ref() {
+            "eof" => {
+                check_args!(0);
+                CallKind::Eof
+            }
+            "enter" => {
+                check_args!(2);
+                let ctx = self.resolve_context().ok_or("enter without context")?;
+                let arg = self.args().nth(1).unwrap();
+                CallKind::Enter(ctx, arg)
+            }
+            "is_in" => {
+                check_args!(1);
+                let ctx = self.resolve_context().ok_or("is_in without context")?;
+                CallKind::IsIn(ctx)
+            }
+            "not" => {
+                check_args!(1);
+                let arg = self.args().next().unwrap();
+                let ts = arg.token_set().ok_or("expected a tokenst")?;
+                CallKind::Not(ts)
+            }
+            "rep" => {
+                check_args!(1);
+                CallKind::Rep(self.args().next().unwrap())
+            }
+            "not_ahead" => {
+                check_args!(1);
+                CallKind::NotAhead(self.args().next().unwrap())
+            }
+            "opt" => {
+                check_args!(1);
+                CallKind::Opt(self.args().next().unwrap())
+            }
+            "layer" => {
+                check_args!(2);
+                CallKind::Layer(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
+            },
+            "with_skip" => {
+                check_args!(2);
+                CallKind::WithSkip(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
+            },
+            _ => return Err("unknown call"),
+
+        };
+
+        Ok(kind)
     }
 }
 
