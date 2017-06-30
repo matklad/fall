@@ -93,12 +93,16 @@ pub rule mod_def {
   }
 }
 
+rule list_element(el) {
+  el <commit> {<eof>|','}
+}
+
 pub rule struct_field {
-  <opt visibility> ident <commit> ':' type { <eof> | ',' }
+  <list_element {<opt visibility> ident <commit> ':' type}>
 }
 
 pub rule tuple_field {
-  <opt visibility> type <commit> { <eof> | ',' }
+  <list_element {<opt visibility> type}>
 }
 
 pub rule visibility {

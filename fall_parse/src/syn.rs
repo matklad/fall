@@ -275,12 +275,13 @@ impl<'r> Parser<'r> {
             },
 
             Expr::Call(ref body, ref args) => {
+                let old = ctx.args;
                 for &(i, ref a) in args.iter() {
-                    if ctx.args[i as usize].is_none() {
-                        ctx.args[i as usize] = Some(a);
-                    }
+                    ctx.args[i as usize] = Some(a);
                 }
-                self.parse_exp(body, tokens, ctx)
+                let result = self.parse_exp(body, tokens, ctx);
+                ctx.args = old;
+                result
             }
 
             Expr::Var(i) => {

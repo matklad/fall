@@ -135,12 +135,9 @@ pub rule seq_expr { <rep expr> }
 // Corollary: if A can match an empty sting (e.g. it is optional),
 // B will never be matched!
 pub rule block_expr {
-  '{' // Note how we refer to `lbrace` token using a `simple_string` `'{'`.
-    <layer block_body
-      // We use outer `{}` purely for grouping here. There's no `()`.
-      { <opt seq_expr> <rep {'|' seq_expr}> }
-    >
-  '}'
+  // Note how we refer to `pipe` token using a `simple_string` `'|'`.
+  // We use outer `{}` purely for grouping here. There's no `()`.
+  <block { <opt seq_expr> <rep {'|' seq_expr}> }>
 }
 
 // Another, very powerful construct is to invoke a predefined
@@ -164,7 +161,7 @@ pub rule tokenizer_def {
   // tree of the current file and type garbage before and after various
   // commit points.
   'tokenizer' <commit>
-  '{' <rep lex_rule> '}'
+  <block <rep lex_rule>>
 }
 
 // Now then you know how rules work, can you see how `lex_rule` rule
@@ -194,6 +191,7 @@ pub rule attribute_value {
 
 pub rule string { simple_string | hash_string }
 
+rule block(body) { '{'<commit> <layer block_body body> '}'}
 rule block_body { <rep balanced> }
 rule balanced {
   '{' <commit> block_body '}'
@@ -236,11 +234,11 @@ pub rule ast_def {
 }
 
 pub rule ast_node_def {
-  'node' <commit> ident '{' <rep method_def> '}'
+  'node' <commit> ident <block <rep method_def>>
 }
 
 pub rule ast_class_def {
-  'class' <commit> ident '{' <layer block_body <rep ident>> '}'
+  'class' <commit> ident <block <rep ident>>
 }
 
 pub rule method_def { ident ast_selector }
