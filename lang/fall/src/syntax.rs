@@ -257,6 +257,24 @@ impl<'f> SynRule<'f> {
     pub fn body(&self) -> Expr<'f> {
         AstClassChildren::new(self.node.children()).next().unwrap()
     }
+    pub fn parameters(&self) -> Option<Parameters<'f>> {
+        AstChildren::new(self.node.children()).next()
+    }
+}
+#[derive(Clone, Copy)]
+pub struct Parameters<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for Parameters<'f> {
+    fn ty() -> NodeType { PARAMETERS }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        Parameters { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> Parameters<'f> {
+    
 }
 #[derive(Clone, Copy)]
 pub struct Attributes<'f> { node: Node<'f> }

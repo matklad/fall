@@ -280,7 +280,10 @@ ast {
     attributes attributes?
     name IDENT?.text
     body expr
+    parameters parameters?
   }
+
+  node parameters { }
 
   node attributes {
     attributes attribute*
