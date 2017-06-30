@@ -101,9 +101,16 @@ pub rule syn_rule {
   // `FOO_BAR` NodeType constant.
   ident
 
+  <opt parameters>
+
   // The body of the rule is enclosed in `{`,
   // see expression grammar below for details.
   block_expr
+}
+
+
+pub rule parameters {
+  '(' <layer in_parens <rep {ident {','|<eof>}}>> ')'
 }
 
 rule expr { call_expr | ref_expr | block_expr }
@@ -186,6 +193,13 @@ rule balanced {
   '{' <commit> block_body '}'
 | <not '}'>
 }
+
+rule in_parens { <rep paren_balanced> }
+rule paren_balanced {
+  '(' <commit> in_parens ')'
+| <not ')'>
+}
+
 
 // Verbatim block is pasted as is into the generated parser.
 // You can use it to provide custom tokenizer rules.
