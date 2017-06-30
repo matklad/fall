@@ -34,32 +34,33 @@ pub const IDENT: NodeType = NodeType(128);
 pub const FALL_FILE: NodeType = NodeType(129);
 pub const SYN_RULE: NodeType = NodeType(130);
 pub const PARAMETERS: NodeType = NodeType(131);
-pub const REF_EXPR: NodeType = NodeType(132);
-pub const SEQ_EXPR: NodeType = NodeType(133);
-pub const BLOCK_EXPR: NodeType = NodeType(134);
-pub const CALL_EXPR: NodeType = NodeType(135);
-pub const TOKENIZER_DEF: NodeType = NodeType(136);
-pub const LEX_RULE: NodeType = NodeType(137);
-pub const EXAMPLE_DEF: NodeType = NodeType(138);
-pub const ATTRIBUTES: NodeType = NodeType(139);
-pub const ATTRIBUTE: NodeType = NodeType(140);
-pub const ATTRIBUTE_VALUE: NodeType = NodeType(141);
-pub const STRING: NodeType = NodeType(142);
-pub const VERBATIM_DEF: NodeType = NodeType(143);
-pub const AST_DEF: NodeType = NodeType(144);
-pub const AST_NODE_DEF: NodeType = NodeType(145);
-pub const AST_CLASS_DEF: NodeType = NodeType(146);
-pub const METHOD_DEF: NodeType = NodeType(147);
-pub const AST_SELECTOR: NodeType = NodeType(148);
+pub const PARAMETER: NodeType = NodeType(132);
+pub const REF_EXPR: NodeType = NodeType(133);
+pub const SEQ_EXPR: NodeType = NodeType(134);
+pub const BLOCK_EXPR: NodeType = NodeType(135);
+pub const CALL_EXPR: NodeType = NodeType(136);
+pub const TOKENIZER_DEF: NodeType = NodeType(137);
+pub const LEX_RULE: NodeType = NodeType(138);
+pub const EXAMPLE_DEF: NodeType = NodeType(139);
+pub const ATTRIBUTES: NodeType = NodeType(140);
+pub const ATTRIBUTE: NodeType = NodeType(141);
+pub const ATTRIBUTE_VALUE: NodeType = NodeType(142);
+pub const STRING: NodeType = NodeType(143);
+pub const VERBATIM_DEF: NodeType = NodeType(144);
+pub const AST_DEF: NodeType = NodeType(145);
+pub const AST_NODE_DEF: NodeType = NodeType(146);
+pub const AST_CLASS_DEF: NodeType = NodeType(147);
+pub const METHOD_DEF: NodeType = NodeType(148);
+pub const AST_SELECTOR: NodeType = NodeType(149);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR,
-            WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, EXAMPLE, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, LBRACE, RBRACE, LBRACK, RBRACK, LANGLE, RANGLE, LPAREN, RPAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, EXAMPLE_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
+            WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, EXAMPLE, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, LBRACE, RBRACE, LBRACK, RBRACK, LANGLE, RANGLE, LPAREN, RPAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, EXAMPLE_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[30,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"example"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":10}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":21}],null]},{"And":[[{"Rule":22}],null]},{"And":[[{"Rule":12}],null]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Opt":{"Rule":13}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Rule":8}],3]}]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":19},{"Rep":{"Or":[{"And":[[{"Token":29},{"Or":[{"And":[[{"Token":16}],null]},{"And":[["Eof"],null]}]}],null]}]}}]},{"Token":25}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rule":9}],null]},{"And":[[{"Rule":6}],null]},{"And":[[{"Rule":8}],null]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]}]}},{"body":{"Pub":[34,{"Or":[{"And":[[{"Rep":{"Rule":5}}],null]}]}]}},{"body":{"Pub":[35,{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":17},{"Or":[{"And":[[{"Opt":{"Rule":7}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":7}],null]}]}}],null]}]}]},{"Token":19}],null]}]}]}},{"body":{"Pub":[36,{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":5}},{"Token":23}],null]}]}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Token":18},{"Rep":{"Rule":11}},{"Token":19}],1]}]}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"Opt":{"Rule":13}},{"Token":29},{"Rule":16},{"Opt":{"Rule":16}}],2]}]}]}},{"body":{"Pub":[39,{"Or":[{"And":[[{"ContextualToken":[10,"example"]},{"Token":28}],1]}]}]}},{"body":{"Pub":[40,{"Or":[{"And":[[{"Token":17},{"Token":20},{"Rep":{"Or":[{"And":[[{"Rule":14},{"Or":[{"And":[[{"Token":16}],null]},{"And":[[],null]}]}],null]}]}},{"Token":21}],null]}]}]}},{"body":{"Pub":[41,{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":15},{"Token":25}],null]}]}}],null]}]}]}},{"body":{"Pub":[42,{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]}]}},{"body":{"Pub":[43,{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":18}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Rule":17},{"Token":19}],1]},{"And":[[{"Not":[19]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":20}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":24},{"Rule":19},{"Token":25}],1]},{"And":[[{"Not":[25]}],null]}]}},{"body":{"Pub":[44,{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]}]}},{"body":{"Pub":[45,{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":23}],null]},{"And":[[{"Rule":24}],null]}]}]}},{"Token":19}],1]}]}]}},{"body":{"Pub":[46,{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Token":18},{"Rep":{"Rule":25}},{"Token":19}],1]}]}]}},{"body":{"Pub":[47,{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Token":18},{"Layer":[{"Rule":17},{"Rep":{"Token":29}}]},{"Token":19}],1]}]}]}},{"body":{"Pub":[48,{"Or":[{"And":[[{"Token":29},{"Rule":26}],null]}]}]}},{"body":{"Pub":[49,{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":27}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[30,{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]}]}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"example"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":12}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":23}],null]},{"And":[[{"Rule":24}],null]},{"And":[[{"Rule":14}],null]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Rule":10}],3]}]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":21},{"Rep":{"Call":[{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[[{"Token":16}],null]},{"And":[["Eof"],null]}]}],1]}]},[[0,{"Rule":6}]]]}}]},{"Token":25}],null]}]}]}},{"body":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[[{"Token":16}],null]},{"And":[["Eof"],null]}]}],1]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Token":29}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rule":11}],null]},{"And":[[{"Rule":8}],null]},{"And":[[{"Rule":10}],null]}]}},{"body":{"Pub":[34,{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]}]}},{"body":{"Pub":[35,{"Or":[{"And":[[{"Rep":{"Rule":7}}],null]}]}]}},{"body":{"Pub":[36,{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":19},{"Or":[{"And":[[{"Opt":{"Rule":9}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":9}],null]}]}}],null]}]}]},{"Token":19}],null]}]}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":7}},{"Token":23}],null]}]}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Token":18},{"Rep":{"Rule":13}},{"Token":19}],1]}]}]}},{"body":{"Pub":[39,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":29},{"Rule":18},{"Opt":{"Rule":18}}],2]}]}]}},{"body":{"Pub":[40,{"Or":[{"And":[[{"ContextualToken":[10,"example"]},{"Token":28}],1]}]}]}},{"body":{"Pub":[41,{"Or":[{"And":[[{"Token":17},{"Token":20},{"Rep":{"Or":[{"And":[[{"Rule":16},{"Or":[{"And":[[{"Token":16}],null]},{"And":[[],null]}]}],null]}]}},{"Token":21}],null]}]}]}},{"body":{"Pub":[42,{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":17},{"Token":25}],null]}]}}],null]}]}]}},{"body":{"Pub":[43,{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]}]}},{"body":{"Pub":[44,{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":20}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Rule":19},{"Token":19}],1]},{"And":[[{"Not":[19]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":22}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":24},{"Rule":21},{"Token":25}],1]},{"And":[[{"Not":[25]}],null]}]}},{"body":{"Pub":[45,{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]}]}},{"body":{"Pub":[46,{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":25}],null]},{"And":[[{"Rule":26}],null]}]}]}},{"Token":19}],1]}]}]}},{"body":{"Pub":[47,{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Token":18},{"Rep":{"Rule":27}},{"Token":19}],1]}]}]}},{"body":{"Pub":[48,{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Token":18},{"Layer":[{"Rule":19},{"Rep":{"Token":29}}]},{"Token":19}],1]}]}]}},{"body":{"Pub":[49,{"Or":[{"And":[[{"Token":29},{"Rule":28}],null]}]}]}},{"body":{"Pub":[50,{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":29}}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -108,6 +109,7 @@ lazy_static! {
                     FALL_FILE => NodeTypeInfo { name: "FALL_FILE", whitespace_like: false },
                     SYN_RULE => NodeTypeInfo { name: "SYN_RULE", whitespace_like: false },
                     PARAMETERS => NodeTypeInfo { name: "PARAMETERS", whitespace_like: false },
+                    PARAMETER => NodeTypeInfo { name: "PARAMETER", whitespace_like: false },
                     REF_EXPR => NodeTypeInfo { name: "REF_EXPR", whitespace_like: false },
                     SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR", whitespace_like: false },
                     BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR", whitespace_like: false },
@@ -274,7 +276,26 @@ impl<'f> AstNode<'f> for Parameters<'f> {
 }
 
 impl<'f> Parameters<'f> {
-    
+    pub fn parameters(&self) -> AstChildren<'f, Parameter<'f>> {
+        AstChildren::new(self.node.children())
+    }
+}
+#[derive(Clone, Copy)]
+pub struct Parameter<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for Parameter<'f> {
+    fn ty() -> NodeType { PARAMETER }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        Parameter { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> Parameter<'f> {
+    pub fn name(&self) -> Text<'f> {
+        child_of_type_exn(self.node, IDENT).text()
+    }
 }
 #[derive(Clone, Copy)]
 pub struct Attributes<'f> { node: Node<'f> }

@@ -6,6 +6,7 @@ use ::{ast, LANG_FALL, RefKind};
 use ::syntax::*;
 
 mod actions;
+
 use self::actions::{ACTIONS, ContextActionId};
 
 pub fn parse(text: String) -> File {
@@ -13,10 +14,11 @@ pub fn parse(text: String) -> File {
 }
 
 pub fn tree_as_text(file: &File) -> String {
-     dump_file(file)
+    dump_file(file)
 }
 
 type Spans = Vec<(TextRange, &'static str)>;
+
 pub fn highlight(file: &File) -> Spans {
     let file = ast(file);
     let mut spans = vec![];
@@ -44,7 +46,8 @@ pub fn highlight(file: &File) -> Spans {
         .visit::<RefExpr, _>(|spans, ref_| {
             let color = match ref_.resolve() {
                 Some(RefKind::Token(_)) => "token",
-                Some(RefKind::RuleReference { .. }) => "rule",
+                Some(RefKind::RuleReference { .. }) | Some(RefKind::Param(..))
+                => "rule",
                 None => "unresolved"
             };
             colorize_node(ref_.node(), color, spans)
@@ -102,7 +105,7 @@ pub struct FileStructureNode {
     pub children: Vec<FileStructureNode>
 }
 
-pub fn file_structure(file: & File) -> Vec<FileStructureNode> {
+pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
     let mut nodes = Vec::new();
     Visitor(&mut nodes)
         .visit::<SynRule, _>(|nodes, rule| {

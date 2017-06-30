@@ -110,8 +110,14 @@ pub rule syn_rule {
 
 
 pub rule parameters {
-  '(' <layer in_parens <rep {ident {','|<eof>}}>> ')'
+  '(' <layer in_parens <rep <list_element parameter>>> ')'
 }
+
+rule list_element(elemnt) {
+  elemnt <commit> {','|<eof>}
+}
+
+pub rule parameter { ident }
 
 rule expr { call_expr | ref_expr | block_expr }
 
@@ -283,7 +289,13 @@ ast {
     parameters parameters?
   }
 
-  node parameters { }
+  node parameters { 
+    parameters parameter*
+  }
+
+  node parameter {
+    name IDENT.text
+  }
 
   node attributes {
     attributes attribute*

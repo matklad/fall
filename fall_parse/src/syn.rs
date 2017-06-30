@@ -6,6 +6,7 @@ use tree_builder::{Node, TokenSequence};
 pub struct Parser<'r> {
     node_types: &'r [NodeType],
     rules: &'r [SynRule],
+    start_rule: Expr,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -30,7 +31,9 @@ pub enum Expr {
     Layer(Box<Expr>, Box<Expr>),
     Pratt(Vec<PrattVariant>),
     Enter(u32, Box<Expr>),
-    IsIn(u32)
+    IsIn(u32),
+    Call(Box<Expr>, Vec<(u32, Expr)>),
+    Var(u32),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,13 +50,14 @@ pub enum PrattVariant {
     }
 }
 
-struct Ctx {
+struct Ctx<'p> {
     ticks: u64,
     predicate_mode: bool,
     contexts: [bool; 16],
+    args: [Option<&'p Expr>; 16]
 }
 
-impl Ctx {
+impl<'p> Ctx<'p> {
     fn create_composite_node(&mut self, ty: Option<NodeType>) -> Node {
         Node::composite(ty)
     }
@@ -90,13 +94,13 @@ impl Ctx {
 
 impl<'r> Parser<'r> {
     pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
-        Parser { node_types, rules: rules }
+        Parser { node_types, rules: rules, start_rule: Expr::Rule(0) }
     }
 
     pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
-        let mut ctx = Ctx { ticks: 0, predicate_mode: false, contexts: [false; 16] };
+        let mut ctx = Ctx { ticks: 0, predicate_mode: false, contexts: [false; 16], args: [None; 16] };
         let (mut file_node, mut leftover) = self
-            .parse_exp(&Expr::Rule(0), tokens, &mut ctx)
+            .parse_exp(&self.start_rule, tokens, &mut ctx)
             .unwrap_or_else(|| {
                 let ty = match self.rules[0].body {
                     Expr::Pub(ty, _) => ty,
@@ -105,6 +109,7 @@ impl<'r> Parser<'r> {
                 let ty = self.node_type(ty);
                 (ctx.create_composite_node(Some(ty)), tokens)
             });
+
         let mut error = ctx.create_error_node();
         let mut skipped = false;
         while leftover.current().is_some() {
@@ -120,8 +125,8 @@ impl<'r> Parser<'r> {
         file_node
     }
 
-    fn parse_exp<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
-                     -> Option<(Node, TokenSequence<'t>)> {
+    fn parse_exp<'t, 'p>(&'p self, expr: &'p Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)
+                         -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;
         match *expr {
             Expr::Pub(ty, ref body) => if let Some((node, ts)) = self.parse_exp(body, tokens, ctx) {
@@ -268,10 +273,24 @@ impl<'r> Parser<'r> {
             } else {
                 None
             },
+
+            Expr::Call(ref body, ref args) => {
+                for &(i, ref a) in args.iter() {
+                    if ctx.args[i as usize].is_none() {
+                        ctx.args[i as usize] = Some(a);
+                    }
+                }
+                self.parse_exp(body, tokens, ctx)
+            }
+
+            Expr::Var(i) => {
+                let expr = ctx.args[i as usize].unwrap();
+                self.parse_exp(expr, tokens, ctx)
+            }
         }
     }
 
-    fn parse_any<'t, 'e, I: Iterator<Item=&'e Expr>>(&self, options: I, tokens: TokenSequence<'t>, ctx: &mut Ctx)
+    fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(&'p self, options: I, tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)
                                                      -> Option<(Node, TokenSequence<'t>)> {
         for p in options {
             if let Some(result) = self.parse_exp(p, tokens, ctx) {
@@ -281,8 +300,8 @@ impl<'r> Parser<'r> {
         None
     }
 
-    fn parse_pratt<'t>(&self, expr_grammar: &[PrattVariant], tokens: TokenSequence<'t>, ctx: &mut Ctx, min_prior: u32)
-                       -> Option<(Node, TokenSequence<'t>)> {
+    fn parse_pratt<'t, 'p>(&'p self, expr_grammar: &'p [PrattVariant], tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>, min_prior: u32)
+                           -> Option<(Node, TokenSequence<'t>)> {
         let atoms = expr_grammar.iter().filter_map(|v| {
             match *v {
                 PrattVariant::Atom { ref body } => Some(body.as_ref()),
@@ -343,8 +362,8 @@ impl<'r> Parser<'r> {
         Some((lhs, tokens))
     }
 
-    fn parse_exp_pred<'t>(&self, expr: &Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx)
-                          -> Option<(TokenSequence<'t>)> {
+    fn parse_exp_pred<'t, 'p>(&'p self, expr: &'p Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)
+                              -> Option<(TokenSequence<'t>)> {
         let old_mode = ctx.predicate_mode;
         ctx.predicate_mode = true;
         let result = self.parse_exp(expr, tokens, ctx);

@@ -5,7 +5,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
-       CallExpr};
+       CallExpr, Parameter};
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
@@ -238,6 +238,7 @@ pub enum SelectorKind<'f> {
 pub enum RefKind<'f> {
     Token(LexRule<'f>),
     RuleReference(SynRule<'f>),
+    Param(u32),
 }
 
 impl<'f> RefExpr<'f> {
@@ -245,6 +246,13 @@ impl<'f> RefExpr<'f> {
         let file = ast_parent_exn::<FallFile>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
+            let rule: SynRule = ast_parent_exn(self.node());
+            if let Some(parameters) = rule.parameters() {
+                if let Some(p) = parameters.parameters().find(|p| p.name() == ident.text()) {
+                    return Some(RefKind::Param(p.idx()))
+                }
+            }
+
             if let Some(rule) = file.resolve_rule(ident.text()) {
                 return Some(RefKind::RuleReference(rule))
             }
@@ -340,21 +348,39 @@ impl<'f> CallExpr<'f> {
             "layer" => {
                 check_args!(2);
                 CallKind::Layer(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
-            },
+            }
             "with_skip" => {
                 check_args!(2);
                 CallKind::WithSkip(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
-            },
+            }
             _ => {
                 if let Some(rule) = file.resolve_rule(self.fn_name()) {
-
+                    if let Some(parameters) = rule.parameters() {
+                        let params = parameters.parameters()
+                            .map(|p| p.idx())
+                            .zip(self.args())
+                            .collect();
+                        return Ok(CallKind::RuleCall(rule, params))
+                    }
                 }
                 return Err("unknown rule")
-            },
-
+            }
         };
 
         Ok(kind)
+    }
+}
+
+impl<'f> Parameter<'f> {
+    fn idx(&self) -> u32 {
+        let file: FallFile = ast_parent_exn(self.node());
+        let idx = file.syn_rules()
+            .filter_map(|rule| rule.parameters())
+            .flat_map(|p| p.parameters())
+            .position(|p| p.node() == self.node())
+            .unwrap();
+
+        idx as u32
     }
 }
 

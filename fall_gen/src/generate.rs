@@ -198,8 +198,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 .map(compile_expr);
             fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
-        Expr::RefExpr(ref_) => match ref_.resolve() {
-            Some(RefKind::Token(rule)) => {
+        Expr::RefExpr(ref_) => match ref_.resolve().ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
+            RefKind::Token(rule) => {
                 if rule.is_contextual() {
                     let text = rule.token_re().ok_or(error!("Missing token regex"))?;
                     fall_parse::Expr::ContextualToken(rule.node_type_index(), text)
@@ -207,8 +207,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                     fall_parse::Expr::Token(rule.node_type_index())
                 }
             }
-            Some(RefKind::RuleReference(rule)) => fall_parse::Expr::Rule(rule.index()),
-            None => return Err(error!("Unresolved references: {}", ref_.node().text())),
+            RefKind::RuleReference(rule) => fall_parse::Expr::Rule(rule.index()),
+            RefKind::Param(idx) => fall_parse::Expr::Var(idx),
         },
         Expr::CallExpr(call) => {
             let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {
@@ -227,7 +227,12 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                     Box::new(compile_expr(e1)?),
                     Box::new(compile_expr(e2)?)
                 ),
-                CallKind::RuleCall(..) => unimplemented!()
+                CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
+                    Box::new(compile_expr(rule.body())?),
+                    args.into_iter()
+                        .map(|(i, e)| Ok((i, compile_expr(e)?)))
+                        .collect::<Result<Vec<_>>>()?
+                )
             };
             return Ok(r)
         }
