@@ -107,6 +107,7 @@ pub rule visibility {
 
 rule mod_path { path }
 rule type_path { <enter 'type_path' path> }
+rule expr_path { <enter 'expr_path' path> }
 
 #[pratt]
 pub rule path {
@@ -124,7 +125,15 @@ pub rule qualified_path {
 }
 
 rule path_segment {
-  ident <opt {<is_in 'type_path' > '<' '>'}>
+  ident <opt type_arguments>
+}
+
+pub rule type_arguments {
+  { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
+  '<' 
+    <layer in_angles 
+    <rep {type { <eof> | ',' }} >> 
+  '>'
 }
 
 
@@ -139,7 +148,7 @@ pub rule stmt {
 }
 
 pub rule pattern { ident }
-pub rule expr { number }
+pub rule expr { number | expr_path }
 
 pub rule block_expr {
   '{' <layer in_braces <rep stmt>> '}'
@@ -155,4 +164,10 @@ rule in_parens { <rep paren_balanced> }
 rule paren_balanced {
   '(' <commit> in_parens ')'
 | <not ')'>
+}
+
+rule in_angles { <rep angle_balanced> }
+rule angle_balanced {
+  '<' <commit> in_angles '>'
+| <not '>'>
 }

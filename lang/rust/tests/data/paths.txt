@@ -1,0 +1,46 @@
+FILE
+  USE_DECL
+    USE "use"
+    PATH
+      PATH
+        PATH
+          IDENT "foo"
+        COLONCOLON "::"
+        IDENT "bar"
+      COLONCOLON "::"
+      IDENT "baz"
+    SEMI ";"
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      STMT
+        LET "let"
+        PATTERN
+          IDENT "x"
+        EQ "="
+        EXPR
+          PATH
+            PATH
+              COLONCOLON "::"
+              IDENT "Vec"
+              TYPE_ARGUMENTS
+                COLONCOLON "::"
+                LANGLE "<"
+                TYPE
+                  PATH
+                    IDENT "Vec"
+                    TYPE_ARGUMENTS
+                      LANGLE "<"
+                      TYPE
+                        PATH
+                          IDENT "i32"
+                      RANGLE ">"
+                RANGLE ">"
+            COLONCOLON "::"
+            IDENT "new"
+        SEMI ";"
+      RBRACE "}"
