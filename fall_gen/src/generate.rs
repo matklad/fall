@@ -226,7 +226,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 CallKind::WithSkip(e1, e2) => fall_parse::Expr::WithSkip(
                     Box::new(compile_expr(e1)?),
                     Box::new(compile_expr(e2)?)
-                )
+                ),
+                CallKind::RuleCall(..) => unimplemented!()
             };
             return Ok(r)
         }

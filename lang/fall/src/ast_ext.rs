@@ -269,6 +269,7 @@ pub enum CallKind<'f> {
     Opt(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
+    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>)
 }
 
 impl<'f> CallExpr<'f> {
@@ -293,6 +294,7 @@ impl<'f> CallExpr<'f> {
     }
 
     pub fn kind(&self) -> Result<CallKind<'f>, &'static str> {
+        let file: FallFile = ast_parent_exn(self.node());
         macro_rules! check_args {
             ($n:expr) => {
                 if self.args().count() != $n {
@@ -343,7 +345,12 @@ impl<'f> CallExpr<'f> {
                 check_args!(2);
                 CallKind::WithSkip(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
             },
-            _ => return Err("unknown call"),
+            _ => {
+                if let Some(rule) = file.resolve_rule(self.fn_name()) {
+
+                }
+                return Err("unknown rule")
+            },
 
         };
 
