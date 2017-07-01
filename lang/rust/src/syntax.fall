@@ -10,6 +10,8 @@ tokenizer {
   struct 'struct'
   use 'use'
   mod 'mod'
+  if 'if'
+  else 'else'
 
   lparen '('
   rparen ')'
@@ -155,14 +157,9 @@ pub rule pattern {
 #[pratt]
 pub rule expr { 
    sum_expr | product_expr 
+|  if_expr   
 |  literal | path_expr | block_expr
 }
-
-example r"
-  fn foo() {
-    let x = 1 + 2 * 92 + 3 % 8;
-  }
-"
 
 #[bin(2)]
 pub rule product_expr {
@@ -200,6 +197,17 @@ pub rule let_stmt {
 pub rule expr_stmt {
   expr ';'
 }
+
+#[atom]
+pub rule if_expr {
+  'if' <commit> expr block_expr 
+  <opt {'else' block_expr}>
+}
+example r"
+  fn foo() {
+    let _ = if 1 + 1 { 92 } else {};
+  }
+"
 
 rule comma_list(el) {
   <rep {el <commit> {<eof>|','}}>

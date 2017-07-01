@@ -42,7 +42,7 @@ FILE
       RBRACE "}"
   FN_DEF
     FN "fn"
-    IDENT "foo"
+    IDENT "statements"
     LPAREN "("
     RPAREN ")"
     BLOCK_EXPR
@@ -113,5 +113,63 @@ FILE
             SLASH "/"
             LITERAL
               NUMBER "6"
+        SEMI ";"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "blockish"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      EXPR_STMT
+        BLOCK_EXPR
+          LBRACE "{"
+          RBRACE "}"
+        SEMI ";"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          LITERAL
+            NUMBER "1"
+          BLOCK_EXPR
+            LBRACE "{"
+            RBRACE "}"
+          ELSE "else"
+          BLOCK_EXPR
+            LBRACE "{"
+            IF_EXPR
+              IF "if"
+              LITERAL
+                NUMBER "2"
+              BLOCK_EXPR
+                LBRACE "{"
+                RBRACE "}"
+            RBRACE "}"
+        SEMI ";"
+      EXPR_STMT
+        SUM_EXPR
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            IF_EXPR
+              IF "if"
+              LITERAL
+                NUMBER "2"
+              BLOCK_EXPR
+                LBRACE "{"
+                LITERAL
+                  NUMBER "3"
+                RBRACE "}"
+              ELSE "else"
+              BLOCK_EXPR
+                LBRACE "{"
+                LITERAL
+                  NUMBER "4"
+                RBRACE "}"
+          PLUS "+"
+          LITERAL
+            NUMBER "5"
         SEMI ";"
       RBRACE "}"
