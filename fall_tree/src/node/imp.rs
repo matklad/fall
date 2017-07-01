@@ -34,11 +34,17 @@ pub struct NodeImpl<'f> {
 
 impl<'f> ::std::cmp::PartialEq for NodeImpl<'f> {
     fn eq(&self, other: &NodeImpl<'f>) -> bool {
-        self.file as *const FileImpl == other.file as *const FileImpl && self.id == other.id
+        self.key() == other.key()
     }
 }
 
 impl<'f> ::std::cmp::Eq for NodeImpl<'f> {}
+
+impl<'f> ::std::hash::Hash for NodeImpl<'f> {
+    fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+        self.key().hash(state)
+    }
+}
 
 impl<'f> NodeImpl<'f> {
     pub fn ty(&self) -> NodeType {
@@ -68,6 +74,10 @@ impl<'f> NodeImpl<'f> {
     fn data(&self) -> &'f NodeData {
         &self.file[self.id]
     }
+
+    fn key(&self) -> (*const FileImpl, NodeId) {
+        (self.file as *const FileImpl, self.id)
+    }
 }
 
 pub struct NodeChildren<'f> {
@@ -83,7 +93,7 @@ impl<'f> Iterator for NodeChildren<'f> {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NodeId(u32);
 
 impl Index<NodeId> for FileImpl {

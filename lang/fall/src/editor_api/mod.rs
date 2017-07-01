@@ -1,6 +1,8 @@
+use std::collections::HashSet;
+
 use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
+use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset, ast_parent};
 use fall_tree::edit::TextEdit;
 use ::{ast, LANG_FALL, RefKind, CallKind};
 use ::syntax::*;
@@ -148,13 +150,46 @@ impl Diagnostic {
             text: message,
         }
     }
+
+    fn warning(node: Node, message: String) -> Diagnostic {
+        Diagnostic {
+            range: node.range(),
+            severity: Severity::Warning,
+            text: message,
+        }
+    }
 }
 
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
+    let used_rules: HashSet<Node> = descendants_of_type::<RefExpr>(file.root())
+        .into_iter()
+        .filter_map(|node| node.resolve())
+        .filter_map(|r| match r {
+            RefKind::RuleReference(rule) => Some(rule.node()),
+            _ => None
+        })
+        .chain(
+            descendants_of_type::<CallExpr>(file.root())
+                .into_iter()
+                .filter_map(|call| call.kind().ok())
+                .filter_map(|kind| match kind {
+                    CallKind::RuleCall(rule, ..) => Some(rule.node()),
+                    _ => None,
+                })
+        )
+        .chain(child_of_type(file.root(), SYN_RULE).into_iter())
+        .collect();
+
     let mut result: Vec<Diagnostic> = Vec::new();
     Visitor(&mut result)
         .visit::<RefExpr, _>(|acc, ref_| {
             if ref_.resolve().is_none() {
+                if let Some(call) = ast_parent::<CallExpr>(ref_.node()) {
+                    if call.resolve_context().is_some() {
+                        return
+                    }
+                }
+
                 acc.push(Diagnostic::error(ref_.node(), "Unresolved reference".to_string()))
             }
         })
@@ -163,8 +198,21 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
                 acc.push(Diagnostic::error(call.node(), e.to_string()))
             }
         })
+        .visit::<SynRule, _>(|acc, rule| {
+            if !used_rules.contains(&rule.node()) {
+                acc.push(Diagnostic::warning(rule.node(), "Unused rule".to_string()))
+            }
+        })
         .walk_recursively_children_first(file.root());
 
+    result
+}
+
+fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
+    let mut result = Vec::new();
+    Visitor(&mut result)
+        .visit::<N, _>(|acc, node| acc.push(node))
+        .walk_recursively_children_first(node);
     result
 }
 
