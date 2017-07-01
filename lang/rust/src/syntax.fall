@@ -52,11 +52,11 @@ pub rule use_decl {
 
 pub rule use_spec {
   '*'
-| '{' <layer in_braces <rep use_spec_entry>> '}'
+| <block <comma_list use_spec_entry>> 
 }
 
 pub rule use_spec_entry {
-  ident <commit> <opt alias> {<eof> | ','}
+  ident <commit> <opt alias>
 }
 
 pub rule extern_crate_decl {
@@ -65,44 +65,40 @@ pub rule extern_crate_decl {
 
 pub rule fn_def {
   <opt visibility> 'fn' <commit> ident
-  '(' <layer in_parens value_params> ')'
+  value_params
   block_expr
 }
 
 rule value_params {
-  <rep value_param>
+  '(' <layer in_parens <comma_list value_param>> ')'
 }
 
 pub rule value_param {
-  pattern ':' type {<eof> | ','}
+  pattern ':' type
 }
 
 
 pub rule struct_def {
   <opt visibility> 'struct' <commit> ident {
-    '{' <layer in_braces <rep struct_field>> '}'
+    <block <comma_list struct_field>>
   | ';'
-  | '(' <layer in_parens <rep tuple_field>> ')' ';'
+  | '(' <layer in_parens <comma_list tuple_field>> ')' ';'
   }
 }
 
 pub rule mod_def {
   <opt visibility> 'mod' <commit> ident {
     ';'
-  | '{' <layer in_braces mod_contents> '}'
+  | <block mod_contents>
   }
 }
 
-rule list_element(el) {
-  el <commit> {<eof>|','}
-}
-
 pub rule struct_field {
-  <list_element {<opt visibility> ident <commit> ':' type}>
+  <opt visibility> ident <commit> ':' type
 }
 
 pub rule tuple_field {
-  <list_element {<opt visibility> type}>
+  <opt visibility> type
 }
 
 pub rule visibility {
@@ -135,8 +131,7 @@ rule path_segment {
 pub rule type_arguments {
   { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
   '<' 
-    <layer in_angles 
-    <rep {type { <eof> | ',' }} >> 
+    <layer in_angles <comma_list type>> 
   '>'
 }
 
@@ -155,23 +150,22 @@ pub rule pattern { ident }
 pub rule expr { number | expr_path }
 
 pub rule block_expr {
-  '{' <layer in_braces <rep stmt>> '}'
+  <block <rep stmt>>
 }
 
-rule in_braces { <rep brace_balanced> }
-rule brace_balanced {
-  '{' <commit> in_braces '}'
-| <not '}'>
+rule comma_list(el) {
+  <rep {el <commit> {<eof>|','}}>
 }
 
-rule in_parens { <rep paren_balanced> }
-rule paren_balanced {
-  '(' <commit> in_parens ')'
-| <not ')'>
-}
+rule block(body) { '{'<commit> <layer in_braces body> '}'}
 
-rule in_angles { <rep angle_balanced> }
-rule angle_balanced {
-  '<' <commit> in_angles '>'
-| <not '>'>
+rule in_braces { <balanced '{' '}'> }
+rule in_parens { <balanced '(' ')'> }
+rule in_angles { <balanced '<' '>'> }
+
+rule balanced(bra, ket) {
+  <rep {
+    bra <commit> <balanced bra ket> ket
+  | <not ket> 
+  }>
 }

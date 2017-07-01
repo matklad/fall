@@ -33,7 +33,7 @@ FILE
       TYPE
         PATH
           IDENT "i32"
-      COMMA ","
+    COMMA ","
     RPAREN ")"
     BLOCK_EXPR
       LBRACE "{"
@@ -49,7 +49,7 @@ FILE
       TYPE
         PATH
           IDENT "i32"
-      COMMA ","
+    COMMA ","
     VALUE_PARAM
       PATTERN
         IDENT "z"

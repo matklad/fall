@@ -16,7 +16,7 @@ FILE
       TYPE
         PATH
           IDENT "A"
-      ERROR ""
+    ERROR ""
     STRUCT_FIELD
       IDENT "b"
       COLON ":"

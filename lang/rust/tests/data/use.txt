@@ -73,7 +73,7 @@ FILE
       LBRACE "{"
       USE_SPEC_ENTRY
         IDENT "bar"
-        COMMA ","
+      COMMA ","
       USE_SPEC_ENTRY
         IDENT "baz"
         ALIAS
@@ -90,6 +90,6 @@ FILE
       LBRACE "{"
       USE_SPEC_ENTRY
         IDENT "bar"
-        COMMA ","
+      COMMA ","
       RBRACE "}"
     SEMI ";"

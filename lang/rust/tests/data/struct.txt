@@ -25,7 +25,7 @@ FILE
       TYPE
         PATH
           IDENT "A"
-      COMMA ","
+    COMMA ","
     RBRACE "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -37,7 +37,7 @@ FILE
       TYPE
         PATH
           IDENT "A"
-      COMMA ","
+    COMMA ","
     STRUCT_FIELD
       VISIBILITY
         PUB "pub"
@@ -65,7 +65,7 @@ FILE
       TYPE
         PATH
           IDENT "u32"
-      COMMA ","
+    COMMA ","
     RPAREN ")"
     SEMI ";"
   STRUCT_DEF
@@ -76,7 +76,7 @@ FILE
       TYPE
         PATH
           IDENT "u32"
-      COMMA ","
+    COMMA ","
     TUPLE_FIELD
       TYPE
         PATH
