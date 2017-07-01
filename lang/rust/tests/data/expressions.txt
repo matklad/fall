@@ -79,3 +79,39 @@ FILE
           NUMBER "3"
         SEMI ";"
       RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "precedence"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "x"
+        EQ "="
+        SUM_EXPR
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            PRODUCT_EXPR
+              PRODUCT_EXPR
+                LITERAL
+                  NUMBER "2"
+                STAR "*"
+                LITERAL
+                  NUMBER "3"
+              PERCENT "%"
+              LITERAL
+                NUMBER "4"
+          MINUS "-"
+          PRODUCT_EXPR
+            LITERAL
+              NUMBER "5"
+            SLASH "/"
+            LITERAL
+              NUMBER "6"
+        SEMI ";"
+      RBRACE "}"

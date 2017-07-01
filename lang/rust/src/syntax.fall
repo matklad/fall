@@ -23,7 +23,12 @@ tokenizer {
   colon ':'
   coloncolon '::'
   comma ','
+
+  plus '+'
+  minus '-'
   star '*'
+  slash '/'
+  percent '%'
 
   ident r"\p{XID_Start}\w*"
   number r"\d+"
@@ -146,7 +151,24 @@ pub rule pattern { ident }
 
 #[pratt]
 pub rule expr { 
-  literal | path_expr | block_expr
+   sum_expr | product_expr 
+|  literal | path_expr | block_expr
+}
+
+example r"
+  fn foo() {
+    let x = 1 + 2 * 92 + 3 % 8;
+  }
+"
+
+#[bin(2)]
+pub rule product_expr {
+  expr {'*' | '/' | '%'} expr
+}
+
+#[bin(1)]
+pub rule sum_expr {
+  expr {'+' | '-'} expr
 }
 
 #[atom]
