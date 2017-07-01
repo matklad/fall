@@ -70,7 +70,7 @@ pub rule fn_def {
 }
 
 rule value_params {
-  '(' <layer in_parens <comma_list value_param>> ')'
+  <in_parens <comma_list value_param>>
 }
 
 pub rule value_param {
@@ -82,7 +82,7 @@ pub rule struct_def {
   <opt visibility> 'struct' <commit> ident {
     <block <comma_list struct_field>>
   | ';'
-  | '(' <layer in_parens <comma_list tuple_field>> ')' ';'
+  | <in_parens <comma_list tuple_field>>';'
   }
 }
 
@@ -130,9 +130,7 @@ rule path_segment {
 
 pub rule type_arguments {
   { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
-  '<' 
-    <layer in_angles <comma_list type>> 
-  '>'
+  <in_angles <comma_list type>> 
 }
 
 
@@ -157,11 +155,15 @@ rule comma_list(el) {
   <rep {el <commit> {<eof>|','}}>
 }
 
-rule block(body) { '{'<commit> <layer in_braces body> '}'}
+rule block(p)     { <balanced_layer '{' '}' p> }
+rule in_parens(p) { <balanced_layer '(' ')' p> }
+rule in_angles(p) { <balanced_layer '<' '>' p> }
 
-rule in_braces { <balanced '{' '}'> }
-rule in_parens { <balanced '(' ')'> }
-rule in_angles { <balanced '<' '>'> }
+rule balanced_layer(bra, ket, contents) {
+  bra <commit> 
+    <layer <balanced bra ket> contents> 
+  ket
+}
 
 rule balanced(bra, ket) {
   <rep {
