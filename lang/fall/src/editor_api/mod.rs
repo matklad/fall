@@ -49,7 +49,7 @@ pub fn highlight(file: &File) -> Spans {
                 Some(RefKind::Token(_)) => "token",
                 Some(RefKind::RuleReference { .. }) => "rule",
                 Some(RefKind::Param(..)) => "value_parameter",
-                None => "unresolved"
+                None => "rule"
             };
             colorize_node(ref_.node(), color, spans)
         })
@@ -127,6 +127,34 @@ pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
         .walk_recursively_children_first(file.root());
 
     nodes
+}
+
+pub enum Severity {
+    Error,
+    Warning
+}
+
+pub struct Diagnostic {
+    pub range: TextRange,
+    pub severity: Severity,
+    pub text: String
+}
+
+pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
+    let mut result: Vec<Diagnostic> = Vec::new();
+    Visitor(&mut result)
+        .visit::<RefExpr, _>(|acc, ref_| {
+            if ref_.resolve().is_none() {
+                acc.push(Diagnostic {
+                    range: ref_.node().range(),
+                    severity: Severity::Error,
+                    text: "Unresolved reference".to_string(),
+                })
+            }
+        })
+        .walk_recursively_children_first(file.root());
+
+    result
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
