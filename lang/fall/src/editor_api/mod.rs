@@ -140,16 +140,27 @@ pub struct Diagnostic {
     pub text: String
 }
 
+impl Diagnostic {
+    fn error(node: Node, message: String) -> Diagnostic {
+        Diagnostic {
+            range: node.range(),
+            severity: Severity::Error,
+            text: message,
+        }
+    }
+}
+
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
     let mut result: Vec<Diagnostic> = Vec::new();
     Visitor(&mut result)
         .visit::<RefExpr, _>(|acc, ref_| {
             if ref_.resolve().is_none() {
-                acc.push(Diagnostic {
-                    range: ref_.node().range(),
-                    severity: Severity::Error,
-                    text: "Unresolved reference".to_string(),
-                })
+                acc.push(Diagnostic::error(ref_.node(), "Unresolved reference".to_string()))
+            }
+        })
+        .visit::<CallExpr, _>(|acc, call| {
+            if let Err(e) = call.kind() {
+                acc.push(Diagnostic::error(call.node(), e.to_string()))
             }
         })
         .walk_recursively_children_first(file.root());

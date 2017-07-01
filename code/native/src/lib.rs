@@ -187,7 +187,7 @@ fn file_diagnostics(call: Call) -> JsResult<JsValue> {
             Severity::Error => "error",
             Severity::Warning => "warning",
         };
-        d.set("severity", JsString::new(scope, severity).unwrap());
+        d.set("severity", JsString::new(scope, severity).unwrap())?;
         result.set(i as u32, d)?;
     }
     Ok(result.upcast())
