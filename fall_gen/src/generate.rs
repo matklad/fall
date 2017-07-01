@@ -213,11 +213,11 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
         Expr::CallExpr(call) => {
             let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {
                 CallKind::Eof => fall_parse::Expr::Eof,
+                CallKind::Any => fall_parse::Expr::Any,
                 CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(expr)?)),
                 CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
                 CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(expr)?)),
                 CallKind::Rep(expr) => fall_parse::Expr::Rep(Box::new(compile_expr(expr)?)),
-                CallKind::NotAhead(expr) => fall_parse::Expr::NotAhead(Box::new(compile_expr(expr)?)),
                 CallKind::Opt(expr) => fall_parse::Expr::Opt(Box::new(compile_expr(expr)?)),
                 CallKind::Layer(e1, e2) => fall_parse::Expr::Layer(
                     Box::new(compile_expr(e1)?),

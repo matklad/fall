@@ -178,7 +178,7 @@ pub rule literal {
 
 #[atom]
 pub rule struct_literal {
-  <not_ahead <is_in 'condition'>>
+  <not <is_in 'condition'>>
   expr_path <block <comma_list struct_literal_field>>
 }
 
@@ -239,6 +239,6 @@ rule balanced_layer(bra, ket, contents) {
 rule balanced(bra, ket) {
   <rep {
     bra <commit> <balanced bra ket> ket
-  | <not ket> 
+  | {<not ket> <any>}
   }>
 }

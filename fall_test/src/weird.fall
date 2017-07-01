@@ -34,7 +34,7 @@ pub rule block {
 rule block_body { <rep balanced> }
 rule balanced {
   '{' <commit> block_body '}'
-| <not '}'>
+| {<not '}'> <any>}
 }
 
 verbatim r#########"

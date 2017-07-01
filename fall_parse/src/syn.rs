@@ -25,8 +25,8 @@ pub enum Expr {
     WithSkip(Box<Expr>, Box<Expr>),
     Opt(Box<Expr>),
     Not(Box<Expr>),
-    NotAhead(Box<Expr>),
     Eof,
+    Any,
     Layer(Box<Expr>, Box<Expr>),
     Pratt(Vec<PrattVariant>),
     Enter(u32, Box<Expr>),
@@ -176,19 +176,18 @@ impl<'r> Parser<'r> {
             Expr::Opt(ref body) => self.parse_exp(body, tokens, ctx).or_else(|| {
                 Some(ctx.create_success_node(tokens))
             }),
-            Expr::Not(ref expr) => {
-                if tokens.current().is_some() && self.parse_exp_pred(expr, tokens, ctx).is_none() {
-                    return Some(ctx.create_leaf_node(tokens))
-                }
-                None
-            }
-            Expr::NotAhead(ref e) => if self.parse_exp(e, tokens, ctx).is_some() {
+            Expr::Not(ref e) => if self.parse_exp(e, tokens, ctx).is_some() {
                 None
             } else {
                 Some(ctx.create_success_node(tokens))
             },
             Expr::Eof => if tokens.current().is_none() {
                 Some(ctx.create_success_node(tokens))
+            } else {
+                None
+            },
+            Expr::Any => if tokens.current().is_some() {
+                Some(ctx.create_leaf_node(tokens))
             } else {
                 None
             },

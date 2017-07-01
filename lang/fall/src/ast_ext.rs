@@ -269,11 +269,11 @@ impl<'f> RefExpr<'f> {
 
 pub enum CallKind<'f> {
     Eof,
+    Any,
     Commit,
     Enter(u32, Expr<'f>),
     IsIn(u32),
     Not(Expr<'f>),
-    NotAhead(Expr<'f>),
     Rep(Expr<'f>),
     Opt(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
@@ -313,14 +313,9 @@ impl<'f> CallExpr<'f> {
         };
 
         let kind = match self.fn_name().to_cow().as_ref() {
-            "eof" => {
-                check_args!(0);
-                CallKind::Eof
-            }
-            "commit" => {
-                check_args!(0);
-                CallKind::Eof
-            }
+            "eof" => { check_args!(0); CallKind::Eof }
+            "any" => { check_args!(0); CallKind::Any }
+            "commit" => { check_args!(0); CallKind::Commit }
             "enter" => {
                 check_args!(2);
                 let ctx = self.resolve_context().ok_or("enter without context")?;
@@ -335,10 +330,6 @@ impl<'f> CallExpr<'f> {
             "not" => {
                 check_args!(1);
                 CallKind::Not(self.args().next().unwrap())
-            }
-            "not_ahead" => {
-                check_args!(1);
-                CallKind::NotAhead(self.args().next().unwrap())
             }
             "rep" => {
                 check_args!(1);
