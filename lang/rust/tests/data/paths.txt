@@ -17,12 +17,12 @@ FILE
     RPAREN ")"
     BLOCK_EXPR
       LBRACE "{"
-      STMT
+      LET_STMT
         LET "let"
         PATTERN
           IDENT "x"
         EQ "="
-        EXPR
+        PATH_EXPR
           PATH
             PATH
               COLONCOLON "::"

@@ -142,15 +142,38 @@ pub rule type {
   type_path
 }
 
-pub rule stmt {
+pub rule pattern { ident }
+
+#[pratt]
+pub rule expr { 
+  literal | path_expr | block_expr
+}
+
+#[atom]
+pub rule literal {
+  number
+}
+
+#[atom]
+pub rule path_expr {
+  expr_path
+}
+
+#[atom]
+pub rule block_expr {
+  <block {<rep block_form> <opt expr>}>
+}
+
+rule block_form {
+  let_stmt | expr_stmt
+}
+
+pub rule let_stmt {
   'let' <commit> pattern '=' expr ';'
 }
 
-pub rule pattern { ident }
-pub rule expr { number | expr_path }
-
-pub rule block_expr {
-  <block <rep stmt>>
+pub rule expr_stmt {
+  expr ';'
 }
 
 rule comma_list(el) {

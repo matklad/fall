@@ -61,12 +61,12 @@ FILE
     RPAREN ")"
     BLOCK_EXPR
       LBRACE "{"
-      STMT
+      LET_STMT
         LET "let"
         PATTERN
           IDENT "a"
         EQ "="
-        EXPR
+        LITERAL
           NUMBER "1"
         SEMI ";"
       RBRACE "}""#,

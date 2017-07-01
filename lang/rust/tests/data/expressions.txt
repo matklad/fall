@@ -1,0 +1,81 @@
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "a"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "b"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LITERAL
+        NUMBER "1"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "c"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      EXPR_STMT
+        LITERAL
+          NUMBER "1"
+        SEMI ";"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "d"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      BLOCK_EXPR
+        LBRACE "{"
+        RBRACE "}"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "a"
+        EQ "="
+        LITERAL
+          NUMBER "1"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "b"
+        EQ "="
+        PATH_EXPR
+          PATH
+            PATH
+              IDENT "a"
+            COLONCOLON "::"
+            IDENT "b"
+            TYPE_ARGUMENTS
+              COLONCOLON "::"
+              LANGLE "<"
+              TYPE
+                PATH
+                  IDENT "c"
+              RANGLE ">"
+        SEMI ";"
+      EXPR_STMT
+        LITERAL
+          NUMBER "3"
+        SEMI ";"
+      RBRACE "}"
