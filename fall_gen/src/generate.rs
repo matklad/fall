@@ -228,7 +228,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                     Box::new(compile_expr(e2)?)
                 ),
                 CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
-                    Box::new(compile_expr(rule.body())?),
+                    Box::new(fall_parse::Expr::Rule(rule.index())),
                     args.into_iter()
                         .map(|(i, e)| Ok((i, compile_expr(e)?)))
                         .collect::<Result<Vec<_>>>()?
