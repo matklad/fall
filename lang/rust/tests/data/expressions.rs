@@ -16,6 +16,10 @@ fn blockish() {
     1 + if 2 { 3 } else { 4 } + 5;
 }
 
+fn struct_cond_ambiguity() {
+    if foo {}
+}
+
 fn misc() {
     let a = 1;
     let b = a::b::<c>;

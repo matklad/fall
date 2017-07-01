@@ -178,12 +178,20 @@ pub rule literal {
 
 #[atom]
 pub rule struct_literal {
+  <not_ahead <is_in 'condition'>>
   expr_path <block <comma_list struct_literal_field>>
 }
 
 pub rule struct_literal_field {
   ident <commit> ':' expr
 }
+
+example r"
+  fn foo() {
+    S {};
+    if S {};
+  }
+"
 
 #[atom]
 pub rule path_expr {
@@ -209,8 +217,9 @@ pub rule expr_stmt {
 
 #[atom]
 pub rule if_expr {
-  'if' <commit> expr block_expr 
-  <opt {'else' block_expr}>
+  'if' <commit> <enter 'condition' expr> 
+    block_expr 
+    <opt {'else' block_expr}>
 }
 
 rule comma_list(el) {

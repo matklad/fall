@@ -136,6 +136,22 @@ FILE
       RBRACE "}"
   FN_DEF
     FN "fn"
+    IDENT "struct_cond_ambiguity"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      IF_EXPR
+        IF "if"
+        PATH_EXPR
+          PATH
+            IDENT "foo"
+        BLOCK_EXPR
+          LBRACE "{"
+          RBRACE "}"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
     IDENT "misc"
     LPAREN "("
     RPAREN ")"
