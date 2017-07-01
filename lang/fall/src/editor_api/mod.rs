@@ -2,7 +2,7 @@ use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
 use fall_tree::edit::TextEdit;
-use ::{ast, LANG_FALL, RefKind};
+use ::{ast, LANG_FALL, RefKind, CallKind};
 use ::syntax::*;
 
 mod actions;
@@ -40,22 +40,29 @@ pub fn highlight(file: &File) -> Spans {
             };
             spans.push((range, "error"))
         })
+        .visit_nodes(&[PARAMETER], |spans, node| colorize_node(node, "value_parameter", spans))
         .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
         .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<RefExpr, _>(|spans, ref_| {
             let color = match ref_.resolve() {
                 Some(RefKind::Token(_)) => "token",
-                Some(RefKind::RuleReference { .. }) | Some(RefKind::Param(..))
-                => "rule",
+                Some(RefKind::RuleReference { .. }) => "rule",
+                Some(RefKind::Param(..)) => "value_parameter",
                 None => "unresolved"
             };
             colorize_node(ref_.node(), color, spans)
         })
         .visit::<CallExpr, _>(|spans, call| {
-            colorize_child(call.node(), IDENT, "builtin", spans);
-            colorize_child(call.node(), LANGLE, "builtin", spans);
-            colorize_child(call.node(), RANGLE, "builtin", spans);
+            let color = match call.kind() {
+                Err(_) => "unresolved",
+                Ok(CallKind::RuleCall(..)) => "rule",
+                _ => "builtin"
+            };
+
+            colorize_child(call.node(), IDENT, color, spans);
+            colorize_child(call.node(), LANGLE, color, spans);
+            colorize_child(call.node(), RANGLE, color, spans);
         })
         .visit::<Attributes, _>(|spans, attrs| {
             colorize_node(attrs.node(), "meta", spans)

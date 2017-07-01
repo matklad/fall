@@ -269,6 +269,7 @@ impl<'f> RefExpr<'f> {
 
 pub enum CallKind<'f> {
     Eof,
+    Commit,
     Enter(u32, Expr<'f>),
     IsIn(u32),
     Not(Vec<usize>),
@@ -313,6 +314,10 @@ impl<'f> CallExpr<'f> {
 
         let kind = match self.fn_name().to_cow().as_ref() {
             "eof" => {
+                check_args!(0);
+                CallKind::Eof
+            }
+            "commit" => {
                 check_args!(0);
                 CallKind::Eof
             }

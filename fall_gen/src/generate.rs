@@ -232,7 +232,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                     args.into_iter()
                         .map(|(i, e)| Ok((i, compile_expr(e)?)))
                         .collect::<Result<Vec<_>>>()?
-                )
+                ),
+                CallKind::Commit => panic!("Should be handled specially"),
             };
             return Ok(r)
         }

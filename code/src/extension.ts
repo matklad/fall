@@ -48,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
         keyword: decor("#F0DFAF"),
         token: decor("#DFAF8F"),
         rule: decor("#93E0E3"),
+        value_parameter: decor("#94BFF3"),
         string: decor("#CC9393"),
         builtin: decor("#DD6718"),
         comment: decor("#7F9F7F"),
