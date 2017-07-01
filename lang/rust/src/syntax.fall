@@ -26,11 +26,13 @@ tokenizer {
   coloncolon '::'
   comma ','
 
-  plus '+'
-  minus '-'
   star '*'
   slash '/'
   percent '%'
+  plus '+'
+  minus '-'
+  ampersand '&'
+  pipe '|'
   underscore '_'
 
   ident r"\p{XID_Start}\w*"
@@ -156,20 +158,30 @@ pub rule pattern {
 
 #[pratt]
 pub rule expr { 
-  sum_expr | product_expr 
+  sum_expr | product_expr | bit_and | bit_or
 | if_expr   
 | literal | struct_literal | path_expr | block_expr
 | paren_expr
 }
 
-#[bin(2)]
+#[bin(4)]
 pub rule product_expr {
   expr {'*' | '/' | '%'} expr
 }
 
-#[bin(1)]
+#[bin(3)]
 pub rule sum_expr {
   expr {'+' | '-'} expr
+}
+
+#[bin(2)]
+pub rule bit_and {
+  expr '&' expr
+}
+
+#[bin(1)]
+pub rule bit_or {
+  expr '|' expr
 }
 
 #[atom]
@@ -191,6 +203,14 @@ pub rule struct_literal_field {
 pub rule paren_expr {
   '(' <exit 'condition' expr> ')'
 }
+
+example r"
+fn foo() {
+  1 + 2 * 3;
+  1 + 2 & 3;
+  1 | 2 & 3;
+}
+"
 
 
 #[atom]

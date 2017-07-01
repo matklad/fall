@@ -75,6 +75,42 @@ FILE
             LITERAL
               NUMBER "6"
         SEMI ";"
+      EXPR_STMT
+        SUM_EXPR
+          LITERAL
+            NUMBER "1"
+          PLUS "+"
+          PRODUCT_EXPR
+            LITERAL
+              NUMBER "2"
+            STAR "*"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        BIT_AND
+          LITERAL
+            NUMBER "1"
+          AMPERSAND "&"
+          SUM_EXPR
+            LITERAL
+              NUMBER "2"
+            PLUS "+"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        BIT_OR
+          LITERAL
+            NUMBER "1"
+          PIPE "|"
+          BIT_AND
+            LITERAL
+              NUMBER "2"
+            AMPERSAND "&"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
       RBRACE "}"
   FN_DEF
     FN "fn"
@@ -149,6 +185,15 @@ FILE
         BLOCK_EXPR
           LBRACE "{"
           RBRACE "}"
+      ERROR
+        IF "if"
+        LPAREN "("
+        IDENT "foo"
+        LBRACE "{"
+        RBRACE "}"
+        RPAREN ")"
+        LBRACE "{"
+        RBRACE "}"
       RBRACE "}"
   FN_DEF
     FN "fn"
@@ -250,5 +295,139 @@ FILE
               LBRACE "{"
               RBRACE "}"
           RBRACE "}"
+        SEMI ";"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "and1"
+        EQ "="
+        BIT_AND
+          PRODUCT_EXPR
+            LITERAL
+              NUMBER "2"
+            STAR "*"
+            LITERAL
+              NUMBER "1"
+          AMPERSAND "&"
+          LITERAL
+            NUMBER "1"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "and2"
+        EQ "="
+        BIT_AND
+          PAREN_EXPR
+            LPAREN "("
+            PRODUCT_EXPR
+              LITERAL
+                NUMBER "2"
+              STAR "*"
+              LITERAL
+                NUMBER "1"
+            RPAREN ")"
+          AMPERSAND "&"
+          LITERAL
+            NUMBER "1"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "and3"
+        EQ "="
+        PRODUCT_EXPR
+          LITERAL
+            NUMBER "2"
+          STAR "*"
+          PAREN_EXPR
+            LPAREN "("
+            BIT_AND
+              LITERAL
+                NUMBER "1"
+              AMPERSAND "&"
+              LITERAL
+                NUMBER "1"
+            RPAREN ")"
+        SEMI ";"
+      PATH_EXPR
+        PATH
+          IDENT "println"
+      ERROR
+        ERROR "!"
+        LPAREN "("
+        ERROR "\""
+        LBRACE "{"
+        RBRACE "}"
+        LBRACE "{"
+        RBRACE "}"
+        LBRACE "{"
+        RBRACE "}"
+        ERROR "\""
+        COMMA ","
+        IDENT "and1"
+        COMMA ","
+        IDENT "and2"
+        COMMA ","
+        IDENT "and3"
+        RPAREN ")"
+        SEMI ";"
+        LET "let"
+        IDENT "or1"
+        EQ "="
+        NUMBER "2"
+        STAR "*"
+        NUMBER "0"
+        PIPE "|"
+        NUMBER "1"
+        SEMI ";"
+        LET "let"
+        IDENT "or2"
+        EQ "="
+        LPAREN "("
+        NUMBER "2"
+        STAR "*"
+        NUMBER "0"
+        RPAREN ")"
+        PIPE "|"
+        NUMBER "1"
+        SEMI ";"
+        LET "let"
+        IDENT "or3"
+        EQ "="
+        NUMBER "2"
+        STAR "*"
+        LPAREN "("
+        NUMBER "0"
+        PIPE "|"
+        NUMBER "1"
+        RPAREN ")"
+        SEMI ";"
+        IDENT "println"
+        ERROR "!"
+        LPAREN "("
+        ERROR "\""
+        LBRACE "{"
+        RBRACE "}"
+        LBRACE "{"
+        RBRACE "}"
+        LBRACE "{"
+        RBRACE "}"
+        ERROR "\""
+        COMMA ","
+        IDENT "or1"
+        COMMA ","
+        IDENT "or2"
+        COMMA ","
+        IDENT "or3"
+        RPAREN ")"
         SEMI ";"
       RBRACE "}"
