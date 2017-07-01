@@ -29,6 +29,7 @@ tokenizer {
   star '*'
   slash '/'
   percent '%'
+  underscore '_'
 
   ident r"\p{XID_Start}\w*"
   number r"\d+"
@@ -147,7 +148,9 @@ pub rule type {
   type_path
 }
 
-pub rule pattern { ident }
+pub rule pattern { 
+  ident | '_'
+}
 
 #[pratt]
 pub rule expr { 

@@ -1,0 +1,25 @@
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "p"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          UNDERSCORE "_"
+        EQ "="
+        LITERAL
+          NUMBER "1"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "x"
+        EQ "="
+        LITERAL
+          NUMBER "1"
+        SEMI ";"
+      RBRACE "}"
