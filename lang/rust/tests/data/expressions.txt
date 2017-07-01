@@ -189,6 +189,13 @@ FILE
           NUMBER "3"
         SEMI ";"
       EXPR_STMT
+        PAREN_EXPR
+          LPAREN "("
+          LITERAL
+            NUMBER "4"
+          RPAREN ")"
+        SEMI ";"
+      EXPR_STMT
         STRUCT_LITERAL
           PATH
             IDENT "foo"

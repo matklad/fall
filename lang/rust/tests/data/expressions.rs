@@ -24,6 +24,7 @@ fn misc() {
     let a = 1;
     let b = a::b::<c>;
     3;
+    (4);
     foo {};
     foo {a: 1};
     foo {a: 2,};

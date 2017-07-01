@@ -39,7 +39,7 @@ impl<'f> FallFile<'f> {
         let mut result = Vec::new();
         Visitor(&mut result)
             .visit::<CallExpr, _>(|contexts, call| {
-                if call.fn_name() == "is_in" || call.fn_name() == "enter" {
+                if call.fn_name() == "is_in" || call.fn_name() == "enter" || call.fn_name() == "exit" {
                     if let Some(ctx) = call.context() {
                         contexts.push(ctx);
                     }
@@ -272,6 +272,7 @@ pub enum CallKind<'f> {
     Any,
     Commit,
     Enter(u32, Expr<'f>),
+    Exit(u32, Expr<'f>),
     IsIn(u32),
     Not(Expr<'f>),
     Rep(Expr<'f>),
@@ -321,6 +322,12 @@ impl<'f> CallExpr<'f> {
                 let ctx = self.resolve_context().ok_or("enter without context")?;
                 let arg = self.args().nth(1).unwrap();
                 CallKind::Enter(ctx, arg)
+            }
+            "exit" => {
+                check_args!(2);
+                let ctx = self.resolve_context().ok_or("exit without context")?;
+                let arg = self.args().nth(1).unwrap();
+                CallKind::Exit(ctx, arg)
             }
             "is_in" => {
                 check_args!(1);

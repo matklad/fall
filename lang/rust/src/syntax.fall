@@ -156,9 +156,10 @@ pub rule pattern {
 
 #[pratt]
 pub rule expr { 
-   sum_expr | product_expr 
-|  if_expr   
-|  literal | struct_literal | path_expr | block_expr
+  sum_expr | product_expr 
+| if_expr   
+| literal | struct_literal | path_expr | block_expr
+| paren_expr
 }
 
 #[bin(2)]
@@ -186,12 +187,11 @@ pub rule struct_literal_field {
   ident <commit> ':' expr
 }
 
-example r"
-  fn foo() {
-    S {};
-    if S {};
-  }
-"
+#[atom]
+pub rule paren_expr {
+  '(' expr ')'
+}
+
 
 #[atom]
 pub rule path_expr {

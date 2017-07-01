@@ -30,6 +30,7 @@ pub enum Expr {
     Layer(Box<Expr>, Box<Expr>),
     Pratt(Vec<PrattVariant>),
     Enter(u32, Box<Expr>),
+    Exit(u32, Box<Expr>),
     IsIn(u32),
     Call(Box<Expr>, Vec<(u32, Expr)>),
     Var(u32),
@@ -258,6 +259,15 @@ impl<'r> Parser<'r> {
                 let idx = idx as usize;
                 let old = ctx.contexts[idx];
                 ctx.contexts[idx] = true;
+                let result = self.parse_exp(&*e, tokens, ctx);
+                ctx.contexts[idx] = old;
+                result
+            }
+
+            Expr::Exit(idx, ref e) => {
+                let idx = idx as usize;
+                let old = ctx.contexts[idx];
+                ctx.contexts[idx] = false;
                 let result = self.parse_exp(&*e, tokens, ctx);
                 ctx.contexts[idx] = old;
                 result
