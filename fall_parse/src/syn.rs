@@ -1,5 +1,4 @@
 use fall_tree::{NodeType, FileStats};
-use lex::Token;
 
 use tree_builder::{Node, TokenSequence};
 
@@ -163,7 +162,7 @@ impl<'r> Parser<'r> {
 
             Expr::Token(ty) => {
                 if let Some(current) = tokens.current() {
-                    if self.token_set_contains(&[ty], current) {
+                    if self.node_type(ty) == current.ty {
                         return Some(ctx.create_leaf_node(tokens))
                     }
                 }
@@ -367,10 +366,6 @@ impl<'r> Parser<'r> {
         let result = self.parse_exp(expr, tokens, ctx);
         ctx.predicate_mode = old_mode;
         result.map(|(_, ts)| ts)
-    }
-
-    fn token_set_contains(&self, ts: &[usize], token: Token) -> bool {
-        ts.iter().any(|&t| self.node_type(t) == token.ty)
     }
 
     fn node_type(&self, idx: usize) -> NodeType {
