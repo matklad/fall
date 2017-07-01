@@ -18,6 +18,7 @@ fn blockish() {
 
 fn struct_cond_ambiguity() {
     if foo {}
+    if (foo {}) {}
 }
 
 fn misc() {

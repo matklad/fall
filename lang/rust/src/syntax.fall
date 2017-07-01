@@ -189,7 +189,7 @@ pub rule struct_literal_field {
 
 #[atom]
 pub rule paren_expr {
-  '(' expr ')'
+  '(' <exit 'condition' expr> ')'
 }
 
 
