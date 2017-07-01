@@ -25,7 +25,7 @@ pub enum Expr {
     Rep(Box<Expr>),
     WithSkip(Box<Expr>, Box<Expr>),
     Opt(Box<Expr>),
-    Not(Vec<usize>),
+    Not(Box<Expr>),
     NotAhead(Box<Expr>),
     Eof,
     Layer(Box<Expr>, Box<Expr>),
@@ -174,18 +174,15 @@ impl<'r> Parser<'r> {
                 ctx.create_contextual_leaf_node(tokens, self.node_type(ty), &*text)
             }
 
-            Expr::Opt(ref body) => self.parse_exp(&*body, tokens, ctx).or_else(|| {
+            Expr::Opt(ref body) => self.parse_exp(body, tokens, ctx).or_else(|| {
                 Some(ctx.create_success_node(tokens))
             }),
-            Expr::Not(ref ts) => {
-                if let Some(current) = tokens.current() {
-                    if !self.token_set_contains(ts, current) {
-                        return Some(ctx.create_leaf_node(tokens))
-                    }
+            Expr::Not(ref expr) => {
+                if tokens.current().is_some() && self.parse_exp_pred(expr, tokens, ctx).is_none() {
+                    return Some(ctx.create_leaf_node(tokens))
                 }
                 None
             }
-
             Expr::NotAhead(ref e) => if self.parse_exp(e, tokens, ctx).is_some() {
                 None
             } else {

@@ -215,7 +215,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 CallKind::Eof => fall_parse::Expr::Eof,
                 CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(expr)?)),
                 CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
-                CallKind::Not(token_set) => fall_parse::Expr::Not(token_set),
+                CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(expr)?)),
                 CallKind::Rep(expr) => fall_parse::Expr::Rep(Box::new(compile_expr(expr)?)),
                 CallKind::NotAhead(expr) => fall_parse::Expr::NotAhead(Box::new(compile_expr(expr)?)),
                 CallKind::Opt(expr) => fall_parse::Expr::Opt(Box::new(compile_expr(expr)?)),

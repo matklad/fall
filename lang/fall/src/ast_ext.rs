@@ -272,9 +272,9 @@ pub enum CallKind<'f> {
     Commit,
     Enter(u32, Expr<'f>),
     IsIn(u32),
-    Not(Vec<usize>),
-    Rep(Expr<'f>),
+    Not(Expr<'f>),
     NotAhead(Expr<'f>),
+    Rep(Expr<'f>),
     Opt(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
@@ -334,17 +334,15 @@ impl<'f> CallExpr<'f> {
             }
             "not" => {
                 check_args!(1);
-                let arg = self.args().next().unwrap();
-                let ts = arg.token_set().ok_or("expected a tokenst")?;
-                CallKind::Not(ts)
-            }
-            "rep" => {
-                check_args!(1);
-                CallKind::Rep(self.args().next().unwrap())
+                CallKind::Not(self.args().next().unwrap())
             }
             "not_ahead" => {
                 check_args!(1);
                 CallKind::NotAhead(self.args().next().unwrap())
+            }
+            "rep" => {
+                check_args!(1);
+                CallKind::Rep(self.args().next().unwrap())
             }
             "opt" => {
                 check_args!(1);
@@ -386,40 +384,6 @@ impl<'f> Parameter<'f> {
             .unwrap();
 
         idx as u32
-    }
-}
-
-impl<'f> Expr<'f> {
-    pub fn token_set(&self) -> Option<Vec<usize>> {
-        match *self {
-            Expr::RefExpr(ref_) => {
-                if let Some(RefKind::Token(rule)) = ref_.resolve() {
-                    Some(vec![rule.node_type_index()])
-                } else {
-                    None
-                }
-            }
-            Expr::CallExpr(_) => None,
-            Expr::SeqExpr(seq) => {
-                let mut parts = seq.parts();
-                match (parts.next(), parts.next()) {
-                    (None, None) => Some(Vec::new()),
-                    (Some(expr), None) => expr.token_set(),
-                    _ => None
-                }
-            }
-            Expr::BlockExpr(block) => {
-                let mut result = Vec::new();
-                for alt in block.alts() {
-                    if let Some(ts) = alt.token_set() {
-                        result.extend(ts.into_iter())
-                    } else {
-                        return None
-                    }
-                }
-                Some(result)
-            }
-        }
     }
 }
 
