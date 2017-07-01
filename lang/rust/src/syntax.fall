@@ -17,6 +17,7 @@ tokenizer {
   rbrace '}'
   langle '<'
   rangle '>'
+  thin_arrow '->'
   eq '='
   semi ';'
   colon ':'
@@ -66,6 +67,7 @@ pub rule extern_crate_decl {
 pub rule fn_def {
   <opt visibility> 'fn' <commit> ident
   value_params
+  <opt {'->' type}>
   block_expr
 }
 

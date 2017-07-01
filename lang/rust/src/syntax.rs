@@ -18,43 +18,44 @@ pub const LBRACE: NodeType = NodeType(112);
 pub const RBRACE: NodeType = NodeType(113);
 pub const LANGLE: NodeType = NodeType(114);
 pub const RANGLE: NodeType = NodeType(115);
-pub const EQ: NodeType = NodeType(116);
-pub const SEMI: NodeType = NodeType(117);
-pub const COLON: NodeType = NodeType(118);
-pub const COLONCOLON: NodeType = NodeType(119);
-pub const COMMA: NodeType = NodeType(120);
-pub const STAR: NodeType = NodeType(121);
-pub const IDENT: NodeType = NodeType(122);
-pub const NUMBER: NodeType = NodeType(123);
-pub const FILE: NodeType = NodeType(124);
-pub const USE_DECL: NodeType = NodeType(125);
-pub const USE_SPEC: NodeType = NodeType(126);
-pub const USE_SPEC_ENTRY: NodeType = NodeType(127);
-pub const EXTERN_CRATE_DECL: NodeType = NodeType(128);
-pub const FN_DEF: NodeType = NodeType(129);
-pub const VALUE_PARAM: NodeType = NodeType(130);
-pub const STRUCT_DEF: NodeType = NodeType(131);
-pub const MOD_DEF: NodeType = NodeType(132);
-pub const STRUCT_FIELD: NodeType = NodeType(133);
-pub const TUPLE_FIELD: NodeType = NodeType(134);
-pub const VISIBILITY: NodeType = NodeType(135);
-pub const PATH: NodeType = NodeType(136);
-pub const TYPE_ARGUMENTS: NodeType = NodeType(137);
-pub const ALIAS: NodeType = NodeType(138);
-pub const TYPE: NodeType = NodeType(139);
-pub const STMT: NodeType = NodeType(140);
-pub const PATTERN: NodeType = NodeType(141);
-pub const EXPR: NodeType = NodeType(142);
-pub const BLOCK_EXPR: NodeType = NodeType(143);
+pub const THIN_ARROW: NodeType = NodeType(116);
+pub const EQ: NodeType = NodeType(117);
+pub const SEMI: NodeType = NodeType(118);
+pub const COLON: NodeType = NodeType(119);
+pub const COLONCOLON: NodeType = NodeType(120);
+pub const COMMA: NodeType = NodeType(121);
+pub const STAR: NodeType = NodeType(122);
+pub const IDENT: NodeType = NodeType(123);
+pub const NUMBER: NodeType = NodeType(124);
+pub const FILE: NodeType = NodeType(125);
+pub const USE_DECL: NodeType = NodeType(126);
+pub const USE_SPEC: NodeType = NodeType(127);
+pub const USE_SPEC_ENTRY: NodeType = NodeType(128);
+pub const EXTERN_CRATE_DECL: NodeType = NodeType(129);
+pub const FN_DEF: NodeType = NodeType(130);
+pub const VALUE_PARAM: NodeType = NodeType(131);
+pub const STRUCT_DEF: NodeType = NodeType(132);
+pub const MOD_DEF: NodeType = NodeType(133);
+pub const STRUCT_FIELD: NodeType = NodeType(134);
+pub const TUPLE_FIELD: NodeType = NodeType(135);
+pub const VISIBILITY: NodeType = NodeType(136);
+pub const PATH: NodeType = NodeType(137);
+pub const TYPE_ARGUMENTS: NodeType = NodeType(138);
+pub const ALIAS: NodeType = NodeType(139);
+pub const TYPE: NodeType = NodeType(140);
+pub const STMT: NodeType = NodeType(141);
+pub const PATTERN: NodeType = NodeType(142);
+pub const EXPR: NodeType = NodeType(143);
+pub const BLOCK_EXPR: NodeType = NodeType(144);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR,
-            WHITESPACE, AS, CRATE, EXTERN, FN, LET, PUB, STRUCT, USE, MOD, LPAREN, RPAREN, LBRACE, RBRACE, LANGLE, RANGLE, EQ, SEMI, COLON, COLONCOLON, COMMA, STAR, IDENT, NUMBER, FILE, USE_DECL, USE_SPEC, USE_SPEC_ENTRY, EXTERN_CRATE_DECL, FN_DEF, VALUE_PARAM, STRUCT_DEF, MOD_DEF, STRUCT_FIELD, TUPLE_FIELD, VISIBILITY, PATH, TYPE_ARGUMENTS, ALIAS, TYPE, STMT, PATTERN, EXPR, BLOCK_EXPR,
+            WHITESPACE, AS, CRATE, EXTERN, FN, LET, PUB, STRUCT, USE, MOD, LPAREN, RPAREN, LBRACE, RBRACE, LANGLE, RANGLE, THIN_ARROW, EQ, SEMI, COLON, COLONCOLON, COMMA, STAR, IDENT, NUMBER, FILE, USE_DECL, USE_SPEC, USE_SPEC_ENTRY, EXTERN_CRATE_DECL, FN_DEF, VALUE_PARAM, STRUCT_DEF, MOD_DEF, STRUCT_FIELD, TUPLE_FIELD, VISIBILITY, PATH, TYPE_ARGUMENTS, ALIAS, TYPE, STMT, PATTERN, EXPR, BLOCK_EXPR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[25,{"Or":[{"And":[[{"Rule":1}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":2},{"Rule":3}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":7}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":8}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":10}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":8}],null]},{"And":[[{"Rule":11}],null]},{"And":[[{"Rule":12}],null]}]}},{"body":{"Pub":[26,{"Or":[{"And":[[{"Token":9},{"Or":[{"And":[[{"Rule":16},{"Or":[{"And":[[{"Rule":24}],null]},{"And":[[{"Opt":{"Or":[{"And":[[{"Token":20},{"Rule":5}],null]}]}}],null]}]}],null]},{"And":[[{"Opt":{"Token":20}},{"Rule":5}],null]}]},{"Token":18}],1]}]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":22}],null]},{"And":[[{"Call":[{"Rule":31},[[1,{"Call":[{"Rule":30},[[0,{"Rule":6}]]]}]]]}],null]}]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Token":23},{"Opt":{"Rule":24}}],1]}]}]}},{"body":{"Pub":[29,{"Or":[{"And":[[{"Token":4},{"Token":3},{"Token":23},{"Opt":{"Rule":24}},{"Token":18}],2]}]}]}},{"body":{"Pub":[30,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":5},{"Token":23},{"Rule":9},{"Rule":29}],2]}]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":32},[[2,{"Call":[{"Rule":30},[[0,{"Rule":10}]]]}]]]}],null]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Rule":27},{"Token":19},{"Rule":25}],null]}]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":8},{"Token":23},{"Or":[{"And":[[{"Call":[{"Rule":31},[[1,{"Call":[{"Rule":30},[[0,{"Rule":13}]]]}]]]}],null]},{"And":[[{"Token":18}],null]},{"And":[[{"Call":[{"Rule":32},[[2,{"Call":[{"Rule":30},[[0,{"Rule":14}]]]}]]]},{"Token":18}],null]}]}],2]}]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":10},{"Token":23},{"Or":[{"And":[[{"Token":18}],null]},{"And":[[{"Call":[{"Rule":31},[[1,{"Rule":1}]]]}],null]}]}],2]}]}]}},{"body":{"Pub":[34,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":23},{"Token":19},{"Rule":25}],2]}]}]}},{"body":{"Pub":[35,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Rule":25}],null]}]}]}},{"body":{"Pub":[36,{"Or":[{"And":[[{"Token":7}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rule":19}],null]}]}},{"body":{"Or":[{"And":[[{"Enter":[0,{"Rule":19}]}],null]}]}},{"body":{"Or":[{"And":[[{"Enter":[1,{"Rule":19}]}],null]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[37,{"Or":[{"And":[[{"Opt":{"Token":20}},{"Rule":22}],null]}]}]}}},{"Postfix":{"ty":37,"op":{"Or":[{"And":[[{"Token":20},{"Rule":22}],null]}]}}}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"Opt":{"Token":20}},{"Rule":22}],null]}]}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"Rule":19},{"Or":[{"And":[[{"Token":20},{"Rule":22}],null]}]}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":23},{"Opt":{"Rule":23}}],null]}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"Or":[{"And":[[{"IsIn":0}],null]},{"And":[[{"IsIn":1},{"Token":20}],null]}]},{"Call":[{"Rule":33},[[3,{"Call":[{"Rule":30},[[0,{"Rule":25}]]]}]]]}],null]}]}]}},{"body":{"Pub":[39,{"Or":[{"And":[[{"Token":2},{"Token":23}],null]}]}]}},{"body":{"Pub":[40,{"Or":[{"And":[[{"Rule":17}],null]}]}]}},{"body":{"Pub":[41,{"Or":[{"And":[[{"Token":6},{"Rule":27},{"Token":17},{"Rule":28},{"Token":18}],1]}]}]}},{"body":{"Pub":[42,{"Or":[{"And":[[{"Token":23}],null]}]}]}},{"body":{"Pub":[43,{"Or":[{"And":[[{"Token":24}],null]},{"And":[[{"Rule":18}],null]}]}]}},{"body":{"Pub":[44,{"Or":[{"And":[[{"Call":[{"Rule":31},[[1,{"Rep":{"Rule":26}}]]]}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":21}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":13}],[5,{"Token":14}],[6,{"Var":1}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":11}],[5,{"Token":12}],[6,{"Var":2}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":15}],[5,{"Token":16}],[6,{"Var":3}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Var":4},{"Layer":[{"Call":[{"Rule":35},[[7,{"Var":4}],[8,{"Var":5}]]]},{"Var":6}]},{"Var":5}],1]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":7},{"Call":[{"Rule":35},[[7,{"Var":7}],[8,{"Var":8}]]]},{"Var":8}],1]},{"And":[[{"Not":{"Var":8}}],null]}]}}],null]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[26,{"Or":[{"And":[[{"Rule":1}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":2},{"Rule":3}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":7}],null]},{"And":[[{"Token":5}],null]},{"And":[[{"Token":8}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":4}],null]},{"And":[[{"Token":10}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":4}],null]},{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":8}],null]},{"And":[[{"Rule":11}],null]},{"And":[[{"Rule":12}],null]}]}},{"body":{"Pub":[27,{"Or":[{"And":[[{"Token":9},{"Or":[{"And":[[{"Rule":16},{"Or":[{"And":[[{"Rule":24}],null]},{"And":[[{"Opt":{"Or":[{"And":[[{"Token":21},{"Rule":5}],null]}]}}],null]}]}],null]},{"And":[[{"Opt":{"Token":21}},{"Rule":5}],null]}]},{"Token":19}],1]}]}]}},{"body":{"Pub":[28,{"Or":[{"And":[[{"Token":23}],null]},{"And":[[{"Call":[{"Rule":31},[[1,{"Call":[{"Rule":30},[[0,{"Rule":6}]]]}]]]}],null]}]}]}},{"body":{"Pub":[29,{"Or":[{"And":[[{"Token":24},{"Opt":{"Rule":24}}],1]}]}]}},{"body":{"Pub":[30,{"Or":[{"And":[[{"Token":4},{"Token":3},{"Token":24},{"Opt":{"Rule":24}},{"Token":19}],2]}]}]}},{"body":{"Pub":[31,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":5},{"Token":24},{"Rule":9},{"Opt":{"Or":[{"And":[[{"Token":17},{"Rule":25}],null]}]}},{"Rule":29}],2]}]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":32},[[2,{"Call":[{"Rule":30},[[0,{"Rule":10}]]]}]]]}],null]}]}},{"body":{"Pub":[32,{"Or":[{"And":[[{"Rule":27},{"Token":20},{"Rule":25}],null]}]}]}},{"body":{"Pub":[33,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":8},{"Token":24},{"Or":[{"And":[[{"Call":[{"Rule":31},[[1,{"Call":[{"Rule":30},[[0,{"Rule":13}]]]}]]]}],null]},{"And":[[{"Token":19}],null]},{"And":[[{"Call":[{"Rule":32},[[2,{"Call":[{"Rule":30},[[0,{"Rule":14}]]]}]]]},{"Token":19}],null]}]}],2]}]}]}},{"body":{"Pub":[34,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":10},{"Token":24},{"Or":[{"And":[[{"Token":19}],null]},{"And":[[{"Call":[{"Rule":31},[[1,{"Rule":1}]]]}],null]}]}],2]}]}]}},{"body":{"Pub":[35,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Token":24},{"Token":20},{"Rule":25}],2]}]}]}},{"body":{"Pub":[36,{"Or":[{"And":[[{"Opt":{"Rule":15}},{"Rule":25}],null]}]}]}},{"body":{"Pub":[37,{"Or":[{"And":[[{"Token":7}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rule":19}],null]}]}},{"body":{"Or":[{"And":[[{"Enter":[0,{"Rule":19}]}],null]}]}},{"body":{"Or":[{"And":[[{"Enter":[1,{"Rule":19}]}],null]}]}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":[38,{"Or":[{"And":[[{"Opt":{"Token":21}},{"Rule":22}],null]}]}]}}},{"Postfix":{"ty":38,"op":{"Or":[{"And":[[{"Token":21},{"Rule":22}],null]}]}}}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"Opt":{"Token":21}},{"Rule":22}],null]}]}]}},{"body":{"Pub":[38,{"Or":[{"And":[[{"Rule":19},{"Or":[{"And":[[{"Token":21},{"Rule":22}],null]}]}],null]}]}]}},{"body":{"Or":[{"And":[[{"Token":24},{"Opt":{"Rule":23}}],null]}]}},{"body":{"Pub":[39,{"Or":[{"And":[[{"Or":[{"And":[[{"IsIn":0}],null]},{"And":[[{"IsIn":1},{"Token":21}],null]}]},{"Call":[{"Rule":33},[[3,{"Call":[{"Rule":30},[[0,{"Rule":25}]]]}]]]}],null]}]}]}},{"body":{"Pub":[40,{"Or":[{"And":[[{"Token":2},{"Token":24}],null]}]}]}},{"body":{"Pub":[41,{"Or":[{"And":[[{"Rule":17}],null]}]}]}},{"body":{"Pub":[42,{"Or":[{"And":[[{"Token":6},{"Rule":27},{"Token":18},{"Rule":28},{"Token":19}],1]}]}]}},{"body":{"Pub":[43,{"Or":[{"And":[[{"Token":24}],null]}]}]}},{"body":{"Pub":[44,{"Or":[{"And":[[{"Token":25}],null]},{"And":[[{"Rule":18}],null]}]}]}},{"body":{"Pub":[45,{"Or":[{"And":[[{"Call":[{"Rule":31},[[1,{"Rep":{"Rule":26}}]]]}],null]}]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":22}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":13}],[5,{"Token":14}],[6,{"Var":1}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":11}],[5,{"Token":12}],[6,{"Var":2}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":34},[[4,{"Token":15}],[5,{"Token":16}],[6,{"Var":3}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Var":4},{"Layer":[{"Call":[{"Rule":35},[[7,{"Var":4}],[8,{"Var":5}]]]},{"Var":6}]},{"Var":5}],1]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":7},{"Call":[{"Rule":35},[[7,{"Var":7}],[8,{"Var":8}]]]},{"Var":8}],1]},{"And":[[{"Not":{"Var":8}}],null]}]}}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -87,6 +88,7 @@ lazy_static! {
                     RBRACE => NodeTypeInfo { name: "RBRACE", whitespace_like: false },
                     LANGLE => NodeTypeInfo { name: "LANGLE", whitespace_like: false },
                     RANGLE => NodeTypeInfo { name: "RANGLE", whitespace_like: false },
+                    THIN_ARROW => NodeTypeInfo { name: "THIN_ARROW", whitespace_like: false },
                     EQ => NodeTypeInfo { name: "EQ", whitespace_like: false },
                     SEMI => NodeTypeInfo { name: "SEMI", whitespace_like: false },
                     COLON => NodeTypeInfo { name: "COLON", whitespace_like: false },
@@ -138,6 +140,7 @@ lazy_static! {
                 LexRule::new(RBRACE, "\\}", None),
                 LexRule::new(LANGLE, "<", None),
                 LexRule::new(RANGLE, ">", None),
+                LexRule::new(THIN_ARROW, "\\->", None),
                 LexRule::new(EQ, "=", None),
                 LexRule::new(SEMI, ";", None),
                 LexRule::new(COLON, ":", None),
