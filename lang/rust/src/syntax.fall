@@ -158,7 +158,7 @@ pub rule pattern {
 pub rule expr { 
    sum_expr | product_expr 
 |  if_expr   
-|  literal | path_expr | block_expr
+|  literal | struct_literal | path_expr | block_expr
 }
 
 #[bin(2)]
@@ -174,6 +174,15 @@ pub rule sum_expr {
 #[atom]
 pub rule literal {
   number
+}
+
+#[atom]
+pub rule struct_literal {
+  expr_path <block <comma_list struct_literal_field>>
+}
+
+pub rule struct_literal_field {
+  ident <commit> ':' expr
 }
 
 #[atom]
@@ -203,11 +212,6 @@ pub rule if_expr {
   'if' <commit> expr block_expr 
   <opt {'else' block_expr}>
 }
-example r"
-  fn foo() {
-    let _ = if 1 + 1 { 92 } else {};
-  }
-"
 
 rule comma_list(el) {
   <rep {el <commit> {<eof>|','}}>

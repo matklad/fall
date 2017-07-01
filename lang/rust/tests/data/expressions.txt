@@ -42,45 +42,6 @@ FILE
       RBRACE "}"
   FN_DEF
     FN "fn"
-    IDENT "statements"
-    LPAREN "("
-    RPAREN ")"
-    BLOCK_EXPR
-      LBRACE "{"
-      LET_STMT
-        LET "let"
-        PATTERN
-          IDENT "a"
-        EQ "="
-        LITERAL
-          NUMBER "1"
-        SEMI ";"
-      LET_STMT
-        LET "let"
-        PATTERN
-          IDENT "b"
-        EQ "="
-        PATH_EXPR
-          PATH
-            PATH
-              IDENT "a"
-            COLONCOLON "::"
-            IDENT "b"
-            TYPE_ARGUMENTS
-              COLONCOLON "::"
-              LANGLE "<"
-              TYPE
-                PATH
-                  IDENT "c"
-              RANGLE ">"
-        SEMI ";"
-      EXPR_STMT
-        LITERAL
-          NUMBER "3"
-        SEMI ";"
-      RBRACE "}"
-  FN_DEF
-    FN "fn"
     IDENT "precedence"
     LPAREN "("
     RPAREN ")"
@@ -171,5 +132,100 @@ FILE
           PLUS "+"
           LITERAL
             NUMBER "5"
+        SEMI ";"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "misc"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "a"
+        EQ "="
+        LITERAL
+          NUMBER "1"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "b"
+        EQ "="
+        PATH_EXPR
+          PATH
+            PATH
+              IDENT "a"
+            COLONCOLON "::"
+            IDENT "b"
+            TYPE_ARGUMENTS
+              COLONCOLON "::"
+              LANGLE "<"
+              TYPE
+                PATH
+                  IDENT "c"
+              RANGLE ">"
+        SEMI ";"
+      EXPR_STMT
+        LITERAL
+          NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        STRUCT_LITERAL
+          PATH
+            IDENT "foo"
+          LBRACE "{"
+          RBRACE "}"
+        SEMI ";"
+      EXPR_STMT
+        STRUCT_LITERAL
+          PATH
+            IDENT "foo"
+          LBRACE "{"
+          STRUCT_LITERAL_FIELD
+            IDENT "a"
+            COLON ":"
+            LITERAL
+              NUMBER "1"
+          RBRACE "}"
+        SEMI ";"
+      EXPR_STMT
+        STRUCT_LITERAL
+          PATH
+            IDENT "foo"
+          LBRACE "{"
+          STRUCT_LITERAL_FIELD
+            IDENT "a"
+            COLON ":"
+            LITERAL
+              NUMBER "2"
+          COMMA ","
+          RBRACE "}"
+        SEMI ";"
+      EXPR_STMT
+        STRUCT_LITERAL
+          PATH
+            PATH
+              IDENT "foo"
+            COLONCOLON "::"
+            IDENT "bar"
+          LBRACE "{"
+          STRUCT_LITERAL_FIELD
+            IDENT "a"
+            COLON ":"
+            LITERAL
+              NUMBER "1"
+          COMMA ","
+          STRUCT_LITERAL_FIELD
+            IDENT "b"
+            COLON ":"
+            STRUCT_LITERAL
+              PATH
+                IDENT "C"
+              LBRACE "{"
+              RBRACE "}"
+          RBRACE "}"
         SEMI ";"
       RBRACE "}"
