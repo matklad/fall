@@ -106,7 +106,8 @@ impl<'f> LexRule<'f> {
 pub enum PratKind {
     Atom,
     Bin(u32),
-    Postfix
+    Postfix,
+    Prefix
 }
 
 impl<'f> SynRule<'f> {
@@ -142,6 +143,8 @@ impl<'f> SynRule<'f> {
             Some(PratKind::Atom)
         } else if attrs.has_attribute("postfix") {
             Some(PratKind::Postfix)
+        } else if attrs.has_attribute("prefix") {
+            Some(PratKind::Prefix)
         } else if let Some(priority) = attrs.find("bin").and_then(|attr| attr.u32_value()) {
             Some(PratKind::Bin(priority))
         } else {

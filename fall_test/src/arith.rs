@@ -17,15 +17,16 @@ pub const SUM_EXPR: NodeType = NodeType(111);
 pub const CONSTANT_EXPR: NodeType = NodeType(112);
 pub const PAREN_EXPR: NodeType = NodeType(113);
 pub const FACTORIAL_EXPR: NodeType = NodeType(114);
+pub const NEGATE_EXPR: NodeType = NodeType(115);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR,
-            WHITESPACE, NUMBER, PLUS, MINUS, STAR, SLASH, BANG, LPAREN, RPAREN, FILE, PRODUCT_EXPR, SUM_EXPR, CONSTANT_EXPR, PAREN_EXPR, FACTORIAL_EXPR,
+            WHITESPACE, NUMBER, PLUS, MINUS, STAR, SLASH, BANG, LPAREN, RPAREN, FILE, PRODUCT_EXPR, SUM_EXPR, CONSTANT_EXPR, PAREN_EXPR, FACTORIAL_EXPR, NEGATE_EXPR,
         ];
-        let parser_json = r##"[{"body":{"Pub":[10,{"Or":[{"And":[[{"Rule":1}],null]}]}]}},{"body":{"Pratt":[{"Binary":{"ty":12,"op":{"Or":[{"And":[[{"Token":3}],null]},{"And":[[{"Token":4}],null]}]},"priority":1}},{"Binary":{"ty":11,"op":{"Or":[{"And":[[{"Token":5}],null]},{"And":[[{"Token":6}],null]}]},"priority":2}},{"Postfix":{"ty":15,"op":{"Token":7}}},{"Atom":{"body":{"Pub":[13,{"Or":[{"And":[[{"Token":2}],null]}]}]}}},{"Atom":{"body":{"Pub":[14,{"Or":[{"And":[[{"Token":8},{"Rule":1},{"Token":9}],null]}]}]}}}]}},{"body":{"Pub":[11,{"Or":[{"And":[[{"Rule":1},{"Or":[{"And":[[{"Token":5}],null]},{"And":[[{"Token":6}],null]}]},{"Rule":1}],null]}]}]}},{"body":{"Pub":[12,{"Or":[{"And":[[{"Rule":1},{"Or":[{"And":[[{"Token":3}],null]},{"And":[[{"Token":4}],null]}]},{"Rule":1}],null]}]}]}},{"body":{"Pub":[13,{"Or":[{"And":[[{"Token":2}],null]}]}]}},{"body":{"Pub":[14,{"Or":[{"And":[[{"Token":8},{"Rule":1},{"Token":9}],null]}]}]}},{"body":{"Pub":[15,{"Or":[{"And":[[{"Rule":1},{"Token":7}],null]}]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":[10,{"Or":[{"And":[[{"Rule":1}],null]}]}]}},{"body":{"Pratt":[{"Binary":{"ty":12,"op":{"Or":[{"And":[[{"Token":3}],null]},{"And":[[{"Token":4}],null]}]},"priority":1}},{"Binary":{"ty":11,"op":{"Or":[{"And":[[{"Token":5}],null]},{"And":[[{"Token":6}],null]}]},"priority":2}},{"Postfix":{"ty":15,"op":{"Token":7}}},{"Prefix":{"ty":16,"op":{"Token":4}}},{"Atom":{"body":{"Pub":[13,{"Or":[{"And":[[{"Token":2}],null]}]}]}}},{"Atom":{"body":{"Pub":[14,{"Or":[{"And":[[{"Token":8},{"Rule":1},{"Token":9}],null]}]}]}}}]}},{"body":{"Pub":[11,{"Or":[{"And":[[{"Rule":1},{"Or":[{"And":[[{"Token":5}],null]},{"And":[[{"Token":6}],null]}]},{"Rule":1}],null]}]}]}},{"body":{"Pub":[12,{"Or":[{"And":[[{"Rule":1},{"Or":[{"And":[[{"Token":3}],null]},{"And":[[{"Token":4}],null]}]},{"Rule":1}],null]}]}]}},{"body":{"Pub":[13,{"Or":[{"And":[[{"Token":2}],null]}]}]}},{"body":{"Pub":[14,{"Or":[{"And":[[{"Token":8},{"Rule":1},{"Token":9}],null]}]}]}},{"body":{"Pub":[15,{"Or":[{"And":[[{"Rule":1},{"Token":7}],null]}]}]}},{"body":{"Pub":[16,{"Or":[{"And":[[{"Token":4},{"Rule":1}],null]}]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -57,6 +58,7 @@ lazy_static! {
                     CONSTANT_EXPR => NodeTypeInfo { name: "CONSTANT_EXPR", whitespace_like: false },
                     PAREN_EXPR => NodeTypeInfo { name: "PAREN_EXPR", whitespace_like: false },
                     FACTORIAL_EXPR => NodeTypeInfo { name: "FACTORIAL_EXPR", whitespace_like: false },
+                    NEGATE_EXPR => NodeTypeInfo { name: "NEGATE_EXPR", whitespace_like: false },
                     _ => panic!("Unknown NodeType: {:?}", ty)
                 }
             }

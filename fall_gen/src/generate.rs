@@ -160,6 +160,22 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     op: Box::new(compile_expr(op)?),
                 }
             }
+            PratKind::Prefix => {
+                let alt = match rule.body() {
+                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
+                    "bad pratt rule"
+                    ))?,
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                let op = match alt {
+                    Expr::SeqExpr(seq) => seq.parts().nth(0).unwrap(),
+                    _ => return Err(error!("bad pratt rule"))
+                };
+                fall_parse::PrattVariant::Prefix {
+                    ty: ty,
+                    op: Box::new(compile_expr(op)?),
+                }
+            }
             PratKind::Bin(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(

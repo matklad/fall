@@ -129,3 +129,30 @@ FILE
         BANG "!"
 "#)
 }
+
+#[test]
+fn prefix() {
+    match_ast(&ast("1 + --1! - -2!"), r#"
+FILE
+  SUM_EXPR
+    SUM_EXPR
+      CONSTANT_EXPR
+        NUMBER "1"
+      PLUS "+"
+      NEGATE_EXPR
+        MINUS "-"
+        NEGATE_EXPR
+          MINUS "-"
+          FACTORIAL_EXPR
+            CONSTANT_EXPR
+              NUMBER "1"
+            BANG "!"
+    MINUS "-"
+    NEGATE_EXPR
+      MINUS "-"
+      FACTORIAL_EXPR
+        CONSTANT_EXPR
+          NUMBER "2"
+        BANG "!"
+    "#)
+}

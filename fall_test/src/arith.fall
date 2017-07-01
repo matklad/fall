@@ -17,6 +17,7 @@ pub rule file { expr }
 rule expr {
   sum_expr | product_expr 
   | factorial_expr
+  | negate_expr
   | constant_expr | paren_expr
 }
 
@@ -34,3 +35,10 @@ pub rule paren_expr { '(' expr ')' }
 
 #[postfix]
 pub rule factorial_expr { expr '!' }
+
+#[prefix]
+pub rule negate_expr { '-' expr }
+
+example r"
+  1 + --1! - -2!
+"

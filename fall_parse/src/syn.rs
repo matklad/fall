@@ -47,6 +47,10 @@ pub enum PrattVariant {
     Postfix {
         ty: usize,
         op: Box<Expr>
+    },
+    Prefix {
+        ty: usize,
+        op: Box<Expr>
     }
 }
 
@@ -313,20 +317,12 @@ impl<'r> Parser<'r> {
 
     fn parse_pratt<'t, 'p>(&'p self, expr_grammar: &'p [PrattVariant], tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>, min_prior: u32)
                            -> Option<(Node, TokenSequence<'t>)> {
-        let atoms = expr_grammar.iter().filter_map(|v| {
-            match *v {
-                PrattVariant::Atom { ref body } => Some(body.as_ref()),
-                _ => None
-            }
-        });
-
-
-        let (mut lhs, mut tokens) = match self.parse_any(atoms, tokens, ctx) {
+        let (mut lhs, mut tokens) = match self.parse_pratt_prefix(expr_grammar, tokens, ctx) {
             Some(p) => p,
-            None => return None
+            None => return None,
         };
 
-        'outer: loop {
+        'postfix: loop {
             let postfix = expr_grammar.iter().filter_map(|v| {
                 match *v {
                     PrattVariant::Postfix { ty, ref op } => {
@@ -342,10 +338,13 @@ impl<'r> Parser<'r> {
                     ctx.push_child(&mut lhs, node);
                     ctx.push_child(&mut lhs, op_node);
                     tokens = rest;
-                    continue 'outer;
+                    continue 'postfix;
                 }
             }
+            break;
+        }
 
+        'bin: loop {
             let bins = expr_grammar.iter().filter_map(|v| {
                 match *v {
                     PrattVariant::Binary { ty, ref op, priority } if priority > min_prior => {
@@ -364,13 +363,42 @@ impl<'r> Parser<'r> {
                         ctx.push_child(&mut lhs, op_node);
                         ctx.push_child(&mut lhs, rhs_node);
                         tokens = rest;
-                        continue 'outer;
+                        continue 'bin;
                     }
                 }
             }
-            break
+            break;
         }
         Some((lhs, tokens))
+    }
+
+    fn parse_pratt_prefix<'t, 'p>(&'p self, expr_grammar: &'p [PrattVariant], tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)
+                                  -> Option<(Node, TokenSequence<'t>)> {
+        let prefix = expr_grammar.iter().filter_map(|v| {
+            match *v {
+                PrattVariant::Prefix { ty, ref op } => Some((self.node_type(ty), op.as_ref())),
+                _ => None
+            }
+        });
+
+        for (ty, op) in prefix {
+            if let Some((op_node, rest)) = self.parse_exp(op, tokens, ctx) {
+                let mut node = ctx.create_composite_node(Some(ty));
+                ctx.push_child(&mut node, op_node);
+                if let Some((expr, rest)) = self.parse_pratt(expr_grammar, rest, ctx, 999) {
+                    ctx.push_child(&mut node, expr);
+                    return Some((node, rest));
+                }
+            }
+        }
+
+        let atoms = expr_grammar.iter().filter_map(|v| {
+            match *v {
+                PrattVariant::Atom { ref body } => Some(body.as_ref()),
+                _ => None
+            }
+        });
+        self.parse_any(atoms, tokens, ctx)
     }
 
     fn parse_exp_pred<'t, 'p>(&'p self, expr: &'p Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)
