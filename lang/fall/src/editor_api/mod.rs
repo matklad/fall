@@ -130,6 +130,10 @@ pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
+    if range.is_empty() {
+        return try_find_non_ws_node_at_offset(file, range.start())
+    }
+
     let root = file.root();
     let (left, right) = match (
         find_leaf_at_offset(root, range.start()).right_biased(),
@@ -140,6 +144,17 @@ fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
     };
 
     Some(common_ancestor(left, right))
+}
+
+fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node> {
+    let leaves = find_leaf_at_offset(file.root(), offset);
+    if let Some(leaf) = leaves.left_biased() {
+        if file.language().node_type_info(leaf.ty()).whitespace_like {
+            return leaves.right_biased()
+        }
+    }
+
+    leaves.left_biased()
 }
 
 fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {

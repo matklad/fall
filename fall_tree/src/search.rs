@@ -55,6 +55,7 @@ pub fn is_leaf(node: Node) -> bool {
     node.children().next().is_none() && !node.range().is_empty()
 }
 
+#[derive(Clone, Copy)]
 pub enum LeafAtOffset<'f> {
     None,
     Single(Node<'f>),
