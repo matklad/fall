@@ -193,34 +193,17 @@ rule comma_list(el) {
   <rep {el <commit> {<eof>|','}}>
 }
 
-rule block(body) { '{'<commit> <layer block_body body> '}'}
-rule block_body { <rep brace_balanced> }
-rule brace_balanced {
-  '{' <commit> block_body '}'
-| <not '}'>
-}
+rule block(body) { '{'<commit> <layer in_braces body> '}'}
+
+rule in_braces { <balanced '{' '}'> }
+rule in_parens { <balanced '(' ')'> }
+rule in_bracks { <balanced '[' ']'> }
 
 rule balanced(bra, ket) {
   <rep {
     bra <commit> <balanced bra ket> ket
   | <not ket> 
   }>
-}
-
-rule in_parens { <rep paren_balanced> }
-rule paren_balanced {
-  '(' <commit> in_parens ')'
-| <not ')'>
-}
-
-example r"
-  rule foo { bar | baz }
-"
-
-rule in_bracks { <rep brack_balanced> }
-rule brack_balanced {
-  '[' <commit> in_bracks ']'
-| <not ']'>
 }
 
 

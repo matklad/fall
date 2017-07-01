@@ -272,8 +272,13 @@ impl<'r> Parser<'r> {
 
             Expr::Call(ref body, ref args) => {
                 let old = ctx.args;
-                for &(i, ref a) in args.iter() {
-                    ctx.args[i as usize] = Some(a);
+                for &(arg_pos, ref arg) in args.iter() {
+                    let arg = match *arg {
+                        Expr::Var(i) => ctx.args[i as usize].unwrap(),
+                        _ => arg
+                    };
+
+                    ctx.args[arg_pos as usize] = Some(arg);
                 }
                 let result = self.parse_exp(body, tokens, ctx);
                 ctx.args = old;
