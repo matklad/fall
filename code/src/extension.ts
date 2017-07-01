@@ -32,6 +32,7 @@ var backend = (() => {
         findContextActions: (offset: number): [string] => native.file_find_context_actions(offset),
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
+        diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
     }
 })()
 
@@ -58,6 +59,8 @@ export function activate(context: vscode.ExtensionContext) {
             borderStyle: "none none dashed none",
         })
     }
+
+    let fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
 
     class TextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
@@ -144,6 +147,22 @@ export function activate(context: vscode.ExtensionContext) {
             let ranges = decorationSets[type]
             activeEditor.setDecorations(deco, ranges)
         }
+
+        fallDiagnostics.clear()
+        fallDiagnostics.set(
+            activeEditor.document.uri,
+            backend.diagnostics().map((d) => {
+                let range = new Range(
+                    activeEditor.document.positionAt(d.range[0]),
+                    activeEditor.document.positionAt(d.range[1]),
+                )
+                let severity = d.severity == "error" 
+                    ? vscode.DiagnosticSeverity.Error 
+                    : vscode.DiagnosticSeverity.Warning
+                    
+                return new vscode.Diagnostic(range, d.text, severity)
+            })
+        )
     }
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
@@ -201,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
     ]
     context.subscriptions.push(...commands)
     context.subscriptions.push(...providers)
+    context.subscriptions.push(fallDiagnostics)
     highlight()
 }
 

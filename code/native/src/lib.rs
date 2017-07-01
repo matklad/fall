@@ -13,7 +13,7 @@ use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, Object};
 
 use lang_fall::editor_api;
-use lang_fall::editor_api::FileStructureNode;
+use lang_fall::editor_api::{FileStructureNode, Severity};
 use fall_tree::{TextRange, TextUnit, File};
 
 lazy_static! {
@@ -56,6 +56,13 @@ fn file_highlight(call: Call) -> JsResult<JsValue> {
 
 pub fn text_unit_to_js<'a, T: Scope<'a>>(scope: &mut T, u: TextUnit) -> Handle<'a, JsInteger> {
     JsInteger::new(scope, u.as_u32() as i32)
+}
+
+pub fn range_to_js<'a, T: Scope<'a>>(scope: &mut T, range: TextRange) -> Handle<'a, JsArray> {
+    let result = JsArray::new(scope, 2);
+    result.set(0, text_unit_to_js(scope, range.start())).unwrap();
+    result.set(1, text_unit_to_js(scope, range.end())).unwrap();
+    result
 }
 
 
@@ -155,18 +162,35 @@ fn file_structure(call: Call) -> JsResult<JsValue> {
         let result = JsObject::new(scope);
         let children = JsArray::new(scope, node.children.len() as u32);
         for (i, node) in node.children.into_iter().enumerate() {
-            let node_js = to_js(scope, node);
-            children.set(i as u32, node_js?)?;
+            children.set(i as u32, to_js(scope, node)?)?;
         }
         result.set("name", JsString::new(scope, &node.name).unwrap())?;
         result.set("children", children)?;
 
-        let range = JsArray::new(scope, 2);
-        range.set(0, text_unit_to_js(scope, node.range.start()))?;
-        range.set(1, text_unit_to_js(scope, node.range.end()))?;
-        result.set("range", range)?;
+        result.set("range", range_to_js(scope, node.range))?;
         Ok(result.upcast())
     }
+}
+
+fn file_diagnostics(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let diagnostics = editor_api::diagnostics(file);
+    let result = JsArray::new(scope, diagnostics.len() as u32);
+
+    for (i, diag) in diagnostics.into_iter().enumerate() {
+        let d = JsObject::new(scope);
+        d.set("text", JsString::new(scope, &diag.text).unwrap())?;
+        d.set("range", range_to_js(scope, diag.range))?;
+        let severity = match diag.severity {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+        };
+        d.set("severity", JsString::new(scope, severity).unwrap());
+        result.set(i as u32, d)?;
+    }
+    Ok(result.upcast())
 }
 
 register_module!(m, {
@@ -178,5 +202,6 @@ register_module!(m, {
     m.export("file_find_context_actions", file_find_context_actions)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;
+    m.export("file_diagnostics", file_diagnostics)?;
     Ok(())
 });
