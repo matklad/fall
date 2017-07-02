@@ -74,3 +74,8 @@ impl ops::Sub<TextUnit> for TextUnit {
     }
 }
 
+impl ops::SubAssign<TextUnit> for TextUnit {
+    fn sub_assign(&mut self, rhs: TextUnit) {
+        self.0 -= rhs.0
+    }
+}

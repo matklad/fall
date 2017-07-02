@@ -19,6 +19,8 @@ tokenizer {
   rbrace '}'
   langle '<'
   rangle '>'
+  #[contextual] shl '<<'
+  #[contextual] shr '>>'
   thin_arrow '->'
   eq '='
   semi ';'
@@ -161,7 +163,9 @@ pub rule expr {
   literal | struct_literal | path_expr | paren_expr
 | block_expr | if_expr
 | reference_expr | dereference_expr | negation_expr
-| sum_expr | product_expr | bit_and | bit_or
+| product_expr | sum_expr 
+| bit_shift
+| bit_and | bit_or
 }
 
 #[atom]
@@ -222,14 +226,19 @@ pub rule dereference_expr { '*' expr }
 #[prefix]
 pub rule negation_expr { '-' expr }
 
-#[bin(4)]
+#[bin(5)]
 pub rule product_expr {
   expr {'*' | '/' | '%'} expr
 }
 
-#[bin(3)]
+#[bin(4)]
 pub rule sum_expr {
   expr {'+' | '-'} expr
+}
+
+#[bin(3)]
+pub rule bit_shift {
+  expr {'<<' | '>>'} expr
 }
 
 #[bin(2)]

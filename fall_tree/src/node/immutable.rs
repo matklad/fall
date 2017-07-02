@@ -44,6 +44,11 @@ impl INode {
         inner.children.push(child);
     }
 
+    pub fn push_token_part(&mut self, len: TextUnit) {
+        let inner = Arc::make_mut(&mut self.inner);
+        inner.len += len;
+    }
+
     pub fn ty(&self) -> NodeType {
         self.inner.ty
     }

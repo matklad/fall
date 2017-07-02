@@ -9,9 +9,14 @@ fn d() { {} }
 fn precedence() {
     let x = 1 + 2 * 3 % 4 - 5 / 6;
     1 + 2 * 3;
-    1 & 2 + 3;
+    1 << 2 + 3;
+    1 & 2 >> 3;
     1 | 2 & 3;
     ---&*1 - --2 * 9;
+}
+
+fn angle_ambiguity() {
+    foo::<X<Y>> >> 1 << 2;
 }
 
 fn blockish() {
@@ -38,16 +43,4 @@ fn misc() {
     foo {a: 1};
     foo {a: 2,};
     foo::bar {a: 1, b: C {}};
-}
-
-fn main() {
-    let and1 = 2 * 1 & 1;
-    let and2 = (2 * 1) & 1;
-    let and3 = 2 * (1 & 1);
-    println!("{} {} {}", and1, and2, and3);
-
-    let or1 = 2 * 0 | 1;
-    let or2 = (2 * 0) | 1;
-    let or3 = 2 * (0 | 1);
-    println!("{} {} {}", or1, or2, or3);
 }
