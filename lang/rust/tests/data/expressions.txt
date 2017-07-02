@@ -111,6 +111,32 @@ FILE
             LITERAL
               NUMBER "3"
         SEMI ";"
+      EXPR_STMT
+        SUM_EXPR
+          NEGATION_EXPR
+            MINUS "-"
+            NEGATION_EXPR
+              MINUS "-"
+              NEGATION_EXPR
+                MINUS "-"
+                REFERENCE_EXPR
+                  AMPERSAND "&"
+                  DEREFERENCE_EXPR
+                    STAR "*"
+                    LITERAL
+                      NUMBER "1"
+          MINUS "-"
+          PRODUCT_EXPR
+            NEGATION_EXPR
+              MINUS "-"
+              NEGATION_EXPR
+                MINUS "-"
+                LITERAL
+                  NUMBER "2"
+            STAR "*"
+            LITERAL
+              NUMBER "9"
+        SEMI ";"
       RBRACE "}"
   FN_DEF
     FN "fn"
@@ -194,6 +220,27 @@ FILE
         RPAREN ")"
         LBRACE "{"
         RBRACE "}"
+      RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "blocklike_expressions"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      EXPR_STMT
+        SUM_EXPR
+          BLOCK_EXPR
+            LBRACE "{"
+            EXPR_STMT
+              LITERAL
+                NUMBER "92"
+              SEMI ";"
+            RBRACE "}"
+          MINUS "-"
+          LITERAL
+            NUMBER "1"
+        SEMI ";"
       RBRACE "}"
   FN_DEF
     FN "fn"

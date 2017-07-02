@@ -11,7 +11,7 @@ fn precedence() {
     1 + 2 * 3;
     1 & 2 + 3;
     1 | 2 & 3;
-
+    ---&*1 - --2 * 9;
 }
 
 fn blockish() {
@@ -23,6 +23,10 @@ fn blockish() {
 fn struct_cond_ambiguity() {
     if foo {}
     if (foo {}) {}
+}
+
+fn blocklike_expressions() {
+    { 92; } -1;
 }
 
 fn misc() {

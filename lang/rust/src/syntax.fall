@@ -158,30 +158,10 @@ pub rule pattern {
 
 #[pratt]
 pub rule expr { 
-  sum_expr | product_expr | bit_and | bit_or
-| if_expr   
-| literal | struct_literal | path_expr | block_expr
-| paren_expr
-}
-
-#[bin(4)]
-pub rule product_expr {
-  expr {'*' | '/' | '%'} expr
-}
-
-#[bin(3)]
-pub rule sum_expr {
-  expr {'+' | '-'} expr
-}
-
-#[bin(2)]
-pub rule bit_and {
-  expr '&' expr
-}
-
-#[bin(1)]
-pub rule bit_or {
-  expr '|' expr
+  literal | struct_literal | path_expr | paren_expr
+| block_expr | if_expr
+| reference_expr | dereference_expr | negation_expr
+| sum_expr | product_expr | bit_and | bit_or
 }
 
 #[atom]
@@ -203,7 +183,6 @@ pub rule struct_literal_field {
 pub rule paren_expr {
   '(' <exit 'condition' expr> ')'
 }
-
 
 #[atom]
 pub rule path_expr {
@@ -233,6 +212,36 @@ pub rule if_expr {
     block_expr 
     <opt {'else' block_expr}>
 }
+
+#[prefix]
+pub rule reference_expr { '&' expr }
+
+#[prefix]
+pub rule dereference_expr { '*' expr }
+
+#[prefix]
+pub rule negation_expr { '-' expr }
+
+#[bin(4)]
+pub rule product_expr {
+  expr {'*' | '/' | '%'} expr
+}
+
+#[bin(3)]
+pub rule sum_expr {
+  expr {'+' | '-'} expr
+}
+
+#[bin(2)]
+pub rule bit_and {
+  expr '&' expr
+}
+
+#[bin(1)]
+pub rule bit_or {
+  expr '|' expr
+}
+
 
 rule comma_list(el) {
   <rep {el <commit> {<eof>|','}}>
