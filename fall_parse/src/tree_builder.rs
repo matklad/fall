@@ -13,7 +13,10 @@ pub struct TokenSequence<'a> {
 
 #[derive(Debug)]
 pub enum Node {
-    Leaf(NodeType, usize),
+    Leaf {
+        ty: NodeType,
+        token_idx: usize
+    },
     Composite {
         ty: Option<NodeType>,
         children: Vec<Node>,
@@ -52,10 +55,10 @@ impl<'a> TokenSequence<'a> {
 
     pub fn bump(&self) -> (Node, TokenSequence<'a>) {
         let token = self.current().expect("Can't bump an empty token sequence");
-        let node = Node::Leaf(token.ty, self.non_ws_indexes[0]);
+        let node = Node::Leaf { ty: token.ty, token_idx: self.non_ws_indexes[0] };
         let mut text_len = 0;
         let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
-        for i in self.non_ws_indexes[0] ..next_idx {
+        for i in self.non_ws_indexes[0]..next_idx {
             text_len += self.original_tokens[i].len.as_u32() as usize;
         }
         let rest = TokenSequence {
@@ -70,7 +73,7 @@ impl<'a> TokenSequence<'a> {
     pub fn bump_by_text(&self, ty: NodeType, text: &str) -> Option<(Node, TokenSequence<'a>)> {
         if let Some(t) = self.current_text() {
             if t == text {
-                let node = Node::Leaf(ty, self.non_ws_indexes[0]);
+                let node = Node::Leaf { ty: ty, token_idx: self.non_ws_indexes[0] };
                 let (_, rest) = self.bump();
                 return Some((node, rest));
             }
@@ -90,7 +93,7 @@ impl Node {
     pub fn push_child(&mut self, child: Node) {
         match *self {
             Node::Composite { ref mut children, .. } => children.push(child),
-            Node::Leaf(..) => panic!("Can't add children to a leaf node"),
+            Node::Leaf { .. } => panic!("Can't add children to a leaf node"),
         }
     }
 
@@ -110,7 +113,7 @@ impl Node {
 
     fn right_idx(&self) -> Option<usize> {
         match *self {
-            Node::Leaf(_, idx) => Some(idx),
+            Node::Leaf { token_idx, .. } => Some(token_idx),
             Node::Composite { ref children, .. } => children.iter().rev().filter_map(|n| {
                 n.right_idx()
             }).next(),
@@ -119,7 +122,7 @@ impl Node {
 
     fn left_idx(&self) -> Option<usize> {
         match *self {
-            Node::Leaf(_, idx) => Some(idx),
+            Node::Leaf { token_idx, .. } => Some(token_idx),
             Node::Composite { ref children, .. } => match children.first() {
                 None => None,
                 Some(child) => child.left_idx()
@@ -270,8 +273,8 @@ fn to_ws_node(lang: &Language, file_node: Node, tokens: &[Token]) -> WsNode {
 
 fn add_child(lang: &Language, parent: &mut WsNode, node: &Node, tokens: &[Token]) {
     match *node {
-        Node::Leaf(ty, idx) => {
-            let mut node = token_ws_node(idx, tokens[idx]);
+        Node::Leaf { ty, token_idx } => {
+            let mut node = token_ws_node(token_idx, tokens[token_idx]);
             node.ty = Some(ty);
             parent.push_child(lang, node, tokens)
         }
