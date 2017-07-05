@@ -317,9 +317,18 @@ impl<'f> CallExpr<'f> {
         };
 
         let kind = match self.fn_name().to_cow().as_ref() {
-            "eof" => { check_args!(0); CallKind::Eof }
-            "any" => { check_args!(0); CallKind::Any }
-            "commit" => { check_args!(0); CallKind::Commit }
+            "eof" => {
+                check_args!(0);
+                CallKind::Eof
+            }
+            "any" => {
+                check_args!(0);
+                CallKind::Any
+            }
+            "commit" => {
+                check_args!(0);
+                CallKind::Commit
+            }
             "enter" => {
                 check_args!(2);
                 let ctx = self.resolve_context().ok_or("enter without context")?;
