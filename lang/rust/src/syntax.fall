@@ -78,12 +78,13 @@ pub rule extern_crate_decl {
 
 pub rule fn_def {
   <opt visibility> 'fn' <commit> ident
-  value_params
+  <opt type_parameters>
+  value_parameters
   <opt {'->' type}>
   block_expr
 }
 
-rule value_params {
+rule value_parameters {
   <in_parens <comma_list value_param>>
 }
 
@@ -93,12 +94,27 @@ pub rule value_param {
 
 
 pub rule struct_def {
-  <opt visibility> 'struct' <commit> ident {
+  <opt visibility> 
+  'struct' <commit> 
+  ident <opt type_parameters> {
     <block <comma_list struct_field>>
   | ';'
   | <in_parens <comma_list tuple_field>>';'
   }
 }
+
+pub rule type_parameters {
+  <in_angles <comma_list type_parameter>>
+}
+
+pub rule type_parameter {
+  ident
+}
+
+example r"
+  fn foo<Foo, Bar>() {
+  }
+"
 
 pub rule mod_def {
   <opt visibility> 'mod' <commit> ident {

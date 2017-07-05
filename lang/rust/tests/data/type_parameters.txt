@@ -1,0 +1,46 @@
+FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "Foo"
+    TYPE_PARAMETERS
+      LANGLE "<"
+      RANGLE ">"
+    LBRACE "{"
+    RBRACE "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "Bar"
+    TYPE_PARAMETERS
+      LANGLE "<"
+      TYPE_PARAMETER
+        IDENT "U"
+      COMMA ","
+      TYPE_PARAMETER
+        IDENT "V"
+      RANGLE ">"
+    LPAREN "("
+    TUPLE_FIELD
+      TYPE
+        PATH
+          IDENT "U"
+    COMMA ","
+    TUPLE_FIELD
+      TYPE
+        PATH
+          IDENT "V"
+    RPAREN ")"
+    SEMI ";"
+  FN_DEF
+    FN "fn"
+    IDENT "baz"
+    TYPE_PARAMETERS
+      LANGLE "<"
+      TYPE_PARAMETER
+        IDENT "X"
+      COMMA ","
+      RANGLE ">"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      RBRACE "}"
