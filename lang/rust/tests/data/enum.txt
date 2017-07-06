@@ -1,0 +1,35 @@
+FILE
+  ENUM_DEF
+    ENUM "enum"
+    IDENT "E"
+    LBRACE "{"
+    ENUM_VARIANT
+      IDENT "X"
+    COMMA ","
+    ENUM_VARIANT
+      IDENT "Y"
+      EQ "="
+      LITERAL
+        NUMBER "9"
+    COMMA ","
+    ENUM_VARIANT
+      IDENT "Z"
+      LPAREN "("
+      TUPLE_FIELD
+        TYPE
+          PATH
+            IDENT "i32"
+      RPAREN ")"
+    COMMA ","
+    ENUM_VARIANT
+      IDENT "T"
+      LBRACE "{"
+      STRUCT_FIELD
+        IDENT "t"
+        COLON ":"
+        TYPE
+          PATH
+            IDENT "i32"
+      COMMA ","
+      RBRACE "}"
+    RBRACE "}"

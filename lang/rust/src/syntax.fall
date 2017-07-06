@@ -12,6 +12,7 @@ tokenizer {
   mod 'mod'
   if 'if'
   else 'else'
+  enum 'enum'
 
   lparen '('
   rparen ')'
@@ -49,11 +50,11 @@ rule mod_contents {
 
 
 rule mod_form_first { 
-  'pub' | 'fn' | 'struct' | 'use' | 'extern' | 'mod'
+  'pub' | 'fn' | 'struct' | 'enum' | 'use' | 'extern' | 'mod'
 }
 
 rule mod_form { 
-  use_decl | extern_crate_decl | fn_def | struct_def | mod_def
+  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def
 }
 
 pub rule use_decl {
@@ -103,16 +104,35 @@ pub rule struct_def {
   }
 }
 
-pub rule type_parameters {
-  <in_angles <comma_list type_parameter>>
+pub rule struct_field {
+  <opt visibility> ident <commit> ':' type
 }
 
-pub rule type_parameter {
-  ident
+pub rule tuple_field {
+  <opt visibility> type
+}
+
+pub rule enum_def {
+  <opt visibility> 'enum' <commit> ident
+  <block <comma_list enum_variant>>
+}
+
+pub rule enum_variant {
+  ident <commit> <opt {
+    '=' expr
+  | <in_parens <comma_list tuple_field>>
+  | <block <comma_list struct_field>>
+  }>
 }
 
 example r"
-  fn foo<Foo, Bar>() {
+  enum E {
+    X,
+    Y = 9,
+    Z(pub i32),
+    T {
+      pub t: i32,
+    }
   }
 "
 
@@ -123,12 +143,12 @@ pub rule mod_def {
   }
 }
 
-pub rule struct_field {
-  <opt visibility> ident <commit> ':' type
+pub rule type_parameters {
+  <in_angles <comma_list type_parameter>>
 }
 
-pub rule tuple_field {
-  <opt visibility> type
+pub rule type_parameter {
+  ident
 }
 
 pub rule visibility {
