@@ -144,6 +144,15 @@ rule impl_form {
   fn_def
 }
 
+example r"
+  fn main() {
+    if foo(Foo {}) {
+    
+    }
+  }  
+  
+"
+
 pub rule type_parameters {
   <in_angles <comma_list type_parameter>>
 }
@@ -199,6 +208,7 @@ pub rule pattern {
 pub rule expr { 
   literal | struct_literal | path_expr | paren_expr
 | block_expr | if_expr
+| call_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
 | bit_shift
@@ -252,6 +262,16 @@ pub rule if_expr {
   'if' <commit> <enter 'condition' expr> 
     block_expr 
     <opt {'else' block_expr}>
+}
+
+#[postfix]
+pub rule call_expr {
+  expr <exit 'condition'
+    <in_parens <comma_list value_argument>>>
+}
+
+pub rule value_argument {
+  expr
 }
 
 #[prefix]

@@ -27,7 +27,8 @@ fn blockish() {
 
 fn struct_cond_ambiguity() {
     if foo {}
-    if (foo {}) {}
+    if (Foo {}) {}
+    if foo(Foo {}) {}
 }
 
 fn blocklike_expressions() {
@@ -43,4 +44,5 @@ fn misc() {
     foo {a: 1};
     foo {a: 2,};
     foo::bar {a: 1, b: C {}};
+    foo(1, 2, bar(3,));
 }
