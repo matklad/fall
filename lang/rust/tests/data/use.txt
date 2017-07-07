@@ -93,3 +93,10 @@ FILE
       COMMA ","
       RBRACE "}"
     SEMI ";"
+  USE_DECL
+    VISIBILITY
+      PUB "pub"
+    USE "use"
+    PATH
+      IDENT "zos"
+    SEMI ";"

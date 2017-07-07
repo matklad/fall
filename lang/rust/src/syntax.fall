@@ -59,7 +59,7 @@ rule mod_form {
 }
 
 pub rule use_decl {
-  'use' <commit> { 
+  <opt visibility> 'use' <commit> { 
     mod_path {alias | <opt {'::' use_spec}>}
   | <opt '::'> use_spec 
   } ';'
