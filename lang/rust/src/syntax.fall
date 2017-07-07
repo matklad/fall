@@ -1,6 +1,7 @@
 tokenizer {
   #[skip] whitespace r"\s+"
 
+  #[contextual] union 'union'
   as 'as'
   crate 'crate'
   extern 'extern'
@@ -50,7 +51,7 @@ rule mod_contents {
 
 
 rule mod_form_first { 
-  'pub' | 'fn' | 'struct' | 'enum' | 'use' | 'extern' | 'mod'
+  'pub' | 'fn' | 'struct' | 'enum' | 'use' | 'extern' | 'mod' | 'union'
 }
 
 rule mod_form { 
@@ -96,7 +97,7 @@ pub rule value_param {
 
 pub rule struct_def {
   <opt visibility> 
-  'struct' <commit> 
+  {'struct'|'union'} <commit> 
   ident <opt type_parameters> {
     <block <comma_list struct_field>>
   | ';'
@@ -124,17 +125,6 @@ pub rule enum_variant {
   | <block <comma_list struct_field>>
   }>
 }
-
-example r"
-  enum E {
-    X,
-    Y = 9,
-    Z(pub i32),
-    T {
-      pub t: i32,
-    }
-  }
-"
 
 pub rule mod_def {
   <opt visibility> 'mod' <commit> ident {

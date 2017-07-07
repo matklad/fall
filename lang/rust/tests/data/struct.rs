@@ -7,3 +7,8 @@ struct F(u32,);
 struct G(u32, String);
 struct H;
 
+union U {}
+
+fn contextual() {
+    let union = 92;
+}

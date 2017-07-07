@@ -87,3 +87,24 @@ FILE
     STRUCT "struct"
     IDENT "H"
     SEMI ";"
+  STRUCT_DEF
+    UNION "union"
+    IDENT "U"
+    LBRACE "{"
+    RBRACE "}"
+  FN_DEF
+    FN "fn"
+    IDENT "contextual"
+    LPAREN "("
+    RPAREN ")"
+    BLOCK_EXPR
+      LBRACE "{"
+      LET_STMT
+        LET "let"
+        PATTERN
+          IDENT "union"
+        EQ "="
+        LITERAL
+          NUMBER "92"
+        SEMI ";"
+      RBRACE "}"
