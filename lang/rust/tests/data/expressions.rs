@@ -26,9 +26,9 @@ fn blockish() {
 }
 
 fn struct_cond_ambiguity() {
-    if foo {}
-    if (Foo {}) {}
-    if foo(Foo {}) {}
+    if foo {};
+    if (Foo {}) {};
+    if foo(Foo {}) {};
 }
 
 fn blocklike_expressions() {
