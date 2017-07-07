@@ -14,6 +14,7 @@ tokenizer {
   if 'if'
   else 'else'
   enum 'enum'
+  impl 'impl'
 
   lparen '('
   rparen ')'
@@ -51,11 +52,12 @@ rule mod_contents {
 
 
 rule mod_form_first { 
-  'pub' | 'fn' | 'struct' | 'enum' | 'use' | 'extern' | 'mod' | 'union'
+  'pub' | 'extern'
+| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' | 'impl'
 }
 
 rule mod_form { 
-  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def
+  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def | impl_def
 }
 
 pub rule use_decl {
@@ -131,6 +133,15 @@ pub rule mod_def {
     ';'
   | <block mod_contents>
   }
+}
+
+pub rule impl_def {
+  'impl' <commit> ident 
+  <block <rep impl_form>>
+}
+
+rule impl_form {
+  fn_def
 }
 
 pub rule type_parameters {

@@ -1,0 +1,21 @@
+FILE
+  IMPL_DEF
+    IMPL "impl"
+    IDENT "Foo"
+    LBRACE "{"
+    FN_DEF
+      FN "fn"
+      IDENT "bar"
+      LPAREN "("
+      VALUE_PARAM
+        PATTERN
+          IDENT "x"
+        COLON ":"
+        TYPE
+          PATH
+            IDENT "i32"
+      RPAREN ")"
+      BLOCK_EXPR
+        LBRACE "{"
+        RBRACE "}"
+    RBRACE "}"
