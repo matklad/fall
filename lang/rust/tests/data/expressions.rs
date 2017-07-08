@@ -36,6 +36,12 @@ fn blocklike_expressions() {
     { 92; } -1;
     if foo {}
     if bar {}
+    1 + {1} + 2;
+    let _ = {1} + 1;
+    ({1} + 1);
+    {
+        let x = {1} + 1;
+    }
     {92}
 }
 

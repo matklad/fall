@@ -211,6 +211,10 @@ rule prev_is_block {
   <prev_is if_expr block_expr>
 }
 
+rule without_restrictions(p) {
+  <exit 'condition' <exit 'stmt' p>>
+}
+
 #[atom]
 pub rule literal {
   number
@@ -228,7 +232,7 @@ pub rule struct_literal_field {
 
 #[atom]
 pub rule paren_expr {
-  '(' <exit 'condition' expr> ')'
+  '(' <without_restrictions expr> ')'
 }
 
 #[atom]
@@ -238,10 +242,19 @@ pub rule path_expr {
 
 #[atom]
 pub rule block_expr {
-  <exit 'condition'
+  <without_restrictions
     <block {<rep block_form> <opt expr>}>
   >
 }
+
+example r"
+  fn main() {
+    {
+      let x = {1} + 1;
+    }
+    92
+  }
+"
 
 rule block_form {
   let_stmt | expr_stmt | empty_stmt
@@ -254,15 +267,16 @@ pub rule let_stmt {
 pub rule empty_stmt { ';' }
 
 pub rule expr_stmt {
-  expr {prev_is_block <not <eof>> | ';'}
+  <enter 'stmt'
+    {expr {prev_is_block <not <eof>> | ';'}}
+  >
 }
 
 example r"
   fn main() {
-    if foo {
-    };
-    if bar {
-    }
+    let x = { 1 } & 1;
+    {1} & 1;
+    1 & {1} & 1;
   }
 "
 
@@ -275,7 +289,7 @@ pub rule if_expr {
 
 #[postfix]
 pub rule call_expr {
-  expr <exit 'condition'
+  expr <without_restrictions
     <in_parens <comma_list value_argument>>>
 }
 
@@ -294,27 +308,32 @@ pub rule negation_expr { '-' expr }
 
 #[bin(5)]
 pub rule product_expr {
-  expr {'*' | '/' | '%'} expr
+  expr <binop {'*' | '/' | '%'}> expr
 }
 
 #[bin(4)]
 pub rule sum_expr {
-  expr {'+' | '-'} expr
+  expr <binop {'+' | '-'}> expr
 }
 
 #[bin(3)]
 pub rule bit_shift {
-  expr {'<<' | '>>'} expr
+  expr <binop {'<<' | '>>'}> expr
+}
+
+rule binop(op) {
+  <is_in 'stmt'> <not prev_is_block> op
+| <not <is_in 'stmt'>> op
 }
 
 #[bin(2)]
 pub rule bit_and {
-  expr '&' expr
+  expr <binop '&'> expr
 }
 
 #[bin(1)]
 pub rule bit_or {
-  expr '|' expr
+  expr <binop '|'> expr
 }
 
 

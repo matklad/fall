@@ -360,6 +360,7 @@ impl<'r> Parser<'r> {
                     ctx.push_child(&mut lhs, node);
                     ctx.push_child(&mut lhs, op_node);
                     tokens = rest;
+                    ctx.prev = Some(ty);
                     continue 'postfix;
                 }
             }
@@ -385,6 +386,7 @@ impl<'r> Parser<'r> {
                         ctx.push_child(&mut lhs, op_node);
                         ctx.push_child(&mut lhs, rhs_node);
                         tokens = rest;
+                        ctx.prev = Some(ty);
                         continue 'bin;
                     }
                 }
@@ -409,6 +411,7 @@ impl<'r> Parser<'r> {
                 ctx.push_child(&mut node, op_node);
                 if let Some((expr, rest)) = self.parse_pratt(expr_grammar, rest, ctx, 999) {
                     ctx.push_child(&mut node, expr);
+                    ctx.prev = Some(ty);
                     return Some((node, rest));
                 }
             }

@@ -314,14 +314,15 @@ FILE
     BLOCK_EXPR
       LBRACE "{"
       EXPR_STMT
-        SUM_EXPR
-          BLOCK_EXPR
-            LBRACE "{"
-            EXPR_STMT
-              LITERAL
-                NUMBER "92"
-              SEMI ";"
-            RBRACE "}"
+        BLOCK_EXPR
+          LBRACE "{"
+          EXPR_STMT
+            LITERAL
+              NUMBER "92"
+            SEMI ";"
+          RBRACE "}"
+      EXPR_STMT
+        NEGATION_EXPR
           MINUS "-"
           LITERAL
             NUMBER "1"
@@ -344,6 +345,69 @@ FILE
           BLOCK_EXPR
             LBRACE "{"
             RBRACE "}"
+      EXPR_STMT
+        SUM_EXPR
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            BLOCK_EXPR
+              LBRACE "{"
+              LITERAL
+                NUMBER "1"
+              RBRACE "}"
+          PLUS "+"
+          LITERAL
+            NUMBER "2"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATTERN
+          UNDERSCORE "_"
+        EQ "="
+        SUM_EXPR
+          BLOCK_EXPR
+            LBRACE "{"
+            LITERAL
+              NUMBER "1"
+            RBRACE "}"
+          PLUS "+"
+          LITERAL
+            NUMBER "1"
+        SEMI ";"
+      EXPR_STMT
+        PAREN_EXPR
+          LPAREN "("
+          SUM_EXPR
+            BLOCK_EXPR
+              LBRACE "{"
+              LITERAL
+                NUMBER "1"
+              RBRACE "}"
+            PLUS "+"
+            LITERAL
+              NUMBER "1"
+          RPAREN ")"
+        SEMI ";"
+      EXPR_STMT
+        BLOCK_EXPR
+          LBRACE "{"
+          LET_STMT
+            LET "let"
+            PATTERN
+              IDENT "x"
+            EQ "="
+            SUM_EXPR
+              BLOCK_EXPR
+                LBRACE "{"
+                LITERAL
+                  NUMBER "1"
+                RBRACE "}"
+              PLUS "+"
+              LITERAL
+                NUMBER "1"
+            SEMI ";"
+          RBRACE "}"
       BLOCK_EXPR
         LBRACE "{"
         LITERAL
