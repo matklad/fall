@@ -186,7 +186,7 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
             if ref_.resolve().is_none() {
                 if let Some(call) = ast_parent::<CallExpr>(ref_.node()) {
                     if call.resolve_context().is_some() {
-                        return
+                        return;
                     }
                 }
 
@@ -208,6 +208,37 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
     result
 }
 
+pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
+    let node = match try_find_non_ws_node_at_offset(file, offset) {
+        None => return None,
+        Some(node) => node
+    };
+
+    if let Some(ref_expr) = ast_parent::<RefExpr>(node) {
+        let target = match ref_expr.resolve() {
+            None => return None,
+            Some(t) => t
+        };
+
+        return match target {
+            RefKind::RuleReference(rule) => Some(rule.node().range()),
+            RefKind::Param(param) => Some(param.node().range()),
+            RefKind::Token(token) => Some(token.node().range()),
+        }
+    };
+
+    match node.parent() {
+        Some(parent) if parent.ty() == CALL_EXPR => {
+            let call = CallExpr::new(parent);
+            if let Ok(CallKind::RuleCall(rule, ..)) = call.kind() {
+                return Some(rule.node().range());
+            }
+        }
+        _ => {}
+    }
+    None
+}
+
 fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
     let mut result = Vec::new();
     Visitor(&mut result)
@@ -218,7 +249,7 @@ fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
     if range.is_empty() {
-        return try_find_non_ws_node_at_offset(file, range.start())
+        return try_find_non_ws_node_at_offset(file, range.start());
     }
 
     let root = file.root();
@@ -237,7 +268,7 @@ fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node>
     let leaves = find_leaf_at_offset(file.root(), offset);
     if let Some(leaf) = leaves.left_biased() {
         if file.language().node_type_info(leaf.ty()).whitespace_like {
-            return leaves.right_biased()
+            return leaves.right_biased();
         }
     }
 
@@ -247,7 +278,7 @@ fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node>
 fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {
     for p in ancestors(n1) {
         if ancestors(n2).any(|a| a == p) {
-            return p
+            return p;
         }
     }
     panic!("Can't find common ancestor of {:?} and {:?}", n1, n2)

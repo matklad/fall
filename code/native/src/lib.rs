@@ -193,6 +193,22 @@ fn file_diagnostics(call: Call) -> JsResult<JsValue> {
     Ok(result.upcast())
 }
 
+fn file_resolve_reference(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let offset = TextUnit::from_usize(offset.value() as usize);
+
+    let result = if let Some(range) = editor_api::resolve_reference(file, offset) {
+        range_to_js(scope, range).upcast()
+    } else {
+        JsNull::new().upcast()
+    };
+
+    Ok(result)
+}
+
 register_module!(m, {
     m.export("file_create", file_create)?;
     m.export("file_highlight", file_highlight)?;
@@ -203,5 +219,6 @@ register_module!(m, {
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
+    m.export("file_resolve_reference", file_resolve_reference)?;
     Ok(())
 });

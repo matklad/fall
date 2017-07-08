@@ -241,7 +241,7 @@ pub enum SelectorKind<'f> {
 pub enum RefKind<'f> {
     Token(LexRule<'f>),
     RuleReference(SynRule<'f>),
-    Param(u32),
+    Param(Parameter<'f>),
 }
 
 impl<'f> RefExpr<'f> {
@@ -252,7 +252,7 @@ impl<'f> RefExpr<'f> {
             let rule: SynRule = ast_parent_exn(self.node());
             if let Some(parameters) = rule.parameters() {
                 if let Some(p) = parameters.parameters().find(|p| p.name() == ident.text()) {
-                    return Some(RefKind::Param(p.idx()))
+                    return Some(RefKind::Param(p))
                 }
             }
 
@@ -405,7 +405,7 @@ impl<'f> CallExpr<'f> {
 }
 
 impl<'f> Parameter<'f> {
-    fn idx(&self) -> u32 {
+    pub fn idx(&self) -> u32 {
         let file: FallFile = ast_parent_exn(self.node());
         let idx = file.syn_rules()
             .filter_map(|rule| rule.parameters())

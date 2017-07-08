@@ -224,7 +224,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 }
             }
             RefKind::RuleReference(rule) => fall_parse::Expr::Rule(rule.index()),
-            RefKind::Param(idx) => fall_parse::Expr::Var(idx),
+            RefKind::Param(p) => fall_parse::Expr::Var(p.idx()),
         },
         Expr::CallExpr(call) => {
             let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {

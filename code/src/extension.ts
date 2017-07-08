@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import {
     window, DecorationRenderOptions, StatusBarAlignment, TextDocument,
-    Range, CodeActionContext, CancellationToken, Command, SymbolInformation
+    Range, Position, CodeActionContext, CancellationToken, Command, SymbolInformation
 } from 'vscode';
 
 interface FileStructureNode {
@@ -33,6 +33,7 @@ var backend = (() => {
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
         diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
+        resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset)
     }
 })()
 
@@ -89,27 +90,36 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    function convertRange(document: TextDocument, range: [number, number]): Range {
+        return new Range( document.positionAt(range[0]), document.positionAt(range[1]))
+    }
+
     class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
         provideDocumentSymbols(document: TextDocument, token: CancellationToken) {
-            console.log("A");
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let offsetToPostion = (x) => document.positionAt(x)
             return backend.fileStructure().map((node) => {
                 return new SymbolInformation(
                     node.name,
                     vscode.SymbolKind.Function,
-                    new Range(
-                        offsetToPostion(node.range[0]),
-                        offsetToPostion(node.range[1])
-                    ),
+                    convertRange(document, node.range),
                     null,
                     null
                 )
             })
         }
+    }
 
+    class DefinitionProvider implements vscode.DefinitionProvider {
+        provideDefinition(document: TextDocument, position: Position, token: CancellationToken): vscode.Location {
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+            if (document != activeEditor.document) return null
+            let range = backend.resolveReference(document.offsetAt(position))
+            if (range == null) return null
+            return new vscode.Location(document.uri, convertRange(document, range))
+        }
     }
 
     function highlight() {
@@ -156,10 +166,10 @@ export function activate(context: vscode.ExtensionContext) {
                     activeEditor.document.positionAt(d.range[0]),
                     activeEditor.document.positionAt(d.range[1]),
                 )
-                let severity = d.severity == "error" 
-                    ? vscode.DiagnosticSeverity.Error 
+                let severity = d.severity == "error"
+                    ? vscode.DiagnosticSeverity.Error
                     : vscode.DiagnosticSeverity.Warning
-                    
+
                 return new vscode.Diagnostic(range, d.text, severity)
             })
         )
@@ -182,7 +192,8 @@ export function activate(context: vscode.ExtensionContext) {
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall-tree', textDocumentProvider),
         vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
-        vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider())
+        vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider()),
+        vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider())
     ]
 
     let commands = [
