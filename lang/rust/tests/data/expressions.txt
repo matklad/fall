@@ -293,6 +293,21 @@ FILE
             LBRACE "{"
             RBRACE "}"
         SEMI ";"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          BLOCK_EXPR
+            LBRACE "{"
+            STRUCT_LITERAL
+              PATH
+                IDENT "Foo"
+              LBRACE "{"
+              RBRACE "}"
+            RBRACE "}"
+          BLOCK_EXPR
+            LBRACE "{"
+            RBRACE "}"
+        SEMI ";"
       RBRACE "}"
   FN_DEF
     FN "fn"

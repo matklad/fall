@@ -144,14 +144,6 @@ rule impl_form {
   fn_def
 }
 
-example r"
-  fn main() {
-    if foo(Foo {}) {
-    
-    }
-  }  
-  
-"
 
 pub rule type_parameters {
   <in_angles <comma_list type_parameter>>
@@ -242,8 +234,18 @@ pub rule path_expr {
 
 #[atom]
 pub rule block_expr {
-  <block {<rep block_form> <opt expr>}>
+  <exit 'condition'
+    <block {<rep block_form> <opt expr>}>
+  >
 }
+
+example r"
+fn main() {
+  if {S {}} {
+    1
+  }
+}
+"
 
 rule block_form {
   let_stmt | expr_stmt
