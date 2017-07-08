@@ -282,7 +282,8 @@ pub enum CallKind<'f> {
     Opt(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
-    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>)
+    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>),
+    PrevIs(Vec<usize>)
 }
 
 impl<'f> CallExpr<'f> {
@@ -365,6 +366,25 @@ impl<'f> CallExpr<'f> {
             "with_skip" => {
                 check_args!(2);
                 CallKind::WithSkip(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
+            }
+            "prev_is" => {
+                let mut args = Vec::new();
+                for arg in self.args() {
+                    if let Expr::RefExpr(expr) = arg {
+                        if let Some(RefKind::RuleReference(rule)) = expr.resolve() {
+                            if let Some(ty) = rule.resolve_ty() {
+                                args.push(ty)
+                            } else {
+                                return Err("Bad prev_is")
+                            }
+                        } else {
+                            return Err("Bad prev_is")
+                        }
+                    } else {
+                        return Err("Bad prev_is")
+                    }
+                }
+                CallKind::PrevIs(args)
             }
             _ => {
                 if let Some(rule) = file.resolve_rule(self.fn_name()) {

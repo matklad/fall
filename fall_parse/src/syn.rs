@@ -34,6 +34,7 @@ pub enum Expr {
     IsIn(u32),
     Call(Box<Expr>, Vec<(u32, Expr)>),
     Var(u32),
+    PrevIs(Vec<usize>)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,7 +59,8 @@ struct Ctx<'p> {
     ticks: u64,
     predicate_mode: bool,
     contexts: [bool; 16],
-    args: [Option<&'p Expr>; 16]
+    args: [Option<&'p Expr>; 16],
+    prev: Option<NodeType>
 }
 
 impl<'p> Ctx<'p> {
@@ -102,7 +104,13 @@ impl<'r> Parser<'r> {
     }
 
     pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
-        let mut ctx = Ctx { ticks: 0, predicate_mode: false, contexts: [false; 16], args: [None; 16] };
+        let mut ctx = Ctx {
+            ticks: 0,
+            predicate_mode: false,
+            contexts: [false; 16],
+            args: [None; 16],
+            prev: None,
+        };
         let (mut file_node, mut leftover) = self
             .parse_exp(&self.start_rule, tokens, &mut ctx)
             .unwrap_or_else(|| {
@@ -134,8 +142,10 @@ impl<'r> Parser<'r> {
         ctx.ticks += 1;
         match *expr {
             Expr::Pub(ty, ref body) => if let Some((node, ts)) = self.parse_exp(body, tokens, ctx) {
-                let mut result = ctx.create_composite_node(Some(self.node_type(ty)));
+                let node_type = self.node_type(ty);
+                let mut result = ctx.create_composite_node(Some(node_type));
                 ctx.push_child(&mut result, node);
+                ctx.prev = Some(node_type);
                 Some((result, ts))
             } else {
                 None
@@ -153,7 +163,7 @@ impl<'r> Parser<'r> {
                         ctx.push_child(&mut node, n);
                     } else {
                         if i < commit {
-                            return None
+                            return None;
                         }
                         let error_node = ctx.create_error_node();
                         ctx.push_child(&mut node, error_node);
@@ -168,7 +178,7 @@ impl<'r> Parser<'r> {
             Expr::Token(ty) => {
                 if let Some(current) = tokens.current() {
                     if self.node_type(ty) == current.ty {
-                        return Some(ctx.create_leaf_node(tokens))
+                        return Some(ctx.create_leaf_node(tokens));
                     }
                 }
                 None
@@ -302,6 +312,18 @@ impl<'r> Parser<'r> {
                 let expr = ctx.args[i as usize].unwrap();
                 self.parse_exp(expr, tokens, ctx)
             }
+
+            Expr::PrevIs(ref ts) => {
+                if let Some(prev) = ctx.prev {
+                    for &t in ts {
+                        let t = self.node_type(t);
+                        if t == prev {
+                            return Some(ctx.create_success_node(tokens))
+                        }
+                    }
+                }
+                None
+            }
         }
     }
 
@@ -309,7 +331,7 @@ impl<'r> Parser<'r> {
                                                      -> Option<(Node, TokenSequence<'t>)> {
         for p in options {
             if let Some(result) = self.parse_exp(p, tokens, ctx) {
-                return Some(result)
+                return Some(result);
             }
         }
         None

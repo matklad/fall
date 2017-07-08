@@ -147,7 +147,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
             PratKind::Postfix => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                    "bad pratt rule"
+                        "bad pratt rule"
                     ))?,
                     _ => return Err(error!("bad pratt rule"))
                 };
@@ -163,7 +163,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
             PratKind::Prefix => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                    "bad pratt rule"
+                        "bad pratt rule"
                     ))?,
                     _ => return Err(error!("bad pratt rule"))
                 };
@@ -179,7 +179,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
             PratKind::Bin(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                    "bad pratt rule"
+                        "bad pratt rule"
                     ))?,
                     _ => return Err(error!("bad pratt rule"))
                 };
@@ -250,9 +250,10 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                         .map(|(i, e)| Ok((i, compile_expr(e)?)))
                         .collect::<Result<Vec<_>>>()?
                 ),
+                CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(tokens),
                 CallKind::Commit => panic!("Should be handled specially"),
             };
-            return Ok(r)
+            return Ok(r);
         }
     };
 

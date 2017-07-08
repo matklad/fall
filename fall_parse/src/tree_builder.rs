@@ -79,7 +79,7 @@ impl<'a> TokenSequence<'a> {
                 leftover -= rest.current().unwrap().len;
                 let p = rest.bump();
                 children.push(match p.0 {
-                    Node::Leaf { ty, token_idx } => Node::Leaf { ty: None, token_idx: token_idx },
+                    Node::Leaf { ty: _, token_idx } => Node::Leaf { ty: None, token_idx: token_idx },
                     _ => unreachable!()
                 });
                 rest = p.1;

@@ -207,6 +207,10 @@ pub rule expr {
 | bit_and | bit_or
 }
 
+rule prev_is_block {
+  <prev_is if_expr block_expr>
+}
+
 #[atom]
 pub rule literal {
   number
@@ -239,25 +243,28 @@ pub rule block_expr {
   >
 }
 
-example r"
-fn main() {
-  if {S {}} {
-    1
-  }
-}
-"
-
 rule block_form {
-  let_stmt | expr_stmt
+  let_stmt | expr_stmt | empty_stmt
 }
 
 pub rule let_stmt {
   'let' <commit> pattern '=' expr ';'
 }
 
+pub rule empty_stmt { ';' }
+
 pub rule expr_stmt {
-  expr ';'
+  expr {prev_is_block <not <eof>> | ';'}
 }
+
+example r"
+  fn main() {
+    if foo {
+    };
+    if bar {
+    }
+  }
+"
 
 #[atom]
 pub rule if_expr {

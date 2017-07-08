@@ -195,6 +195,7 @@ FILE
         BLOCK_EXPR
           LBRACE "{"
           RBRACE "}"
+      EMPTY_STMT
         SEMI ";"
       EXPR_STMT
         IF_EXPR
@@ -215,6 +216,7 @@ FILE
                 LBRACE "{"
                 RBRACE "}"
             RBRACE "}"
+      EMPTY_STMT
         SEMI ";"
       EXPR_STMT
         SUM_EXPR
@@ -258,7 +260,6 @@ FILE
           BLOCK_EXPR
             LBRACE "{"
             RBRACE "}"
-        SEMI ";"
       EXPR_STMT
         IF_EXPR
           IF "if"
@@ -273,7 +274,6 @@ FILE
           BLOCK_EXPR
             LBRACE "{"
             RBRACE "}"
-        SEMI ";"
       EXPR_STMT
         IF_EXPR
           IF "if"
@@ -292,22 +292,19 @@ FILE
           BLOCK_EXPR
             LBRACE "{"
             RBRACE "}"
-        SEMI ";"
-      EXPR_STMT
-        IF_EXPR
-          IF "if"
-          BLOCK_EXPR
-            LBRACE "{"
-            STRUCT_LITERAL
-              PATH
-                IDENT "Foo"
-              LBRACE "{"
-              RBRACE "}"
-            RBRACE "}"
-          BLOCK_EXPR
+      IF_EXPR
+        IF "if"
+        BLOCK_EXPR
+          LBRACE "{"
+          STRUCT_LITERAL
+            PATH
+              IDENT "Foo"
             LBRACE "{"
             RBRACE "}"
-        SEMI ";"
+          RBRACE "}"
+        BLOCK_EXPR
+          LBRACE "{"
+          RBRACE "}"
       RBRACE "}"
   FN_DEF
     FN "fn"
@@ -329,6 +326,29 @@ FILE
           LITERAL
             NUMBER "1"
         SEMI ";"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PATH_EXPR
+            PATH
+              IDENT "foo"
+          BLOCK_EXPR
+            LBRACE "{"
+            RBRACE "}"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PATH_EXPR
+            PATH
+              IDENT "bar"
+          BLOCK_EXPR
+            LBRACE "{"
+            RBRACE "}"
+      BLOCK_EXPR
+        LBRACE "{"
+        LITERAL
+          NUMBER "92"
+        RBRACE "}"
       RBRACE "}"
   FN_DEF
     FN "fn"

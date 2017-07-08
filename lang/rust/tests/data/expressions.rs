@@ -26,14 +26,17 @@ fn blockish() {
 }
 
 fn struct_cond_ambiguity() {
-    if foo {};
-    if (Foo {}) {};
-    if foo(Foo {}) {};
-    if {Foo {}} {};
+    if foo {}
+    if (Foo {}) {}
+    if foo(Foo {}) {}
+    if {Foo {}} {}
 }
 
 fn blocklike_expressions() {
     { 92; } -1;
+    if foo {}
+    if bar {}
+    {92}
 }
 
 fn misc() {
