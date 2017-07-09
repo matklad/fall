@@ -32,6 +32,7 @@ tokenizer {
   colon ':'
   coloncolon '::'
   comma ','
+  dot '.'
 
   star '*'
   slash '/'
@@ -199,7 +200,7 @@ pub rule type_arguments {
 pub rule alias { 'as' ident }
 
 pub rule type {
-  type_path
+  type_path | '&' type
 }
 
 pub rule pattern { 
@@ -210,7 +211,7 @@ pub rule pattern {
 pub rule expr { 
   literal | struct_literal | path_expr | paren_expr
 | block_expr | if_expr
-| call_expr
+| call_expr | field_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
 | bit_shift
@@ -274,11 +275,31 @@ pub rule expr_stmt {
 }
 
 example r"
-  fn main() {
-    let x = { 1 } & 1;
-    {1} & 1;
-    1 & {1} & 1;
-  }
+impl File {
+    pub fn language(&self) -> &Language {
+        &self.imp.lang
+    }
+
+    pub fn root(&self) -> Node {
+        self.imp.root()
+    }
+
+    pub fn text(&self) -> Text {
+        self.imp.text()
+    }
+
+    pub fn stats(&self) -> FileStats {
+        self.imp.stats()
+    }
+
+    pub fn inode(&self) -> INode {
+        self.inode.clone()
+    }
+
+    pub fn edit(&self, edit: &TextEdit) -> File {
+        self.language().reparse(self, edit)
+    }
+}
 "
 
 #[atom]
@@ -293,6 +314,12 @@ pub rule call_expr {
   expr <without_restrictions
     <in_parens <comma_list value_argument>>>
 }
+
+#[postfix]
+pub rule field_expr {
+  expr {'.' ident}
+}
+
 
 pub rule value_argument {
   expr

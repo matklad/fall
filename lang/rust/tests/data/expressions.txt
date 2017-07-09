@@ -542,4 +542,15 @@ FILE
               RPAREN ")"
           RPAREN ")"
         SEMI ";"
+      EXPR_STMT
+        FIELD_EXPR
+          FIELD_EXPR
+            PATH_EXPR
+              PATH
+                IDENT "foo"
+            DOT "."
+            IDENT "bar"
+          DOT "."
+          IDENT "baz"
+        SEMI ";"
       RBRACE "}"

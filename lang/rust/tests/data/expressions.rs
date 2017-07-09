@@ -55,4 +55,5 @@ fn misc() {
     foo {a: 2,};
     foo::bar {a: 1, b: C {}};
     foo(1, 2, bar(3,));
+    foo.bar.baz;
 }
