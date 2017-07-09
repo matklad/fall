@@ -73,3 +73,30 @@ FILE
     BLOCK_EXPR
       LBRACE "{"
       RBRACE "}"
+  IMPL_DEF
+    IMPL "impl"
+    IDENT "T"
+    LBRACE "{"
+    FN_DEF
+      FN "fn"
+      IDENT "foo"
+      LPAREN "("
+      SELF_PARAMETER
+        SELF "self"
+      RPAREN ")"
+      BLOCK_EXPR
+        LBRACE "{"
+        RBRACE "}"
+    FN_DEF
+      FN "fn"
+      IDENT "bar"
+      LPAREN "("
+      SELF_PARAMETER
+        AMPERSAND "&"
+        SELF "self"
+        COMMA ","
+      RPAREN ")"
+      BLOCK_EXPR
+        LBRACE "{"
+        RBRACE "}"
+    RBRACE "}"

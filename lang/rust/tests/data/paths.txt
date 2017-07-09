@@ -10,6 +10,28 @@ FILE
       COLONCOLON "::"
       IDENT "baz"
     SEMI ";"
+  USE_DECL
+    USE "use"
+    PATH
+      PATH
+        SELF "self"
+      COLONCOLON "::"
+      IDENT "foo"
+    SEMI ";"
+  USE_DECL
+    USE "use"
+    PATH
+      PATH
+        PATH
+          PATH
+            SELF "self"
+          COLONCOLON "::"
+          SUPER "super"
+        COLONCOLON "::"
+        SUPER "super"
+      COLONCOLON "::"
+      IDENT "foo"
+    SEMI ";"
   FN_DEF
     FN "fn"
     IDENT "foo"
