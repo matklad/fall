@@ -17,6 +17,7 @@ tokenizer {
   impl 'impl'
   self 'self'
   super 'super'
+  type 'type'
 
   lparen '('
   rparen ')'
@@ -56,11 +57,12 @@ rule mod_contents {
 
 rule mod_form_first { 
   'pub' | 'extern'
-| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' | 'impl'
+| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' | 'impl' | 'type'
 }
 
 rule mod_form { 
-  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def | impl_def
+  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def 
+| impl_def | type_def
 }
 
 pub rule use_decl {
@@ -87,7 +89,7 @@ pub rule fn_def {
   <opt visibility> 'fn' <commit> ident
   <opt type_parameters>
   value_parameters
-  <opt {'->' type}>
+  <opt {'->' type_reference}>
   block_expr
 }
 
@@ -96,7 +98,7 @@ rule value_parameters {
 }
 
 pub rule value_param {
-  pattern ':' type
+  pattern ':' type_reference
 }
 
 pub rule self_parameter {
@@ -115,11 +117,11 @@ pub rule struct_def {
 }
 
 pub rule struct_field {
-  <opt visibility> ident <commit> ':' type
+  <opt visibility> ident <commit> ':' type_reference
 }
 
 pub rule tuple_field {
-  <opt visibility> type
+  <opt visibility> type_reference
 }
 
 pub rule enum_def {
@@ -148,11 +150,26 @@ pub rule impl_def {
 }
 
 rule impl_form {
-  fn_def
+  fn_def | type_def
 }
 
 rule impl_form_first {
-  'pub' | 'fn'
+  'pub' | 'fn' | 'type'
+}
+
+example r"
+  type Foo<T> = Bar<T, T>;
+
+  impl S {
+    type X;
+  }
+"
+
+pub rule type_def {
+  <opt visibility> 'type' <commit> 
+  ident <opt type_parameters>
+  <opt {'=' type_reference}>
+  ';'
 }
 
 
@@ -193,14 +210,14 @@ rule path_segment {
 
 pub rule type_arguments {
   { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
-  <in_angles <comma_list type>> 
+  <in_angles <comma_list type_reference>> 
 }
 
 
 pub rule alias { 'as' ident }
 
-pub rule type {
-  type_path | '&' type
+pub rule type_reference {
+  type_path | '&' type_reference
 }
 
 pub rule pattern { 

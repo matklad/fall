@@ -166,12 +166,12 @@ FILE
                 TYPE_ARGUMENTS
                   COLONCOLON "::"
                   LANGLE "<"
-                  TYPE
+                  TYPE_REFERENCE
                     PATH
                       IDENT "X"
                       TYPE_ARGUMENTS
                         LANGLE "<"
-                        TYPE
+                        TYPE_REFERENCE
                           PATH
                             IDENT "Y"
                         RANGLE ">"
@@ -443,7 +443,7 @@ FILE
             TYPE_ARGUMENTS
               COLONCOLON "::"
               LANGLE "<"
-              TYPE
+              TYPE_REFERENCE
                 PATH
                   IDENT "c"
               RANGLE ">"

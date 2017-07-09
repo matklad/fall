@@ -16,7 +16,7 @@ FILE
       IDENT "Z"
       LPAREN "("
       TUPLE_FIELD
-        TYPE
+        TYPE_REFERENCE
           PATH
             IDENT "i32"
       RPAREN ")"
@@ -27,7 +27,7 @@ FILE
       STRUCT_FIELD
         IDENT "t"
         COLON ":"
-        TYPE
+        TYPE_REFERENCE
           PATH
             IDENT "i32"
       COMMA ","

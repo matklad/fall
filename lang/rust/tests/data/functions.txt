@@ -15,7 +15,7 @@ FILE
       PATTERN
         IDENT "x"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "i32"
     RPAREN ")"
@@ -30,7 +30,7 @@ FILE
       PATTERN
         IDENT "x"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "i32"
     COMMA ","
@@ -46,7 +46,7 @@ FILE
       PATTERN
         IDENT "x"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "i32"
     COMMA ","
@@ -54,7 +54,7 @@ FILE
       PATTERN
         IDENT "z"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "String"
     RPAREN ")"
@@ -67,7 +67,7 @@ FILE
     LPAREN "("
     RPAREN ")"
     THIN_ARROW "->"
-    TYPE
+    TYPE_REFERENCE
       PATH
         IDENT "foo"
     BLOCK_EXPR

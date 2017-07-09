@@ -11,7 +11,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "A"
     RBRACE "}"
@@ -22,7 +22,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "A"
     COMMA ","
@@ -34,7 +34,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "A"
     COMMA ","
@@ -43,7 +43,7 @@ FILE
         PUB "pub"
       IDENT "j"
       COLON ":"
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "B"
     RBRACE "}"
@@ -52,7 +52,7 @@ FILE
     IDENT "E"
     LPAREN "("
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "u32"
     RPAREN ")"
@@ -62,7 +62,7 @@ FILE
     IDENT "F"
     LPAREN "("
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "u32"
     COMMA ","
@@ -73,12 +73,12 @@ FILE
     IDENT "G"
     LPAREN "("
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "u32"
     COMMA ","
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "String"
     RPAREN ")"

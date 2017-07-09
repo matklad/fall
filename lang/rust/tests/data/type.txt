@@ -1,0 +1,39 @@
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "Foo"
+    EQ "="
+    TYPE_REFERENCE
+      PATH
+        PATH
+          IDENT "foo"
+        COLONCOLON "::"
+        IDENT "bar"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "Bar"
+    EQ "="
+    TYPE_REFERENCE
+      AMPERSAND "&"
+      TYPE_REFERENCE
+        PATH
+          IDENT "Foo"
+    SEMI ";"
+  IMPL_DEF
+    IMPL "impl"
+    IDENT "T"
+    LBRACE "{"
+    TYPE_DEF
+      TYPE "type"
+      IDENT "A"
+      SEMI ";"
+    TYPE_DEF
+      TYPE "type"
+      IDENT "B"
+      EQ "="
+      TYPE_REFERENCE
+        PATH
+          IDENT "A"
+      SEMI ";"
+    RBRACE "}"

@@ -20,12 +20,12 @@ FILE
       RANGLE ">"
     LPAREN "("
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "U"
     COMMA ","
     TUPLE_FIELD
-      TYPE
+      TYPE_REFERENCE
         PATH
           IDENT "V"
     RPAREN ")"

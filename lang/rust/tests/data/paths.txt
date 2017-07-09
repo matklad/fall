@@ -52,12 +52,12 @@ FILE
               TYPE_ARGUMENTS
                 COLONCOLON "::"
                 LANGLE "<"
-                TYPE
+                TYPE_REFERENCE
                   PATH
                     IDENT "Vec"
                     TYPE_ARGUMENTS
                       LANGLE "<"
-                      TYPE
+                      TYPE_REFERENCE
                         PATH
                           IDENT "i32"
                       RANGLE ">"

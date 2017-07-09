@@ -11,7 +11,7 @@ FILE
         PATTERN
           IDENT "x"
         COLON ":"
-        TYPE
+        TYPE_REFERENCE
           PATH
             IDENT "i32"
       RPAREN ")"
