@@ -157,14 +157,6 @@ rule impl_form_first {
   'pub' | 'fn' | 'type'
 }
 
-example r"
-  type Foo<T> = Bar<T, T>;
-
-  impl S {
-    type X;
-  }
-"
-
 pub rule type_def {
   <opt visibility> 'type' <commit> 
   ident <opt type_parameters>
@@ -290,34 +282,6 @@ pub rule expr_stmt {
     {expr {prev_is_block <not <eof>> | ';'}}
   >
 }
-
-example r"
-impl File {
-    pub fn language(&self) -> &Language {
-        &self.imp.lang
-    }
-
-    pub fn root(&self) -> Node {
-        self.imp.root()
-    }
-
-    pub fn text(&self) -> Text {
-        self.imp.text()
-    }
-
-    pub fn stats(&self) -> FileStats {
-        self.imp.stats()
-    }
-
-    pub fn inode(&self) -> INode {
-        self.inode.clone()
-    }
-
-    pub fn edit(&self, edit: &TextEdit) -> File {
-        self.language().reparse(self, edit)
-    }
-}
-"
 
 #[atom]
 pub rule if_expr {

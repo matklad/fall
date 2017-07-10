@@ -64,11 +64,6 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         Ok(parser) => parser,
         Err(e) => return Ok(format!("error:\n{}", e))
     };
-    let example = match ast.examples().next() {
-        Some(ex) => ex.contents().to_string(),
-        None => return Ok("".to_owned())
-    };
-
     let base_dir = base_directory()?;
     let syntax = base_dir.join("src").join("syntax.rs");
     put_text_if_changed(&syntax, &parser)?;
@@ -96,8 +91,10 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         fn main() {
             let mut input = String::new();
             ::std::io::stdin().read_to_string(&mut input).unwrap();
-            let file = syntax::LANG.parse(input);
-            println!("{}", fall_tree::dump_file(&file));
+            for example in input.split("\n***###***\n") {
+                let file = syntax::LANG.parse(example.to_owned());
+                println!("{}\n", fall_tree::dump_file(&file));
+            }
         }
     "##)?;
 
@@ -120,9 +117,13 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         .stdout(Stdio::piped())
         .spawn()?;
 
+    let examples: String = ast.examples().map(|ex| ex.contents().to_string())
+        .collect::<Vec<_>>()
+        .join("\n***###***\n");
+
     {
         let mut stdin = child.stdin.as_mut().unwrap();
-        stdin.write_all(example.as_bytes()).unwrap();
+        stdin.write_all(examples.as_bytes()).unwrap();
         stdin.flush().unwrap();
     }
 
@@ -153,7 +154,7 @@ fn put_text_if_changed(path: &Path, text: &str) -> ::std::io::Result<()> {
     if path.exists() {
         let old_text = file::get_text(path)?;
         if old_text == text {
-            return Ok(())
+            return Ok(());
         }
     }
     file::put_text(path, text)
