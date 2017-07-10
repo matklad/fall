@@ -65,8 +65,10 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         Err(e) => return Ok(format!("error:\n{}", e))
     };
     let base_dir = base_directory()?;
+
     let syntax = base_dir.join("src").join("syntax.rs");
     put_text_if_changed(&syntax, &parser)?;
+
     let toml = base_dir.join("Cargo.toml");
     put_text_if_changed(&toml, &format!(r##"
         [package]
@@ -80,6 +82,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         fall_tree = {{ path = "{fall_dir}/fall_tree" }}
         fall_parse = {{ path = "{fall_dir}/fall_parse" }}
     "##, fall_dir = fall_dir().display()))?;
+
     put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
         #![allow(warnings)]
         extern crate fall_tree;
