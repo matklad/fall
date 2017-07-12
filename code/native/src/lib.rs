@@ -14,7 +14,7 @@ use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, Object};
 
 use lang_fall::editor_api;
 use lang_fall::editor_api::{FileStructureNode, Severity};
-use fall_tree::{TextRange, TextUnit, File};
+use fall_tree::{TextRange, TextUnit, File, TextEdit};
 
 lazy_static! {
     static ref FILE: Mutex<Option<File>> = Mutex::new(None);
@@ -52,17 +52,6 @@ fn file_highlight(call: Call) -> JsResult<JsValue> {
         result.set(i as u32, arr)?;
     }
     Ok(result.upcast())
-}
-
-pub fn text_unit_to_js<'a, T: Scope<'a>>(scope: &mut T, u: TextUnit) -> Handle<'a, JsInteger> {
-    JsInteger::new(scope, u.as_u32() as i32)
-}
-
-pub fn range_to_js<'a, T: Scope<'a>>(scope: &mut T, range: TextRange) -> Handle<'a, JsArray> {
-    let result = JsArray::new(scope, 2);
-    result.set(0, text_unit_to_js(scope, range.start())).unwrap();
-    result.set(1, text_unit_to_js(scope, range.end())).unwrap();
-    result
 }
 
 
@@ -139,11 +128,7 @@ fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
 
     let edit = editor_api::apply_context_action(file, offset, &id.value());
 
-    let arr = JsArray::new(scope, 3);
-    arr.set(0, JsInteger::new(scope, edit.delete.start().as_u32() as i32))?;
-    arr.set(1, JsInteger::new(scope, edit.delete.end().as_u32() as i32))?;
-    arr.set(2, JsString::new(scope, &edit.insert).unwrap())?;
-    Ok(arr.upcast())
+    Ok(text_edit_to_js(scope, edit).upcast())
 }
 
 fn file_structure(call: Call) -> JsResult<JsValue> {
@@ -209,6 +194,16 @@ fn file_resolve_reference(call: Call) -> JsResult<JsValue> {
     Ok(result)
 }
 
+fn file_reformat(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let edit = editor_api::reformat(file);
+
+    Ok(text_edit_to_js(scope, edit).upcast())
+}
+
+
 register_module!(m, {
     m.export("file_create", file_create)?;
     m.export("file_highlight", file_highlight)?;
@@ -220,5 +215,25 @@ register_module!(m, {
     m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_resolve_reference", file_resolve_reference)?;
+    m.export("file_reformat", file_reformat)?;
     Ok(())
 });
+
+fn text_unit_to_js<'a, T: Scope<'a>>(scope: &mut T, u: TextUnit) -> Handle<'a, JsInteger> {
+    JsInteger::new(scope, u.as_u32() as i32)
+}
+
+fn range_to_js<'a, T: Scope<'a>>(scope: &mut T, range: TextRange) -> Handle<'a, JsArray> {
+    let result = JsArray::new(scope, 2);
+    result.set(0, text_unit_to_js(scope, range.start())).unwrap();
+    result.set(1, text_unit_to_js(scope, range.end())).unwrap();
+    result
+}
+
+fn text_edit_to_js<'a, T: Scope<'a>>(scope: &mut T, edit: TextEdit) -> Handle<'a, JsArray> {
+    let arr = JsArray::new(scope, 3);
+    arr.set(0, JsInteger::new(scope, edit.delete.start().as_u32() as i32)).unwrap();
+    arr.set(1, JsInteger::new(scope, edit.delete.end().as_u32() as i32)).unwrap();
+    arr.set(2, JsString::new(scope, &edit.insert).unwrap()).unwrap();
+    arr
+}

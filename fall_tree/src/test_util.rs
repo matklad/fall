@@ -2,7 +2,7 @@ use std::path::Path;
 
 use file;
 use {Language, dump_file, dump_file_ws, TextRange, TextUnit};
-use edit::TextEdit;
+use text_edit::TextEdit;
 use difference::Changeset;
 
 pub fn check_syntax(lang: &Language, input: &str, expected_tree: &str) {
@@ -76,7 +76,7 @@ fn make_edit(before: &str, after: &str) -> TextEdit {
 }
 
 
-fn report_diff(expected: &str, actual: &str) {
+pub fn report_diff(expected: &str, actual: &str) {
     if let Some(diff) = compute_diff(expected, actual) {
         println!("Actual\n{}\n\nExpected:\n{}\n\nDiff:\n{}\n",
                  actual, expected, diff);

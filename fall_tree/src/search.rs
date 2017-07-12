@@ -84,11 +84,11 @@ pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     let range = node.range();
     assert!(node.range().contains_offset_nonstrict(offset), "Bad offset: range {:?} offset {:?}", range, offset);
     if range.is_empty() {
-        return LeafAtOffset::None
+        return LeafAtOffset::None;
     }
 
     if is_leaf(node) {
-        return LeafAtOffset::Single(node)
+        return LeafAtOffset::Single(node);
     }
 
     let mut children = node.children()
@@ -107,4 +107,26 @@ pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     } else {
         find_leaf_at_offset(left, offset)
     };
+}
+
+
+pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
+    match child_position(node) {
+        Some((parent, idx)) => parent.children().nth(idx + 1),
+        _ => None
+    }
+}
+
+pub fn prev_sibling(node: Node) -> Option<Node> {
+    match child_position(node) {
+        Some((parent, idx)) if idx > 0 => parent.children().nth(idx - 1),
+        _ => None
+    }
+}
+
+fn child_position(child: Node) -> Option<(Node, usize)> {
+    if let Some(parent) = child.parent() {
+        return Some((parent, parent.children().position(|n| n == child).unwrap()));
+    }
+    None
 }

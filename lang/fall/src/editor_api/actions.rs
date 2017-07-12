@@ -1,5 +1,5 @@
 use fall_tree::{AstNode, AstClass, File, Node, TextUnit};
-use fall_tree::edit::FiledEdit;
+use fall_tree::FileEdit;
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
 use syntax::{PIPE, BlockExpr};
 
@@ -12,7 +12,7 @@ pub const ACTIONS: &[&ContextAction] = &[
 
 pub trait ContextAction {
     fn id(&self) -> ContextActionId;
-    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FiledEdit<'f>>;
+    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FileEdit<'f>>;
 }
 
 
@@ -23,15 +23,15 @@ impl ContextAction for SwapAlternatives {
         ContextActionId("Swap Alternatives")
     }
 
-    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FiledEdit<'f>> {
+    fn apply<'f>(&self, file: &'f File, offset: TextUnit) -> Option<FileEdit<'f>> {
         let (left, right) = match find_swappable_nodes(file, offset) {
             Some((left, right)) => (left, right),
             None => return None
         };
-        let mut change = FiledEdit::new(file);
-        change.replace(left, right);
-        change.replace(right, left);
-        Some(change)
+        let mut edit = FileEdit::new(file);
+        edit.replace(left, right);
+        edit.replace(right, left);
+        Some(edit)
     }
 }
 

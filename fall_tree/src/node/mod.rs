@@ -1,6 +1,6 @@
 use std::time::Duration;
 use {Text, TextRange, NodeType, Language};
-use edit::TextEdit;
+use text_edit::TextEdit;
 
 mod imp;
 mod immutable;

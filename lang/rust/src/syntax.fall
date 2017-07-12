@@ -94,7 +94,7 @@ pub rule fn_def {
 }
 
 rule value_parameters {
-  <in_parens {<opt self_parameter> <comma_list value_param>} >
+  <in_parens {<opt self_parameter> <comma_list value_param>}>
 }
 
 pub rule value_param {
@@ -108,7 +108,7 @@ pub rule self_parameter {
 
 pub rule struct_def {
   <opt visibility> 
-  {'struct'|'union'} <commit> 
+  {'struct' | 'union'} <commit> 
   ident <opt type_parameters> {
     <block <comma_list struct_field>>
   | ';'
@@ -197,7 +197,7 @@ pub rule qualified_path {
 }
 
 rule path_segment {
-  { ident|'self'|'super' } <opt type_arguments>
+  { ident | 'self' | 'super' } <opt type_arguments>
 }
 
 pub rule type_arguments {
@@ -347,7 +347,7 @@ pub rule bit_or {
 
 
 rule comma_list(el) {
-  <rep {el <commit> {<eof>|','}}>
+  <rep {el <commit> {<eof> | ','}}>
 }
 
 rule block(p)     { <balanced_layer '{' '}' p> }

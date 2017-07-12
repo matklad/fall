@@ -2,7 +2,8 @@
 import * as vscode from 'vscode';
 import {
     window, DecorationRenderOptions, StatusBarAlignment, TextDocument,
-    Range, Position, CodeActionContext, CancellationToken, Command, SymbolInformation
+    Range, Position, CodeActionContext, CancellationToken, Command, SymbolInformation,
+    TextEdit
 } from 'vscode';
 
 interface FileStructureNode {
@@ -33,7 +34,8 @@ var backend = (() => {
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
         diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
-        resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset)
+        resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset),
+        reformat: (): [number, number, string] => native.file_reformat()
     }
 })()
 
@@ -91,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     function convertRange(document: TextDocument, range: [number, number]): Range {
-        return new Range( document.positionAt(range[0]), document.positionAt(range[1]))
+        return new Range(document.positionAt(range[0]), document.positionAt(range[1]))
     }
 
     class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
@@ -119,6 +121,16 @@ export function activate(context: vscode.ExtensionContext) {
             let range = backend.resolveReference(document.offsetAt(position))
             if (range == null) return null
             return new vscode.Location(document.uri, convertRange(document, range))
+        }
+    }
+
+    class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
+        provideDocumentFormattingEdits(document: TextDocument, options: vscode.FormattingOptions, token: CancellationToken): TextEdit[] {
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+            if (document != activeEditor.document) return null
+            let rawEdit = backend.reformat()
+            return [new TextEdit(convertRange(document, [rawEdit[0], rawEdit[1]]), rawEdit[2])]
         }
     }
 
@@ -193,7 +205,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.registerTextDocumentContentProvider('fall-tree', textDocumentProvider),
         vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
         vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider()),
-        vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider())
+        vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider()),
+        vscode.languages.registerDocumentFormattingEditProvider('fall', new DocumentFormattingEditProvider()),
     ]
 
     let commands = [
@@ -219,7 +232,6 @@ export function activate(context: vscode.ExtensionContext) {
             if (activeEditor.document.languageId != "fall") return
 
             let edit = backend.applyContextAction(offset, id);
-
             let range = new Range(
                 activeEditor.document.positionAt(edit[0]),
                 activeEditor.document.positionAt(edit[1]),

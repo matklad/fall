@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use edit::TextEdit;
+use text_edit::TextEdit;
 use {File, NodeType, NodeTypeInfo, FileStats, INode};
 
 #[derive(Clone)]

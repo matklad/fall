@@ -44,6 +44,10 @@ impl<'f> Text<'f> {
         self.as_str().ends_with(suffix)
     }
 
+    pub fn contains(&self, needle: &str) -> bool {
+        self.as_str().contains(needle)
+    }
+
     pub fn find(&self, needle: &str) -> Option<TextUnit> {
         self.as_str().find(needle).map(|off| TextUnit(off as u32))
     }

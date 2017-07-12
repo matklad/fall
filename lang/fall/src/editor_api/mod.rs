@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 
-use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit};
+use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset, ast_parent};
-use fall_tree::edit::TextEdit;
 use ::{ast, LANG_FALL, RefKind, CallKind};
 use ::syntax::*;
 
 mod actions;
+mod formatter;
 
 use self::actions::{ACTIONS, ContextActionId};
 
@@ -237,6 +237,10 @@ pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
         _ => {}
     }
     None
+}
+
+pub fn reformat(file: &File) -> TextEdit {
+    self::formatter::reformat_file(file, self::formatter::FALL_SPACING, WHITESPACE)
 }
 
 fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {

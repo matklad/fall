@@ -1,77 +1,69 @@
-use std::cmp::{min, max, Ordering, PartialOrd};
-use {Text, TextRange, File, Node, TextUnit};
+use text_edit::{TextEdit, combine_edits};
+use {Node, File};
 
-#[derive(Clone)]
-pub struct TextEdit {
-    pub delete: TextRange,
-    pub insert: String,
+pub struct FileEdit<'f> {
+    file: &'f File,
+    inserted: Vec<(Node<'f>, String)>,
+    replaced: Vec<(Node<'f>, String)>,
+    deleted: Vec<Node<'f>>,
 }
 
-
-impl TextEdit {
-    pub fn apply(&self, text: Text) -> String {
-        let before = text.slice(TextRange::from_to(TextUnit::zero(), self.delete.start()));
-        let after = text.slice(TextRange::from_to(self.delete.end(), text.len()));
-        before.to_string() + &self.insert + &after.to_string()
-    }
-}
-
-pub struct FiledEdit<'f> {
-    edit: TextEdit,
-    file: &'f File
-}
-
-impl<'f> FiledEdit<'f> {
-    pub fn new(file: &File) -> FiledEdit {
-        FiledEdit {
-            edit: TextEdit { delete: TextRange::empty(), insert: String::new() },
-            file: file
+impl<'f> FileEdit<'f> {
+    pub fn new(file: &'f File) -> Self {
+        FileEdit {
+            file: file,
+            inserted: Vec::new(),
+            replaced: Vec::new(),
+            deleted: Vec::new(),
         }
     }
 
-    pub fn replace(&mut self, source: Node<'f>, target: Node) {
-        let edit = TextEdit {
-            delete: source.range(),
-            insert: target.text().to_string(),
-        };
-        let combined = combine_edits(self.file.text(), &self.edit, &edit)
-            .expect("Bad edit");
-        self.edit = combined
+    pub fn replace(&mut self, node: Node<'f>, replacement: Node) {
+        self.replace_with_text(node, replacement.text().to_string())
+    }
+
+    pub fn replace_with_text(&mut self, node: Node<'f>, replacement: String) {
+        self.replaced.push((node, replacement))
+    }
+
+    pub fn delete(&mut self, node: Node<'f>) {
+        self.deleted.push(node)
+    }
+
+    pub fn insert_text_after(&mut self, anchor: Node<'f>, text: String) {
+        self.inserted.push((anchor, text))
     }
 
     pub fn into_text_edit(self) -> TextEdit {
-        self.edit
-    }
-}
-
-fn combine_edits(text: Text, edit1: &TextEdit, edit2: &TextEdit) -> Option<TextEdit> {
-    if is_empty_edit(edit1) {
-        return Some(edit2.clone());
-    }
-    if is_empty_edit(edit2) {
-        return Some(edit1.clone());
+        self.text_edit_for_node(self.file.root())
     }
 
-    let (left, right) = match edit1.delete.partial_cmp(&edit2.delete) {
-        Some(Ordering::Less) => (edit1, edit2),
-        Some(Ordering::Greater) => (edit2, edit1),
-        _ => return None
-    };
+    fn text_edit_for_node(&self, node: Node<'f>) -> TextEdit {
+        if self.deleted.iter().find(|&&n| n == node).is_some() {
+            return TextEdit::delete_range(node.range());
+        }
 
-    let delete = covering_range(left.delete, right.delete);
-    let insert = left.insert.clone()
-        + text.slice(TextRange::from_to(left.delete.end(), right.delete.start())).to_cow().as_ref()
-        + &right.insert;
-    Some(TextEdit { delete: delete, insert: insert })
-}
+        if let Some(&(_, ref replacement)) = self.replaced.iter().find(|&&(n, _)| n == node) {
+            return TextEdit::replace_range(node.range(), replacement.clone());
+        }
 
-fn is_empty_edit(edit: &TextEdit) -> bool {
-    edit.delete.is_empty() && edit.insert.is_empty()
-}
+        let mut result = TextEdit::empty();
 
-fn covering_range(range1: TextRange, range2: TextRange) -> TextRange {
-    TextRange::from_to(
-        min(range1.start(), range2.start()),
-        max(range1.end(), range2.end()),
-    )
+        for child in node.children() {
+            let new_edit = combine_edits(
+                self.file.text(),
+                &result,
+                &self.text_edit_for_node(child)
+            ).expect("conflicting edits");
+            result = new_edit;
+        }
+
+        if let Some(&(_, ref replacement)) = self.inserted.iter().find(|&&(n, _)| n == node) {
+            let insert = TextEdit::insert(node.range().end(), replacement.clone());
+            let new_edit = combine_edits(self.file.text(), &result, &insert)
+                .expect("conflicting edits");
+            result = new_edit;
+        }
+        result
+    }
 }
