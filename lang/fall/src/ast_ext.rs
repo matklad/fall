@@ -36,8 +36,7 @@ impl<'f> FallFile<'f> {
     }
 
     pub fn contexts(&self) -> Vec<Text<'f>> {
-        let mut result = Vec::new();
-        Visitor(&mut result)
+        Visitor(Vec::new())
             .visit::<CallExpr, _>(|contexts, call| {
                 if call.fn_name() == "is_in" || call.fn_name() == "enter" || call.fn_name() == "exit" {
                     if let Some(ctx) = call.context() {
@@ -45,8 +44,7 @@ impl<'f> FallFile<'f> {
                     }
                 }
             })
-            .walk_recursively_children_first(self.node());
-        result
+            .walk_recursively_children_first(self.node())
     }
 }
 

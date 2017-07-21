@@ -25,8 +25,7 @@ type Spans = Vec<(TextRange, &'static str)>;
 
 pub fn highlight(file: &File) -> Spans {
     let file = ast(file);
-    let mut spans = vec![];
-    Visitor(&mut spans)
+    return Visitor(Vec::new())
         .visit_nodes(&[EOL_COMMENT], |spans, node| {
             colorize_node(node, "comment", spans)
         })
@@ -72,7 +71,6 @@ pub fn highlight(file: &File) -> Spans {
             colorize_node(attrs.node(), "meta", spans)
         })
         .walk_recursively_children_first(file.node());
-    return spans;
 
     fn colorize_node(node: Node, color: &'static str, spans: &mut Spans) {
         spans.push((node.range(), color))
@@ -117,8 +115,7 @@ pub struct FileStructureNode {
 }
 
 pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
-    let mut nodes = Vec::new();
-    Visitor(&mut nodes)
+    Visitor(Vec::new())
         .visit::<SynRule, _>(|nodes, rule| {
             if let Some(name) = rule.name() {
                 nodes.push(FileStructureNode {
@@ -128,9 +125,7 @@ pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
                 })
             }
         })
-        .walk_recursively_children_first(file.root());
-
-    nodes
+        .walk_recursively_children_first(file.root())
 }
 
 pub enum Severity {
@@ -182,8 +177,7 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
         .chain(child_of_type(file.root(), SYN_RULE).into_iter())
         .collect();
 
-    let mut result: Vec<Diagnostic> = Vec::new();
-    Visitor(&mut result)
+    Visitor(Vec::new())
         .visit::<RefExpr, _>(|acc, ref_| {
             if ref_.resolve().is_none() {
                 if let Some(call) = ast_parent::<CallExpr>(ref_.node()) {
@@ -205,18 +199,15 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
                 acc.push(Diagnostic::warning(rule.node(), "Unused rule".to_string()))
             }
         })
-        .walk_recursively_children_first(file.root());
-
-    result
+        .walk_recursively_children_first(file.root())
 }
 
 pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
     return refdec::resolve_reference(file, offset, ref_provider);
     fn ref_provider<'f>(node: Node<'f>) -> Option<Reference<'f>> {
-        let mut result: Option<Reference> = None;
-        Visitor(&mut result)
+        Visitor(None)
             .visit::<RefExpr, _>(|result, ref_expr| {
-                **result = Some(Reference::new(ref_expr.node(), |node| {
+                *result = Some(Reference::new(ref_expr.node(), |node| {
                     let ref_expr = RefExpr::new(node);
                     let target = match ref_expr.resolve() {
                         None => return None,
@@ -235,7 +226,7 @@ pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
                     Some(parent) if parent.ty() == CALL_EXPR => {
                         let call = CallExpr::new(parent);
                         if let Ok(CallKind::RuleCall(..)) = call.kind() {
-                            **result = Some(Reference::new(ident, |node| {
+                            *result = Some(Reference::new(ident, |node| {
                                 let call = CallExpr::new(node.parent().unwrap());
                                 match call.kind().unwrap() {
                                     CallKind::RuleCall(rule, ..) => Some(rule.into()),
@@ -247,8 +238,7 @@ pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
                     _ => {}
                 }
             })
-            .walk_single_node(node);
-        result
+            .walk_single_node(node)
     }
 }
 
@@ -275,11 +265,9 @@ pub fn reformat(file: &File) -> TextEdit {
 }
 
 fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
-    let mut result = Vec::new();
-    Visitor(&mut result)
+    Visitor(Vec::new())
         .visit::<N, _>(|acc, node| acc.push(node))
-        .walk_recursively_children_first(node);
-    result
+        .walk_recursively_children_first(node)
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
