@@ -21,6 +21,10 @@ pub trait NodeVisitor<'f, C> {
         }
         self.do_visit(node)
     }
+
+    fn walk_single_node(&mut self, node: Node<'f>) {
+        self.do_visit(node)
+    }
 }
 
 pub struct Visitor<C>(pub C);

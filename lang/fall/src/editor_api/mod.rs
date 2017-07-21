@@ -8,8 +8,10 @@ use ::syntax::*;
 
 mod actions;
 mod formatter;
+mod refdec;
 
 use self::actions::{ACTIONS, ContextActionId};
+use self::refdec::{Declaration, Reference};
 
 pub fn parse(text: String) -> File {
     LANG_FALL.parse(text)
@@ -209,34 +211,63 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
 }
 
 pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
-    let node = match try_find_non_ws_node_at_offset(file, offset) {
-        None => return None,
-        Some(node) => node
-    };
+    return refdec::resolve_reference(file, offset, ref_provider);
+    fn ref_provider<'f>(node: Node<'f>) -> Option<Reference<'f>> {
+        let mut result: Option<Reference> = None;
+        Visitor(&mut result)
+            .visit::<RefExpr, _>(|result, ref_expr| {
+                **result = Some(Reference::new(ref_expr.node(), |node| {
+                    let ref_expr = RefExpr::new(node);
+                    let target = match ref_expr.resolve() {
+                        None => return None,
+                        Some(t) => t
+                    };
 
-    if let Some(ref_expr) = ast_parent::<RefExpr>(node) {
-        let target = match ref_expr.resolve() {
-            None => return None,
-            Some(t) => t
-        };
-
-        return match target {
-            RefKind::RuleReference(rule) => Some(rule.node().range()),
-            RefKind::Param(param) => Some(param.node().range()),
-            RefKind::Token(token) => Some(token.node().range()),
-        }
-    };
-
-    match node.parent() {
-        Some(parent) if parent.ty() == CALL_EXPR => {
-            let call = CallExpr::new(parent);
-            if let Ok(CallKind::RuleCall(rule, ..)) = call.kind() {
-                return Some(rule.node().range());
-            }
-        }
-        _ => {}
+                    match target {
+                        RefKind::RuleReference(rule) => Some(rule.into()),
+                        RefKind::Param(param) => Some(param.into()),
+                        RefKind::Token(token) => Some(token.into()),
+                    }
+                }))
+            })
+            .visit_nodes(&[IDENT], |result, ident| {
+                match ident.parent() {
+                    Some(parent) if parent.ty() == CALL_EXPR => {
+                        let call = CallExpr::new(parent);
+                        if let Ok(CallKind::RuleCall(..)) = call.kind() {
+                            **result = Some(Reference::new(ident, |node| {
+                                let call = CallExpr::new(node.parent().unwrap());
+                                match call.kind().unwrap() {
+                                    CallKind::RuleCall(rule, ..) => Some(rule.into()),
+                                    _ => unimplemented!()
+                                }
+                            }))
+                        }
+                    }
+                    _ => {}
+                }
+            })
+            .walk_single_node(node);
+        result
     }
-    None
+}
+
+impl<'f> From<SynRule<'f>> for Declaration<'f> {
+    fn from(rule: SynRule<'f>) -> Self {
+        Declaration::new(rule.node())
+    }
+}
+
+impl<'f> From<LexRule<'f>> for Declaration<'f> {
+    fn from(rule: LexRule<'f>) -> Self {
+        Declaration::new(rule.node())
+    }
+}
+
+impl<'f> From<Parameter<'f>> for Declaration<'f> {
+    fn from(rule: Parameter<'f>) -> Self {
+        Declaration::new(rule.node())
+    }
 }
 
 pub fn reformat(file: &File) -> TextEdit {
