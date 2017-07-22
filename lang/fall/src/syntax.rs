@@ -435,6 +435,26 @@ impl<'f> MethodDef<'f> {
     pub fn name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
+    pub fn selector(&self) -> AstSelector<'f> {
+        AstChildren::new(self.node.children()).next().unwrap()
+    }
+}
+#[derive(Clone, Copy)]
+pub struct AstSelector<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for AstSelector<'f> {
+    fn ty() -> NodeType { AST_SELECTOR }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        AstSelector { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> AstSelector<'f> {
+    pub fn child_type(&self) -> Text<'f> {
+        child_of_type_exn(self.node, IDENT).text()
+    }
 }
 #[derive(Clone, Copy)]
 pub struct RefExpr<'f> { node: Node<'f> }

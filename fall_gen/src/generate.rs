@@ -1,7 +1,8 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use lang_fall::{SelectorKind, RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind, CallKind};
+use lang_fall::{RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind, CallKind,
+                MethodDef, MethodDescription, Arity, ChildKind};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -38,9 +39,6 @@ pub fn generate(file: FallFile) -> Result<String> {
     #[derive(Serialize)]
     struct CtxAstClass { enum_name: String, variants: Vec<(String, String)> }
 
-    #[derive(Serialize)]
-    struct CtxMethod<'f> { name: Text<'f>, ret_type: String, body: String }
-
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
 
@@ -67,31 +65,14 @@ pub fn generate(file: FallFile) -> Result<String> {
 
     if let Some(ast) = file.ast_def() {
         context.add("ast_nodes", &ast.ast_nodes().map(|node| {
-            CtxAstNode {
+            Ok(CtxAstNode {
                 struct_name: camel(node.name()),
                 node_type_name: scream(node.name()),
-                methods: node.methods().map(|method| {
-                    let iter_type = if method.is_class() { "AstClassChildren" } else { "AstChildren" };
-                    CtxMethod {
-                        name: method.name(),
-                        ret_type: match method.selector_kind() {
-                            SelectorKind::Single(name) => format!("{}<'f>", camel(name)),
-                            SelectorKind::Opt(name) => format!("Option<{}<'f>>", camel(name)),
-                            SelectorKind::Many(name) => format!("{}<'f, {}<'f>>", iter_type, camel(name)),
-                            SelectorKind::Text(_) => "Text<'f>".to_owned(),
-                            SelectorKind::OptText(_) => "Option<Text<'f>>".to_owned(),
-                        },
-                        body: match method.selector_kind() {
-                            SelectorKind::Single(_) => format!("{}::new(self.node.children()).next().unwrap()", iter_type),
-                            SelectorKind::Opt(_) => format!("{}::new(self.node.children()).next()", iter_type),
-                            SelectorKind::Many(_) => format!("{}::new(self.node.children())", iter_type),
-                            SelectorKind::Text(name) => format!("child_of_type_exn(self.node, {}).text()", name),
-                            SelectorKind::OptText(name) => format!("child_of_type(self.node, {}).map(|n| n.text())", name),
-                        }
-                    }
-                }).collect()
-            }
-        }).collect::<Vec<_>>());
+                methods: node.methods()
+                    .map(|method| generate_method(file, method))
+                    .collect::<Result<Vec<CtxMethod>>>()?
+            })
+        }).collect::<Result<Vec<_>>>()?);
 
         context.add("ast_classes", &ast.ast_classes().map(|class| {
             CtxAstClass {
@@ -103,6 +84,67 @@ pub fn generate(file: FallFile) -> Result<String> {
 
     Tera::one_off(TEMPLATE.trim(), &context, false)
         .map_err(|e| error!("Failed to format template:\n{:?}", e))
+}
+
+#[derive(Serialize)]
+struct CtxMethod<'f> { name: Text<'f>, ret_type: String, body: String }
+
+fn generate_method<'f>(file: FallFile<'f>, method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
+    let description = method.resolve().ok_or(error!("Bad method:\n{}", method.node().text()))?;
+    let (ret_type, body) = match description {
+        MethodDescription::TextAccessor(node_type, arity) => {
+            let node_type = scream(node_type);
+            match arity {
+                Arity::Single =>
+                    ("Text<'f>".to_owned(),
+                     format!("child_of_type_exn(self.node, {}).text()", node_type)),
+
+                Arity::Optional =>
+                    ("Option<Text<'f>>".to_owned(),
+                     format!("child_of_type(self.node, {}).map(|n| n.text())", node_type)),
+
+                Arity::Many => unimplemented!(),
+            }
+        }
+        MethodDescription::NodeAccessor(kind, arity) => {
+            match (kind, arity) {
+                (ChildKind::AstNode(n), Arity::Single) =>
+                    (format!("{}<'f>", camel(n.name())),
+                     "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                (ChildKind::AstNode(n), Arity::Optional) =>
+                    (format!("Option<{}<'f>>", camel(n.name())),
+                     "AstChildren::new(self.node.children()).next()".to_owned()),
+                (ChildKind::AstNode(n), Arity::Many) =>
+                    (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
+                     "AstChildren::new(self.node.children())".to_owned()),
+
+                (ChildKind::AstClass(n), Arity::Single) =>
+                    (format!("{}<'f>", camel(n.name())),
+                     "AstClassChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                (ChildKind::AstClass(n), Arity::Optional) =>
+                    (format!("Option<{}<'f>>", camel(n.name())),
+                     "AstClassChildren::new(self.node.children()).next()".to_owned()),
+                (ChildKind::AstClass(n), Arity::Many) =>
+                    (format!("AstClassChildren<'f, {}<'f>>", camel(n.name())),
+                     "AstClassChildren::new(self.node.children())".to_owned()),
+
+                (ChildKind::Node(node_type_idx), arity) => {
+                    let node_type = scream(file.node_types()[node_type_idx].0);
+                    match arity {
+                        Arity::Single =>
+                            ("Node<'f>".to_owned(),
+                             format!("self.children().find(|n| n.ty() == {}).unwrap()", node_type)),
+                        Arity::Optional =>
+                            ("Option<Node<'f>>".to_owned(),
+                             format!("self.children().find(|n| n.ty() == {})", node_type)),
+                        Arity::Many => unimplemented!(),
+                    }
+                }
+            }
+        }
+    };
+
+    Ok(CtxMethod { name: method.name(), ret_type: ret_type, body: body })
 }
 
 fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {

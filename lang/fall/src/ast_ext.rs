@@ -4,7 +4,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
+       RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
        CallExpr, Parameter};
 
 impl<'f> FallFile<'f> {
@@ -71,7 +71,7 @@ impl<'f> LexRule<'f> {
     pub fn token_name(&self) -> Text<'f> {
         if let Some(r) = self.raw_re() {
             if r.starts_with("'") {
-                return r
+                return r;
             }
         }
         self.node_type()
@@ -79,14 +79,14 @@ impl<'f> LexRule<'f> {
 
     pub fn is_contextual(&self) -> bool {
         if let Some(attrs) = self.attributes() {
-            return attrs.has_attribute("contextual")
+            return attrs.has_attribute("contextual");
         }
         false
     }
 
     pub fn is_skip(&self) -> bool {
         if let Some(attrs) = self.attributes() {
-            return attrs.has_attribute("skip")
+            return attrs.has_attribute("skip");
         }
         false
     }
@@ -111,7 +111,7 @@ pub enum PratKind {
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
         if !self.is_pub() || self.is_pratt() {
-            return None
+            return None;
         }
 
         let file = ast_parent_exn::<FallFile>(self.node());
@@ -212,9 +212,45 @@ impl<'f> MethodDef<'f> {
         ast_def.ast_classes().find(|cls| cls.name() == name).is_some()
     }
 
+    pub fn resolve(&self) -> Option<MethodDescription<'f>> {
+        let file = ast_parent_exn::<FallFile>(self.node());
+        let selector_node = self.selector().node();
+        let name = self.selector().child_type();
+
+        if has(selector_node, DOT) {
+            return if file.resolve_ty(name).is_some() {
+                Some(MethodDescription::TextAccessor(name, self.arity()))
+            } else {
+                None
+            };
+        }
+
+        let ast_def = ast_parent_exn::<AstDef>(self.node());
+        let kind = if let Some(ast) = ast_def.ast_nodes().find(|a| a.name() == name) {
+            ChildKind::AstNode(ast)
+        } else if let Some(class) = ast_def.ast_classes().find(|c| c.name() == name) {
+            ChildKind::AstClass(class)
+        } else if let Some(idx) = file.resolve_ty(name) {
+            ChildKind::Node(idx)
+        } else {
+            return None;
+        };
+        Some(MethodDescription::NodeAccessor(kind, self.arity()))
+    }
+
+    fn arity(&self) -> Arity {
+        let selector_node = self.selector().node();
+        if has(selector_node, QUESTION) {
+            Arity::Optional
+        } else if has(selector_node, STAR) {
+            Arity::Many
+        } else {
+            Arity::Single
+        }
+    }
+
     fn selector_name(&self) -> Text<'f> {
-        let selector = child_of_type_exn(self.node(), AST_SELECTOR);
-        child_of_type_exn(selector, IDENT).text()
+        self.selector().child_type()
     }
 }
 
@@ -226,6 +262,23 @@ impl<'f> AstClassDef<'f> {
     pub fn variants<'a>(&'a self) -> Box<Iterator<Item=Text<'f>> + 'a> {
         Box::new(children_of_type(self.node(), IDENT).skip(1).map(|it| it.text()))
     }
+}
+
+pub enum Arity {
+    Single,
+    Optional,
+    Many
+}
+
+pub enum ChildKind<'f> {
+    AstNode(AstNodeDef<'f>),
+    AstClass(AstClassDef<'f>),
+    Node(usize)
+}
+
+pub enum MethodDescription<'f> {
+    NodeAccessor(ChildKind<'f>, Arity),
+    TextAccessor(Text<'f>, Arity),
 }
 
 pub enum SelectorKind<'f> {
@@ -250,12 +303,12 @@ impl<'f> RefExpr<'f> {
             let rule: SynRule = ast_parent_exn(self.node());
             if let Some(parameters) = rule.parameters() {
                 if let Some(p) = parameters.parameters().find(|p| p.name() == ident.text()) {
-                    return Some(RefKind::Param(p))
+                    return Some(RefKind::Param(p));
                 }
             }
 
             if let Some(rule) = file.resolve_rule(ident.text()) {
-                return Some(RefKind::RuleReference(rule))
+                return Some(RefKind::RuleReference(rule));
             }
         }
         let token_name = child_of_type(self.node(), IDENT)
@@ -288,7 +341,7 @@ impl<'f> CallExpr<'f> {
     pub fn context(&self) -> Option<Text<'f>> {
         if let Some(Expr::RefExpr(e)) = self.args().next() {
             if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
-                return Some(lit_body(context.text()))
+                return Some(lit_body(context.text()));
             }
         }
         None
@@ -299,7 +352,7 @@ impl<'f> CallExpr<'f> {
             if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
                 let ctx_name = lit_body(context.text());
                 let file: FallFile = ast_parent_exn(self.node());
-                return file.contexts().into_iter().position(|c| c == ctx_name).map(|i| i as u32)
+                return file.contexts().into_iter().position(|c| c == ctx_name).map(|i| i as u32);
             }
         }
         None
@@ -373,13 +426,13 @@ impl<'f> CallExpr<'f> {
                             if let Some(ty) = rule.resolve_ty() {
                                 args.push(ty)
                             } else {
-                                return Err("Bad prev_is")
+                                return Err("Bad prev_is");
                             }
                         } else {
-                            return Err("Bad prev_is")
+                            return Err("Bad prev_is");
                         }
                     } else {
-                        return Err("Bad prev_is")
+                        return Err("Bad prev_is");
                     }
                 }
                 CallKind::PrevIs(args)
@@ -391,10 +444,10 @@ impl<'f> CallExpr<'f> {
                             .map(|p| p.idx())
                             .zip(self.args())
                             .collect();
-                        return Ok(CallKind::RuleCall(rule, params))
+                        return Ok(CallKind::RuleCall(rule, params));
                     }
                 }
-                return Err("unknown rule")
+                return Err("unknown rule");
             }
         };
 

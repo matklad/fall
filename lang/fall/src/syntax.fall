@@ -279,12 +279,12 @@ ast {
 
   node lex_rule {
     attributes attributes?
-    node_type IDENT.text
+    node_type ident.text
   }
 
   node syn_rule {
     attributes attributes?
-    name IDENT?.text
+    name ident?.text
     body expr
     parameters parameters?
   }
@@ -294,7 +294,7 @@ ast {
   }
 
   node parameter {
-    name IDENT.text
+    name ident.text
   }
 
   node attributes {
@@ -302,7 +302,7 @@ ast {
   }
 
   node attribute {
-    name IDENT.text
+    name ident.text
     value attribute_value?
   }
 
@@ -316,7 +316,7 @@ ast {
   }
 
   node ast_node_def {
-    name IDENT.text
+    name ident.text
     methods method_def*
   }
 
@@ -324,13 +324,18 @@ ast {
   }
 
   node method_def {
-    name IDENT.text
+    name ident.text
+    selector ast_selector
+  }
+
+  node ast_selector {
+    child_type ident.text
   }
 
   node ref_expr {  }
 
   node call_expr {
-    fn_name IDENT.text
+    fn_name ident.text
     args expr*
   }
 
