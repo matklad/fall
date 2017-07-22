@@ -20,7 +20,7 @@ pub mod test_util;
 
 pub use text::{Text, TextRange, TextUnit};
 pub use text_edit::TextEdit;
-pub use node_type::{NodeType, NodeTypeInfo, ERROR, WHITESPACE};
+pub use node_type::{NodeType, NodeTypeInfo, ERROR};
 pub use node::{File, Node, FileStats, INode};
 pub use edit::FileEdit;
 pub use lang::{Language, LanguageImpl};
