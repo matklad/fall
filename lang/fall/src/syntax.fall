@@ -333,6 +333,9 @@ ast {
 
   node ast_selector {
     child ident.text
+    optional question?
+    many star?
+    dot dot?
   }
 
   node ref_expr {  }

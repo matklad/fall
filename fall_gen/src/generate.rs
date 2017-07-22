@@ -69,7 +69,7 @@ pub fn generate(file: FallFile) -> Result<String> {
                 struct_name: camel(node.name()),
                 node_type_name: scream(node.name()),
                 methods: node.methods()
-                    .map(|method| generate_method(file, method))
+                    .map(|method| generate_method(method))
                     .collect::<Result<Vec<CtxMethod>>>()?
             })
         }).collect::<Result<Vec<_>>>()?);
@@ -89,7 +89,7 @@ pub fn generate(file: FallFile) -> Result<String> {
 #[derive(Serialize)]
 struct CtxMethod<'f> { name: Text<'f>, ret_type: String, body: String }
 
-fn generate_method<'f>(file: FallFile<'f>, method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
+fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
     let description = method.resolve().ok_or(error!("Bad method:\n{}", method.node().text()))?;
     let (ret_type, body) = match description {
         MethodDescription::TextAccessor(node_type, arity) => {
@@ -128,15 +128,15 @@ fn generate_method<'f>(file: FallFile<'f>, method: MethodDef<'f>) -> Result<CtxM
                     (format!("AstClassChildren<'f, {}<'f>>", camel(n.name())),
                      "AstClassChildren::new(self.node.children())".to_owned()),
 
-                (ChildKind::Node(node_type_idx), arity) => {
-                    let node_type = scream(file.node_types()[node_type_idx].0);
+                (ChildKind::Node(node_type), arity) => {
+                    let node_type = scream(node_type);
                     match arity {
                         Arity::Single =>
                             ("Node<'f>".to_owned(),
-                             format!("self.children().find(|n| n.ty() == {}).unwrap()", node_type)),
+                             format!("self.node().children().find(|n| n.ty() == {}).unwrap()", node_type)),
                         Arity::Optional =>
                             ("Option<Node<'f>>".to_owned(),
-                             format!("self.children().find(|n| n.ty() == {})", node_type)),
+                             format!("self.node().children().find(|n| n.ty() == {})", node_type)),
                         Arity::Many => unimplemented!(),
                     }
                 }

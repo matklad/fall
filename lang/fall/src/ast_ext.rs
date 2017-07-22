@@ -1,8 +1,8 @@
 use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::{Text, TextRange, AstNode, Node, NodeType};
+use fall_tree::{Text, TextRange, AstNode};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::{STRING, IDENT, SIMPLE_STRING, QUESTION, DOT, STAR, PUB,
+use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
        CallExpr, Parameter};
@@ -186,10 +186,9 @@ impl<'f> ExampleDef<'f> {
 impl<'f> MethodDef<'f> {
     pub fn resolve(&self) -> Option<MethodDescription<'f>> {
         let file = ast_parent_exn::<FallFile>(self.node());
-        let selector_node = self.selector().node();
         let name = self.selector().child();
 
-        if has(selector_node, DOT) {
+        if self.selector().dot().is_some() {
             return if file.resolve_ty(name).is_some() {
                 Some(MethodDescription::TextAccessor(name, self.arity()))
             } else {
@@ -202,8 +201,8 @@ impl<'f> MethodDef<'f> {
             ChildKind::AstNode(ast)
         } else if let Some(class) = ast_def.ast_classes().find(|c| c.name() == name) {
             ChildKind::AstClass(class)
-        } else if let Some(idx) = file.resolve_ty(name) {
-            ChildKind::Node(idx)
+        } else if file.resolve_ty(name).is_some() {
+            ChildKind::Node(name)
         } else {
             return None;
         };
@@ -211,10 +210,9 @@ impl<'f> MethodDef<'f> {
     }
 
     fn arity(&self) -> Arity {
-        let selector_node = self.selector().node();
-        if has(selector_node, QUESTION) {
+        if self.selector().optional().is_some() {
             Arity::Optional
-        } else if has(selector_node, STAR) {
+        } else if self.selector().many().is_some() {
             Arity::Many
         } else {
             Arity::Single
@@ -241,7 +239,7 @@ pub enum Arity {
 pub enum ChildKind<'f> {
     AstNode(AstNodeDef<'f>),
     AstClass(AstClassDef<'f>),
-    Node(usize)
+    Node(Text<'f>)
 }
 
 pub enum MethodDescription<'f> {
@@ -454,8 +452,4 @@ fn lit_body(lit: Text) -> Text {
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();
     lit.slice(TextRange::from_to(s + 1, e))
-}
-
-fn has(node: Node, ty: NodeType) -> bool {
-    child_of_type(node, ty).is_some()
 }

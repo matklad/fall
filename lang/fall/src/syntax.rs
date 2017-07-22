@@ -460,6 +460,15 @@ impl<'f> AstSelector<'f> {
     pub fn child(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
+    pub fn optional(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == QUESTION)
+    }
+    pub fn many(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == STAR)
+    }
+    pub fn dot(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == DOT)
+    }
 }
 #[derive(Clone, Copy)]
 pub struct RefExpr<'f> { node: Node<'f> }
