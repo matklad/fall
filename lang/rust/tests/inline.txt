@@ -35,6 +35,38 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+const C: Foo<Bar> = foo::<'bar, Baz>;
+
+FILE
+  CONST_DEF
+    CONST "const"
+    IDENT "C"
+    COLON ":"
+    TYPE_REFERENCE
+      PATH
+        IDENT "Foo"
+        TYPE_ARGUMENTS
+          L_ANGLE "<"
+          TYPE_REFERENCE
+            PATH
+              IDENT "Bar"
+          R_ANGLE ">"
+    EQ "="
+    PATH_EXPR
+      PATH
+        IDENT "foo"
+        TYPE_ARGUMENTS
+          COLONCOLON "::"
+          L_ANGLE "<"
+          LIFETIME "\'bar"
+          COMMA ","
+          TYPE_REFERENCE
+            PATH
+              IDENT "Baz"
+          R_ANGLE ">"
+    SEMI ";"
+
+----------------------------------------
 type A = A;
 type B = &'static B;
 

@@ -207,6 +207,10 @@ rule mod_path { path }
 rule type_path { <enter 'type_path' path> }
 rule expr_path { <enter 'expr_path' path> }
 
+test r"
+const C: Foo<Bar> = foo::<'bar, Baz>;
+"
+
 #[pratt]
 pub rule path {
   unqualified_path | qualified_path
@@ -228,7 +232,10 @@ rule path_segment {
 
 pub rule type_arguments {
   { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
-  <in_angles <comma_list type_reference>> 
+  <in_angles {
+    <comma_list lifetime>
+    <comma_list type_reference>
+  }> 
 }
 
 
