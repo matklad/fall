@@ -236,6 +236,9 @@ impl<'f> LexRule<'f> {
     pub fn node_type(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
+    pub fn re(&self) -> Option<Text<'f>> {
+        child_of_type(self.node, STRING).map(|n| n.text())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct SynRule<'f> { node: Node<'f> }
@@ -362,7 +365,9 @@ impl<'f> AstNode<'f> for VerbatimDef<'f> {
 }
 
 impl<'f> VerbatimDef<'f> {
-    
+    pub fn literal_string(&self) -> Text<'f> {
+        child_of_type_exn(self.node, HASH_STRING).text()
+    }
 }
 #[derive(Clone, Copy)]
 pub struct AstDef<'f> { node: Node<'f> }
@@ -452,7 +457,7 @@ impl<'f> AstNode<'f> for AstSelector<'f> {
 }
 
 impl<'f> AstSelector<'f> {
-    pub fn child_type(&self) -> Text<'f> {
+    pub fn child(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
@@ -538,7 +543,9 @@ impl<'f> AstNode<'f> for ExampleDef<'f> {
 }
 
 impl<'f> ExampleDef<'f> {
-    
+    pub fn literal_string(&self) -> Text<'f> {
+        child_of_type_exn(self.node, HASH_STRING).text()
+    }
 }
 
 #[derive(Clone, Copy)]

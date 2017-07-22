@@ -11,7 +11,7 @@ pub mod editor_api;
 
 
 pub use self::syntax::*;
-pub use self::ast_ext::{SelectorKind, RefKind, PratKind, CallKind, MethodDescription, Arity, ChildKind};
+pub use self::ast_ext::{RefKind, PratKind, CallKind, MethodDescription, Arity, ChildKind};
 pub use self::syntax::LANG as LANG_FALL;
 
 pub fn ast(file: &File) -> FallFile {

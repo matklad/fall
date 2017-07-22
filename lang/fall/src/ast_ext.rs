@@ -2,7 +2,7 @@ use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::{Text, TextRange, AstNode, Node, NodeType};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_parent_exn};
 
-use ::{STRING, IDENT, SIMPLE_STRING, HASH_STRING, AST_SELECTOR, QUESTION, DOT, STAR, PUB,
+use ::{STRING, IDENT, SIMPLE_STRING, QUESTION, DOT, STAR, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
        CallExpr, Parameter};
@@ -50,7 +50,7 @@ impl<'f> FallFile<'f> {
 
 impl<'f> LexRule<'f> {
     pub fn token_re(&self) -> Option<String> {
-        let raw = match self.raw_re() {
+        let raw = match self.re() {
             Some(raw) => raw,
             None => return None,
         };
@@ -69,7 +69,7 @@ impl<'f> LexRule<'f> {
     }
 
     pub fn token_name(&self) -> Text<'f> {
-        if let Some(r) = self.raw_re() {
+        if let Some(r) = self.re() {
             if r.starts_with("'") {
                 return r;
             }
@@ -94,10 +94,6 @@ impl<'f> LexRule<'f> {
     pub fn node_type_index(&self) -> usize {
         let file = ast_parent_exn::<FallFile>(self.node());
         file.resolve_ty(self.node_type()).unwrap()
-    }
-
-    fn raw_re(&self) -> Option<Text<'f>> {
-        children_of_type(self.node(), STRING).next().map(|child| child.text())
     }
 }
 
@@ -177,45 +173,21 @@ impl<'f> SynRule<'f> {
 
 impl<'f> VerbatimDef<'f> {
     pub fn contents(&self) -> Text<'f> {
-        let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
-        lit_body(literal_text).trim()
+        lit_body(self.literal_string()).trim()
     }
 }
 
 impl<'f> ExampleDef<'f> {
     pub fn contents(&self) -> Text<'f> {
-        let literal_text = child_of_type_exn(self.node(), HASH_STRING).text();
-        lit_body(literal_text).trim()
+        lit_body(self.literal_string()).trim()
     }
 }
 
 impl<'f> MethodDef<'f> {
-    pub fn selector_kind(&self) -> SelectorKind<'f> {
-        let selector = child_of_type_exn(self.node(), AST_SELECTOR);
-        let name = self.selector_name();
-        if has(selector, QUESTION) && has(selector, DOT) {
-            SelectorKind::OptText(name)
-        } else if has(selector, QUESTION) {
-            SelectorKind::Opt(name)
-        } else if has(selector, STAR) {
-            SelectorKind::Many(name)
-        } else if has(selector, DOT) {
-            SelectorKind::Text(name)
-        } else {
-            SelectorKind::Single(name)
-        }
-    }
-
-    pub fn is_class(&self) -> bool {
-        let ast_def = ast_parent_exn::<AstDef>(self.node());
-        let name = self.selector_name();
-        ast_def.ast_classes().find(|cls| cls.name() == name).is_some()
-    }
-
     pub fn resolve(&self) -> Option<MethodDescription<'f>> {
         let file = ast_parent_exn::<FallFile>(self.node());
         let selector_node = self.selector().node();
-        let name = self.selector().child_type();
+        let name = self.selector().child();
 
         if has(selector_node, DOT) {
             return if file.resolve_ty(name).is_some() {
@@ -248,10 +220,6 @@ impl<'f> MethodDef<'f> {
             Arity::Single
         }
     }
-
-    fn selector_name(&self) -> Text<'f> {
-        self.selector().child_type()
-    }
 }
 
 impl<'f> AstClassDef<'f> {
@@ -279,14 +247,6 @@ pub enum ChildKind<'f> {
 pub enum MethodDescription<'f> {
     NodeAccessor(ChildKind<'f>, Arity),
     TextAccessor(Text<'f>, Arity),
-}
-
-pub enum SelectorKind<'f> {
-    Single(Text<'f>),
-    Opt(Text<'f>),
-    Many(Text<'f>),
-    Text(Text<'f>),
-    OptText(Text<'f>),
 }
 
 pub enum RefKind<'f> {

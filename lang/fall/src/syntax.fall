@@ -280,6 +280,7 @@ ast {
   node lex_rule {
     attributes attributes?
     node_type ident.text
+    re string?.text
   }
 
   node syn_rule {
@@ -308,7 +309,9 @@ ast {
 
   node attribute_value { }
 
-  node verbatim_def { }
+  node verbatim_def { 
+    literal_string hash_string.text
+  }
 
   node ast_def {
     ast_nodes ast_node_def*
@@ -329,7 +332,7 @@ ast {
   }
 
   node ast_selector {
-    child_type ident.text
+    child ident.text
   }
 
   node ref_expr {  }
@@ -351,5 +354,7 @@ ast {
     ref_expr call_expr seq_expr block_expr
   }
 
-  node example_def { }
+  node example_def { 
+    literal_string hash_string.text
+  }
 }
