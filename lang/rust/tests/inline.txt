@@ -16,6 +16,31 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+type A = A;
+type B = &'static B;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "A"
+    EQ "="
+    TYPE_REFERENCE
+      PATH
+        IDENT "A"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "B"
+    EQ "="
+    TYPE_REFERENCE
+      AMPERSAND "&"
+      LIFETIME "\'static"
+      TYPE_REFERENCE
+        PATH
+          IDENT "B"
+    SEMI ";"
+
+----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
   #[cfg(target_os="linux")] mod bar;
 

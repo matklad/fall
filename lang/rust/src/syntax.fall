@@ -48,6 +48,7 @@ tokenizer {
   pipe '|'
   underscore '_'
 
+  lifetime r"'\p{XID_Continue}*"
   ident r"\p{XID_Start}\w*"
   number r"\d+"
   string r#""([^"]|\\")*""#
@@ -223,8 +224,14 @@ pub rule type_arguments {
 pub rule alias { 'as' ident }
 
 pub rule type_reference {
-  type_path | '&' type_reference
+  type_path 
+| '&' <opt lifetime> type_reference
 }
+
+test r"
+type A = A;
+type B = &'static B;
+"
 
 pub rule pattern { 
   ident | '_'
