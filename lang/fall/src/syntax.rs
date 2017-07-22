@@ -256,6 +256,9 @@ impl<'f> SynRule<'f> {
     pub fn attributes(&self) -> Option<Attributes<'f>> {
         AstChildren::new(self.node.children()).next()
     }
+    pub fn name_ident(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == IDENT)
+    }
     pub fn name(&self) -> Option<Text<'f>> {
         child_of_type(self.node, IDENT).map(|n| n.text())
     }

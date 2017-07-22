@@ -3,12 +3,16 @@ use fall_tree::search::{ancestors, find_leaf_at_offset};
 
 pub struct Declaration<'f> {
     node: Node<'f>,
-    name_identifier: Option<Node<'f>>,
+    name_ident: Option<Node<'f>>,
 }
 
 impl<'f> Declaration<'f> {
     pub fn new(node: Node<'f>) -> Declaration<'f> {
-        Declaration { node: node, name_identifier: None }
+        Declaration { node: node, name_ident: None }
+    }
+
+    pub fn with_name_ident(node: Node<'f>, name_identifier: Option<Node<'f>>) -> Declaration<'f> {
+        Declaration { node: node, name_ident: name_identifier }
     }
 }
 
@@ -48,7 +52,7 @@ pub fn resolve_reference(
     };
 
     if let Some(decl) = reference.resolve() {
-        Some(decl.name_identifier.unwrap_or(decl.node).range())
+        Some(decl.name_ident.unwrap_or(decl.node).range())
     } else {
         None
     }

@@ -285,6 +285,7 @@ ast {
 
   node syn_rule {
     attributes attributes?
+    name_ident ident?
     name ident?.text
     body expr
     parameters parameters?

@@ -244,7 +244,7 @@ pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
 
 impl<'f> From<SynRule<'f>> for Declaration<'f> {
     fn from(rule: SynRule<'f>) -> Self {
-        Declaration::new(rule.node())
+        Declaration::with_name_ident(rule.node(), rule.name_ident())
     }
 }
 
