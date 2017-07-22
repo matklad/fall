@@ -1,4 +1,5 @@
-#[derive] struct S;
+#[foo, bar(baz), quux = 92] struct Foo;
+  #[cfg(target_os="linux")] mod bar;
 
 FILE
   STRUCT_DEF
@@ -6,10 +7,40 @@ FILE
       HASH "#"
       L_BRACK "["
       ATTR_VALUE
-        IDENT "derive"
+        IDENT "foo"
+      COMMA ","
+      ATTR_VALUE
+        IDENT "bar"
+        L_PAREN "("
+        ATTR_VALUE
+          IDENT "baz"
+        R_PAREN ")"
+      COMMA ","
+      ATTR_VALUE
+        IDENT "quux"
+        EQ "="
+        LITERAL
+          NUMBER "92"
       R_BRACK "]"
     STRUCT "struct"
-    IDENT "S"
+    IDENT "Foo"
+    SEMI ";"
+  MOD_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "cfg"
+        L_PAREN "("
+        ATTR_VALUE
+          IDENT "target_os"
+          EQ "="
+          LITERAL
+            STRING "\"linux\""
+        R_PAREN ")"
+      R_BRACK "]"
+    MOD "mod"
+    IDENT "bar"
     SEMI ";"
 
 ----------------------------------------

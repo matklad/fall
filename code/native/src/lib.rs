@@ -3,6 +3,7 @@ extern crate neon;
 #[macro_use]
 extern crate lazy_static;
 extern crate fall_tree;
+extern crate fall_gen;
 extern crate lang_fall;
 
 use std::sync::Mutex;
@@ -118,6 +119,28 @@ fn file_find_context_actions(call: Call) -> JsResult<JsValue> {
     Ok(arr.upcast())
 }
 
+fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let offset = TextUnit::from_usize(offset.value() as usize);
+    if let Some(idx) = editor_api::find_test_at_offset(file, offset) {
+        Ok(JsInteger::new(scope, idx as i32).upcast())
+    } else {
+        Ok(JsNull::new().upcast())
+    }
+}
+
+fn file_parse_test(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let tree = fall_gen::parse_test(file, test.value() as usize);
+    Ok(JsString::new(scope, &tree).unwrap().upcast())
+}
+
 fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -216,6 +239,9 @@ register_module!(m, {
     m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_resolve_reference", file_resolve_reference)?;
     m.export("file_reformat", file_reformat)?;
+
+    m.export("file_find_test_at_offset", file_find_test_at_offset)?;
+    m.export("file_parse_test", file_parse_test)?;
     Ok(())
 });
 

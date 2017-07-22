@@ -35,14 +35,17 @@ var backend = (() => {
         fileStructure: (): [FileStructureNode] => native.file_structure(),
         diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
         resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset),
-        reformat: (): [number, number, string] => native.file_reformat()
+        reformat: (): [number, number, string] => native.file_reformat(),
+        findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
+        parse_test: (testId: number): string => native.file_parse_test(testId),
     }
 })()
 
 export function activate(context: vscode.ExtensionContext) {
     var status = window.createStatusBarItem(StatusBarAlignment.Left)
     var activeEditor = window.activeTextEditor;
-    let syntaxTreeUri = vscode.Uri.parse('fall-tree://foo/bar')
+    let syntaxTreeUri = vscode.Uri.parse('fall-tree://syntaxTree')
+    let parsedTestUri = vscode.Uri.parse('fall-test://parsedTest')
 
     const decor = (obj) => vscode.window.createTextEditorDecorationType({ color: obj })
     const decorations = {
@@ -65,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
 
-    class TextDocumentProvider implements vscode.TextDocumentContentProvider {
+    class TreeTextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
@@ -76,11 +79,34 @@ export function activate(context: vscode.ExtensionContext) {
             return this.eventEmitter.event
         }
     }
-    let textDocumentProvider = new TextDocumentProvider();
+    let treeTextDocumentProvider = new TreeTextDocumentProvider();
+
+    var activeTest = null
+    class TestTextDocumentProvider implements vscode.TextDocumentContentProvider {
+        public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
+
+        public provideTextDocumentContent(uri: vscode.Uri): string {
+            return backend.parse_test(activeTest)
+        }
+
+        get onDidChange(): vscode.Event<vscode.Uri> {
+            return this.eventEmitter.event
+        }
+    }
+    let testTextDocumentProvider = new TestTextDocumentProvider();
 
     class CodeActionProvider implements vscode.CodeActionProvider {
         provideCodeActions(document: TextDocument, range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
             let offset = document.offsetAt(range.start);
+            let test = backend.findTestAtOffset(offset);
+            if (test != null) {
+                return [{
+                    title: "Parse test",
+                    command: 'extension.applyContextAction',
+                    arguments: [-1, test]
+                }]
+            }
+
             let actions = backend.findContextActions(offset);
             return actions.map((id) => {
                 return {
@@ -145,7 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         let text = activeEditor.document.getText()
         backend.create(text)
-        textDocumentProvider.eventEmitter.fire(syntaxTreeUri)
+        treeTextDocumentProvider.eventEmitter.fire(syntaxTreeUri)
         let stats = backend.stats()
         const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
         status.text = `lexing: ${to_ms(stats.lexing_time)}`
@@ -200,9 +226,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions)
 
+    vscode.workspace.onDidSaveTextDocument(event => {
+        testTextDocumentProvider.eventEmitter.fire(parsedTestUri)
+    })
 
     let providers = [
-        vscode.workspace.registerTextDocumentContentProvider('fall-tree', textDocumentProvider),
+        vscode.workspace.registerTextDocumentContentProvider('fall-tree', treeTextDocumentProvider),
+        vscode.workspace.registerTextDocumentContentProvider('fall-test', testTextDocumentProvider),
         vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
         vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider()),
         vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider()),
@@ -227,9 +257,16 @@ export function activate(context: vscode.ExtensionContext) {
             let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
             activeEditor.selection = newSelection
         }),
-        vscode.commands.registerCommand('extension.applyContextAction', (offset, id) => {
+        vscode.commands.registerCommand('extension.applyContextAction', async (offset, id) => {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
+            if (offset == -1) {
+                activeTest = id
+                testTextDocumentProvider.eventEmitter.fire(parsedTestUri)
+                let document = await vscode.workspace.openTextDocument(parsedTestUri)
+                vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
+                return
+            }
 
             let edit = backend.applyContextAction(offset, id);
             let range = new Range(

@@ -49,6 +49,7 @@ tokenizer {
 
   ident r"\p{XID_Start}\w*"
   number r"\d+"
+  string r#""([^"]|\\")*""#
 }
 
 pub rule file { mod_contents }
@@ -239,7 +240,7 @@ rule without_restrictions(p) {
 
 #[atom]
 pub rule literal {
-  number
+  number | string
 }
 
 #[atom]
@@ -354,7 +355,8 @@ pub rule attribute {
 }
 
 test r#"
-  #[derive] struct S;
+  #[foo, bar(baz), quux = 92] struct Foo;
+  #[cfg(target_os="linux")] mod bar;
 "#
 
 rule outer_attributes {
@@ -362,7 +364,10 @@ rule outer_attributes {
 }
 
 pub rule attr_value {
-  ident
+  ident <commit> <opt {
+    '=' expr 
+  | <in_parens <comma_list attr_value>>
+  }>
 }
 
 // Helper rules

@@ -298,6 +298,18 @@ pub fn reformat(file: &File) -> TextEdit {
     self::formatter::reformat_file(file, self::formatter::FALL_SPACING, WHITESPACE)
 }
 
+pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
+    let test = find_leaf_at_offset(file.root(), offset)
+        .right_biased()
+        .and_then(|node| ast_parent::<TestDef>(node));
+
+    if let Some(test) = test {
+        Some(FallFile::new(file.root()).tests().position(|t| t.node() == test.node()).unwrap())
+    } else {
+        None
+    }
+}
+
 fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
     Visitor(Vec::new())
         .visit::<N, _>(|acc, node| acc.push(node))
