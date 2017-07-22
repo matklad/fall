@@ -280,7 +280,6 @@ ast {
   node lex_rule {
     attributes attributes?
     node_type ident.text
-    re string?.text
   }
 
   node syn_rule {
@@ -320,11 +319,13 @@ ast {
   }
 
   node ast_node_def {
+    name_ident ident
     name ident.text
     methods method_def*
   }
 
   node ast_class_def {
+    name_ident ident
   }
 
   node method_def {

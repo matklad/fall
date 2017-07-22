@@ -90,10 +90,10 @@ pub fn generate(file: FallFile) -> Result<String> {
 struct CtxMethod<'f> { name: Text<'f>, ret_type: String, body: String }
 
 fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
-    let description = method.resolve().ok_or(error!("Bad method:\n{}", method.node().text()))?;
+    let description = method.resolve().ok_or(error!("Bad method `{}`", method.node().text()))?;
     let (ret_type, body) = match description {
-        MethodDescription::TextAccessor(node_type, arity) => {
-            let node_type = scream(node_type);
+        MethodDescription::TextAccessor(lex_rule, arity) => {
+            let node_type = scream(lex_rule.node_type());
             match arity {
                 Arity::Single =>
                     ("Text<'f>".to_owned(),
@@ -128,8 +128,8 @@ fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
                     (format!("AstClassChildren<'f, {}<'f>>", camel(n.name())),
                      "AstClassChildren::new(self.node.children())".to_owned()),
 
-                (ChildKind::Node(node_type), arity) => {
-                    let node_type = scream(node_type);
+                (ChildKind::Token(lex_rule), arity) => {
+                    let node_type = scream(lex_rule.node_type());
                     match arity {
                         Arity::Single =>
                             ("Node<'f>".to_owned(),

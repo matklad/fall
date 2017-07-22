@@ -5,7 +5,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
-       CallExpr, Parameter};
+       CallExpr, Parameter, AstSelector};
 
 impl<'f> FallFile<'f> {
     pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
@@ -94,6 +94,10 @@ impl<'f> LexRule<'f> {
     pub fn node_type_index(&self) -> usize {
         let file = ast_parent_exn::<FallFile>(self.node());
         file.resolve_ty(self.node_type()).unwrap()
+    }
+
+    fn re(&self) -> Option<Text<'f>> {
+        child_of_type(self.node(), STRING).map(|n| n.text())
     }
 }
 
@@ -186,26 +190,19 @@ impl<'f> ExampleDef<'f> {
 impl<'f> MethodDef<'f> {
     pub fn resolve(&self) -> Option<MethodDescription<'f>> {
         let file = ast_parent_exn::<FallFile>(self.node());
+        let kind = match self.selector().child_kind() {
+            None => return None,
+            Some(kind) => kind,
+        };
         let name = self.selector().child();
 
         if self.selector().dot().is_some() {
-            return if file.resolve_ty(name).is_some() {
-                Some(MethodDescription::TextAccessor(name, self.arity()))
-            } else {
-                None
+            return match (file.resolve_ty(name), kind) {
+                (Some(_), ChildKind::Token(t)) => Some(MethodDescription::TextAccessor(t, self.arity())),
+                _ => None
             };
         }
 
-        let ast_def = ast_parent_exn::<AstDef>(self.node());
-        let kind = if let Some(ast) = ast_def.ast_nodes().find(|a| a.name() == name) {
-            ChildKind::AstNode(ast)
-        } else if let Some(class) = ast_def.ast_classes().find(|c| c.name() == name) {
-            ChildKind::AstClass(class)
-        } else if file.resolve_ty(name).is_some() {
-            ChildKind::Node(name)
-        } else {
-            return None;
-        };
         Some(MethodDescription::NodeAccessor(kind, self.arity()))
     }
 
@@ -217,6 +214,26 @@ impl<'f> MethodDef<'f> {
         } else {
             Arity::Single
         }
+    }
+}
+
+impl<'f> AstSelector<'f> {
+    pub fn child_kind(&self) -> Option<ChildKind<'f>> {
+        let file = ast_parent_exn::<FallFile>(self.node());
+
+        let ast_def = ast_parent_exn::<AstDef>(self.node());
+        if let Some(ast) = ast_def.ast_nodes().find(|a| a.name() == self.child()) {
+            return Some(ChildKind::AstNode(ast));
+        }
+        if let Some(class) = ast_def.ast_classes().find(|c| c.name() == self.child()) {
+            return Some(ChildKind::AstClass(class));
+        }
+
+        if let Some(lex_rule) = file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.node_type() == self.child())) {
+            return Some(ChildKind::Token(lex_rule));
+        }
+
+        None
     }
 }
 
@@ -239,12 +256,12 @@ pub enum Arity {
 pub enum ChildKind<'f> {
     AstNode(AstNodeDef<'f>),
     AstClass(AstClassDef<'f>),
-    Node(Text<'f>)
+    Token(LexRule<'f>)
 }
 
 pub enum MethodDescription<'f> {
     NodeAccessor(ChildKind<'f>, Arity),
-    TextAccessor(Text<'f>, Arity),
+    TextAccessor(LexRule<'f>, Arity),
 }
 
 pub enum RefKind<'f> {

@@ -236,9 +236,6 @@ impl<'f> LexRule<'f> {
     pub fn node_type(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn re(&self) -> Option<Text<'f>> {
-        child_of_type(self.node, STRING).map(|n| n.text())
-    }
 }
 #[derive(Clone, Copy)]
 pub struct SynRule<'f> { node: Node<'f> }
@@ -405,6 +402,9 @@ impl<'f> AstNode<'f> for AstNodeDef<'f> {
 }
 
 impl<'f> AstNodeDef<'f> {
+    pub fn name_ident(&self) -> Node<'f> {
+        self.node().children().find(|n| n.ty() == IDENT).unwrap()
+    }
     pub fn name(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
@@ -425,7 +425,9 @@ impl<'f> AstNode<'f> for AstClassDef<'f> {
 }
 
 impl<'f> AstClassDef<'f> {
-    
+    pub fn name_ident(&self) -> Node<'f> {
+        self.node().children().find(|n| n.ty() == IDENT).unwrap()
+    }
 }
 #[derive(Clone, Copy)]
 pub struct MethodDef<'f> { node: Node<'f> }

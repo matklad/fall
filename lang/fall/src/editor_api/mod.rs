@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset, ast_parent};
-use ::{ast, LANG_FALL, RefKind, CallKind};
+use ::{ast, LANG_FALL, RefKind, CallKind, ChildKind};
 use ::syntax::*;
 
 mod actions;
@@ -52,9 +52,17 @@ pub fn highlight(file: &File) -> Spans {
                 Some(RefKind::Token(_)) => "token",
                 Some(RefKind::RuleReference { .. }) => "rule",
                 Some(RefKind::Param(..)) => "value_parameter",
-                None => "rule"
+                None => return
             };
             colorize_node(ref_.node(), color, spans)
+        })
+        .visit::<AstSelector, _>(|spans, sel| {
+            let color = match sel.child_kind() {
+                Some(ChildKind::Token(..)) => "token",
+                Some(ChildKind::AstClass(..)) | Some(ChildKind::AstNode(..)) => "rule",
+                None => return
+            };
+            colorize_child(sel.node(), IDENT, color, spans)
         })
         .visit::<CallExpr, _>(|spans, call| {
             let color = match call.kind() {
@@ -214,11 +222,25 @@ pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
                         Some(t) => t
                     };
 
-                    match target {
-                        RefKind::RuleReference(rule) => Some(rule.into()),
-                        RefKind::Param(param) => Some(param.into()),
-                        RefKind::Token(token) => Some(token.into()),
-                    }
+                    Some(match target {
+                        RefKind::RuleReference(rule) => rule.into(),
+                        RefKind::Param(param) => param.into(),
+                        RefKind::Token(token) => token.into(),
+                    })
+                }))
+            })
+            .visit::<AstSelector, _>(|result, selector| {
+                *result = Some(Reference::new(selector.node(), |node| {
+                    let selector = AstSelector::new(node);
+                    let target = match selector.child_kind() {
+                        None => return None,
+                        Some(t) => t
+                    };
+                    Some(match target {
+                        ChildKind::AstNode(node) => node.into(),
+                        ChildKind::AstClass(cls) => cls.into(),
+                        ChildKind::Token(token) => token.into()
+                    })
                 }))
             })
             .visit_nodes(&[IDENT], |result, ident| {
@@ -257,6 +279,18 @@ impl<'f> From<LexRule<'f>> for Declaration<'f> {
 impl<'f> From<Parameter<'f>> for Declaration<'f> {
     fn from(rule: Parameter<'f>) -> Self {
         Declaration::new(rule.node())
+    }
+}
+
+impl<'f> From<AstNodeDef<'f>> for Declaration<'f> {
+    fn from(rule: AstNodeDef<'f>) -> Self {
+        Declaration::with_name_ident(rule.node(), Some(rule.name_ident()))
+    }
+}
+
+impl<'f> From<AstClassDef<'f>> for Declaration<'f> {
+    fn from(rule: AstClassDef<'f>) -> Self {
+        Declaration::with_name_ident(rule.node(), Some(rule.name_ident()))
     }
 }
 
