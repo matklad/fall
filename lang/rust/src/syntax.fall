@@ -20,6 +20,8 @@ tokenizer {
   type 'type'
   const 'const'
   for 'for'
+  loop 'loop'
+  while 'while'
 
   l_paren '('
   r_paren ')'
@@ -263,13 +265,13 @@ type B = &'static B;
 "
 
 pub rule pattern { 
-  ident | '_'
+  expr_path <opt <in_parens <comma_list pattern>>> | '_'
 }
 
 #[pratt]
 pub rule expr { 
   literal | struct_literal | path_expr | paren_expr | lambda_expr
-| block_expr | if_expr
+| block_expr | if_expr | while_expr | loop_expr
 | call_expr | field_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
@@ -355,10 +357,46 @@ pub rule expr_stmt {
 
 #[atom]
 pub rule if_expr {
-  'if' <commit> <enter 'condition' expr> 
-    block_expr 
+  'if' <commit>  
+    block_condition block_expr 
     <opt {'else' block_expr}>
 }
+
+test r"
+fn main() { if true { foo } else { bar } }
+"
+
+#[atom]
+pub rule while_expr {
+  <opt {lifetime ':'}> 'while' <commit>  
+    block_condition block_expr 
+    }
+
+test r"
+fn main() { 'w: while true {} }
+"    
+
+rule block_condition {
+  <enter 'condition' {
+    <opt {'let' <commit> pattern '='}> expr 
+  }>
+}
+test r"
+fn main() {
+    if S {};
+    if (S {}) {}
+    if let Some(x) = foo() {}
+}
+"
+
+#[atom]
+pub rule loop_expr {
+  <opt {lifetime ':'}> 'loop' <commit> block_expr
+}
+
+test r"
+fn main() { 'pool: loop { 92 }}
+"
 
 #[postfix]
 pub rule call_expr {

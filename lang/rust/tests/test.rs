@@ -52,34 +52,6 @@ FILE
 }
 
 #[test]
-fn check_reparse_in_block_body() {
-    check_reparse(
-        &LANG_RUST,
-        "fn foo() { let a = 1 }",
-        "fn foo() { let a = 1; }",
-        r#"
-FILE
-  FN_DEF
-    FN "fn"
-    IDENT "foo"
-    L_PAREN "("
-    R_PAREN ")"
-    BLOCK_EXPR
-      L_CURLY "{"
-      LET_STMT
-        LET "let"
-        PATTERN
-          IDENT "a"
-        EQ "="
-        LITERAL
-          NUMBER "1"
-        SEMI ";"
-      R_CURLY "}""#,
-        "fn foo() { let a = 1; }")
-}
-
-
-#[test]
 fn check_by_data() {
     let dir = env!("CARGO_MANIFEST_DIR");
     let test_data_path = PathBuf::from(dir).join("tests").join("data");

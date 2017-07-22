@@ -50,7 +50,8 @@ FILE
       LET_STMT
         LET "let"
         PATTERN
-          IDENT "x"
+          PATH
+            IDENT "x"
         EQ "="
         SUM_EXPR
           SUM_EXPR
@@ -395,7 +396,8 @@ FILE
           LET_STMT
             LET "let"
             PATTERN
-              IDENT "x"
+              PATH
+                IDENT "x"
             EQ "="
             SUM_EXPR
               BLOCK_EXPR
@@ -424,7 +426,8 @@ FILE
       LET_STMT
         LET "let"
         PATTERN
-          IDENT "a"
+          PATH
+            IDENT "a"
         EQ "="
         LITERAL
           NUMBER "1"
@@ -432,7 +435,8 @@ FILE
       LET_STMT
         LET "let"
         PATTERN
-          IDENT "b"
+          PATH
+            IDENT "b"
         EQ "="
         PATH_EXPR
           PATH

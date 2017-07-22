@@ -144,11 +144,13 @@ FILE
           PIPE "|"
           LAMBDA_VALUE_PARAM
             PATTERN
-              IDENT "x"
+              PATH
+                IDENT "x"
           COMMA ","
           LAMBDA_VALUE_PARAM
             PATTERN
-              IDENT "y"
+              PATH
+                IDENT "y"
             COLON ":"
             TYPE_REFERENCE
               PATH
@@ -176,6 +178,145 @@ FILE
               NUMBER "92"
             R_CURLY "}"
         SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { if true { foo } else { bar } }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      IF_EXPR
+        IF "if"
+        PATH_EXPR
+          PATH
+            IDENT "true"
+        BLOCK_EXPR
+          L_CURLY "{"
+          PATH_EXPR
+            PATH
+              IDENT "foo"
+          R_CURLY "}"
+        ELSE "else"
+        BLOCK_EXPR
+          L_CURLY "{"
+          PATH_EXPR
+            PATH
+              IDENT "bar"
+          R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { 'w: while true {} }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      WHILE_EXPR
+        LIFETIME "\'w"
+        COLON ":"
+        WHILE "while"
+        PATH_EXPR
+          PATH
+            IDENT "true"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
+    if S {};
+    if (S {}) {}
+    if let Some(x) = foo() {}
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PATH_EXPR
+            PATH
+              IDENT "S"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
+      EMPTY_STMT
+        SEMI ";"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PAREN_EXPR
+            L_PAREN "("
+            STRUCT_LITERAL
+              PATH
+                IDENT "S"
+              L_CURLY "{"
+              R_CURLY "}"
+            R_PAREN ")"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
+      IF_EXPR
+        IF "if"
+        LET "let"
+        PATTERN
+          PATH
+            IDENT "Some"
+          L_PAREN "("
+          PATTERN
+            PATH
+              IDENT "x"
+          R_PAREN ")"
+        EQ "="
+        CALL_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "foo"
+          L_PAREN "("
+          R_PAREN ")"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { 'pool: loop { 92 }}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LOOP_EXPR
+        LIFETIME "\'pool"
+        COLON ":"
+        LOOP "loop"
+        BLOCK_EXPR
+          L_CURLY "{"
+          LITERAL
+            NUMBER "92"
+          R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------

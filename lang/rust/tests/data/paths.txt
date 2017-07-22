@@ -42,7 +42,8 @@ FILE
       LET_STMT
         LET "let"
         PATTERN
-          IDENT "x"
+          PATH
+            IDENT "x"
         EQ "="
         PATH_EXPR
           PATH

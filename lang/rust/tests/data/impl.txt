@@ -11,7 +11,8 @@ FILE
       L_PAREN "("
       VALUE_PARAM
         PATTERN
-          IDENT "x"
+          PATH
+            IDENT "x"
         COLON ":"
         TYPE_REFERENCE
           PATH

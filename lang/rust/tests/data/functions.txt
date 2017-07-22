@@ -13,7 +13,8 @@ FILE
     L_PAREN "("
     VALUE_PARAM
       PATTERN
-        IDENT "x"
+        PATH
+          IDENT "x"
       COLON ":"
       TYPE_REFERENCE
         PATH
@@ -28,7 +29,8 @@ FILE
     L_PAREN "("
     VALUE_PARAM
       PATTERN
-        IDENT "x"
+        PATH
+          IDENT "x"
       COLON ":"
       TYPE_REFERENCE
         PATH
@@ -44,7 +46,8 @@ FILE
     L_PAREN "("
     VALUE_PARAM
       PATTERN
-        IDENT "x"
+        PATH
+          IDENT "x"
       COLON ":"
       TYPE_REFERENCE
         PATH
@@ -52,7 +55,8 @@ FILE
     COMMA ","
     VALUE_PARAM
       PATTERN
-        IDENT "z"
+        PATH
+          IDENT "z"
       COLON ":"
       TYPE_REFERENCE
         PATH

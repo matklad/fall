@@ -102,7 +102,8 @@ FILE
       LET_STMT
         LET "let"
         PATTERN
-          IDENT "union"
+          PATH
+            IDENT "union"
         EQ "="
         LITERAL
           NUMBER "92"
