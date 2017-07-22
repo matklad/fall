@@ -44,3 +44,42 @@ FILE
     BLOCK_EXPR
       L_CURLY "{"
       R_CURLY "}"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "A"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      TYPE_PARAMETER
+        IDENT "A"
+      COMMA ","
+      R_ANGLE ">"
+    L_PAREN "("
+    R_PAREN ")"
+    SEMI ";"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "B"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      LIFETIME_PARAMETER
+        LIFETIME "\'a"
+      COMMA ","
+      R_ANGLE ">"
+    L_PAREN "("
+    R_PAREN ")"
+    SEMI ";"
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "C"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      LIFETIME_PARAMETER
+        LIFETIME "\'a"
+      COMMA ","
+      TYPE_PARAMETER
+        IDENT "A"
+      COMMA ","
+      R_ANGLE ">"
+    L_PAREN "("
+    R_PAREN ")"
+    SEMI ";"

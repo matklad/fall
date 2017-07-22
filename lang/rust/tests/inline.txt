@@ -16,6 +16,25 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+struct B<'b, C>();
+
+FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "B"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      LIFETIME_PARAMETER
+        LIFETIME "\'b"
+      COMMA ","
+      TYPE_PARAMETER
+        IDENT "C"
+      R_ANGLE ">"
+    L_PAREN "("
+    R_PAREN ")"
+    SEMI ";"
+
+----------------------------------------
 type A = A;
 type B = &'static B;
 

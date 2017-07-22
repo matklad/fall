@@ -181,11 +181,22 @@ pub const X: i32 = 0;
 "
 
 pub rule type_parameters {
-  <in_angles <comma_list type_parameter>>
+  <in_angles {
+    <comma_list lifetime_parameter>
+    <comma_list type_parameter>
+  }>
 }
+
+test r"
+struct B<'b, C>();
+"
 
 pub rule type_parameter {
   ident
+}
+
+pub rule lifetime_parameter {
+  lifetime
 }
 
 pub rule visibility {
