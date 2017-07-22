@@ -126,6 +126,35 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+fn main() { x.foo; x.92; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        FIELD_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "x"
+          DOT "."
+          IDENT "foo"
+        SEMI ";"
+      EXPR_STMT
+        FIELD_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "x"
+          DOT "."
+          NUMBER "92"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
 #[cfg(target_os="linux")] mod bar;
 

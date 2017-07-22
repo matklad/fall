@@ -344,9 +344,11 @@ pub rule call_expr {
 
 #[postfix]
 pub rule field_expr {
-  expr {'.' ident}
+  expr {'.' {ident | number}}
 }
-
+test r"
+fn main() { x.foo; x.92; }
+"
 
 pub rule value_argument {
   expr
