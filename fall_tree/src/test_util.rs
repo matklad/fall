@@ -91,7 +91,7 @@ fn render_tests(lang: &Language, tests: &[String]) -> String {
         result += "\n\n";
         let file = lang.parse(test.to_owned());
         result += &dump_file(&file);
-        result += "\n----------------------------------------"
+        result += "\n----------------------------------------\n"
     }
     result
 }

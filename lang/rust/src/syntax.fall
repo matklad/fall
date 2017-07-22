@@ -18,6 +18,7 @@ tokenizer {
   self 'self'
   super 'super'
   type 'type'
+  const 'const'
 
   l_paren '('
   r_paren ')'
@@ -62,11 +63,12 @@ rule mod_contents {
 rule mod_form_first { 
   'pub' | 'extern' | '#'
 | 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' | 'impl' | 'type'
+| 'const'
 }
 
 rule mod_form { 
   use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def 
-| impl_def | type_def
+| impl_def | type_def | const_def
 }
 
 pub rule use_decl {
@@ -167,6 +169,15 @@ pub rule type_def {
   ';'
 }
 
+pub rule const_def {
+  outer_attributes <opt visibility> 'const' <commit>
+  ident ':' type_reference
+  '=' expr ';'
+}
+
+test r"
+pub const X: i32 = 0;
+"
 
 pub rule type_parameters {
   <in_angles <comma_list type_parameter>>

@@ -1,3 +1,21 @@
+pub const X: i32 = 0;
+
+FILE
+  CONST_DEF
+    VISIBILITY
+      PUB "pub"
+    CONST "const"
+    IDENT "X"
+    COLON ":"
+    TYPE_REFERENCE
+      PATH
+        IDENT "i32"
+    EQ "="
+    LITERAL
+      NUMBER "0"
+    SEMI ";"
+
+----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
   #[cfg(target_os="linux")] mod bar;
 
