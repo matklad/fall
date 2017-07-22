@@ -373,8 +373,8 @@ pub rule attribute {
 }
 
 test r#"
-  #[foo, bar(baz), quux = 92] struct Foo;
-  #[cfg(target_os="linux")] mod bar;
+#[foo, bar(baz), quux = 92] struct Foo;
+#[cfg(target_os="linux")] mod bar;
 "#
 
 rule outer_attributes {

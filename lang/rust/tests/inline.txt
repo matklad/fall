@@ -42,7 +42,7 @@ FILE
 
 ----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
-  #[cfg(target_os="linux")] mod bar;
+#[cfg(target_os="linux")] mod bar;
 
 FILE
   STRUCT_DEF
