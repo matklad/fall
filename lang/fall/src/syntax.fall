@@ -33,7 +33,7 @@ tokenizer {
   #[contextual] verbatim 'verbatim'
   #[contextual] ast 'ast'
   #[contextual] pub 'pub'
-  #[contextual] example 'example'
+  #[contextual] test 'test'
 
   // If you use `''` to specify the pattern, it will be interpreted "as is",
   // and not as a regular expression.
@@ -73,7 +73,7 @@ pub rule fall_file {
 }
 
 rule file_form_first {
-  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' | 'example'
+  'tokenizer' | 'pub' | 'rule' | '#' | 'verbatim' | 'ast' | 'test'
 }
 
 rule file_form {
@@ -81,7 +81,7 @@ rule file_form {
 | syn_rule
 | verbatim_def
 | ast_def
-| example_def
+| test_def
 }
 
 // Each rule has the following pattern:
@@ -169,7 +169,7 @@ pub rule lex_rule {
   <opt attributes> ident <commit> string <opt string>
 }
 
-pub rule example_def { 'example' <commit> hash_string }
+pub rule test_def { 'test' <commit> hash_string }
 
 
 pub rule attributes {
@@ -270,7 +270,7 @@ ast {
     syn_rules syn_rule*
     verbatim_def verbatim_def?
     ast_def ast_def?
-    examples example_def*
+    tests test_def*
   }
 
   node tokenizer_def {
@@ -359,7 +359,7 @@ ast {
     ref_expr call_expr seq_expr block_expr
   }
 
-  node example_def { 
-    literal_string hash_string.text
+  node test_def { 
+    literal_string hash_string?.text
   }
 }

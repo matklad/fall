@@ -32,7 +32,7 @@ pub fn highlight(file: &File) -> Spans {
         .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
             colorize_node(node, "string", spans)
         })
-        .visit_nodes(&[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, EXAMPLE], |spans, node| {
+        .visit_nodes(&[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST], |spans, node| {
             colorize_node(node, "keyword", spans)
         })
         .visit_nodes(&[ERROR], |spans, node| {

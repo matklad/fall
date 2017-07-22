@@ -361,7 +361,7 @@ pub rule attr_value {
   ident
 }
 
-// AUX rules
+// Helper rules
 
 rule comma_list(el) {
   <rep {el <commit> {<eof> | ','}}>

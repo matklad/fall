@@ -4,7 +4,7 @@ use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type, ast_
 
 use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, ExampleDef,
+       RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, TestDef,
        CallExpr, Parameter, AstSelector};
 
 impl<'f> FallFile<'f> {
@@ -181,9 +181,9 @@ impl<'f> VerbatimDef<'f> {
     }
 }
 
-impl<'f> ExampleDef<'f> {
-    pub fn contents(&self) -> Text<'f> {
-        lit_body(self.literal_string()).trim()
+impl<'f> TestDef<'f> {
+    pub fn contents(&self) -> Option<Text<'f>> {
+        self.literal_string().map(|s| lit_body(s).trim())
     }
 }
 

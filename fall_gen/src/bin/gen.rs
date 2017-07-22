@@ -20,10 +20,10 @@ enum Task {
 fn main() {
     let matches = App::new("Fall parser generator")
         .arg(Arg::with_name("grammar").index(1).required(true))
-        .arg(Arg::with_name("examples").long("examples"))
+        .arg(Arg::with_name("tests").long("tests"))
         .get_matches();
     let grammar = PathBuf::from(matches.value_of("grammar").unwrap());
-    let command = if matches.is_present("examples") {
+    let command = if matches.is_present("tests") {
         Task::Examples(grammar)
     } else {
         Task::Generate(grammar)
@@ -49,7 +49,7 @@ fn main_inner(command: Task) -> Result<(), Box<Error>> {
         }
         Task::Examples(grammar) => {
             let input = file::get_text(&grammar)?;
-            let result = render_examples(input)?;
+            let result = render_testss(input)?;
             file::put_text(grammar.with_extension("txt"), result)?;
         }
     }
@@ -57,7 +57,7 @@ fn main_inner(command: Task) -> Result<(), Box<Error>> {
 }
 
 
-fn render_examples(grammar: String) -> Result<String, Box<Error>> {
+fn render_testss(grammar: String) -> Result<String, Box<Error>> {
     let file = lang_fall::LANG_FALL.parse(grammar);
     let ast = lang_fall::ast(&file);
     let parser = match fall_gen::generate(ast) {
@@ -72,7 +72,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
     let toml = base_dir.join("Cargo.toml");
     put_text_if_changed(&toml, &format!(r##"
         [package]
-        name = "fall_examples"
+        name = "fall_tests_rendering"
         version = "0.1.0"
         authors = []
 
@@ -94,8 +94,8 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         fn main() {
             let mut input = String::new();
             ::std::io::stdin().read_to_string(&mut input).unwrap();
-            for example in input.split("\n***###***\n") {
-                let file = syntax::LANG.parse(example.to_owned());
+            for test in input.split("\n***###***\n") {
+                let file = syntax::LANG.parse(test.to_owned());
                 println!("{}\n", fall_tree::dump_file(&file));
             }
         }
@@ -120,13 +120,15 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
         .stdout(Stdio::piped())
         .spawn()?;
 
-    let examples: String = ast.examples().map(|ex| ex.contents().to_string())
+    let tests: String = ast.tests()
+        .filter_map(|t| t.contents())
+        .map(|t| t.to_string())
         .collect::<Vec<_>>()
         .join("\n***###***\n");
 
     {
         let mut stdin = child.stdin.as_mut().unwrap();
-        stdin.write_all(examples.as_bytes()).unwrap();
+        stdin.write_all(tests.as_bytes()).unwrap();
         stdin.flush().unwrap();
     }
 
@@ -142,7 +144,7 @@ fn render_examples(grammar: String) -> Result<String, Box<Error>> {
 }
 
 fn base_directory() -> Result<PathBuf, Box<Error>> {
-    let result = ::std::env::temp_dir().join("fall-examples");
+    let result = ::std::env::temp_dir().join("fall-tests");
     fs::create_dir_all(&result)?;
     fs::create_dir_all(&result.join("src"))?;
     Ok(result)
