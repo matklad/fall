@@ -19,6 +19,7 @@ tokenizer {
   super 'super'
   type 'type'
   const 'const'
+  for 'for'
 
   l_paren '('
   r_paren ')'
@@ -144,16 +145,22 @@ pub rule enum_variant {
 }
 
 pub rule mod_def {
-  outer_attributes <opt visibility> 'mod' <commit> ident {
-    ';'
-  | <block mod_contents>
-  }
+  outer_attributes <opt visibility> 'mod' <commit> 
+  ident { ';' | <block mod_contents> }
 }
 
 pub rule impl_def {
-  outer_attributes 'impl' <commit> ident 
+  outer_attributes 'impl' <commit> 
+  <opt type_parameters>
+  {type_reference <opt {'for' type_reference}> }
   <block <rep <with_skip impl_form_first impl_form>>>
 }
+
+test r"
+impl Node {}
+impl<'f> ::Debug for Node<'f> { }
+"
+
 
 rule impl_form {
   fn_def | type_def
@@ -387,7 +394,7 @@ pub rule bit_or {
 // Attributes
 
 pub rule attribute {
-  '#' <in_bracks <comma_list attr_value> >
+  '#' <in_bracks <comma_list attr_value>>
 }
 
 test r#"

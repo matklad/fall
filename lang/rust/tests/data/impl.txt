@@ -1,7 +1,9 @@
 FILE
   IMPL_DEF
     IMPL "impl"
-    IDENT "Foo"
+    TYPE_REFERENCE
+      PATH
+        IDENT "Foo"
     L_CURLY "{"
     FN_DEF
       FN "fn"

@@ -75,7 +75,9 @@ FILE
       R_CURLY "}"
   IMPL_DEF
     IMPL "impl"
-    IDENT "T"
+    TYPE_REFERENCE
+      PATH
+        IDENT "T"
     L_CURLY "{"
     FN_DEF
       FN "fn"

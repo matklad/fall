@@ -1,3 +1,37 @@
+impl Node {}
+impl<'f> ::Debug for Node<'f> { }
+
+FILE
+  IMPL_DEF
+    IMPL "impl"
+    TYPE_REFERENCE
+      PATH
+        IDENT "Node"
+    L_CURLY "{"
+    R_CURLY "}"
+  IMPL_DEF
+    IMPL "impl"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      LIFETIME_PARAMETER
+        LIFETIME "\'f"
+      R_ANGLE ">"
+    TYPE_REFERENCE
+      PATH
+        COLONCOLON "::"
+        IDENT "Debug"
+    FOR "for"
+    TYPE_REFERENCE
+      PATH
+        IDENT "Node"
+        TYPE_ARGUMENTS
+          L_ANGLE "<"
+          LIFETIME "\'f"
+          R_ANGLE ">"
+    L_CURLY "{"
+    R_CURLY "}"
+
+----------------------------------------
 pub const X: i32 = 0;
 
 FILE

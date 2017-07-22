@@ -74,7 +74,9 @@ FILE
         IDENT "foo"
       R_BRACK "]"
     IMPL "impl"
-    IDENT "X"
+    TYPE_REFERENCE
+      PATH
+        IDENT "X"
     L_CURLY "{"
     R_CURLY "}"
   TYPE_DEF
