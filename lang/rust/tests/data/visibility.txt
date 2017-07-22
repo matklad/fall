@@ -2,30 +2,30 @@ FILE
   STRUCT_DEF
     STRUCT "struct"
     IDENT "Foo"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "bar"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   STRUCT_DEF
     VISIBILITY
       PUB "pub"
     STRUCT "struct"
     IDENT "Baz"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   FN_DEF
     VISIBILITY
       PUB "pub"
     FN "fn"
     IDENT "quux"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"

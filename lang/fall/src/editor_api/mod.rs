@@ -72,8 +72,8 @@ pub fn highlight(file: &File) -> Spans {
             };
 
             colorize_child(call.node(), IDENT, color, spans);
-            colorize_child(call.node(), LANGLE, color, spans);
-            colorize_child(call.node(), RANGLE, color, spans);
+            colorize_child(call.node(), L_ANGLE, color, spans);
+            colorize_child(call.node(), R_ANGLE, color, spans);
         })
         .visit::<Attributes, _>(|spans, attrs| {
             colorize_node(attrs.node(), "meta", spans)

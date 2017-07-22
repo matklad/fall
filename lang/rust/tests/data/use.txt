@@ -35,8 +35,8 @@ FILE
   USE_DECL
     USE "use"
     USE_SPEC
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -53,8 +53,8 @@ FILE
     USE "use"
     COLONCOLON "::"
     USE_SPEC
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -70,7 +70,7 @@ FILE
       IDENT "foo"
     COLONCOLON "::"
     USE_SPEC
-      LBRACE "{"
+      L_CURLY "{"
       USE_SPEC_ENTRY
         IDENT "bar"
       COMMA ","
@@ -79,7 +79,7 @@ FILE
         ALIAS
           AS "as"
           IDENT "quux"
-      RBRACE "}"
+      R_CURLY "}"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -87,11 +87,11 @@ FILE
       IDENT "foo"
     COLONCOLON "::"
     USE_SPEC
-      LBRACE "{"
+      L_CURLY "{"
       USE_SPEC_ENTRY
         IDENT "bar"
       COMMA ","
-      RBRACE "}"
+      R_CURLY "}"
     SEMI ";"
   USE_DECL
     VISIBILITY

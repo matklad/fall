@@ -23,7 +23,7 @@ FILE
   IMPL_DEF
     IMPL "impl"
     IDENT "T"
-    LBRACE "{"
+    L_CURLY "{"
     TYPE_DEF
       TYPE "type"
       IDENT "A"
@@ -36,4 +36,4 @@ FILE
         PATH
           IDENT "A"
       SEMI ";"
-    RBRACE "}"
+    R_CURLY "}"

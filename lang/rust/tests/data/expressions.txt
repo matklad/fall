@@ -2,51 +2,51 @@ FILE
   FN_DEF
     FN "fn"
     IDENT "a"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "b"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LITERAL
         NUMBER "1"
-      RBRACE "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "c"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       EXPR_STMT
         LITERAL
           NUMBER "1"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "d"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       BLOCK_EXPR
-        LBRACE "{"
-        RBRACE "}"
-      RBRACE "}"
+        L_CURLY "{"
+        R_CURLY "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "precedence"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LET_STMT
         LET "let"
         PATTERN
@@ -149,14 +149,14 @@ FILE
             LITERAL
               NUMBER "9"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "angle_ambiguity"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       EXPR_STMT
         BIT_SHIFT
           BIT_SHIFT
@@ -165,17 +165,17 @@ FILE
                 IDENT "foo"
                 TYPE_ARGUMENTS
                   COLONCOLON "::"
-                  LANGLE "<"
+                  L_ANGLE "<"
                   TYPE_REFERENCE
                     PATH
                       IDENT "X"
                       TYPE_ARGUMENTS
-                        LANGLE "<"
+                        L_ANGLE "<"
                         TYPE_REFERENCE
                           PATH
                             IDENT "Y"
-                        RANGLE ">"
-                  RANGLE ">"
+                        R_ANGLE ">"
+                  R_ANGLE ">"
             SHR ">>"
             LITERAL
               NUMBER "1"
@@ -183,18 +183,18 @@ FILE
           LITERAL
             NUMBER "2"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "blockish"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       EXPR_STMT
         BLOCK_EXPR
-          LBRACE "{"
-          RBRACE "}"
+          L_CURLY "{"
+          R_CURLY "}"
       EMPTY_STMT
         SEMI ";"
       EXPR_STMT
@@ -203,19 +203,19 @@ FILE
           LITERAL
             NUMBER "1"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
           ELSE "else"
           BLOCK_EXPR
-            LBRACE "{"
+            L_CURLY "{"
             IF_EXPR
               IF "if"
               LITERAL
                 NUMBER "2"
               BLOCK_EXPR
-                LBRACE "{"
-                RBRACE "}"
-            RBRACE "}"
+                L_CURLY "{"
+                R_CURLY "}"
+            R_CURLY "}"
       EMPTY_STMT
         SEMI ";"
       EXPR_STMT
@@ -229,28 +229,28 @@ FILE
               LITERAL
                 NUMBER "2"
               BLOCK_EXPR
-                LBRACE "{"
+                L_CURLY "{"
                 LITERAL
                   NUMBER "3"
-                RBRACE "}"
+                R_CURLY "}"
               ELSE "else"
               BLOCK_EXPR
-                LBRACE "{"
+                L_CURLY "{"
                 LITERAL
                   NUMBER "4"
-                RBRACE "}"
+                R_CURLY "}"
           PLUS "+"
           LITERAL
             NUMBER "5"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "struct_cond_ambiguity"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       EXPR_STMT
         IF_EXPR
           IF "if"
@@ -258,22 +258,22 @@ FILE
             PATH
               IDENT "foo"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
       EXPR_STMT
         IF_EXPR
           IF "if"
           PAREN_EXPR
-            LPAREN "("
+            L_PAREN "("
             STRUCT_LITERAL
               PATH
                 IDENT "Foo"
-              LBRACE "{"
-              RBRACE "}"
-            RPAREN ")"
+              L_CURLY "{"
+              R_CURLY "}"
+            R_PAREN ")"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
       EXPR_STMT
         IF_EXPR
           IF "if"
@@ -281,46 +281,46 @@ FILE
             PATH_EXPR
               PATH
                 IDENT "foo"
-            LPAREN "("
+            L_PAREN "("
             VALUE_ARGUMENT
               STRUCT_LITERAL
                 PATH
                   IDENT "Foo"
-                LBRACE "{"
-                RBRACE "}"
-            RPAREN ")"
+                L_CURLY "{"
+                R_CURLY "}"
+            R_PAREN ")"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
       IF_EXPR
         IF "if"
         BLOCK_EXPR
-          LBRACE "{"
+          L_CURLY "{"
           STRUCT_LITERAL
             PATH
               IDENT "Foo"
-            LBRACE "{"
-            RBRACE "}"
-          RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
+          R_CURLY "}"
         BLOCK_EXPR
-          LBRACE "{"
-          RBRACE "}"
-      RBRACE "}"
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "blocklike_expressions"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       EXPR_STMT
         BLOCK_EXPR
-          LBRACE "{"
+          L_CURLY "{"
           EXPR_STMT
             LITERAL
               NUMBER "92"
             SEMI ";"
-          RBRACE "}"
+          R_CURLY "}"
       EXPR_STMT
         NEGATION_EXPR
           MINUS "-"
@@ -334,8 +334,8 @@ FILE
             PATH
               IDENT "foo"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
       EXPR_STMT
         IF_EXPR
           IF "if"
@@ -343,8 +343,8 @@ FILE
             PATH
               IDENT "bar"
           BLOCK_EXPR
-            LBRACE "{"
-            RBRACE "}"
+            L_CURLY "{"
+            R_CURLY "}"
       EXPR_STMT
         SUM_EXPR
           SUM_EXPR
@@ -352,10 +352,10 @@ FILE
               NUMBER "1"
             PLUS "+"
             BLOCK_EXPR
-              LBRACE "{"
+              L_CURLY "{"
               LITERAL
                 NUMBER "1"
-              RBRACE "}"
+              R_CURLY "}"
           PLUS "+"
           LITERAL
             NUMBER "2"
@@ -367,31 +367,31 @@ FILE
         EQ "="
         SUM_EXPR
           BLOCK_EXPR
-            LBRACE "{"
+            L_CURLY "{"
             LITERAL
               NUMBER "1"
-            RBRACE "}"
+            R_CURLY "}"
           PLUS "+"
           LITERAL
             NUMBER "1"
         SEMI ";"
       EXPR_STMT
         PAREN_EXPR
-          LPAREN "("
+          L_PAREN "("
           SUM_EXPR
             BLOCK_EXPR
-              LBRACE "{"
+              L_CURLY "{"
               LITERAL
                 NUMBER "1"
-              RBRACE "}"
+              R_CURLY "}"
             PLUS "+"
             LITERAL
               NUMBER "1"
-          RPAREN ")"
+          R_PAREN ")"
         SEMI ";"
       EXPR_STMT
         BLOCK_EXPR
-          LBRACE "{"
+          L_CURLY "{"
           LET_STMT
             LET "let"
             PATTERN
@@ -399,28 +399,28 @@ FILE
             EQ "="
             SUM_EXPR
               BLOCK_EXPR
-                LBRACE "{"
+                L_CURLY "{"
                 LITERAL
                   NUMBER "1"
-                RBRACE "}"
+                R_CURLY "}"
               PLUS "+"
               LITERAL
                 NUMBER "1"
             SEMI ";"
-          RBRACE "}"
+          R_CURLY "}"
       BLOCK_EXPR
-        LBRACE "{"
+        L_CURLY "{"
         LITERAL
           NUMBER "92"
-        RBRACE "}"
-      RBRACE "}"
+        R_CURLY "}"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "misc"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LET_STMT
         LET "let"
         PATTERN
@@ -442,11 +442,11 @@ FILE
             IDENT "b"
             TYPE_ARGUMENTS
               COLONCOLON "::"
-              LANGLE "<"
+              L_ANGLE "<"
               TYPE_REFERENCE
                 PATH
                   IDENT "c"
-              RANGLE ">"
+              R_ANGLE ">"
         SEMI ";"
       EXPR_STMT
         LITERAL
@@ -454,42 +454,42 @@ FILE
         SEMI ";"
       EXPR_STMT
         PAREN_EXPR
-          LPAREN "("
+          L_PAREN "("
           LITERAL
             NUMBER "4"
-          RPAREN ")"
+          R_PAREN ")"
         SEMI ";"
       EXPR_STMT
         STRUCT_LITERAL
           PATH
             IDENT "foo"
-          LBRACE "{"
-          RBRACE "}"
+          L_CURLY "{"
+          R_CURLY "}"
         SEMI ";"
       EXPR_STMT
         STRUCT_LITERAL
           PATH
             IDENT "foo"
-          LBRACE "{"
+          L_CURLY "{"
           STRUCT_LITERAL_FIELD
             IDENT "a"
             COLON ":"
             LITERAL
               NUMBER "1"
-          RBRACE "}"
+          R_CURLY "}"
         SEMI ";"
       EXPR_STMT
         STRUCT_LITERAL
           PATH
             IDENT "foo"
-          LBRACE "{"
+          L_CURLY "{"
           STRUCT_LITERAL_FIELD
             IDENT "a"
             COLON ":"
             LITERAL
               NUMBER "2"
           COMMA ","
-          RBRACE "}"
+          R_CURLY "}"
         SEMI ";"
       EXPR_STMT
         STRUCT_LITERAL
@@ -498,7 +498,7 @@ FILE
               IDENT "foo"
             COLONCOLON "::"
             IDENT "bar"
-          LBRACE "{"
+          L_CURLY "{"
           STRUCT_LITERAL_FIELD
             IDENT "a"
             COLON ":"
@@ -511,16 +511,16 @@ FILE
             STRUCT_LITERAL
               PATH
                 IDENT "C"
-              LBRACE "{"
-              RBRACE "}"
-          RBRACE "}"
+              L_CURLY "{"
+              R_CURLY "}"
+          R_CURLY "}"
         SEMI ";"
       EXPR_STMT
         CALL_EXPR
           PATH_EXPR
             PATH
               IDENT "foo"
-          LPAREN "("
+          L_PAREN "("
           VALUE_ARGUMENT
             LITERAL
               NUMBER "1"
@@ -534,13 +534,13 @@ FILE
               PATH_EXPR
                 PATH
                   IDENT "bar"
-              LPAREN "("
+              L_PAREN "("
               VALUE_ARGUMENT
                 LITERAL
                   NUMBER "3"
               COMMA ","
-              RPAREN ")"
-          RPAREN ")"
+              R_PAREN ")"
+          R_PAREN ")"
         SEMI ";"
       EXPR_STMT
         FIELD_EXPR
@@ -553,4 +553,4 @@ FILE
           DOT "."
           IDENT "baz"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"

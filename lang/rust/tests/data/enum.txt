@@ -2,7 +2,7 @@ FILE
   ENUM_DEF
     ENUM "enum"
     IDENT "E"
-    LBRACE "{"
+    L_CURLY "{"
     ENUM_VARIANT
       IDENT "X"
     COMMA ","
@@ -14,16 +14,16 @@ FILE
     COMMA ","
     ENUM_VARIANT
       IDENT "Z"
-      LPAREN "("
+      L_PAREN "("
       TUPLE_FIELD
         TYPE_REFERENCE
           PATH
             IDENT "i32"
-      RPAREN ")"
+      R_PAREN ")"
     COMMA ","
     ENUM_VARIANT
       IDENT "T"
-      LBRACE "{"
+      L_CURLY "{"
       STRUCT_FIELD
         IDENT "t"
         COLON ":"
@@ -31,5 +31,5 @@ FILE
           PATH
             IDENT "i32"
       COMMA ","
-      RBRACE "}"
-    RBRACE "}"
+      R_CURLY "}"
+    R_CURLY "}"

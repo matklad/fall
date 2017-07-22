@@ -1,4 +1,4 @@
-use syntax::{PIPE, LANGLE, RANGLE};
+use syntax::{PIPE, L_ANGLE, R_ANGLE};
 use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit};
 use fall_tree::search::{next_sibling, prev_sibling};
 
@@ -17,8 +17,8 @@ pub enum Spaces {
 pub const FALL_SPACING: &[Rule] = &[
     Rule::After(PIPE, Spaces::Single),
     Rule::Before(PIPE, Spaces::Single),
-    Rule::After(LANGLE, Spaces::None),
-    Rule::Before(RANGLE, Spaces::None),
+    Rule::After(L_ANGLE, Spaces::None),
+    Rule::Before(R_ANGLE, Spaces::None),
 ];
 
 pub fn reformat_file(file: &File, rules: &[Rule], ws_type: NodeType) -> TextEdit {

@@ -2,14 +2,14 @@ FILE
   STRUCT_DEF
     STRUCT "struct"
     IDENT "A"
-    LBRACE "{"
+    L_CURLY "{"
     ERROR
       COMMA ","
-    RBRACE "}"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "B"
-    LBRACE "{"
+    L_CURLY "{"
     STRUCT_FIELD
       IDENT "a"
       COLON ":"
@@ -23,4 +23,4 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "A"
-    RBRACE "}"
+    R_CURLY "}"

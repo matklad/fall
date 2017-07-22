@@ -2,10 +2,10 @@ FILE
   FN_DEF
     FN "fn"
     IDENT "p"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LET_STMT
         LET "let"
         PATTERN
@@ -22,4 +22,4 @@ FILE
         LITERAL
           NUMBER "1"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"

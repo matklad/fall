@@ -2,11 +2,11 @@ FILE
   IMPL_DEF
     IMPL "impl"
     IDENT "Foo"
-    LBRACE "{"
+    L_CURLY "{"
     FN_DEF
       FN "fn"
       IDENT "bar"
-      LPAREN "("
+      L_PAREN "("
       VALUE_PARAM
         PATTERN
           IDENT "x"
@@ -14,8 +14,8 @@ FILE
         TYPE_REFERENCE
           PATH
             IDENT "i32"
-      RPAREN ")"
+      R_PAREN ")"
       BLOCK_EXPR
-        LBRACE "{"
-        RBRACE "}"
-    RBRACE "}"
+        L_CURLY "{"
+        R_CURLY "}"
+    R_CURLY "}"

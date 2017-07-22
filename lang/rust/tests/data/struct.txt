@@ -2,23 +2,23 @@ FILE
   STRUCT_DEF
     STRUCT "struct"
     IDENT "A"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "B"
-    LBRACE "{"
+    L_CURLY "{"
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
       TYPE_REFERENCE
         PATH
           IDENT "A"
-    RBRACE "}"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "C"
-    LBRACE "{"
+    L_CURLY "{"
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
@@ -26,11 +26,11 @@ FILE
         PATH
           IDENT "A"
     COMMA ","
-    RBRACE "}"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "D"
-    LBRACE "{"
+    L_CURLY "{"
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
@@ -46,32 +46,32 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "B"
-    RBRACE "}"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "E"
-    LPAREN "("
+    L_PAREN "("
     TUPLE_FIELD
       TYPE_REFERENCE
         PATH
           IDENT "u32"
-    RPAREN ")"
+    R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "F"
-    LPAREN "("
+    L_PAREN "("
     TUPLE_FIELD
       TYPE_REFERENCE
         PATH
           IDENT "u32"
     COMMA ","
-    RPAREN ")"
+    R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "G"
-    LPAREN "("
+    L_PAREN "("
     TUPLE_FIELD
       TYPE_REFERENCE
         PATH
@@ -81,7 +81,7 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "String"
-    RPAREN ")"
+    R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
     STRUCT "struct"
@@ -90,15 +90,15 @@ FILE
   STRUCT_DEF
     UNION "union"
     IDENT "U"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "contextual"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LET_STMT
         LET "let"
         PATTERN
@@ -107,4 +107,4 @@ FILE
         LITERAL
           NUMBER "92"
         SEMI ";"
-      RBRACE "}"
+      R_CURLY "}"

@@ -3,22 +3,22 @@ FILE
     STRUCT "struct"
     IDENT "Foo"
     TYPE_PARAMETERS
-      LANGLE "<"
-      RANGLE ">"
-    LBRACE "{"
-    RBRACE "}"
+      L_ANGLE "<"
+      R_ANGLE ">"
+    L_CURLY "{"
+    R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "Bar"
     TYPE_PARAMETERS
-      LANGLE "<"
+      L_ANGLE "<"
       TYPE_PARAMETER
         IDENT "U"
       COMMA ","
       TYPE_PARAMETER
         IDENT "V"
-      RANGLE ">"
-    LPAREN "("
+      R_ANGLE ">"
+    L_PAREN "("
     TUPLE_FIELD
       TYPE_REFERENCE
         PATH
@@ -28,19 +28,19 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "V"
-    RPAREN ")"
+    R_PAREN ")"
     SEMI ";"
   FN_DEF
     FN "fn"
     IDENT "baz"
     TYPE_PARAMETERS
-      LANGLE "<"
+      L_ANGLE "<"
       TYPE_PARAMETER
         IDENT "X"
       COMMA ","
-      RANGLE ">"
-    LPAREN "("
-    RPAREN ")"
+      R_ANGLE ">"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"

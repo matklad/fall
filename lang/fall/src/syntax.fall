@@ -44,14 +44,14 @@ tokenizer {
   dot '.'
   comma ','
   hash '#'
-  lbrace '{'
-  rbrace '}'
-  lbrack '['
-  rbrack ']'
-  langle '<'
-  rangle '>'
-  lparen '('
-  rparen ')'
+  l_curly '{'
+  r_curly '}'
+  l_square '['
+  r_square ']'
+  l_angle '<'
+  r_angle '>'
+  l_paren '('
+  r_paren ')'
 
   number r"\d+"
   // Raw literals like `r###"contains "a string" inside "###` are supported.

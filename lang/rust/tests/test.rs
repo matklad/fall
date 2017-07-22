@@ -29,19 +29,19 @@ FILE
   FN_DEF
     FN "fn"
     IDENT "foo"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   ERROR
     IDENT "bar"
     IDENT "baz"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "S"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   ERROR
     IDENT "quuz""#);
 }
@@ -57,10 +57,10 @@ FILE
   FN_DEF
     FN "fn"
     IDENT "foo"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
+      L_CURLY "{"
       LET_STMT
         LET "let"
         PATTERN
@@ -69,7 +69,7 @@ FILE
         LITERAL
           NUMBER "1"
         SEMI ";"
-      RBRACE "}""#,
+      R_CURLY "}""#,
         "fn foo() { let a = 1; }")
 }
 

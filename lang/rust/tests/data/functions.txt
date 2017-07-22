@@ -2,15 +2,15 @@ FILE
   FN_DEF
     FN "fn"
     IDENT "foo"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "bar"
-    LPAREN "("
+    L_PAREN "("
     VALUE_PARAM
       PATTERN
         IDENT "x"
@@ -18,14 +18,14 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "i32"
-    RPAREN ")"
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "baz"
-    LPAREN "("
+    L_PAREN "("
     VALUE_PARAM
       PATTERN
         IDENT "x"
@@ -34,14 +34,14 @@ FILE
         PATH
           IDENT "i32"
     COMMA ","
-    RPAREN ")"
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "quux"
-    LPAREN "("
+    L_PAREN "("
     VALUE_PARAM
       PATTERN
         IDENT "x"
@@ -57,46 +57,46 @@ FILE
       TYPE_REFERENCE
         PATH
           IDENT "String"
-    RPAREN ")"
+    R_PAREN ")"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   FN_DEF
     FN "fn"
     IDENT "ziz"
-    LPAREN "("
-    RPAREN ")"
+    L_PAREN "("
+    R_PAREN ")"
     THIN_ARROW "->"
     TYPE_REFERENCE
       PATH
         IDENT "foo"
     BLOCK_EXPR
-      LBRACE "{"
-      RBRACE "}"
+      L_CURLY "{"
+      R_CURLY "}"
   IMPL_DEF
     IMPL "impl"
     IDENT "T"
-    LBRACE "{"
+    L_CURLY "{"
     FN_DEF
       FN "fn"
       IDENT "foo"
-      LPAREN "("
+      L_PAREN "("
       SELF_PARAMETER
         SELF "self"
-      RPAREN ")"
+      R_PAREN ")"
       BLOCK_EXPR
-        LBRACE "{"
-        RBRACE "}"
+        L_CURLY "{"
+        R_CURLY "}"
     FN_DEF
       FN "fn"
       IDENT "bar"
-      LPAREN "("
+      L_PAREN "("
       SELF_PARAMETER
         AMPERSAND "&"
         SELF "self"
         COMMA ","
-      RPAREN ")"
+      R_PAREN ")"
       BLOCK_EXPR
-        LBRACE "{"
-        RBRACE "}"
-    RBRACE "}"
+        L_CURLY "{"
+        R_CURLY "}"
+    R_CURLY "}"

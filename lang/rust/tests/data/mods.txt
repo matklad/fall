@@ -12,34 +12,34 @@ FILE
   MOD_DEF
     MOD "mod"
     IDENT "bar"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   MOD_DEF
     VISIBILITY
       PUB "pub"
     MOD "mod"
     IDENT "pbar"
-    LBRACE "{"
-    RBRACE "}"
+    L_CURLY "{"
+    R_CURLY "}"
   MOD_DEF
     MOD "mod"
     IDENT "baz"
-    LBRACE "{"
+    L_CURLY "{"
     FN_DEF
       FN "fn"
       IDENT "spam"
-      LPAREN "("
-      RPAREN ")"
+      L_PAREN "("
+      R_PAREN ")"
       BLOCK_EXPR
-        LBRACE "{"
-        RBRACE "}"
+        L_CURLY "{"
+        R_CURLY "}"
     MOD_DEF
       MOD "mod"
       IDENT "quux"
-      LBRACE "{"
+      L_CURLY "{"
       STRUCT_DEF
         STRUCT "struct"
         IDENT "Eggs"
         SEMI ";"
-      RBRACE "}"
-    RBRACE "}"
+      R_CURLY "}"
+    R_CURLY "}"
