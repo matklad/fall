@@ -313,7 +313,10 @@ pub rule paren_expr {
 
 #[atom]
 pub rule lambda_expr {
-  '|' <rep lambda_arg> '|' <without_restrictions expr>
+  '|' <rep lambda_arg> '|' {
+    '->' type_reference block_expr
+  | <without_restrictions expr>
+  }
 }
 
 rule lambda_arg {
@@ -321,7 +324,10 @@ rule lambda_arg {
 }
 
 test r"
-fn foo() { |x, y: i32,| 1 + 1 ;}
+fn foo() { 
+    |x, y: i32,| 1 + 1;
+    || -> i32 { 92 };
+}
 "
 
 #[atom]

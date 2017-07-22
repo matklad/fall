@@ -126,7 +126,10 @@ FILE
     SEMI ";"
 
 ----------------------------------------
-fn foo() { |x, y: i32,| 1 + 1 ;}
+fn foo() { 
+    |x, y: i32,| 1 + 1;
+    || -> i32 { 92 };
+}
 
 FILE
   FN_DEF
@@ -158,6 +161,20 @@ FILE
             PLUS "+"
             LITERAL
               NUMBER "1"
+        SEMI ";"
+      EXPR_STMT
+        LAMBDA_EXPR
+          PIPE "|"
+          PIPE "|"
+          THIN_ARROW "->"
+          TYPE_REFERENCE
+            PATH
+              IDENT "i32"
+          BLOCK_EXPR
+            L_CURLY "{"
+            LITERAL
+              NUMBER "92"
+            R_CURLY "}"
         SEMI ";"
       R_CURLY "}"
 
