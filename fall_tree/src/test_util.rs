@@ -53,6 +53,49 @@ pub fn check_directory(lang: &Language, directory: &Path) {
     }
 }
 
+pub fn check_inline_tests(lang: &Language, grammar: &Path, test_data: &Path) {
+    let rewrite = ::std::env::var("rewrite_test_data").is_ok();
+    let grammar = file::get_text(grammar)
+        .unwrap_or_else(|_| panic!("Can't read {}", grammar.display()));
+
+    let tests = collect_tests(&grammar);
+    let expected = render_tests(lang, &tests);
+    let actual = file::get_text(test_data).unwrap_or(String::new());
+    if expected != actual {
+        if rewrite {
+            file::put_text(test_data, expected).unwrap();
+        } else {
+            report_diff(&expected, &actual)
+        }
+    }
+}
+
+fn collect_tests(mut grammar: &str) -> Vec<String> {
+    let mut result = Vec::new();
+    while let Some(pos) = grammar.find("test r") {
+        grammar = &grammar[pos + "test r".len()..];
+        let n_hashes = grammar.chars().take_while(|&c| c == '#').count();
+        grammar = &grammar[n_hashes + 1..];
+        if let Some(end) = grammar.find(&"\"################"[.. 1 + n_hashes]) {
+            let example = &grammar[..end].trim();
+            result.push(example.to_string())
+        }
+    }
+    result
+}
+
+fn render_tests(lang: &Language, tests: &[String]) -> String {
+    let mut result = String::new();
+    for test in tests {
+        result += test;
+        result += "\n\n";
+        let file = lang.parse(test.to_owned());
+        result += &dump_file(&file);
+        result += "\n----------------------------------------"
+    }
+    result
+}
+
 
 fn make_edit(before: &str, after: &str) -> TextEdit {
     let prefix = {

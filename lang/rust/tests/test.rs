@@ -1,10 +1,15 @@
 extern crate fall_tree;
 extern crate lang_rust;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use fall_tree::test_util::{check_syntax, check_reparse, check_directory};
+use fall_tree::test_util::{check_syntax, check_reparse, check_directory, check_inline_tests};
 use lang_rust::LANG_RUST;
+
+#[test]
+fn inline_tests() {
+    check_inline_tests(&LANG_RUST, Path::new("src/syntax.fall"), Path::new("tests/inline.txt"))
+}
 
 
 #[test]

@@ -353,6 +353,10 @@ pub rule attribute {
   '#' <in_bracks <comma_list attr_value> >
 }
 
+test r#"
+  #[derive] struct S;
+"#
+
 rule outer_attributes {
   <rep attribute>
 }

@@ -1,0 +1,15 @@
+#[derive] struct S;
+
+FILE
+  STRUCT_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "derive"
+      R_BRACK "]"
+    STRUCT "struct"
+    IDENT "S"
+    SEMI ";"
+
+----------------------------------------
