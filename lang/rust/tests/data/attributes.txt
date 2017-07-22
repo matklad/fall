@@ -1,0 +1,93 @@
+FILE
+  STRUCT_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "derive"
+      R_BRACK "]"
+    STRUCT "struct"
+    IDENT "S"
+    SEMI ";"
+  USE_DECL
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "foo"
+      R_BRACK "]"
+    USE "use"
+    PATH
+      IDENT "foo"
+    SEMI ";"
+  EXTERN_CRATE_DECL
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "macro_use"
+      R_BRACK "]"
+    EXTERN "extern"
+    CRATE "crate"
+    IDENT "foo"
+    SEMI ";"
+  FN_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "test"
+      R_BRACK "]"
+    FN "fn"
+    IDENT "foo"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      R_CURLY "}"
+  ENUM_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "derive"
+      R_BRACK "]"
+    ENUM "enum"
+    IDENT "E"
+    L_CURLY "{"
+    R_CURLY "}"
+  MOD_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "path"
+      R_BRACK "]"
+    MOD "mod"
+    IDENT "foo"
+    SEMI ";"
+  IMPL_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "foo"
+      R_BRACK "]"
+    IMPL "impl"
+    IDENT "X"
+    L_CURLY "{"
+    R_CURLY "}"
+  TYPE_DEF
+    ATTRIBUTE
+      HASH "#"
+      L_BRACK "["
+      ATTR_VALUE
+        IDENT "bar"
+      R_BRACK "]"
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    TYPE_REFERENCE
+      PATH
+        IDENT "Z"
+    SEMI ";"
