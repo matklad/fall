@@ -126,6 +126,42 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+fn foo() { |x, y: i32,| 1 + 1 ;}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        LAMBDA_EXPR
+          PIPE "|"
+          LAMBDA_VALUE_PARAM
+            PATTERN
+              IDENT "x"
+          COMMA ","
+          LAMBDA_VALUE_PARAM
+            PATTERN
+              IDENT "y"
+            COLON ":"
+            TYPE_REFERENCE
+              PATH
+                IDENT "i32"
+          COMMA ","
+          PIPE "|"
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            LITERAL
+              NUMBER "1"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { x.foo; x.92; }
 
 FILE

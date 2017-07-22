@@ -106,7 +106,11 @@ rule value_parameters {
 }
 
 pub rule value_param {
-  pattern ':' type_reference
+  pattern <commit> ':' type_reference
+}
+
+pub rule lambda_value_param {
+  pattern <opt {':' type_reference}>
 }
 
 pub rule self_parameter {
@@ -264,7 +268,7 @@ pub rule pattern {
 
 #[pratt]
 pub rule expr { 
-  literal | struct_literal | path_expr | paren_expr
+  literal | struct_literal | path_expr | paren_expr | lambda_expr
 | block_expr | if_expr
 | call_expr | field_expr
 | reference_expr | dereference_expr | negation_expr
@@ -296,15 +300,29 @@ pub rule struct_literal_field {
   ident <commit> ':' expr
 }
 
+
+#[atom]
+pub rule path_expr {
+  expr_path
+}
+
 #[atom]
 pub rule paren_expr {
   '(' <without_restrictions expr> ')'
 }
 
 #[atom]
-pub rule path_expr {
-  expr_path
+pub rule lambda_expr {
+  '|' <rep lambda_arg> '|' <without_restrictions expr>
 }
+
+rule lambda_arg {
+  lambda_value_param <commit> {',' | <not <not '|'>>} 
+}
+
+test r"
+fn foo() { |x, y: i32,| 1 + 1 ;}
+"
 
 #[atom]
 pub rule block_expr {
