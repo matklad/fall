@@ -36,6 +36,8 @@ tokenizer {
   r_brack ']'
   #[contextual] shl '<<'
   #[contextual] shr '>>'
+  #[contextual] and '&&'
+  #[contextual] or  '||'
   thin_arrow '->'
   eq '='
   semi ';'
@@ -350,6 +352,7 @@ pub rule expr {
 | product_expr | sum_expr 
 | bit_shift
 | bit_and | bit_or
+| logical_and | logical_or
 }
 
 rule prev_is_block {
@@ -419,6 +422,12 @@ test r"
 fn foo() { 
     |x, y: i32,| 1 + 1;
     move || -> i32 { 92 };
+}
+"
+
+test r"
+fn binary_or_lambda_ambiguity() {
+    || true || false;
 }
 "
 
@@ -515,17 +524,17 @@ pub rule dereference_expr { '*' expr }
 #[prefix]
 pub rule negation_expr { '-' expr }
 
-#[bin(5)]
+#[bin(7)]
 pub rule product_expr {
   expr <binop {'*' | '/' | '%'}> expr
 }
 
-#[bin(4)]
+#[bin(6)]
 pub rule sum_expr {
   expr <binop {'+' | '-'}> expr
 }
 
-#[bin(3)]
+#[bin(5)]
 pub rule bit_shift {
   expr <binop {'<<' | '>>'}> expr
 }
@@ -535,14 +544,24 @@ rule binop(op) {
 | <not <is_in 'stmt'>> op
 }
 
-#[bin(2)]
+#[bin(4)]
 pub rule bit_and {
-  expr <binop '&'> expr
+  expr <binop {'&' <not '&'>}> expr
+}
+
+#[bin(3)]
+pub rule bit_or {
+  expr <binop {'|' <not '|'>}> expr
+}
+
+#[bin(2)]
+pub rule logical_and {
+  expr <binop '&&'> expr
 }
 
 #[bin(1)]
-pub rule bit_or {
-  expr <binop '|'> expr
+pub rule logical_or {
+  expr <binop '||'> expr
 }
 
 // Attributes

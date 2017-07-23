@@ -125,6 +125,30 @@ FILE
               NUMBER "3"
         SEMI ";"
       EXPR_STMT
+        LOGICAL_AND
+          LITERAL
+            NUMBER "1"
+          AND "&&"
+          BIT_OR
+            LITERAL
+              NUMBER "2"
+            PIPE "|"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        LOGICAL_OR
+          LITERAL
+            NUMBER "1"
+          OR "||"
+          LOGICAL_AND
+            LITERAL
+              NUMBER "2"
+            AND "&&"
+            LITERAL
+              NUMBER "2"
+        SEMI ";"
+      EXPR_STMT
         SUM_EXPR
           NEGATION_EXPR
             MINUS "-"

@@ -460,6 +460,34 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn binary_or_lambda_ambiguity() {
+    || true || false;
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "binary_or_lambda_ambiguity"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        LAMBDA_EXPR
+          PIPE "|"
+          PIPE "|"
+          LOGICAL_OR
+            PATH_EXPR
+              PATH
+                IDENT "true"
+            OR "||"
+            PATH_EXPR
+              PATH
+                IDENT "false"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { if true { foo } else { bar } }
 
 FILE

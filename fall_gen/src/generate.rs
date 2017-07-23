@@ -270,8 +270,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
         Expr::RefExpr(ref_) => match ref_.resolve().ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
             RefKind::Token(rule) => {
                 if rule.is_contextual() {
-                    let text = rule.token_re().ok_or(error!("Missing token regex"))?;
-                    fall_parse::Expr::ContextualToken(rule.node_type_index(), text)
+                    let text = rule.token_text().ok_or(error!("Missing contextual token text"))?;
+                    fall_parse::Expr::ContextualToken(rule.node_type_index(), text.to_string())
                 } else {
                     fall_parse::Expr::Token(rule.node_type_index())
                 }

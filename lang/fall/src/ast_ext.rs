@@ -62,6 +62,19 @@ impl<'f> LexRule<'f> {
         }
     }
 
+    pub fn token_text(&self) -> Option<Text<'f>> {
+        let raw = match self.re() {
+            Some(raw) => raw,
+            None => return None,
+        };
+
+        if raw.starts_with("r") {
+            None
+        } else {
+            Some(lit_body(raw))
+        }
+    }
+
     pub fn extern_fn(&self) -> Option<Text<'f>> {
         children_of_type(self.node(), STRING).nth(1).map(|n| {
             lit_body(n.text())
