@@ -1,3 +1,4 @@
+
 # Visual Studio Code extension for the fall parser generator
 
 This extensions uses Rust code (`native` directory), and so is a bit tricky to build and package. To build, check
