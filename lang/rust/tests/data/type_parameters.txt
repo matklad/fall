@@ -20,12 +20,12 @@ FILE
       R_ANGLE ">"
     L_PAREN "("
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "U"
     COMMA ","
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "V"
     R_PAREN ")"

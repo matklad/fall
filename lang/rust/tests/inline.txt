@@ -4,7 +4,7 @@ impl<'f> ::Debug for Node<'f> { }
 FILE
   IMPL_DEF
     IMPL "impl"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "Node"
     L_CURLY "{"
@@ -16,12 +16,12 @@ FILE
       LIFETIME_PARAMETER
         LIFETIME "\'f"
       R_ANGLE ">"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         COLONCOLON "::"
         IDENT "Debug"
     FOR "for"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "Node"
         TYPE_ARGUMENTS
@@ -41,7 +41,7 @@ FILE
     CONST "const"
     IDENT "X"
     COLON ":"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "i32"
     EQ "="
@@ -76,12 +76,12 @@ FILE
     CONST "const"
     IDENT "C"
     COLON ":"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "Foo"
         TYPE_ARGUMENTS
           L_ANGLE "<"
-          TYPE_REFERENCE
+          PATH_TYPE
             PATH
               IDENT "Bar"
           R_ANGLE ">"
@@ -94,35 +94,116 @@ FILE
           L_ANGLE "<"
           LIFETIME "\'bar"
           COMMA ","
-          TYPE_REFERENCE
+          PATH_TYPE
             PATH
               IDENT "Baz"
           R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------
-type A = A;
-type B = &'static B;
+type T = X<Foo, Bar>;
 
 FILE
   TYPE_DEF
     TYPE "type"
-    IDENT "A"
+    IDENT "T"
     EQ "="
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
-        IDENT "A"
+        IDENT "X"
+        TYPE_ARGUMENTS
+          L_ANGLE "<"
+          PATH_TYPE
+            PATH
+              IDENT "Foo"
+          COMMA ","
+          PATH_TYPE
+            PATH
+              IDENT "Bar"
+          R_ANGLE ">"
+    SEMI ";"
+
+----------------------------------------
+type T = &'static mut X;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    REFERENCE_TYPE
+      AMPERSAND "&"
+      LIFETIME "\'static"
+      MUT "mut"
+      PATH_TYPE
+        PATH
+          IDENT "X"
+    SEMI ";"
+
+----------------------------------------
+type T = _;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    PLACEHOLDER_TYPE
+      UNDERSCORE "_"
+    SEMI ";"
+
+----------------------------------------
+type T = ();
+type T = (A);
+type T = (A,);
+type T = (A, B);
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    UNIT_TYPE
+      L_PAREN "("
+      R_PAREN ")"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
-    IDENT "B"
+    IDENT "T"
     EQ "="
-    TYPE_REFERENCE
-      AMPERSAND "&"
-      LIFETIME "\'static"
-      TYPE_REFERENCE
+    PAREN_TYPE
+      L_PAREN "("
+      PATH_TYPE
+        PATH
+          IDENT "A"
+      R_PAREN ")"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    TUPLE_TYPE
+      L_PAREN "("
+      PATH_TYPE
+        PATH
+          IDENT "A"
+      COMMA ","
+      R_PAREN ")"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    TUPLE_TYPE
+      L_PAREN "("
+      PATH_TYPE
+        PATH
+          IDENT "A"
+      COMMA ","
+      PATH_TYPE
         PATH
           IDENT "B"
+      R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------
@@ -200,7 +281,7 @@ FILE
               PATH
                 IDENT "y"
             COLON ":"
-            TYPE_REFERENCE
+            PATH_TYPE
               PATH
                 IDENT "i32"
           COMMA ","
@@ -218,7 +299,7 @@ FILE
           PIPE "|"
           PIPE "|"
           THIN_ARROW "->"
-          TYPE_REFERENCE
+          PATH_TYPE
             PATH
               IDENT "i32"
           BLOCK_EXPR

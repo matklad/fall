@@ -16,7 +16,7 @@ FILE
         PATH
           IDENT "x"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "i32"
     R_PAREN ")"
@@ -32,7 +32,7 @@ FILE
         PATH
           IDENT "x"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "i32"
     COMMA ","
@@ -49,7 +49,7 @@ FILE
         PATH
           IDENT "x"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "i32"
     COMMA ","
@@ -58,7 +58,7 @@ FILE
         PATH
           IDENT "z"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "String"
     R_PAREN ")"
@@ -71,7 +71,7 @@ FILE
     L_PAREN "("
     R_PAREN ")"
     THIN_ARROW "->"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "foo"
     BLOCK_EXPR
@@ -79,7 +79,7 @@ FILE
       R_CURLY "}"
   IMPL_DEF
     IMPL "impl"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "T"
     L_CURLY "{"

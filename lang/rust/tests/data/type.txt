@@ -3,7 +3,7 @@ FILE
     TYPE "type"
     IDENT "Foo"
     EQ "="
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         PATH
           IDENT "foo"
@@ -14,15 +14,15 @@ FILE
     TYPE "type"
     IDENT "Bar"
     EQ "="
-    TYPE_REFERENCE
+    REFERENCE_TYPE
       AMPERSAND "&"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "Foo"
     SEMI ";"
   IMPL_DEF
     IMPL "impl"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "T"
     L_CURLY "{"
@@ -34,7 +34,7 @@ FILE
       TYPE "type"
       IDENT "B"
       EQ "="
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "A"
       SEMI ";"

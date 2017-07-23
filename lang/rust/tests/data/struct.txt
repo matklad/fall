@@ -11,7 +11,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "A"
     R_CURLY "}"
@@ -22,7 +22,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "A"
     COMMA ","
@@ -34,7 +34,7 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "A"
     COMMA ","
@@ -43,7 +43,7 @@ FILE
         PUB "pub"
       IDENT "j"
       COLON ":"
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "B"
     R_CURLY "}"
@@ -52,7 +52,7 @@ FILE
     IDENT "E"
     L_PAREN "("
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "u32"
     R_PAREN ")"
@@ -62,7 +62,7 @@ FILE
     IDENT "F"
     L_PAREN "("
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "u32"
     COMMA ","
@@ -73,12 +73,12 @@ FILE
     IDENT "G"
     L_PAREN "("
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "u32"
     COMMA ","
     TUPLE_FIELD
-      TYPE_REFERENCE
+      PATH_TYPE
         PATH
           IDENT "String"
     R_PAREN ")"

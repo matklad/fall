@@ -1,7 +1,7 @@
 FILE
   IMPL_DEF
     IMPL "impl"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "Foo"
     L_CURLY "{"
@@ -14,7 +14,7 @@ FILE
           PATH
             IDENT "x"
         COLON ":"
-        TYPE_REFERENCE
+        PATH_TYPE
           PATH
             IDENT "i32"
       R_PAREN ")"

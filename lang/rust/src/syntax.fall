@@ -23,6 +23,7 @@ tokenizer {
   loop 'loop'
   while 'while'
   move 'move'
+  mut 'mut'
 
   l_paren '('
   r_paren ')'
@@ -255,14 +256,46 @@ pub rule type_arguments {
 
 pub rule alias { 'as' ident }
 
-pub rule type_reference {
-  type_path 
-| '&' <opt lifetime> type_reference
+rule type_reference {
+  path_type | reference_type 
+| unit_type | paren_type | placeholder_type 
+}
+
+pub rule path_type {
+  type_path
+}
+test r"type T = X<Foo, Bar>;"
+
+pub rule reference_type {
+  '&' <opt lifetime>  <opt 'mut'> type_reference
+}
+test r"type T = &'static mut X;"
+
+
+pub rule placeholder_type {
+  '_'
+}
+test r"type T = _;"
+
+pub rule unit_type {
+  '(' ')'
+}
+
+#[replaceable]
+pub rule paren_type {
+  <in_parens {type_reference <opt tuple_type>}>
+}
+
+#[replaces]
+pub rule tuple_type { 
+  ',' <comma_list type_reference>
 }
 
 test r"
-type A = A;
-type B = &'static B;
+type T = ();
+type T = (A);
+type T = (A,);
+type T = (A, B);
 "
 
 pub rule pattern { 

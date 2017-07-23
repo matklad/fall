@@ -53,12 +53,12 @@ FILE
               TYPE_ARGUMENTS
                 COLONCOLON "::"
                 L_ANGLE "<"
-                TYPE_REFERENCE
+                PATH_TYPE
                   PATH
                     IDENT "Vec"
                     TYPE_ARGUMENTS
                       L_ANGLE "<"
-                      TYPE_REFERENCE
+                      PATH_TYPE
                         PATH
                           IDENT "i32"
                       R_ANGLE ">"

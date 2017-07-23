@@ -74,7 +74,7 @@ FILE
         IDENT "foo"
       R_BRACK "]"
     IMPL "impl"
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "X"
     L_CURLY "{"
@@ -89,7 +89,7 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    TYPE_REFERENCE
+    PATH_TYPE
       PATH
         IDENT "Z"
     SEMI ";"

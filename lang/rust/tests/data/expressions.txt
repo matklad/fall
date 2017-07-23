@@ -167,12 +167,12 @@ FILE
                 TYPE_ARGUMENTS
                   COLONCOLON "::"
                   L_ANGLE "<"
-                  TYPE_REFERENCE
+                  PATH_TYPE
                     PATH
                       IDENT "X"
                       TYPE_ARGUMENTS
                         L_ANGLE "<"
-                        TYPE_REFERENCE
+                        PATH_TYPE
                           PATH
                             IDENT "Y"
                         R_ANGLE ">"
@@ -447,7 +447,7 @@ FILE
             TYPE_ARGUMENTS
               COLONCOLON "::"
               L_ANGLE "<"
-              TYPE_REFERENCE
+              PATH_TYPE
                 PATH
                   IDENT "c"
               R_ANGLE ">"
