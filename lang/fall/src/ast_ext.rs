@@ -154,6 +154,13 @@ impl<'f> SynRule<'f> {
         self.has_attribute("pratt")
     }
 
+    pub fn is_replaceable(&self) -> bool {
+        self.has_attribute("replaceable")
+    }
+
+    pub fn is_replaces(&self) -> bool {
+        self.has_attribute("replaces")
+    }
 
     fn has_attribute(&self, attribute: &str) -> bool {
         if let Some(attrs) = self.attributes() {

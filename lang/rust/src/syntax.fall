@@ -308,10 +308,23 @@ pub rule path_expr {
   expr_path
 }
 
-#[atom]
+#[atom, replaceable]
 pub rule paren_expr {
-  '(' <without_restrictions expr> ')'
+  '(' <without_restrictions expr> <opt tuple_expr> ')'
 }
+
+#[replaces]
+pub rule tuple_expr {
+  ',' <comma_list <without_restrictions expr>>
+}
+
+test r"
+fn main() {
+  (1);
+  ((1));
+  (1,);
+}
+"
 
 #[atom]
 pub rule lambda_expr {

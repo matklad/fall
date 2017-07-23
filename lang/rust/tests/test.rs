@@ -3,7 +3,7 @@ extern crate lang_rust;
 
 use std::path::{Path, PathBuf};
 
-use fall_tree::test_util::{check_syntax, check_reparse, check_directory, check_inline_tests};
+use fall_tree::test_util::{check_syntax, check_directory, check_inline_tests};
 use lang_rust::LANG_RUST;
 
 #[test]

@@ -15,7 +15,12 @@ pub struct SynRule {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Expr {
-    Pub(usize, Box<Expr>),
+    Pub {
+        ty_idx: usize,
+        body: Box<Expr>,
+        replaceable: bool,
+        replaces: bool
+    },
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
@@ -60,7 +65,8 @@ struct Ctx<'p> {
     predicate_mode: bool,
     contexts: [bool; 16],
     args: [Option<&'p Expr>; 16],
-    prev: Option<NodeType>
+    prev: Option<NodeType>,
+    replacement: Option<NodeType>,
 }
 
 impl<'p> Ctx<'p> {
@@ -110,15 +116,15 @@ impl<'r> Parser<'r> {
             contexts: [false; 16],
             args: [None; 16],
             prev: None,
+            replacement: None,
         };
         let (mut file_node, mut leftover) = self
             .parse_exp(&self.start_rule, tokens, &mut ctx)
             .unwrap_or_else(|| {
                 let ty = match self.rules[0].body {
-                    Expr::Pub(ty, _) => ty,
+                    Expr::Pub { ty_idx, .. } => self.node_type(ty_idx),
                     _ => panic!("First rule must be public"),
                 };
-                let ty = self.node_type(ty);
                 (ctx.create_composite_node(Some(ty)), tokens)
             });
 
@@ -141,15 +147,33 @@ impl<'r> Parser<'r> {
                          -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;
         match *expr {
-            Expr::Pub(ty, ref body) => if let Some((node, ts)) = self.parse_exp(body, tokens, ctx) {
-                let node_type = self.node_type(ty);
-                let mut result = ctx.create_composite_node(Some(node_type));
-                ctx.push_child(&mut result, node);
-                ctx.prev = Some(node_type);
-                Some((result, ts))
-            } else {
-                None
-            },
+            Expr::Pub { ty_idx, ref body, replaceable, replaces } => {
+                if replaceable {
+                    ctx.replacement = None;
+                }
+                match self.parse_exp(body, tokens, ctx) {
+                    Some((node, ts)) => {
+                        let node_type = match (replaces, replaceable, ctx.replacement) {
+                            (true, true, _) => panic!("Can't replace and be replaced"),
+                            (true, _, _) => None,
+                            (false, true, Some(ty)) => Some(ty),
+                            (false, _, _) => Some(self.node_type(ty_idx)),
+                        };
+                        let mut result = ctx.create_composite_node(node_type);
+                        ctx.push_child(&mut result, node);
+
+                        if replaces {
+                            ctx.replacement = Some(self.node_type(ty_idx));
+                        } else {
+                            ctx.prev = node_type;
+                        }
+                        Some((result, ts))
+                    }
+                    _ => {
+                        None
+                    }
+                }
+            }
 
             Expr::Or(ref parts) => self.parse_any(parts.iter(), tokens, ctx),
 
@@ -318,7 +342,7 @@ impl<'r> Parser<'r> {
                     for &t in ts {
                         let t = self.node_type(t);
                         if t == prev {
-                            return Some(ctx.create_success_node(tokens))
+                            return Some(ctx.create_success_node(tokens));
                         }
                     }
                 }

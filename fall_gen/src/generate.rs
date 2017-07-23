@@ -155,7 +155,12 @@ fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
     };
 
     let expr = if let Some(idx) = ast.resolve_ty() {
-        fall_parse::Expr::Pub(idx, Box::new(expr))
+        fall_parse::Expr::Pub {
+            ty_idx: idx,
+            body: Box::new(expr),
+            replaceable: ast.is_replaceable(),
+            replaces: ast.is_replaces(),
+        }
     } else {
         expr
     };
