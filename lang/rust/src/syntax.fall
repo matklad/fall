@@ -24,6 +24,7 @@ tokenizer {
   while 'while'
   move 'move'
   mut 'mut'
+  ref 'ref'
 
   l_paren '('
   r_paren ')'
@@ -310,9 +311,35 @@ type T = &[()];
 "
 
 
-pub rule pattern {
-  expr_path <opt <in_parens <comma_list pattern>>> | '_'
+rule pattern {
+  wildcard_pattern | tupe_struct_pattern | path_pattern
+| binding_pattern 
 }
+
+pub rule wildcard_pattern {
+  '_'
+}
+test r"fn main() { let _ = (); }"
+
+pub rule tupe_struct_pattern {
+  expr_path <in_parens <comma_list pattern>>
+}
+test r"fn main() { let S(foo, bar) = (); }"
+
+pub rule binding_pattern {
+  <opt 'ref'> <opt 'mut'> ident
+}
+test r"
+fn main() {
+    let foo = ();
+    let ref mut bar = 92;
+}
+"
+
+pub rule path_pattern {
+  expr_path
+}
+test r"fn main() { let foo::bar = (); }"
 
 #[pratt]
 pub rule expr { 

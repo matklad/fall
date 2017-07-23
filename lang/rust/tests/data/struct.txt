@@ -101,7 +101,7 @@ FILE
       L_CURLY "{"
       LET_STMT
         LET "let"
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "union"
         EQ "="

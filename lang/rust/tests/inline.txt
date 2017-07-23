@@ -240,6 +240,122 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+fn main() { let _ = (); }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        WILDCARD_PATTERN
+          UNDERSCORE "_"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { let S(foo, bar) = (); }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        TUPE_STRUCT_PATTERN
+          PATH
+            IDENT "S"
+          L_PAREN "("
+          PATH_PATTERN
+            PATH
+              IDENT "foo"
+          COMMA ","
+          PATH_PATTERN
+            PATH
+              IDENT "bar"
+          R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
+    let foo = ();
+    let ref mut bar = 92;
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
+            IDENT "foo"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        BINDING_PATTERN
+          REF "ref"
+          MUT "mut"
+          IDENT "bar"
+        EQ "="
+        LITERAL
+          NUMBER "92"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { let foo::bar = (); }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
+            PATH
+              IDENT "foo"
+            COLONCOLON "::"
+            IDENT "bar"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() {
   ();
   (1);
@@ -305,12 +421,12 @@ FILE
         LAMBDA_EXPR
           PIPE "|"
           LAMBDA_VALUE_PARAM
-            PATTERN
+            PATH_PATTERN
               PATH
                 IDENT "x"
           COMMA ","
           LAMBDA_VALUE_PARAM
-            PATTERN
+            PATH_PATTERN
               PATH
                 IDENT "y"
             COLON ":"
@@ -440,11 +556,11 @@ FILE
       IF_EXPR
         IF "if"
         LET "let"
-        PATTERN
+        TUPE_STRUCT_PATTERN
           PATH
             IDENT "Some"
           L_PAREN "("
-          PATTERN
+          PATH_PATTERN
             PATH
               IDENT "x"
           R_PAREN ")"

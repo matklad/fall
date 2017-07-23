@@ -10,7 +10,7 @@ FILE
       IDENT "bar"
       L_PAREN "("
       VALUE_PARAM
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "x"
         COLON ":"

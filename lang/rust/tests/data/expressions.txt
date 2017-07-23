@@ -49,7 +49,7 @@ FILE
       L_CURLY "{"
       LET_STMT
         LET "let"
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "x"
         EQ "="
@@ -363,7 +363,7 @@ FILE
         SEMI ";"
       LET_STMT
         LET "let"
-        PATTERN
+        WILDCARD_PATTERN
           UNDERSCORE "_"
         EQ "="
         SUM_EXPR
@@ -395,7 +395,7 @@ FILE
           L_CURLY "{"
           LET_STMT
             LET "let"
-            PATTERN
+            PATH_PATTERN
               PATH
                 IDENT "x"
             EQ "="
@@ -425,7 +425,7 @@ FILE
       L_CURLY "{"
       LET_STMT
         LET "let"
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "a"
         EQ "="
@@ -434,7 +434,7 @@ FILE
         SEMI ";"
       LET_STMT
         LET "let"
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "b"
         EQ "="

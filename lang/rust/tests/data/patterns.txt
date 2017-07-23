@@ -8,7 +8,7 @@ FILE
       L_CURLY "{"
       LET_STMT
         LET "let"
-        PATTERN
+        WILDCARD_PATTERN
           UNDERSCORE "_"
         EQ "="
         LITERAL
@@ -16,7 +16,7 @@ FILE
         SEMI ";"
       LET_STMT
         LET "let"
-        PATTERN
+        PATH_PATTERN
           PATH
             IDENT "x"
         EQ "="

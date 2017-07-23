@@ -12,7 +12,7 @@ FILE
     IDENT "bar"
     L_PAREN "("
     VALUE_PARAM
-      PATTERN
+      PATH_PATTERN
         PATH
           IDENT "x"
       COLON ":"
@@ -28,7 +28,7 @@ FILE
     IDENT "baz"
     L_PAREN "("
     VALUE_PARAM
-      PATTERN
+      PATH_PATTERN
         PATH
           IDENT "x"
       COLON ":"
@@ -45,7 +45,7 @@ FILE
     IDENT "quux"
     L_PAREN "("
     VALUE_PARAM
-      PATTERN
+      PATH_PATTERN
         PATH
           IDENT "x"
       COLON ":"
@@ -54,7 +54,7 @@ FILE
           IDENT "i32"
     COMMA ","
     VALUE_PARAM
-      PATTERN
+      PATH_PATTERN
         PATH
           IDENT "z"
       COLON ":"
