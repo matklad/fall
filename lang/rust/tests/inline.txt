@@ -207,6 +207,39 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+type T = [(); 92];
+type T = &[()];
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    ARRAY_TYPE
+      L_BRACK "["
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
+      SEMI ";"
+      LITERAL
+        NUMBER "92"
+      R_BRACK "]"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    REFERENCE_TYPE
+      AMPERSAND "&"
+      ARRAY_TYPE
+        L_BRACK "["
+        UNIT_TYPE
+          L_PAREN "("
+          R_PAREN ")"
+        R_BRACK "]"
+    SEMI ";"
+
+----------------------------------------
 fn main() {
   ();
   (1);

@@ -258,7 +258,8 @@ pub rule alias { 'as' ident }
 
 rule type_reference {
   path_type | reference_type 
-| unit_type | paren_type | placeholder_type 
+| placeholder_type | unit_type | paren_type
+| array_type
 }
 
 pub rule path_type {
@@ -298,7 +299,18 @@ type T = (A,);
 type T = (A, B);
 "
 
-pub rule pattern { 
+pub rule array_type {
+  <in_bracks {
+    type_reference <opt {';' expr}>
+  }>
+}
+test r"
+type T = [(); 92];
+type T = &[()];
+"
+
+
+pub rule pattern {
   expr_path <opt <in_parens <comma_list pattern>>> | '_'
 }
 
