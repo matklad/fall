@@ -19,7 +19,10 @@ pub enum Expr {
         ty_idx: usize,
         body: Box<Expr>,
         replaceable: bool,
-        replaces: bool
+    },
+    PubReplace {
+        ty_idx: usize,
+        body: Box<Expr>,
     },
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
@@ -147,27 +150,33 @@ impl<'r> Parser<'r> {
                          -> Option<(Node, TokenSequence<'t>)> {
         ctx.ticks += 1;
         match *expr {
-            Expr::Pub { ty_idx, ref body, replaceable, replaces } => {
+            Expr::Pub { ty_idx, ref body, replaceable } => {
                 if replaceable {
                     ctx.replacement = None;
                 }
                 match self.parse_exp(body, tokens, ctx) {
                     Some((node, ts)) => {
-                        let node_type = match (replaces, replaceable, ctx.replacement) {
-                            (true, true, _) => panic!("Can't replace and be replaced"),
-                            (true, _, _) => None,
-                            (false, true, Some(ty)) => Some(ty),
-                            (false, _, _) => Some(self.node_type(ty_idx)),
+                        let node_type = match (replaceable, ctx.replacement) {
+                            (true, Some(ty)) => ty,
+                            _ => self.node_type(ty_idx),
                         };
-                        let mut result = ctx.create_composite_node(node_type);
+                        let mut result = ctx.create_composite_node(Some(node_type));
                         ctx.push_child(&mut result, node);
 
-                        if replaces {
-                            ctx.replacement = Some(self.node_type(ty_idx));
-                        } else {
-                            ctx.prev = node_type;
-                        }
+                        ctx.prev = Some(node_type);
                         Some((result, ts))
+                    }
+                    _ => {
+                        None
+                    }
+                }
+            }
+            Expr::PubReplace { ty_idx, ref body } => {
+                match self.parse_exp(body, tokens, ctx) {
+                    Some((node, ts)) => {
+                        let node_type = self.node_type(ty_idx);
+                        ctx.replacement = Some(node_type);
+                        Some((node, ts))
                     }
                     _ => {
                         None
