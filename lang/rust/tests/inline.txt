@@ -127,6 +127,7 @@ FILE
 
 ----------------------------------------
 fn main() {
+  ();
   (1);
   ((1));
   (1,);
@@ -140,6 +141,11 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
+      EXPR_STMT
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
       EXPR_STMT
         PAREN_EXPR
           L_PAREN "("
@@ -170,7 +176,7 @@ FILE
 ----------------------------------------
 fn foo() { 
     |x, y: i32,| 1 + 1;
-    || -> i32 { 92 };
+    move || -> i32 { 92 };
 }
 
 FILE
@@ -208,6 +214,7 @@ FILE
         SEMI ";"
       EXPR_STMT
         LAMBDA_EXPR
+          MOVE "move"
           PIPE "|"
           PIPE "|"
           THIN_ARROW "->"

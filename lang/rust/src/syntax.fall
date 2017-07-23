@@ -22,6 +22,7 @@ tokenizer {
   for 'for'
   loop 'loop'
   while 'while'
+  move 'move'
 
   l_paren '('
   r_paren ')'
@@ -270,8 +271,8 @@ pub rule pattern {
 
 #[pratt]
 pub rule expr { 
-  literal | struct_literal | path_expr | paren_expr | lambda_expr
-| block_expr | if_expr | while_expr | loop_expr
+  literal | struct_literal | path_expr | unit_expr | paren_expr 
+| lambda_expr | block_expr | if_expr | while_expr | loop_expr
 | call_expr | field_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
@@ -308,6 +309,9 @@ pub rule path_expr {
   expr_path
 }
 
+#[atom]
+pub rule unit_expr { '(' ')' }
+
 #[atom, replaceable]
 pub rule paren_expr {
   '(' <without_restrictions expr> <opt tuple_expr> ')'
@@ -320,6 +324,7 @@ pub rule tuple_expr {
 
 test r"
 fn main() {
+  ();
   (1);
   ((1));
   (1,);
@@ -328,7 +333,7 @@ fn main() {
 
 #[atom]
 pub rule lambda_expr {
-  '|' <rep lambda_arg> '|' {
+  <opt 'move'> '|' <rep lambda_arg> '|' {
     '->' type_reference block_expr
   | <without_restrictions expr>
   }
@@ -341,7 +346,7 @@ rule lambda_arg {
 test r"
 fn foo() { 
     |x, y: i32,| 1 + 1;
-    || -> i32 { 92 };
+    move || -> i32 { 92 };
 }
 "
 
