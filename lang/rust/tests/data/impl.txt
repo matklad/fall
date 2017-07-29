@@ -4,21 +4,22 @@ FILE
     PATH_TYPE
       PATH
         IDENT "Foo"
-    L_CURLY "{"
-    FN_DEF
-      FN "fn"
-      IDENT "bar"
-      L_PAREN "("
-      VALUE_PARAM
-        PATH_PATTERN
-          PATH
-            IDENT "x"
-        COLON ":"
-        PATH_TYPE
-          PATH
-            IDENT "i32"
-      R_PAREN ")"
-      BLOCK_EXPR
-        L_CURLY "{"
-        R_CURLY "}"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      FN_DEF
+        FN "fn"
+        IDENT "bar"
+        L_PAREN "("
+        VALUE_PARAM
+          PATH_PATTERN
+            PATH
+              IDENT "x"
+          COLON ":"
+          PATH_TYPE
+            PATH
+              IDENT "i32"
+        R_PAREN ")"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"

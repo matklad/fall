@@ -25,17 +25,18 @@ FILE
     PATH_TYPE
       PATH
         IDENT "T"
-    L_CURLY "{"
-    TYPE_DEF
-      TYPE "type"
-      IDENT "A"
-      SEMI ";"
-    TYPE_DEF
-      TYPE "type"
-      IDENT "B"
-      EQ "="
-      PATH_TYPE
-        PATH
-          IDENT "A"
-      SEMI ";"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      TYPE_DEF
+        TYPE "type"
+        IDENT "A"
+        SEMI ";"
+      TYPE_DEF
+        TYPE "type"
+        IDENT "B"
+        EQ "="
+        PATH_TYPE
+          PATH
+            IDENT "A"
+        SEMI ";"
+      R_CURLY "}"

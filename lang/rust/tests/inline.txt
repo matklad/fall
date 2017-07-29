@@ -7,8 +7,9 @@ FILE
     PATH_TYPE
       PATH
         IDENT "Node"
-    L_CURLY "{"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      R_CURLY "}"
   IMPL_DEF
     IMPL "impl"
     TYPE_PARAMETERS
@@ -28,8 +29,27 @@ FILE
           L_ANGLE "<"
           LIFETIME "\'f"
           R_ANGLE ">"
-    L_CURLY "{"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      R_CURLY "}"
+
+----------------------------------------
+pub trait T<X> {}
+
+FILE
+  TRAIT_DEF
+    VISIBILITY
+      PUB "pub"
+    TRAIT "trait"
+    IDENT "T"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      TYPE_PARAMETER
+        IDENT "X"
+      R_ANGLE ">"
+    MEMBERS
+      L_CURLY "{"
+      R_CURLY "}"
 
 ----------------------------------------
 pub const X: i32 = 0;
@@ -652,6 +672,29 @@ FILE
               IDENT "x"
           DOT "."
           NUMBER "92"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { xs[92]; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        INDEX_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "xs"
+          L_BRACK "["
+          LITERAL
+            NUMBER "92"
+          R_BRACK "]"
         SEMI ";"
       R_CURLY "}"
 

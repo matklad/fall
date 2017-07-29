@@ -25,6 +25,7 @@ tokenizer {
   move 'move'
   mut 'mut'
   ref 'ref'
+  trait 'trait'
 
   l_paren '('
   r_paren ')'
@@ -71,13 +72,14 @@ rule mod_contents {
 
 rule mod_form_first { 
   'pub' | 'extern' | '#'
-| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' | 'impl' | 'type'
+| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' 
+| 'impl' | 'trait' | 'type'
 | 'const'
 }
 
 rule mod_form { 
   use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def 
-| impl_def | type_def | const_def
+| impl_def | trait_def | type_def | const_def
 }
 
 pub rule use_decl {
@@ -164,13 +166,27 @@ pub rule impl_def {
   outer_attributes 'impl' <commit> 
   <opt type_parameters>
   {type_reference <opt {'for' type_reference}> }
-  <block <rep <with_skip impl_form_first impl_form>>>
+  members
 }
 
 test r"
 impl Node {}
 impl<'f> ::Debug for Node<'f> { }
 "
+
+pub rule trait_def {
+  outer_attributes <opt visibility> 'trait' <commit>
+  ident <opt type_parameters>
+  members
+}
+
+test r"
+pub trait T<X> {}
+"
+
+pub rule members {
+  <block <rep <with_skip impl_form_first impl_form>>>
+}
 
 
 rule impl_form {
@@ -347,7 +363,7 @@ test r"fn main() { let foo::bar = (); }"
 pub rule expr { 
   literal | struct_literal | path_expr | unit_expr | paren_expr 
 | lambda_expr | block_expr | if_expr | while_expr | loop_expr
-| call_expr | field_expr
+| call_expr | field_expr | index_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
 | bit_shift
@@ -509,6 +525,14 @@ pub rule field_expr {
 }
 test r"
 fn main() { x.foo; x.92; }
+"
+
+#[postfix]
+pub rule index_expr {
+  expr <in_bracks expr>
+}
+test r"
+fn main() { xs[92]; }
 "
 
 pub rule value_argument {

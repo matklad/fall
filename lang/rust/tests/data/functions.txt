@@ -82,27 +82,28 @@ FILE
     PATH_TYPE
       PATH
         IDENT "T"
-    L_CURLY "{"
-    FN_DEF
-      FN "fn"
-      IDENT "foo"
-      L_PAREN "("
-      SELF_PARAMETER
-        SELF "self"
-      R_PAREN ")"
-      BLOCK_EXPR
-        L_CURLY "{"
-        R_CURLY "}"
-    FN_DEF
-      FN "fn"
-      IDENT "bar"
-      L_PAREN "("
-      SELF_PARAMETER
-        AMPERSAND "&"
-        SELF "self"
-        COMMA ","
-      R_PAREN ")"
-      BLOCK_EXPR
-        L_CURLY "{"
-        R_CURLY "}"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      FN_DEF
+        FN "fn"
+        IDENT "foo"
+        L_PAREN "("
+        SELF_PARAMETER
+          SELF "self"
+        R_PAREN ")"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      FN_DEF
+        FN "fn"
+        IDENT "bar"
+        L_PAREN "("
+        SELF_PARAMETER
+          AMPERSAND "&"
+          SELF "self"
+          COMMA ","
+        R_PAREN ")"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"

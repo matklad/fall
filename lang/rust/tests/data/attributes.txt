@@ -77,8 +77,9 @@ FILE
     PATH_TYPE
       PATH
         IDENT "X"
-    L_CURLY "{"
-    R_CURLY "}"
+    MEMBERS
+      L_CURLY "{"
+      R_CURLY "}"
   TYPE_DEF
     ATTRIBUTE
       HASH "#"
