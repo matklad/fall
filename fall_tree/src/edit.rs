@@ -9,7 +9,7 @@ pub struct FileEdit<'f> {
 }
 
 impl<'f> FileEdit<'f> {
-    pub fn new(file: &'f File) -> Self {
+    pub fn new(file: &File) -> FileEdit {
         FileEdit {
             file: file,
             inserted: Vec::new(),

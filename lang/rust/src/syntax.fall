@@ -198,14 +198,14 @@ rule impl_form_first {
 }
 
 pub rule type_def {
-  outer_attributes <opt visibility> 'type' <commit> 
-  ident <opt type_parameters>
-  <opt {'=' type_reference}>
+  outer_attributes visibility? 'type' <commit> 
+  ident type_parameters?
+  {'=' type_reference}?
   ';'
 }
 
 pub rule const_def {
-  outer_attributes <opt visibility> 'const' <commit>
+  outer_attributes visibility? 'const' <commit>
   ident ':' type_reference
   '=' expr ';'
 }
@@ -252,7 +252,7 @@ pub rule path {
 
 #[atom, type(path)]
 pub rule unqualified_path {
-  <opt '::'> path_segment
+  '::'? path_segment
 }
 
 #[postfix, type(path)]
@@ -261,7 +261,7 @@ pub rule qualified_path {
 }
 
 rule path_segment {
-  { ident | 'self' | 'super' } <opt type_arguments>
+  { ident | 'self' | 'super' } type_arguments?
 }
 
 pub rule type_arguments {
