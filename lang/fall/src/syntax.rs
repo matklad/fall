@@ -38,29 +38,31 @@ pub const PARAMETER: NodeType = NodeType(132);
 pub const REF_EXPR: NodeType = NodeType(133);
 pub const SEQ_EXPR: NodeType = NodeType(134);
 pub const BLOCK_EXPR: NodeType = NodeType(135);
-pub const CALL_EXPR: NodeType = NodeType(136);
-pub const TOKENIZER_DEF: NodeType = NodeType(137);
-pub const LEX_RULE: NodeType = NodeType(138);
-pub const TEST_DEF: NodeType = NodeType(139);
-pub const ATTRIBUTES: NodeType = NodeType(140);
-pub const ATTRIBUTE: NodeType = NodeType(141);
-pub const ATTRIBUTE_VALUE: NodeType = NodeType(142);
-pub const STRING: NodeType = NodeType(143);
-pub const VERBATIM_DEF: NodeType = NodeType(144);
-pub const AST_DEF: NodeType = NodeType(145);
-pub const AST_NODE_DEF: NodeType = NodeType(146);
-pub const AST_CLASS_DEF: NodeType = NodeType(147);
-pub const METHOD_DEF: NodeType = NodeType(148);
-pub const AST_SELECTOR: NodeType = NodeType(149);
+pub const OPT_EXPR: NodeType = NodeType(136);
+pub const REP_EXPR: NodeType = NodeType(137);
+pub const CALL_EXPR: NodeType = NodeType(138);
+pub const TOKENIZER_DEF: NodeType = NodeType(139);
+pub const LEX_RULE: NodeType = NodeType(140);
+pub const TEST_DEF: NodeType = NodeType(141);
+pub const ATTRIBUTES: NodeType = NodeType(142);
+pub const ATTRIBUTE: NodeType = NodeType(143);
+pub const ATTRIBUTE_VALUE: NodeType = NodeType(144);
+pub const STRING: NodeType = NodeType(145);
+pub const VERBATIM_DEF: NodeType = NodeType(146);
+pub const AST_DEF: NodeType = NodeType(147);
+pub const AST_NODE_DEF: NodeType = NodeType(148);
+pub const AST_CLASS_DEF: NodeType = NodeType(149);
+pub const METHOD_DEF: NodeType = NodeType(150);
+pub const AST_SELECTOR: NodeType = NodeType(151);
 
 lazy_static! {
     pub static ref LANG: Language = {
         use fall_parse::{LexRule, SynRule, Parser};
         const ALL_NODE_TYPES: &[NodeType] = &[
             ERROR,
-            WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
+            WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, OPT_EXPR, REP_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
         ];
-        let parser_json = r##"[{"body":{"Pub":{"ty_idx":30,"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"test"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":11}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":24}],null]},{"And":[[{"Rule":25}],null]},{"And":[[{"Rule":13}],null]}]}},{"body":{"Pub":{"ty_idx":31,"body":{"Or":[{"And":[[{"Opt":{"Rule":14}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Layer":[{"Or":[{"And":[[{"Token":18},{"Rule":20},{"Token":19}],null]},{"And":[[{"Token":18},{"Rep":{"Or":[{"And":[[{"Not":{"Rule":1}},"Any"],null]}]}}],null]}]},{"Rule":9}]}],3]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":32,"body":{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":21},{"Call":[{"Rule":18},[[0,{"Rule":5}]]]}]},{"Token":25}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":33,"body":{"Or":[{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rule":10}],null]},{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":9}],null]}]}},{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":35,"body":{"Or":[{"And":[[{"Rep":{"Rule":6}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":19},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":37,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":38,"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Call":[{"Rule":19},[[1,{"Rep":{"Rule":12}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Opt":{"Rule":14}},{"Token":29},{"Rule":17},{"Opt":{"Rule":17}}],2]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":40,"body":{"Or":[{"And":[[{"ContextualToken":[10,"test"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":41,"body":{"Or":[{"And":[[{"Token":17},{"Token":20},{"Layer":[{"Rule":22},{"Call":[{"Rule":18},[[0,{"Rule":15}]]]}]},{"Token":21}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":42,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":16},{"Token":25}],null]}]}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":43,"body":{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":44,"body":{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":16}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":20},{"Var":1}]},{"Token":19}],1]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":23},[[2,{"Token":18}],[3,{"Token":19}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":23},[[2,{"Token":24}],[3,{"Token":25}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":23},[[2,{"Token":20}],[3,{"Token":21}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":2},{"Call":[{"Rule":23},[[2,{"Var":2}],[3,{"Var":3}]]]},{"Var":3}],null]},{"And":[[{"Or":[{"And":[[{"Not":{"Var":3}},"Any"],null]}]}],null]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":45,"body":{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":46,"body":{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":26}],null]},{"And":[[{"Rule":27}],null]}]}]}},{"Token":19}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":47,"body":{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Call":[{"Rule":19},[[1,{"Rep":{"Rule":28}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":48,"body":{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Call":[{"Rule":19},[[1,{"Rep":{"Token":29}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":49,"body":{"Or":[{"And":[[{"Token":29},{"Rule":29}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":50,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":30}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
+        let parser_json = r##"[{"body":{"Pub":{"ty_idx":30,"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"test"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":13}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":26}],null]},{"And":[[{"Rule":27}],null]},{"And":[[{"Rule":15}],null]}]}},{"body":{"Pub":{"ty_idx":31,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Layer":[{"Or":[{"And":[[{"Token":18},{"Rule":22},{"Token":19}],null]},{"And":[[{"Token":18},{"Rep":{"Or":[{"And":[[{"Not":{"Rule":1}},"Any"],null]}]}}],null]}]},{"Rule":9}]}],3]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":32,"body":{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":23},{"Call":[{"Rule":20},[[0,{"Rule":5}]]]}]},{"Token":25}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":33,"body":{"Or":[{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}}},{"Postfix":{"ty":37,"op":{"Token":14}}},{"Postfix":{"ty":38,"op":{"Token":13}}}]}},{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":35,"body":{"Or":[{"And":[[{"Rep":{"Rule":6}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":37,"body":{"Or":[{"And":[[{"Rule":6},{"Token":14}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":38,"body":{"Or":[{"And":[[{"Rule":6},{"Token":13}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":40,"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":14}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":41,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Token":29},{"Rule":19},{"Opt":{"Rule":19}}],2]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":42,"body":{"Or":[{"And":[[{"ContextualToken":[10,"test"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":43,"body":{"Or":[{"And":[[{"Token":17},{"Token":20},{"Layer":[{"Rule":24},{"Call":[{"Rule":20},[[0,{"Rule":17}]]]}]},{"Token":21}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":44,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":18},{"Token":25}],null]}]}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":45,"body":{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":46,"body":{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":16}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":22},{"Var":1}]},{"Token":19}],1]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":18}],[3,{"Token":19}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":24}],[3,{"Token":25}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":20}],[3,{"Token":21}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":2},{"Call":[{"Rule":25},[[2,{"Var":2}],[3,{"Var":3}]]]},{"Var":3}],null]},{"And":[[{"Or":[{"And":[[{"Not":{"Var":3}},"Any"],null]}]}],null]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":47,"body":{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":48,"body":{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":28}],null]},{"And":[[{"Rule":29}],null]}]}]}},{"Token":19}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":49,"body":{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":30}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":50,"body":{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Token":29}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":51,"body":{"Or":[{"And":[[{"Token":29},{"Rule":31}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":52,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":32}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
         let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
 
         struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
@@ -113,6 +115,8 @@ lazy_static! {
                     REF_EXPR => NodeTypeInfo { name: "REF_EXPR", whitespace_like: false },
                     SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR", whitespace_like: false },
                     BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR", whitespace_like: false },
+                    OPT_EXPR => NodeTypeInfo { name: "OPT_EXPR", whitespace_like: false },
+                    REP_EXPR => NodeTypeInfo { name: "REP_EXPR", whitespace_like: false },
                     CALL_EXPR => NodeTypeInfo { name: "CALL_EXPR", whitespace_like: false },
                     TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF", whitespace_like: false },
                     LEX_RULE => NodeTypeInfo { name: "LEX_RULE", whitespace_like: false },
@@ -476,6 +480,23 @@ impl<'f> AstSelector<'f> {
     }
 }
 #[derive(Clone, Copy)]
+pub struct TestDef<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for TestDef<'f> {
+    fn ty() -> NodeType { TEST_DEF }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        TestDef { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> TestDef<'f> {
+    pub fn literal_string(&self) -> Option<Text<'f>> {
+        child_of_type(self.node, HASH_STRING).map(|n| n.text())
+    }
+}
+#[derive(Clone, Copy)]
 pub struct RefExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for RefExpr<'f> {
@@ -511,23 +532,6 @@ impl<'f> CallExpr<'f> {
     }
 }
 #[derive(Clone, Copy)]
-pub struct SeqExpr<'f> { node: Node<'f> }
-
-impl<'f> AstNode<'f> for SeqExpr<'f> {
-    fn ty() -> NodeType { SEQ_EXPR }
-    fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
-        SeqExpr { node: node }
-    }
-    fn node(&self) -> Node<'f> { self.node }
-}
-
-impl<'f> SeqExpr<'f> {
-    pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
-        AstClassChildren::new(self.node.children())
-    }
-}
-#[derive(Clone, Copy)]
 pub struct BlockExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for BlockExpr<'f> {
@@ -545,20 +549,54 @@ impl<'f> BlockExpr<'f> {
     }
 }
 #[derive(Clone, Copy)]
-pub struct TestDef<'f> { node: Node<'f> }
+pub struct OptExpr<'f> { node: Node<'f> }
 
-impl<'f> AstNode<'f> for TestDef<'f> {
-    fn ty() -> NodeType { TEST_DEF }
+impl<'f> AstNode<'f> for OptExpr<'f> {
+    fn ty() -> NodeType { OPT_EXPR }
     fn new(node: Node<'f>) -> Self {
         assert_eq!(node.ty(), Self::ty());
-        TestDef { node: node }
+        OptExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
 }
 
-impl<'f> TestDef<'f> {
-    pub fn literal_string(&self) -> Option<Text<'f>> {
-        child_of_type(self.node, HASH_STRING).map(|n| n.text())
+impl<'f> OptExpr<'f> {
+    pub fn expr(&self) -> Expr<'f> {
+        AstClassChildren::new(self.node.children()).next().unwrap()
+    }
+}
+#[derive(Clone, Copy)]
+pub struct RepExpr<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for RepExpr<'f> {
+    fn ty() -> NodeType { REP_EXPR }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        RepExpr { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> RepExpr<'f> {
+    pub fn expr(&self) -> Expr<'f> {
+        AstClassChildren::new(self.node.children()).next().unwrap()
+    }
+}
+#[derive(Clone, Copy)]
+pub struct SeqExpr<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for SeqExpr<'f> {
+    fn ty() -> NodeType { SEQ_EXPR }
+    fn new(node: Node<'f>) -> Self {
+        assert_eq!(node.ty(), Self::ty());
+        SeqExpr { node: node }
+    }
+    fn node(&self) -> Node<'f> { self.node }
+}
+
+impl<'f> SeqExpr<'f> {
+    pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
+        AstClassChildren::new(self.node.children())
     }
 }
 
@@ -566,8 +604,10 @@ impl<'f> TestDef<'f> {
 pub enum Expr<'f> {
     RefExpr(RefExpr<'f>),
     CallExpr(CallExpr<'f>),
-    SeqExpr(SeqExpr<'f>),
     BlockExpr(BlockExpr<'f>),
+    OptExpr(OptExpr<'f>),
+    RepExpr(RepExpr<'f>),
+    SeqExpr(SeqExpr<'f>),
 }
 
 impl<'f> AstClass<'f> for Expr<'f> {
@@ -575,8 +615,10 @@ impl<'f> AstClass<'f> for Expr<'f> {
         const TYS: &[NodeType] = &[
             REF_EXPR,
             CALL_EXPR,
-            SEQ_EXPR,
             BLOCK_EXPR,
+            OPT_EXPR,
+            REP_EXPR,
+            SEQ_EXPR,
         ];
         TYS
     }
@@ -585,8 +627,10 @@ impl<'f> AstClass<'f> for Expr<'f> {
         match node.ty() {
             REF_EXPR => Expr::RefExpr(RefExpr::new(node)),
             CALL_EXPR => Expr::CallExpr(CallExpr::new(node)),
-            SEQ_EXPR => Expr::SeqExpr(SeqExpr::new(node)),
             BLOCK_EXPR => Expr::BlockExpr(BlockExpr::new(node)),
+            OPT_EXPR => Expr::OptExpr(OptExpr::new(node)),
+            REP_EXPR => Expr::RepExpr(RepExpr::new(node)),
+            SEQ_EXPR => Expr::SeqExpr(SeqExpr::new(node)),
             _ => panic!("Bad ast class")
         }
     }
@@ -595,8 +639,10 @@ impl<'f> AstClass<'f> for Expr<'f> {
         match *self {
             Expr::RefExpr(n) => n.node(),
             Expr::CallExpr(n) => n.node(),
-            Expr::SeqExpr(n) => n.node(),
             Expr::BlockExpr(n) => n.node(),
+            Expr::OptExpr(n) => n.node(),
+            Expr::RepExpr(n) => n.node(),
+            Expr::SeqExpr(n) => n.node(),
         }
     }
 }

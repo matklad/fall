@@ -308,6 +308,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             };
             return Ok(r);
         }
+        Expr::OptExpr(opt_expr) => fall_parse::Expr::Opt(Box::new(compile_expr(opt_expr.expr())?)),
+        Expr::RepExpr(rep_expr) => fall_parse::Expr::Rep(Box::new(compile_expr(rep_expr.expr())?)),
     };
 
     Ok(result)
