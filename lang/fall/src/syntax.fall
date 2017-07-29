@@ -105,7 +105,10 @@ pub rule syn_rule {
 
   // The body of the rule is enclosed in `{`,
   // see expression grammar below for details.
-  block_expr
+  <layer 
+    { '{' in_braces '}' | '{' <rep {<not file_form_first> <any>}> }
+    block_expr
+  >
 }
 
 
@@ -190,10 +193,10 @@ pub rule attribute_value {
 pub rule string { simple_string | hash_string }
 
 rule comma_list(el) {
-  <rep {el <commit> {<eof>|','}}>
+  <rep {el <commit> {<eof> | ','}}>
 }
 
-rule block(body) { '{'<commit> <layer in_braces body> '}'}
+rule block(body) { '{' <commit> <layer in_braces body> '}'}
 
 rule in_braces { <balanced '{' '}'> }
 rule in_parens { <balanced '(' ')'> }
@@ -201,11 +204,10 @@ rule in_bracks { <balanced '[' ']'> }
 
 rule balanced(bra, ket) {
   <rep {
-    bra <commit> <balanced bra ket> ket
+    bra <balanced bra ket> ket
   | {<not ket> <any>}
   }>
 }
-
 
 // Verbatim block is pasted as is into the generated parser.
 // You can use it to provide custom tokenizer rules.
@@ -230,7 +232,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 pub rule ast_def {
   'ast' <commit> '{'
     <rep <with_skip
-      {'node'|'class'}
+      {'node' | 'class'}
       {ast_node_def | ast_class_def}>>
   '}'
 }
@@ -245,7 +247,7 @@ pub rule ast_class_def {
 
 pub rule method_def { ident ast_selector }
 pub rule ast_selector { ident <opt ast_selector_suffix> }
-rule ast_selector_suffix { '?' '.' ident  | '.' ident | '*' | '?' }
+rule ast_selector_suffix { '?' '.' ident | '.' ident | '*' | '?' }
 
 // The last (optional) block in the file is AST definition.
 // Parser produces untyped concrete syntax tree, with all comments
