@@ -185,7 +185,7 @@ pub trait T<X> {}
 "
 
 pub rule members {
-  <block <rep <with_skip impl_form_first impl_form>>>
+  <block <with_skip impl_form_first impl_form>*>
 }
 
 
@@ -287,7 +287,7 @@ pub rule path_type {
 test r"type T = X<Foo, Bar>;"
 
 pub rule reference_type {
-  '&' <opt lifetime>  <opt 'mut'> type_reference
+  '&' lifetime?  'mut'? type_reference
 }
 test r"type T = &'static mut X;"
 
@@ -303,7 +303,7 @@ pub rule unit_type {
 
 #[replaceable]
 pub rule paren_type {
-  <in_parens {type_reference <opt tuple_type>}>
+  <in_parens {type_reference tuple_type?}>
 }
 
 #[replaces]
@@ -320,7 +320,7 @@ type T = (A, B);
 
 pub rule array_type {
   <in_bracks {
-    type_reference <opt {';' expr}>
+    type_reference {';' expr}?
   }>
 }
 test r"
@@ -345,7 +345,7 @@ pub rule tupe_struct_pattern {
 test r"fn main() { let S(foo, bar) = (); }"
 
 pub rule binding_pattern {
-  <opt 'ref'> <opt 'mut'> ident
+  'ref'? 'mut'? ident
 }
 test r"
 fn main() {
@@ -405,7 +405,7 @@ pub rule unit_expr { '(' ')' }
 
 #[atom, replaceable]
 pub rule paren_expr {
-  '(' <without_restrictions expr> <opt tuple_expr> ')'
+  '(' <without_restrictions expr> tuple_expr? ')'
 }
 
 #[replaces]
@@ -424,7 +424,7 @@ fn main() {
 
 #[atom]
 pub rule lambda_expr {
-  <opt 'move'> '|' <rep lambda_arg> '|' {
+  'move'? '|' lambda_arg* '|' {
     '->' type_reference block_expr
   | <without_restrictions expr>
   }
@@ -450,7 +450,7 @@ fn binary_or_lambda_ambiguity() {
 #[atom]
 pub rule block_expr {
   <without_restrictions
-    <block {<rep block_form> <opt expr>}>
+    <block {block_form* expr?}>
   >
 }
 
@@ -474,7 +474,7 @@ pub rule expr_stmt {
 pub rule if_expr {
   'if' <commit>  
     block_condition block_expr 
-    <opt {'else' block_expr}>
+    {'else' block_expr}?
 }
 
 test r"
@@ -483,7 +483,7 @@ fn main() { if true { foo } else { bar } }
 
 #[atom]
 pub rule while_expr {
-  <opt {lifetime ':'}> 'while' <commit>  
+  {lifetime ':'}? 'while' <commit>  
     block_condition block_expr 
     }
 
@@ -493,7 +493,7 @@ fn main() { 'w: while true {} }
 
 rule block_condition {
   <enter 'condition' {
-    <opt {'let' <commit> pattern '='}> expr 
+    {'let' <commit> pattern '='}? expr 
   }>
 }
 test r"
@@ -506,7 +506,7 @@ fn main() {
 
 #[atom]
 pub rule loop_expr {
-  <opt {lifetime ':'}> 'loop' <commit> block_expr
+  {lifetime ':'}? 'loop' <commit> block_expr
 }
 
 test r"
@@ -600,20 +600,20 @@ test r#"
 "#
 
 rule outer_attributes {
-  <rep attribute>
+  attribute*
 }
 
 pub rule attr_value {
-  ident <commit> <opt {
-    '=' expr 
+  ident <commit> 
+  { '=' expr 
   | <in_parens <comma_list attr_value>>
-  }>
+  }?
 }
 
 // Helper rules
 
 rule comma_list(el) {
-  <rep {el <commit> {<eof> | ','}}>
+  {el <commit> {<eof> | ','}}*
 }
 
 rule block(p)     { <balanced_layer '{' '}' p> }
@@ -628,8 +628,7 @@ rule balanced_layer(bra, ket, contents) {
 }
 
 rule balanced(bra, ket) {
-  <rep {
-    bra <commit> <balanced bra ket> ket
+  { bra <commit> <balanced bra ket> ket
   | {<not ket> <any>}
-  }>
+  }*
 }

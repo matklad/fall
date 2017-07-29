@@ -6,7 +6,7 @@ tokenizer {
   atom       r"\w+"
 }
 
-pub rule file { <rep {sexp}> }
+pub rule file { sexp* }
 
 rule sexp { atom | list }
-pub rule list { '(' <rep {sexp}> ')' }
+pub rule list { '(' sexp* ')' }

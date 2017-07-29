@@ -69,7 +69,7 @@ tokenizer {
 // The first rule is special: it is implicitly used as an entry
 // point for the grammar.
 pub rule fall_file {
-  <rep <with_skip file_form_first file_form>>
+  <with_skip file_form_first file_form>*
 }
 
 rule file_form_first {

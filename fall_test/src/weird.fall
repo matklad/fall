@@ -23,7 +23,7 @@ pub rule private_partial {
 rule foobar { 'foo' 'bar' }
 rule foofoo { 'foo' 'foo' }
 
-pub rule empty { <opt {none}> }
+pub rule empty { none? }
 
 rule none { }
 
@@ -31,7 +31,7 @@ pub rule block {
   '{' <commit> block_body '}'
 }
 
-rule block_body { <rep balanced> }
+rule block_body { balanced* }
 rule balanced {
   '{' <commit> block_body '}'
 | {<not '}'> <any>}

@@ -200,8 +200,6 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
         .visit::<CallExpr, _>(|acc, call| {
             match call.kind() {
                 Err(e) => acc.push(Diagnostic::error(call.node(), e.to_string())),
-//                Ok(CallKind::Rep(..)) => acc.push(Diagnostic::warning(call.node(), "use *".to_owned())),
-//                Ok(CallKind::Opt(..)) => acc.push(Diagnostic::warning(call.node(), "use ?".to_owned())),
                 _ => {}
             }
         })

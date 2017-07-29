@@ -287,8 +287,6 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 CallKind::Exit(idx, expr) => fall_parse::Expr::Exit(idx, Box::new(compile_expr(expr)?)),
                 CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
                 CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(expr)?)),
-                CallKind::Rep(expr) => fall_parse::Expr::Rep(Box::new(compile_expr(expr)?)),
-                CallKind::Opt(expr) => fall_parse::Expr::Opt(Box::new(compile_expr(expr)?)),
                 CallKind::Layer(e1, e2) => fall_parse::Expr::Layer(
                     Box::new(compile_expr(e1)?),
                     Box::new(compile_expr(e2)?)
@@ -305,6 +303,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 ),
                 CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(tokens),
                 CallKind::Commit => panic!("Should be handled specially"),
+                _ => panic!("at the dsiko {:?}", call.node().text()),
             };
             return Ok(r);
         }
