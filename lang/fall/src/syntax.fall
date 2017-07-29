@@ -194,7 +194,7 @@ pub rule tokenizer_def {
 // allows us to parse `tokenizer` block? What will happen if you
 // omit the required regular expression pattern?
 pub rule lex_rule {
-  <opt attributes> ident <commit> string <opt string>
+  attributes? ident <commit> string string?
 }
 
 pub rule test_def { 'test' <commit> hash_string }

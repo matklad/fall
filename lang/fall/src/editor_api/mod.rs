@@ -198,8 +198,11 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
             }
         })
         .visit::<CallExpr, _>(|acc, call| {
-            if let Err(e) = call.kind() {
-                acc.push(Diagnostic::error(call.node(), e.to_string()))
+            match call.kind() {
+                Err(e) => acc.push(Diagnostic::error(call.node(), e.to_string())),
+                Ok(CallKind::Rep(..)) => acc.push(Diagnostic::warning(call.node(), "use *".to_owned())),
+                Ok(CallKind::Opt(..)) => acc.push(Diagnostic::warning(call.node(), "use ?".to_owned())),
+                _ => {}
             }
         })
         .visit::<SynRule, _>(|acc, rule| {

@@ -66,7 +66,7 @@ tokenizer {
 pub rule file { mod_contents }
 
 rule mod_contents {
-  <rep <with_skip mod_form_first mod_form>>
+  <with_skip mod_form_first mod_form>*
 }
 
 
@@ -83,9 +83,9 @@ rule mod_form {
 }
 
 pub rule use_decl {
-  outer_attributes <opt visibility> 'use' <commit> { 
-    mod_path {alias | <opt {'::' use_spec}>}
-  | <opt '::'> use_spec 
+  outer_attributes visibility? 'use' <commit> { 
+    mod_path {alias | {'::' use_spec}?}
+  | '::'? use_spec 
   } ';'
 }
 
@@ -95,23 +95,23 @@ pub rule use_spec {
 }
 
 pub rule use_spec_entry {
-  ident <commit> <opt alias>
+  ident <commit> alias?
 }
 
 pub rule extern_crate_decl {
-  outer_attributes 'extern' 'crate' <commit> ident <opt alias> ';'
+  outer_attributes 'extern' 'crate' <commit> ident alias? ';'
 }
 
 pub rule fn_def {
-  outer_attributes <opt visibility> 'fn' <commit> ident
-  <opt type_parameters>
+  outer_attributes visibility? 'fn' <commit> ident
+  type_parameters?
   value_parameters
-  <opt {'->' type_reference}>
+  {'->' type_reference}?
   block_expr
 }
 
 rule value_parameters {
-  <in_parens {<opt self_parameter> <comma_list value_param>}>
+  <in_parens {self_parameter? <comma_list value_param>}>
 }
 
 pub rule value_param {
@@ -119,17 +119,17 @@ pub rule value_param {
 }
 
 pub rule lambda_value_param {
-  pattern <opt {':' type_reference}>
+  pattern {':' type_reference}?
 }
 
 pub rule self_parameter {
-  <opt '&'> 'self' <commit> {',' | <eof>}
+  '&'? 'self' <commit> {',' | <eof>}
 }
 
 pub rule struct_def {
-  outer_attributes <opt visibility> 
+  outer_attributes visibility?
   {'struct' | 'union'} <commit> 
-  ident <opt type_parameters> {
+  ident type_parameters? {
     <block <comma_list struct_field>>
   | ';'
   | <in_parens <comma_list tuple_field>>';'
@@ -137,35 +137,35 @@ pub rule struct_def {
 }
 
 pub rule struct_field {
-  <opt visibility> ident <commit> ':' type_reference
+  visibility? ident <commit> ':' type_reference
 }
 
 pub rule tuple_field {
-  <opt visibility> type_reference
+  visibility? type_reference
 }
 
 pub rule enum_def {
-  outer_attributes <opt visibility> 'enum' <commit> ident
+  outer_attributes visibility? 'enum' <commit> ident
   <block <comma_list enum_variant>>
 }
 
 pub rule enum_variant {
-  ident <commit> <opt {
-    '=' expr
+  ident <commit> 
+  { '=' expr
   | <in_parens <comma_list tuple_field>>
   | <block <comma_list struct_field>>
-  }>
+  }?
 }
 
 pub rule mod_def {
-  outer_attributes <opt visibility> 'mod' <commit> 
+  outer_attributes visibility? 'mod' <commit> 
   ident { ';' | <block mod_contents> }
 }
 
 pub rule impl_def {
   outer_attributes 'impl' <commit> 
-  <opt type_parameters>
-  {type_reference <opt {'for' type_reference}> }
+  type_parameters?
+  {type_reference {'for' type_reference}? }
   members
 }
 
@@ -175,8 +175,8 @@ impl<'f> ::Debug for Node<'f> { }
 "
 
 pub rule trait_def {
-  outer_attributes <opt visibility> 'trait' <commit>
-  ident <opt type_parameters>
+  outer_attributes visibility? 'trait' <commit>
+  ident type_parameters?
   members
 }
 

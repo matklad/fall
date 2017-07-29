@@ -25,9 +25,9 @@ pub rule object {
 }
 
 rule object_body {
-  <rep <with_skip
+  <with_skip
     string
-    {field <commit> {',' <not <eof>> | <eof>}}>>
+    {field <commit> {',' <not <eof>> | <eof>}}>*
 }
 
 pub rule field {
@@ -41,22 +41,22 @@ pub rule array {
 }
 
 rule array_body {
-  <rep <with_skip
+  <with_skip
     { 'null' | number | string | bool | '{' | '[' }
-    {value <commit> {',' <not <eof>> | <eof>}}>>
+    {value <commit> {',' <not <eof>> | <eof>}}>*
 }
 
 rule value { primitive | object | array }
 
 pub rule primitive { 'null' | number | string | bool }
 
-rule block_body { <rep balanced> }
+rule block_body { balanced* }
 rule balanced {
   '{' <commit> block_body '}'
 | {<not '}'> <any>}
 }
 
-rule br_block_body { <rep br_balanced> }
+rule br_block_body { br_balanced* }
 rule br_balanced {
   '[' <commit> br_block_body ']'
 | {<not ']'> <any>}
