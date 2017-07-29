@@ -324,8 +324,6 @@ pub enum CallKind<'f> {
     Exit(u32, Expr<'f>),
     IsIn(u32),
     Not(Expr<'f>),
-    Rep(Expr<'f>),
-    Opt(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
     RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>),
@@ -396,14 +394,6 @@ impl<'f> CallExpr<'f> {
             "not" => {
                 check_args!(1);
                 CallKind::Not(self.args().next().unwrap())
-            }
-            "rep" => {
-                check_args!(1);
-                CallKind::Rep(self.args().next().unwrap())
-            }
-            "opt" => {
-                check_args!(1);
-                CallKind::Opt(self.args().next().unwrap())
             }
             "layer" => {
                 check_args!(2);

@@ -303,7 +303,6 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
                 ),
                 CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(tokens),
                 CallKind::Commit => panic!("Should be handled specially"),
-                _ => panic!("at the dsiko {:?}", call.node().text()),
             };
             return Ok(r);
         }
