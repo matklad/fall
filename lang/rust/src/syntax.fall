@@ -363,7 +363,7 @@ test r"fn main() { let foo::bar = (); }"
 pub rule expr { 
   literal | struct_literal | path_expr | unit_expr | paren_expr 
 | lambda_expr | block_expr | if_expr | while_expr | loop_expr
-| call_expr | field_expr | index_expr
+| method_call_expr | call_expr | field_expr | index_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
 | bit_shift
@@ -513,11 +513,32 @@ test r"
 fn main() { 'pool: loop { 92 }}
 "
 
+
+#[postfix]
+pub rule method_call_expr {
+  expr { 
+    '.' ident <enter 'expr_path' type_arguments>?
+    call_args   
+  }
+}
+
+test r"
+  fn main() { foo.bar::<i32>() }
+"
+
 #[postfix]
 pub rule call_expr {
-  expr <without_restrictions
-    <in_parens <comma_list value_argument>>>
+  expr call_args
 }
+
+rule call_args {
+  <without_restrictions <in_parens <comma_list value_argument>>>
+}
+
+test r"
+  fn main() { foo() }
+"
+
 
 #[postfix]
 pub rule field_expr {

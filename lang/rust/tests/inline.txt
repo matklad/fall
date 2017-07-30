@@ -647,6 +647,53 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { foo.bar::<i32>() }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      METHOD_CALL_EXPR
+        PATH_EXPR
+          PATH
+            IDENT "foo"
+        DOT "."
+        IDENT "bar"
+        TYPE_ARGUMENTS
+          COLONCOLON "::"
+          L_ANGLE "<"
+          PATH_TYPE
+            PATH
+              IDENT "i32"
+          R_ANGLE ">"
+        L_PAREN "("
+        R_PAREN ")"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { foo() }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      CALL_EXPR
+        PATH_EXPR
+          PATH
+            IDENT "foo"
+        L_PAREN "("
+        R_PAREN ")"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { x.foo; x.92; }
 
 FILE
