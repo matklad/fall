@@ -19,6 +19,7 @@ tokenizer {
   super 'super'
   type 'type'
   const 'const'
+  static 'static'
   for 'for'
   loop 'loop'
   while 'while'
@@ -80,6 +81,7 @@ rule mod_form_first {
 rule mod_form { 
   use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def 
 | impl_def | trait_def | type_def | const_def
+| extern_block
 }
 
 pub rule use_decl {
@@ -103,11 +105,15 @@ pub rule extern_crate_decl {
 }
 
 pub rule fn_def {
-  outer_attributes visibility? 'fn' <commit> ident
+  outer_attributes visibility? linkage? 'fn' <commit> ident
   type_parameters?
   value_parameters
   {'->' type_reference}?
-  block_expr
+  {block_expr|';'}
+}
+
+pub rule linkage { 
+  'extern' string?
 }
 
 rule value_parameters {
@@ -205,13 +211,28 @@ pub rule type_def {
 }
 
 pub rule const_def {
-  outer_attributes visibility? 'const' <commit>
+  outer_attributes visibility? {'const'|'static'} <commit>
   ident ':' type_reference
-  '=' expr ';'
+  {'=' expr}? ';'
 }
 
 test r"
 pub const X: i32 = 0;
+"
+
+pub rule extern_block {
+  linkage <block extern_form*>
+}
+
+rule extern_form {
+  fn_def | const_def
+}
+
+test r"
+extern {
+  static errno: i32;
+  fn foo();
+}
 "
 
 pub rule type_parameters {

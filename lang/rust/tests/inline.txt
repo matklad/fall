@@ -70,6 +70,33 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+extern {
+  static errno: i32;
+  fn foo();
+}
+
+FILE
+  EXTERN_BLOCK
+    LINKAGE
+      EXTERN "extern"
+    L_CURLY "{"
+    CONST_DEF
+      STATIC "static"
+      IDENT "errno"
+      COLON ":"
+      PATH_TYPE
+        PATH
+          IDENT "i32"
+      SEMI ";"
+    FN_DEF
+      FN "fn"
+      IDENT "foo"
+      L_PAREN "("
+      R_PAREN ")"
+      SEMI ";"
+    R_CURLY "}"
+
+----------------------------------------
 struct B<'b, C>();
 
 FILE
