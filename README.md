@@ -141,7 +141,7 @@ and incremental and lazy reparsing. Let's look at the concrete example:
 
 ```
 pub rule block_expr {
-  '{' <layer block_body {<opt seq_expr> <rep {'|' seq_expr}>}> '}'
+  '{' <layer block_body {seq_expr? {'|' seq_expr}*}> '}'
 }
 
 rule block_body { <rep balanced> }
@@ -159,15 +159,15 @@ outside of the blocks will continue as usual. Moreover, if the user types anythi
 check if the block's borders do not change (this would be the case unless `{` or `}` is typed) and if it is the case,
 it will only reparse the block itself.
 
-The `example` blocks allow to quickly get feedback about the current grammar. You can write something like
+The `test` blocks allow to quickly get feedback about the current grammar. You can write something like
 
 ```
 pub rule struct_def {
   <opt 'pub'> 'struct' <commit> ident
-  '{' <layer block_body <rep struct_field>>'}'
+  '{' <layer block_body struct_field*>'}'
 }
 
-example r"
+test r"
   struct Foo {
     a: A,
     pub b: B,
@@ -176,7 +176,8 @@ example r"
 ```
 
 and then run `cargo run --bin gen --example rust.fall` to render the syntax tree of the example block. `watch.sh`
-wraps this into convenient "rerender example on save" script.
+wraps this into convenient "rerender example on save" script. In the VS Code plugin, you can place cursor on the example
+and run a Quick Fix (`Ctrl+.` by default) to render the syntax tree of the test.
 
 ### VS Code plugin
 
@@ -189,6 +190,31 @@ statically linking in the Rust crate, or by wrapping it into an RPC.
 
 Something works :)
 
-Here's a screenshoot showing fall parsing its own syntax with error recovery:
+Here's a screenshoot showing [Rust grammar](https://github.com/matklad/fall/blob/master/lang/rust/src/syntax.fall),
+inline test and the resulting syntax tree.
 
-![Fall file with syntax tree](https://user-images.githubusercontent.com/1711539/27507725-a248b5f4-58dd-11e7-8e34-db6331a145c3.png)
+![Rust grammar](https://user-images.githubusercontent.com/1711539/28753615-abc20a4e-753f-11e7-886d-6f1c7ddea2db.png)
+
+
+## Contributing
+
+At the moment, there's no clear plan and set of issues to work on, however there's a lot of interesting projects to do :)
+
+* Writing grammars and tests for more languages
+
+* Actually exposing a C-API and integrating parser with Emacs and Vim
+
+* Using xi-rope instead of string
+
+* Implementing incremental relexing
+
+* Improving the VS Code plugin
+
+We use [just](https://github.com/casey/just) to automate code generation tasks:
+
+* `generate-parsers` -- updates the generated parser code
+
+* `update-test-data` -- fixes expected syntax trees in tests after grammar update
+
+* `code` -- builds VS Code extension
+
