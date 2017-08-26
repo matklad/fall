@@ -1,5 +1,6 @@
 tokenizer {
   #[skip] whitespace r"\s+"
+  #[skip] line_comment r"//.*\n?"
 
   #[contextual] union 'union'
   as 'as'
