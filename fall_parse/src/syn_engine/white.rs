@@ -78,7 +78,7 @@ fn token_ws_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-pub fn to_ws_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
+pub fn to_white_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
         BlackNode::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")

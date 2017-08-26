@@ -8,13 +8,11 @@ pub extern crate serde_json;
 
 use regex::Regex;
 use elapsed::measure_time;
-use tree_builder::to_ws_node;
 use syn_engine::BlackTokens;
 use fall_tree::{Language, NodeType, FileStats, INode, TextUnit, TextRange};
 
 mod lex_engine;
 mod syn_engine;
-mod tree_builder;
 
 /// Describes both lexical and syntactical grammar
 /// of a language.
@@ -29,23 +27,25 @@ pub struct ParserDefinition {
 
 impl ParserDefinition {
     pub fn parse(&self, text: &str, lang: &Language) -> (FileStats, INode) {
-        let (lex_time, owned_tokens) = measure_time(|| {
+        let (lex_time, tokens) = measure_time(|| {
             lex_engine::tokenize(&text, &self.lexical_rules).collect::<Vec<_>>()
         });
 
-        let tokens = BlackTokens::new(lang, text, &owned_tokens);
-        let (parse_time, (node, ticks)) = measure_time(|| {
-            syn_engine::parse_black(&self.node_types, &self.syntactical_rules, tokens.seq())
+        let black_tokens = BlackTokens::new(lang, text, &tokens);
+        let (parse_time, (black_node, ticks)) = measure_time(|| {
+            syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())
         });
 
-        let ws_node = to_ws_node(lang, node, &owned_tokens);
-        let inode = ws_node.into_inode().unwrap();
         let stats = FileStats {
             lexing_time: lex_time.duration(),
             parsing_time: parse_time.duration(),
             parsing_ticks: ticks,
             reparsed_region: TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len())),
         };
+
+        let white_node = syn_engine::to_white_node(lang, black_node, &tokens);
+        let inode = white_node.into_inode().unwrap();
+
         (stats, inode)
     }
 }
