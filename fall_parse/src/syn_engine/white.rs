@@ -1,5 +1,5 @@
 use fall_tree::{NodeType, INode, TextUnit, Language};
-use syn_engine::BlackNode;
+use super::BlackNode;
 use lex_engine::Token;
 
 fn is_ws(lang: &Language, token: Token) -> bool {
@@ -7,16 +7,16 @@ fn is_ws(lang: &Language, token: Token) -> bool {
 }
 
 #[derive(Debug)]
-pub struct WsNode {
+pub struct WhiteNode {
     ty: Option<NodeType>,
     len: TextUnit,
-    children: Vec<WsNode>,
+    children: Vec<WhiteNode>,
     first: Option<usize>,
     last: Option<usize>
 }
 
-impl WsNode {
-    fn push_child(&mut self, lang: &Language, child: WsNode, tokens: &[Token]) {
+impl WhiteNode {
+    fn push_child(&mut self, lang: &Language, child: WhiteNode, tokens: &[Token]) {
         match (self.last, child.first) {
             (Some(l), Some(r)) if l + 1 < r => {
                 for idx in l + 1..r {
@@ -30,7 +30,7 @@ impl WsNode {
         self.push_child_raw(child)
     }
 
-    fn push_child_raw(&mut self, child: WsNode) {
+    fn push_child_raw(&mut self, child: WhiteNode) {
         self.last = child.last.or(self.last);
         self.first = self.first.or(child.first);
         self.len += child.len;
@@ -55,7 +55,7 @@ impl WsNode {
         }
     }
 
-    pub fn into_inode(self) -> Result<INode, WsNode> {
+    pub fn into_inode(self) -> Result<INode, WhiteNode> {
         if let Some(ty) = self.ty {
             let mut node = INode::new(ty);
             for child in self.children {
@@ -68,8 +68,8 @@ impl WsNode {
     }
 }
 
-fn token_ws_node(idx: usize, t: Token) -> WsNode {
-    WsNode {
+fn token_ws_node(idx: usize, t: Token) -> WhiteNode {
+    WhiteNode {
         ty: Some(t.ty),
         len: t.len,
         children: Vec::new(),
@@ -78,12 +78,12 @@ fn token_ws_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-pub fn to_white_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
+pub fn to_white_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WhiteNode {
     let (ty, children) = match file_node {
         BlackNode::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
     };
-    let mut result = WsNode {
+    let mut result = WhiteNode {
         ty: Some(ty),
         len: TextUnit::zero(),
         children: Vec::new(),
@@ -111,7 +111,7 @@ pub fn to_white_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) ->
     result
 }
 
-fn add_child(lang: &Language, parent: &mut WsNode, node: &BlackNode, tokens: &[Token]) {
+fn add_child(lang: &Language, parent: &mut WhiteNode, node: &BlackNode, tokens: &[Token]) {
     match *node {
         BlackNode::Leaf { ty, token_idx } => {
             let mut node = token_ws_node(token_idx, tokens[token_idx]);
@@ -119,7 +119,7 @@ fn add_child(lang: &Language, parent: &mut WsNode, node: &BlackNode, tokens: &[T
             parent.push_child(lang, node, tokens)
         }
         BlackNode::Composite { ty, ref children } => {
-            let mut p = WsNode {
+            let mut p = WhiteNode {
                 ty: ty,
                 len: TextUnit::zero(),
                 children: Vec::new(),
