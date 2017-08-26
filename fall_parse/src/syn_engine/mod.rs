@@ -1,5 +1,8 @@
 mod token_seq;
+
+/// In the "black" part, we totally skip all whitespace tokens.
 mod black;
+/// In the "white" part, we reconstruct proper whitespace.
 mod white;
 
 pub use self::token_seq::{BlackTokens, TokenSeq, BlackIdx};
