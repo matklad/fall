@@ -1,4 +1,4 @@
-use fall_tree::NodeType;
+use fall_tree::{NodeType, ERROR};
 
 use {SynRule, Expr, PrattVariant};
 
@@ -50,11 +50,11 @@ impl<'p> Ctx<'p> {
     }
 
     fn create_composite_node(&mut self, ty: Option<NodeType>) -> BlackNode {
-        BlackNode::composite(ty)
+        BlackNode::Composite { ty, children: Vec::new() }
     }
 
     fn create_error_node(&mut self) -> BlackNode {
-        BlackNode::error()
+        BlackNode::Composite { ty: Some(ERROR), children: Vec::new() }
     }
 
     fn create_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
@@ -78,7 +78,7 @@ impl<'p> Ctx<'p> {
     }
 
     fn create_success_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
-        BlackNode::success(tokens)
+        (BlackNode::Composite { ty: None, children: Vec::new() }, tokens)
     }
 
     fn push_child(&self, parent: &mut BlackNode, child: BlackNode) {

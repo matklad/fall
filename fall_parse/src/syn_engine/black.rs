@@ -1,4 +1,4 @@
-use fall_tree::{TextUnit, TextRange, NodeType, ERROR};
+use fall_tree::{TextUnit, TextRange, NodeType};
 
 use super::{TokenSeq, BlackIdx};
 
@@ -16,18 +16,6 @@ pub enum BlackNode {
 }
 
 impl BlackNode {
-    pub fn error() -> BlackNode {
-        Self::composite(Some(ERROR))
-    }
-
-    pub fn composite(ty: Option<NodeType>) -> BlackNode {
-        BlackNode::Composite { ty: ty, children: Vec::new() }
-    }
-
-    pub fn success<'t>(ts: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
-        (Self::composite(None), ts)
-    }
-
     pub fn push_child(&mut self, child: BlackNode) {
         match *self {
             BlackNode::Composite { ref mut children, .. } => children.push(child),
