@@ -1,23 +1,6 @@
-use regex::Regex;
 use fall_tree::{NodeType, ERROR, TextUnit};
 
-pub type CustomRule = fn(&str) -> Option<usize>;
-
-pub struct LexRule {
-    pub ty: NodeType,
-    pub re: Regex,
-    pub f: Option<CustomRule>,
-}
-
-impl LexRule {
-    pub fn new(ty: NodeType, re: &str, f: Option<CustomRule>) -> LexRule {
-        LexRule {
-            ty: ty,
-            re: Regex::new(&format!("^({})", re)).unwrap(),
-            f: f,
-        }
-    }
-}
+use LexRule;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Token {
