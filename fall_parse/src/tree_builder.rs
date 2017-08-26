@@ -3,38 +3,13 @@ use elapsed::measure_time;
 use fall_tree::{NodeType, ERROR, TextRange, FileStats, INode, TextUnit, Language};
 use lex::{Token, LexRule, tokenize};
 
+
 #[derive(Clone, Copy, Debug)]
 pub struct TokenSequence<'a> {
     text: &'a str,
     start: usize,
     non_ws_indexes: &'a [usize],
     original_tokens: &'a [Token],
-}
-
-#[derive(Debug)]
-pub enum Node {
-    Leaf {
-        ty: Option<NodeType>,
-        token_idx: usize
-    },
-    Composite {
-        ty: Option<NodeType>,
-        children: Vec<Node>,
-    }
-}
-
-impl Node {
-    pub fn error() -> Node {
-        Self::composite(Some(ERROR))
-    }
-
-    pub fn composite(ty: Option<NodeType>) -> Node {
-        Node::Composite { ty: ty, children: Vec::new() }
-    }
-
-    pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        (Self::composite(None), ts)
-    }
 }
 
 impl<'a> TokenSequence<'a> {
@@ -92,7 +67,31 @@ impl<'a> TokenSequence<'a> {
     }
 }
 
+#[derive(Debug)]
+pub enum Node {
+    Leaf {
+        ty: Option<NodeType>,
+        token_idx: usize
+    },
+    Composite {
+        ty: Option<NodeType>,
+        children: Vec<Node>,
+    }
+}
+
 impl Node {
+    pub fn error() -> Node {
+        Self::composite(Some(ERROR))
+    }
+
+    pub fn composite(ty: Option<NodeType>) -> Node {
+        Node::Composite { ty: ty, children: Vec::new() }
+    }
+
+    pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
+        (Self::composite(None), ts)
+    }
+
     pub fn push_child(&mut self, child: Node) {
         match *self {
             Node::Composite { ref mut children, .. } => children.push(child),
@@ -117,19 +116,19 @@ impl Node {
     fn right_idx(&self) -> Option<usize> {
         match *self {
             Node::Leaf { token_idx, .. } => Some(token_idx),
-            Node::Composite { ref children, .. } => children.iter().rev().filter_map(|n| {
-                n.right_idx()
-            }).next(),
+            Node::Composite { ref children, .. } =>
+                children.iter().rev()
+                    .filter_map(|n| n.right_idx())
+                    .next(),
         }
     }
 
     fn left_idx(&self) -> Option<usize> {
         match *self {
             Node::Leaf { token_idx, .. } => Some(token_idx),
-            Node::Composite { ref children, .. } => match children.first() {
-                None => None,
-                Some(child) => child.left_idx()
-            },
+            Node::Composite { ref children, .. } =>
+                children.first()
+                    .and_then(|child| child.left_idx()),
         }
     }
 }
