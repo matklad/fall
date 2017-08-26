@@ -2,7 +2,7 @@ use elapsed::measure_time;
 
 use fall_tree::{NodeType, ERROR, TextRange, FileStats, INode, TextUnit, Language};
 use super::LexRule;
-use lex::{Token, tokenize};
+use lex_engine::{Token, tokenize};
 
 
 #[derive(Clone, Copy, Debug)]

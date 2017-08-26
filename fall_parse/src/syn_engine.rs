@@ -2,66 +2,8 @@ use fall_tree::{NodeType, FileStats};
 
 use tree_builder::{Node, TokenSequence};
 
-pub struct Parser<'r> {
-    node_types: &'r [NodeType],
-    rules: &'r [SynRule],
-    start_rule: Expr,
-}
+use {Parser, SynRule, Expr, PrattVariant};
 
-#[derive(Serialize, Deserialize)]
-pub struct SynRule {
-    pub body: Expr,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum Expr {
-    Pub {
-        ty_idx: usize,
-        body: Box<Expr>,
-        replaceable: bool,
-    },
-    PubReplace {
-        ty_idx: usize,
-        body: Box<Expr>,
-    },
-    Or(Vec<Expr>),
-    And(Vec<Expr>, Option<usize>),
-    Rule(usize),
-    Token(usize),
-    ContextualToken(usize, String),
-    Rep(Box<Expr>),
-    WithSkip(Box<Expr>, Box<Expr>),
-    Opt(Box<Expr>),
-    Not(Box<Expr>),
-    Eof,
-    Any,
-    Layer(Box<Expr>, Box<Expr>),
-    Pratt(Vec<PrattVariant>),
-    Enter(u32, Box<Expr>),
-    Exit(u32, Box<Expr>),
-    IsIn(u32),
-    Call(Box<Expr>, Vec<(u32, Expr)>),
-    Var(u32),
-    PrevIs(Vec<usize>)
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum PrattVariant {
-    Atom { body: Box<Expr> },
-    Binary {
-        ty: usize,
-        op: Box<Expr>,
-        priority: u32,
-    },
-    Postfix {
-        ty: usize,
-        op: Box<Expr>
-    },
-    Prefix {
-        ty: usize,
-        op: Box<Expr>
-    }
-}
 
 struct Ctx<'p> {
     ticks: u64,
