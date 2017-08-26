@@ -1,76 +1,10 @@
 use elapsed::measure_time;
 
-use fall_tree::{NodeType, ERROR, TextRange, FileStats, INode, TextUnit, Language};
+use fall_tree::{NodeType, TextRange, FileStats, INode, TextUnit, Language};
 use super::LexRule;
-use syn_engine::token_seq::TokenSeq;
+use syn_engine::TokenSeq;
+use syn_engine::BlackNode;
 use lex_engine::{Token, tokenize};
-
-
-#[derive(Debug)]
-pub enum Node {
-    Leaf {
-        ty: Option<NodeType>,
-        token_idx: usize
-    },
-    Composite {
-        ty: Option<NodeType>,
-        children: Vec<Node>,
-    }
-}
-
-impl Node {
-    pub fn error() -> Node {
-        Self::composite(Some(ERROR))
-    }
-
-    pub fn composite(ty: Option<NodeType>) -> Node {
-        Node::Composite { ty: ty, children: Vec::new() }
-    }
-
-    pub fn success<'t>(ts: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
-        (Self::composite(None), ts)
-    }
-
-    pub fn push_child(&mut self, child: Node) {
-        match *self {
-            Node::Composite { ref mut children, .. } => children.push(child),
-            Node::Leaf { .. } => panic!("Can't add children to a leaf node"),
-        }
-    }
-
-    pub fn debug(&self, tokens: &TokenSeq) -> String {
-        let (l, r) = match (self.left_idx(), self.right_idx()) {
-            (Some(l), Some(r)) => (l, r),
-            _ => return "EMPTY-NODE".to_owned()
-        };
-        let mut result = String::new();
-        let mut start = tokens.original_tokens[..l].iter().map(|t| t.len).sum::<TextUnit>();
-        for t in tokens.original_tokens[l..r].iter() {
-            result += &tokens.text[TextRange::from_len(start, t.len)];
-            start += t.len;
-        }
-        result
-    }
-
-    fn right_idx(&self) -> Option<usize> {
-        match *self {
-            Node::Leaf { token_idx, .. } => Some(token_idx),
-            Node::Composite { ref children, .. } =>
-                children.iter().rev()
-                    .filter_map(|n| n.right_idx())
-                    .next(),
-        }
-    }
-
-    fn left_idx(&self) -> Option<usize> {
-        match *self {
-            Node::Leaf { token_idx, .. } => Some(token_idx),
-            Node::Composite { ref children, .. } =>
-                children.first()
-                    .and_then(|child| child.left_idx()),
-        }
-    }
-}
 
 fn is_ws(lang: &Language, token: Token) -> bool {
     lang.node_type_info(token.ty).whitespace_like
@@ -80,7 +14,7 @@ pub fn parse(
     text: &str,
     lang: &Language,
     tokenizer: &[LexRule],
-    parser: &Fn(TokenSeq, &mut FileStats) -> Node
+    parser: &Fn(TokenSeq, &mut FileStats) -> BlackNode
 ) -> (FileStats, INode) {
     let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
@@ -181,9 +115,9 @@ fn token_ws_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-fn to_ws_node(lang: &Language, file_node: Node, tokens: &[Token]) -> WsNode {
+fn to_ws_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
-        Node::Composite { ty, children, .. } => (ty.unwrap(), children),
+        BlackNode::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")
     };
     let mut result = WsNode {
@@ -214,14 +148,14 @@ fn to_ws_node(lang: &Language, file_node: Node, tokens: &[Token]) -> WsNode {
     result
 }
 
-fn add_child(lang: &Language, parent: &mut WsNode, node: &Node, tokens: &[Token]) {
+fn add_child(lang: &Language, parent: &mut WsNode, node: &BlackNode, tokens: &[Token]) {
     match *node {
-        Node::Leaf { ty, token_idx } => {
+        BlackNode::Leaf { ty, token_idx } => {
             let mut node = token_ws_node(token_idx, tokens[token_idx]);
             node.ty = ty;
             parent.push_child(lang, node, tokens)
         }
-        Node::Composite { ty, ref children } => {
+        BlackNode::Composite { ty, ref children } => {
             let mut p = WsNode {
                 ty: ty,
                 len: TextUnit::zero(),

@@ -1,17 +1,18 @@
 use fall_tree::NodeType;
 
 use {SynRule, Expr, PrattVariant};
-use tree_builder::Node;
 
-pub mod token_seq;
+mod token_seq;
+mod black;
 
-use self::token_seq::TokenSeq;
+pub use self::token_seq::{TokenSeq, BlackIdx};
+pub use self::black::BlackNode;
 
 pub fn parse(
     node_types: &[NodeType],
     rules: &[SynRule],
     tokens: TokenSeq
-) -> (Node, u64) {
+) -> (BlackNode, u64) {
     let start_rule = Expr::Rule(0);
 
     let mut ctx = Ctx {
@@ -48,52 +49,52 @@ impl<'p> Ctx<'p> {
         self.node_types[idx]
     }
 
-    fn create_composite_node(&mut self, ty: Option<NodeType>) -> Node {
-        Node::composite(ty)
+    fn create_composite_node(&mut self, ty: Option<NodeType>) -> BlackNode {
+        BlackNode::composite(ty)
     }
 
-    fn create_error_node(&mut self) -> Node {
-        Node::error()
+    fn create_error_node(&mut self) -> BlackNode {
+        BlackNode::error()
     }
 
-    fn create_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
+    fn create_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
         let ((ty, token_idx), tokens) = tokens.bump();
-        (Node::Leaf { ty: Some(ty), token_idx }, tokens)
+        (BlackNode::Leaf { ty: Some(ty), token_idx }, tokens)
     }
 
     fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>, ty: NodeType, text: &str)
-                                       -> Option<(Node, TokenSeq<'t>)> {
+                                       -> Option<(BlackNode, TokenSeq<'t>)> {
         let (token_idxs, tokens) = match tokens.bump_by_text(text) {
             Some(x) => x,
             None => return None,
         };
-        let node = Node::Composite {
+        let node = BlackNode::Composite {
             ty: Some(ty),
             children: token_idxs.iter()
-                .map(|&token_idx| Node::Leaf { ty: None, token_idx })
+                .map(|&token_idx| BlackNode::Leaf { ty: None, token_idx })
                 .collect(),
         };
         Some((node, tokens))
     }
 
-    fn create_success_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
-        Node::success(tokens)
+    fn create_success_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
+        BlackNode::success(tokens)
     }
 
-    fn push_child(&self, parent: &mut Node, child: Node) {
+    fn push_child(&self, parent: &mut BlackNode, child: BlackNode) {
         if self.predicate_mode {
             return;
         }
         match child {
             // Microoptimization: don't store empty success nodes
-            Node::Composite { ty: None, ref children, .. } if children.is_empty() => return,
+            BlackNode::Composite { ty: None, ref children, .. } if children.is_empty() => return,
             _ => {}
         }
         parent.push_child(child)
     }
 }
 
-fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSeq) -> (Node, u64) {
+fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSeq) -> (BlackNode, u64) {
     let (mut file_node, mut leftover) =
         parse_exp(ctx, ctx.start_rule, tokens)
             .unwrap_or_else(|| {
@@ -119,7 +120,7 @@ fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSeq) -> (Node, u64) {
 }
 
 fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
-                     -> Option<(Node, TokenSeq<'t>)> {
+                     -> Option<(BlackNode, TokenSeq<'t>)> {
     ctx.ticks += 1;
     match *expr {
         Expr::Pub { ty_idx, ref body, replaceable } => {
@@ -337,7 +338,7 @@ fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(
     ctx: &mut Ctx<'p>,
     options: I,
     tokens: TokenSeq<'t>
-) -> Option<(Node, TokenSeq<'t>)> {
+) -> Option<(BlackNode, TokenSeq<'t>)> {
     for p in options {
         if let Some(result) = parse_exp(ctx, p, tokens) {
             return Some(result);
@@ -347,7 +348,7 @@ fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(
 }
 
 fn parse_pratt<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSeq<'t>, min_prior: u32)
-                       -> Option<(Node, TokenSeq<'t>)> {
+                       -> Option<(BlackNode, TokenSeq<'t>)> {
     let (mut lhs, mut tokens) = match parse_pratt_prefix(ctx, expr_grammar, tokens) {
         Some(p) => p,
         None => return None,
@@ -408,7 +409,7 @@ fn parse_pratt<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], toke
 }
 
 fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSeq<'t>)
-                              -> Option<(Node, TokenSeq<'t>)> {
+                              -> Option<(BlackNode, TokenSeq<'t>)> {
     let prefix = expr_grammar.iter().filter_map(|v| {
         match *v {
             PrattVariant::Prefix { ty, ref op } => Some((ty, op.as_ref())),
