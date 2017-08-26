@@ -5,7 +5,7 @@ use {SynRule, Expr, PrattVariant};
 mod token_seq;
 mod black;
 
-pub use self::token_seq::{TokenSeq, BlackIdx};
+pub use self::token_seq::{BlackTokens, TokenSeq, BlackIdx};
 pub use self::black::BlackNode;
 
 pub fn parse(

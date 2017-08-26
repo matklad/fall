@@ -2,8 +2,7 @@ use elapsed::measure_time;
 
 use fall_tree::{NodeType, TextRange, FileStats, INode, TextUnit, Language};
 use super::LexRule;
-use syn_engine::TokenSeq;
-use syn_engine::BlackNode;
+use syn_engine::{TokenSeq, BlackNode, BlackTokens};
 use lex_engine::{Token, tokenize};
 
 fn is_ws(lang: &Language, token: Token) -> bool {
@@ -20,22 +19,9 @@ pub fn parse(
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
     stats.lexing_time = lex_time.duration();
     stats.reparsed_region = TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len()));
-    let non_ws_indexes: Vec<usize> = owned_tokens.iter().enumerate().filter_map(|(i, &t)| {
-        if is_ws(lang, t) { None } else { Some(i) }
-    }).collect();
 
-    let ws_len = owned_tokens.iter()
-        .take_while(|&&t| is_ws(lang, t))
-        .map(|t| t.len.as_u32() as usize)
-        .sum();
-    let (parse_time, node) = {
-        let tokens = TokenSeq {
-            text: &text[ws_len..],
-            non_ws_indexes: &non_ws_indexes,
-            original_tokens: &owned_tokens,
-        };
-        measure_time(|| parser(tokens, &mut stats))
-    };
+    let tokens = BlackTokens::new(lang, text, &owned_tokens);
+    let (parse_time, node) = measure_time(|| parser(tokens.seq(), &mut stats));
     stats.parsing_time = parse_time.duration();
 
     let ws_node = to_ws_node(lang, node, &owned_tokens);

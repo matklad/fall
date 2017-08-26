@@ -1,7 +1,43 @@
-use fall_tree::{NodeType, TextUnit};
+use fall_tree::{Language, NodeType, TextUnit};
 
 use ::lex_engine::Token;
+
 pub type BlackIdx = usize;
+
+pub struct BlackTokens<'a> {
+    text: &'a str,
+    non_ws_indexes: Vec<BlackIdx>,
+    original_tokens: &'a [Token],
+}
+
+impl<'a> BlackTokens<'a> {
+    pub fn new(lang: &Language, text: &'a str, tokens: &'a [Token]) -> BlackTokens<'a> {
+        let is_ws = |t: Token| lang.node_type_info(t.ty).whitespace_like;
+
+        let non_ws_indexes = tokens.iter().enumerate()
+            .filter_map(|(i, &t)| if is_ws(t) { None } else { Some(i) })
+            .collect();
+
+        let ws_len = tokens.iter()
+            .take_while(|&&t| is_ws(t))
+            .map(|t| t.len.as_u32() as usize)
+            .sum();
+
+        BlackTokens {
+            text: &text[ws_len..],
+            non_ws_indexes: non_ws_indexes,
+            original_tokens: tokens,
+        }
+    }
+
+    pub fn seq(&'a self) -> TokenSeq<'a> {
+        TokenSeq {
+            text: self.text,
+            non_ws_indexes: &self.non_ws_indexes,
+            original_tokens: self.original_tokens,
+        }
+    }
+}
 
 /// An iterator over slice of tokens,
 /// capable of skipping over insignificant trivia
@@ -12,6 +48,7 @@ pub struct TokenSeq<'a> {
     pub non_ws_indexes: &'a [BlackIdx],
     pub original_tokens: &'a [Token],
 }
+
 
 impl<'a> TokenSeq<'a> {
     pub fn current(&self) -> Option<Token> {
