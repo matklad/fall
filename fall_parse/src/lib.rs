@@ -13,7 +13,11 @@ mod lex_engine;
 mod syn_engine;
 mod tree_builder;
 
-
+/// Describes both lexical and syntactical grammar
+/// of a language.
+///
+/// `ParserDefinition` is interpreted by `lex_engine` and `syn_engine`
+/// and is used to create an instance of `Language`.
 pub struct ParserDefinition {
     pub node_types: Vec<NodeType>,
     pub lexical_rules: Vec<LexRule>,
@@ -39,6 +43,9 @@ impl ParserDefinition {
     }
 }
 
+/// Lexical (aka tokenizer) rule:
+/// either a regular expression, or a user-supplied
+/// custom Rust function
 pub struct LexRule {
     pub ty: NodeType,
     pub re: Regex,
@@ -57,6 +64,7 @@ impl LexRule {
     }
 }
 
+/// Syntactical (aka parser) rule
 #[derive(Serialize, Deserialize)]
 pub struct SynRule {
     pub body: Expr,

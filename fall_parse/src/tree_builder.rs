@@ -2,71 +2,9 @@ use elapsed::measure_time;
 
 use fall_tree::{NodeType, ERROR, TextRange, FileStats, INode, TextUnit, Language};
 use super::LexRule;
+use syn_engine::token_seq::TokenSeq;
 use lex_engine::{Token, tokenize};
 
-
-#[derive(Clone, Copy, Debug)]
-pub struct TokenSequence<'a> {
-    text: &'a str,
-    start: usize,
-    non_ws_indexes: &'a [usize],
-    original_tokens: &'a [Token],
-}
-
-impl<'a> TokenSequence<'a> {
-    pub fn prefix(&self, suffix: TokenSequence<'a>) -> TokenSequence<'a> {
-        TokenSequence {
-            text: self.text,
-            start: self.start,
-            non_ws_indexes: &self.non_ws_indexes[..suffix.start - self.start],
-            original_tokens: self.original_tokens
-        }
-    }
-
-    pub fn current(&self) -> Option<Token> {
-        self.non_ws_indexes.first().map(|&idx| {
-            self.original_tokens[idx]
-        })
-    }
-
-    pub fn bump(&self) -> (Node, TokenSequence<'a>) {
-        let token = self.current().expect("Can't bump an empty token sequence");
-        let node = Node::Leaf { ty: Some(token.ty), token_idx: self.non_ws_indexes[0] };
-        let mut text_len = 0;
-        let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
-        for i in self.non_ws_indexes[0]..next_idx {
-            text_len += self.original_tokens[i].len.as_u32() as usize;
-        }
-        let rest = TokenSequence {
-            text: &self.text[text_len..],
-            start: self.start + 1,
-            non_ws_indexes: &self.non_ws_indexes[1..],
-            original_tokens: self.original_tokens,
-        };
-        (node, rest)
-    }
-
-    pub fn bump_by_text(&self, ty: NodeType, text: &str) -> Option<(Node, TokenSequence<'a>)> {
-        if self.text.starts_with(text) {
-            let mut children = Vec::new();
-            let mut leftover = TextUnit::from_usize(text.len());
-            let mut rest = *self;
-            while leftover > TextUnit::zero() {
-                leftover -= rest.current().unwrap().len;
-                let p = rest.bump();
-                children.push(match p.0 {
-                    Node::Leaf { ty: _, token_idx } => Node::Leaf { ty: None, token_idx: token_idx },
-                    _ => unreachable!()
-                });
-                rest = p.1;
-            }
-
-            Some((Node::Composite { ty: Some(ty), children: children }, rest))
-        } else {
-            None
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum Node {
@@ -89,7 +27,7 @@ impl Node {
         Node::Composite { ty: ty, children: Vec::new() }
     }
 
-    pub fn success<'t>(ts: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
+    pub fn success<'t>(ts: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
         (Self::composite(None), ts)
     }
 
@@ -100,7 +38,7 @@ impl Node {
         }
     }
 
-    pub fn debug(&self, tokens: &TokenSequence) -> String {
+    pub fn debug(&self, tokens: &TokenSeq) -> String {
         let (l, r) = match (self.left_idx(), self.right_idx()) {
             (Some(l), Some(r)) => (l, r),
             _ => return "EMPTY-NODE".to_owned()
@@ -142,7 +80,7 @@ pub fn parse(
     text: &str,
     lang: &Language,
     tokenizer: &[LexRule],
-    parser: &Fn(TokenSequence, &mut FileStats) -> Node
+    parser: &Fn(TokenSeq, &mut FileStats) -> Node
 ) -> (FileStats, INode) {
     let mut stats = FileStats::new();
     let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
@@ -157,9 +95,8 @@ pub fn parse(
         .map(|t| t.len.as_u32() as usize)
         .sum();
     let (parse_time, node) = {
-        let tokens = TokenSequence {
+        let tokens = TokenSeq {
             text: &text[ws_len..],
-            start: 0,
             non_ws_indexes: &non_ws_indexes,
             original_tokens: &owned_tokens,
         };

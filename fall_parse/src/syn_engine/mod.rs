@@ -1,13 +1,16 @@
 use fall_tree::NodeType;
 
-use tree_builder::{Node, TokenSequence};
-
 use {SynRule, Expr, PrattVariant};
+use tree_builder::Node;
+
+pub mod token_seq;
+
+use self::token_seq::TokenSeq;
 
 pub fn parse(
     node_types: &[NodeType],
     rules: &[SynRule],
-    tokens: TokenSequence
+    tokens: TokenSeq
 ) -> (Node, u64) {
     let start_rule = Expr::Rule(0);
 
@@ -53,16 +56,27 @@ impl<'p> Ctx<'p> {
         Node::error()
     }
 
-    fn create_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
-        tokens.bump()
+    fn create_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
+        let ((ty, token_idx), tokens) = tokens.bump();
+        (Node::Leaf { ty: Some(ty), token_idx }, tokens)
     }
 
-    fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSequence<'t>, ty: NodeType, text: &str)
-                                       -> Option<(Node, TokenSequence<'t>)> {
-        tokens.bump_by_text(ty, text)
+    fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>, ty: NodeType, text: &str)
+                                       -> Option<(Node, TokenSeq<'t>)> {
+        let (token_idxs, tokens) = match tokens.bump_by_text(text) {
+            Some(x) => x,
+            None => return None,
+        };
+        let node = Node::Composite {
+            ty: Some(ty),
+            children: token_idxs.iter()
+                .map(|&token_idx| Node::Leaf { ty: None, token_idx })
+                .collect(),
+        };
+        Some((node, tokens))
     }
 
-    fn create_success_node<'t>(&mut self, tokens: TokenSequence<'t>) -> (Node, TokenSequence<'t>) {
+    fn create_success_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (Node, TokenSeq<'t>) {
         Node::success(tokens)
     }
 
@@ -79,7 +93,7 @@ impl<'p> Ctx<'p> {
     }
 }
 
-fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSequence) -> (Node, u64) {
+fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSeq) -> (Node, u64) {
     let (mut file_node, mut leftover) =
         parse_exp(ctx, ctx.start_rule, tokens)
             .unwrap_or_else(|| {
@@ -104,8 +118,8 @@ fn parse_file<'p>(ctx: &mut Ctx<'p>, tokens: TokenSequence) -> (Node, u64) {
     (file_node, ctx.ticks)
 }
 
-fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSequence<'t>)
-                     -> Option<(Node, TokenSequence<'t>)> {
+fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
+                     -> Option<(Node, TokenSeq<'t>)> {
     ctx.ticks += 1;
     match *expr {
         Expr::Pub { ty_idx, ref body, replaceable } => {
@@ -201,7 +215,7 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSequence<'t
         Expr::Layer(ref l, ref e) => {
             if let Some(rest) = parse_exp_pred(ctx, l, tokens) {
                 let mut result = ctx.create_composite_node(None);
-                let layer = tokens.prefix(rest);
+                let layer = tokens.cut_suffix(rest);
                 if let Some((layer_contents, mut leftovers)) = parse_exp(ctx, e, layer) {
                     ctx.push_child(&mut result, layer_contents);
                     if leftovers.current().is_some() {
@@ -322,8 +336,8 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSequence<'t
 fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(
     ctx: &mut Ctx<'p>,
     options: I,
-    tokens: TokenSequence<'t>
-) -> Option<(Node, TokenSequence<'t>)> {
+    tokens: TokenSeq<'t>
+) -> Option<(Node, TokenSeq<'t>)> {
     for p in options {
         if let Some(result) = parse_exp(ctx, p, tokens) {
             return Some(result);
@@ -332,8 +346,8 @@ fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(
     None
 }
 
-fn parse_pratt<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSequence<'t>, min_prior: u32)
-                       -> Option<(Node, TokenSequence<'t>)> {
+fn parse_pratt<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSeq<'t>, min_prior: u32)
+                       -> Option<(Node, TokenSeq<'t>)> {
     let (mut lhs, mut tokens) = match parse_pratt_prefix(ctx, expr_grammar, tokens) {
         Some(p) => p,
         None => return None,
@@ -393,8 +407,8 @@ fn parse_pratt<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], toke
     Some((lhs, tokens))
 }
 
-fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSequence<'t>)
-                              -> Option<(Node, TokenSequence<'t>)> {
+fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant], tokens: TokenSeq<'t>)
+                              -> Option<(Node, TokenSeq<'t>)> {
     let prefix = expr_grammar.iter().filter_map(|v| {
         match *v {
             PrattVariant::Prefix { ty, ref op } => Some((ty, op.as_ref())),
@@ -424,8 +438,8 @@ fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant
     parse_any(ctx, atoms, tokens)
 }
 
-fn parse_exp_pred<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSequence<'t>)
-                          -> Option<(TokenSequence<'t>)> {
+fn parse_exp_pred<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
+                          -> Option<(TokenSeq<'t>)> {
     let old_mode = ctx.predicate_mode;
     ctx.predicate_mode = true;
     let result = parse_exp(ctx, expr, tokens);
