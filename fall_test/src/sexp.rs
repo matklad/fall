@@ -9,25 +9,34 @@ pub const ATOM: NodeType = NodeType(103);
 pub const FILE: NodeType = NodeType(104);
 pub const LIST: NodeType = NodeType(105);
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Parser};
-        const ALL_NODE_TYPES: &[NodeType] = &[
+
+fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+    use fall_parse::LexRule;
+    let parser_json = r##"[{"body":{"Pub":{"ty_idx":5,"body":{"Or":[{"And":[[{"Rep":{"Rule":1}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":{"ty_idx":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Rule":1}},{"Token":3}],null]}]},"replaceable":false}}}]"##;
+
+    ::fall_parse::ParserDefinition {
+        node_types: vec![
             ERROR,
             WHITESPACE, LPAREN, RPAREN, ATOM, FILE, LIST,
-        ];
-        let parser_json = r##"[{"body":{"Pub":{"ty_idx":5,"body":{"Or":[{"And":[[{"Rep":{"Rule":1}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":{"ty_idx":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Rule":1}},{"Token":3}],null]}]},"replaceable":false}}}]"##;
-        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
+        ],
+        lexical_rules: vec![
+            LexRule::new(WHITESPACE, "\\s+", None),
+            LexRule::new(LPAREN, "\\(", None),
+            LexRule::new(RPAREN, "\\)", None),
+            LexRule::new(ATOM, "\\w+", None),
+        ],
+        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+    }
+}
 
-        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
+lazy_static! {
+    pub static ref LANG: Language = {
+        use fall_parse::ParserDefinition;
+
+        struct Impl { parser_definition: ParserDefinition };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                parse(
-                    text,
-                    &LANG,
-                    &self.tokenizer,
-                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                )
+                self.parser_definition.parse(text, &LANG)
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -44,15 +53,7 @@ lazy_static! {
             }
         }
 
-        Language::new(Impl {
-            tokenizer: vec![
-                LexRule::new(WHITESPACE, "\\s+", None),
-                LexRule::new(LPAREN, "\\(", None),
-                LexRule::new(RPAREN, "\\)", None),
-                LexRule::new(ATOM, "\\w+", None),
-            ],
-            parser: parser,
-        })
+        Language::new(Impl { parser_definition: create_parser_definition() })
     };
 }
 

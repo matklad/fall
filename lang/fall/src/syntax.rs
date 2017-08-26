@@ -55,25 +55,51 @@ pub const AST_CLASS_DEF: NodeType = NodeType(149);
 pub const METHOD_DEF: NodeType = NodeType(150);
 pub const AST_SELECTOR: NodeType = NodeType(151);
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Parser};
-        const ALL_NODE_TYPES: &[NodeType] = &[
+
+fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+    use fall_parse::LexRule;
+    let parser_json = r##"[{"body":{"Pub":{"ty_idx":30,"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"test"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":13}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":26}],null]},{"And":[[{"Rule":27}],null]},{"And":[[{"Rule":15}],null]}]}},{"body":{"Pub":{"ty_idx":31,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Layer":[{"Or":[{"And":[[{"Token":18},{"Rule":22},{"Token":19}],null]},{"And":[[{"Token":18},{"Rep":{"Or":[{"And":[[{"Not":{"Rule":1}},"Any"],null]}]}}],null]}]},{"Rule":9}]}],3]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":32,"body":{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":23},{"Call":[{"Rule":20},[[0,{"Rule":5}]]]}]},{"Token":25}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":33,"body":{"Or":[{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}}},{"Postfix":{"ty":37,"op":{"Token":14}}},{"Postfix":{"ty":38,"op":{"Token":13}}}]}},{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":35,"body":{"Or":[{"And":[[{"Rep":{"Rule":6}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":37,"body":{"Or":[{"And":[[{"Rule":6},{"Token":14}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":38,"body":{"Or":[{"And":[[{"Rule":6},{"Token":13}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":40,"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":14}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":41,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Token":29},{"Rule":19},{"Opt":{"Rule":19}}],2]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":42,"body":{"Or":[{"And":[[{"ContextualToken":[10,"test"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":43,"body":{"Or":[{"And":[[{"Token":17},{"Token":20},{"Layer":[{"Rule":24},{"Call":[{"Rule":20},[[0,{"Rule":17}]]]}]},{"Token":21}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":44,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":18},{"Token":25}],null]}]}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":45,"body":{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":46,"body":{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":16}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":22},{"Var":1}]},{"Token":19}],1]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":18}],[3,{"Token":19}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":24}],[3,{"Token":25}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":20}],[3,{"Token":21}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":2},{"Call":[{"Rule":25},[[2,{"Var":2}],[3,{"Var":3}]]]},{"Var":3}],null]},{"And":[[{"Or":[{"And":[[{"Not":{"Var":3}},"Any"],null]}]}],null]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":47,"body":{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":48,"body":{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":28}],null]},{"And":[[{"Rule":29}],null]}]}]}},{"Token":19}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":49,"body":{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":30}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":50,"body":{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Token":29}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":51,"body":{"Or":[{"And":[[{"Token":29},{"Rule":31}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":52,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":32}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
+
+    ::fall_parse::ParserDefinition {
+        node_types: vec![
             ERROR,
             WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, OPT_EXPR, REP_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
-        ];
-        let parser_json = r##"[{"body":{"Pub":{"ty_idx":30,"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Rule":1},{"Rule":2}]}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]}],null]},{"And":[[{"ContextualToken":[9,"pub"]}],null]},{"And":[[{"ContextualToken":[6,"rule"]}],null]},{"And":[[{"Token":17}],null]},{"And":[[{"ContextualToken":[7,"verbatim"]}],null]},{"And":[[{"ContextualToken":[8,"ast"]}],null]},{"And":[[{"ContextualToken":[10,"test"]}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":13}],null]},{"And":[[{"Rule":3}],null]},{"And":[[{"Rule":26}],null]},{"And":[[{"Rule":27}],null]},{"And":[[{"Rule":15}],null]}]}},{"body":{"Pub":{"ty_idx":31,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Opt":{"ContextualToken":[9,"pub"]}},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":{"Rule":4}},{"Layer":[{"Or":[{"And":[[{"Token":18},{"Rule":22},{"Token":19}],null]},{"And":[[{"Token":18},{"Rep":{"Or":[{"And":[[{"Not":{"Rule":1}},"Any"],null]}]}}],null]}]},{"Rule":9}]}],3]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":32,"body":{"Or":[{"And":[[{"Token":24},{"Layer":[{"Rule":23},{"Call":[{"Rule":20},[[0,{"Rule":5}]]]}]},{"Token":25}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":33,"body":{"Or":[{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pratt":[{"Atom":{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}}},{"Atom":{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}}},{"Postfix":{"ty":37,"op":{"Token":14}}},{"Postfix":{"ty":38,"op":{"Token":13}}}]}},{"body":{"Pub":{"ty_idx":34,"body":{"Or":[{"And":[[{"Token":29}],null]},{"And":[[{"Token":27}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":35,"body":{"Or":[{"And":[[{"Rep":{"Rule":6}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":36,"body":{"Or":[{"And":[[{"Call":[{"Rule":21},[[1,{"Or":[{"And":[[{"Opt":{"Rule":8}},{"Rep":{"Or":[{"And":[[{"Token":12},{"Rule":8}],null]}]}}],null]}]}]]]}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":37,"body":{"Or":[{"And":[[{"Rule":6},{"Token":14}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":38,"body":{"Or":[{"And":[[{"Rule":6},{"Token":13}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":39,"body":{"Or":[{"And":[[{"Token":22},{"Token":29},{"Rep":{"Rule":6}},{"Token":23}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":40,"body":{"Or":[{"And":[[{"ContextualToken":[5,"tokenizer"]},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":14}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":41,"body":{"Or":[{"And":[[{"Opt":{"Rule":16}},{"Token":29},{"Rule":19},{"Opt":{"Rule":19}}],2]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":42,"body":{"Or":[{"And":[[{"ContextualToken":[10,"test"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":43,"body":{"Or":[{"And":[[{"Token":17},{"Token":20},{"Layer":[{"Rule":24},{"Call":[{"Rule":20},[[0,{"Rule":17}]]]}]},{"Token":21}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":44,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Or":[{"And":[[{"Token":24},{"Rule":18},{"Token":25}],null]}]}}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":45,"body":{"Or":[{"And":[[{"Token":26}],null]},{"And":[[{"Token":29}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":46,"body":{"Or":[{"And":[[{"Token":27}],null]},{"And":[[{"Token":28}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":0},{"Or":[{"And":[["Eof"],null]},{"And":[[{"Token":16}],null]}]}],1]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":18},{"Layer":[{"Rule":22},{"Var":1}]},{"Token":19}],1]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":18}],[3,{"Token":19}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":24}],[3,{"Token":25}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Call":[{"Rule":25},[[2,{"Token":20}],[3,{"Token":21}]]]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Or":[{"And":[[{"Var":2},{"Call":[{"Rule":25},[[2,{"Var":2}],[3,{"Var":3}]]]},{"Var":3}],null]},{"And":[[{"Or":[{"And":[[{"Not":{"Var":3}},"Any"],null]}]}],null]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":47,"body":{"Or":[{"And":[[{"ContextualToken":[7,"verbatim"]},{"Token":28}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":48,"body":{"Or":[{"And":[[{"ContextualToken":[8,"ast"]},{"Token":18},{"Rep":{"WithSkip":[{"Or":[{"And":[[{"ContextualToken":[3,"node"]}],null]},{"And":[[{"ContextualToken":[4,"class"]}],null]}]},{"Or":[{"And":[[{"Rule":28}],null]},{"And":[[{"Rule":29}],null]}]}]}},{"Token":19}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":49,"body":{"Or":[{"And":[[{"ContextualToken":[3,"node"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Rule":30}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":50,"body":{"Or":[{"And":[[{"ContextualToken":[4,"class"]},{"Token":29},{"Call":[{"Rule":21},[[1,{"Rep":{"Token":29}}]]]}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":51,"body":{"Or":[{"And":[[{"Token":29},{"Rule":31}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":52,"body":{"Or":[{"And":[[{"Token":29},{"Opt":{"Rule":32}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":14},{"Token":15},{"Token":29}],null]},{"And":[[{"Token":15},{"Token":29}],null]},{"And":[[{"Token":13}],null]},{"And":[[{"Token":14}],null]}]}}]"##;
-        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
+        ],
+        lexical_rules: vec![
+            LexRule::new(WHITESPACE, "\\s+", None),
+            LexRule::new(EOL_COMMENT, "//.*", None),
+            LexRule::new(EQ, "=", None),
+            LexRule::new(PIPE, "\\|", None),
+            LexRule::new(STAR, "\\*", None),
+            LexRule::new(QUESTION, "\\?", None),
+            LexRule::new(DOT, "\\.", None),
+            LexRule::new(COMMA, ",", None),
+            LexRule::new(HASH, "\\#", None),
+            LexRule::new(L_CURLY, "\\{", None),
+            LexRule::new(R_CURLY, "\\}", None),
+            LexRule::new(L_SQUARE, "\\[", None),
+            LexRule::new(R_SQUARE, "\\]", None),
+            LexRule::new(L_ANGLE, "<", None),
+            LexRule::new(R_ANGLE, ">", None),
+            LexRule::new(L_PAREN, "\\(", None),
+            LexRule::new(R_PAREN, "\\)", None),
+            LexRule::new(NUMBER, "\\d+", None),
+            LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
+            LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
+            LexRule::new(IDENT, "\\w+", None),
+        ],
+        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+    }
+}
 
-        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
+lazy_static! {
+    pub static ref LANG: Language = {
+        use fall_parse::ParserDefinition;
+
+        struct Impl { parser_definition: ParserDefinition };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                parse(
-                    text,
-                    &LANG,
-                    &self.tokenizer,
-                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                )
+                self.parser_definition.parse(text, &LANG)
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -136,32 +162,7 @@ lazy_static! {
             }
         }
 
-        Language::new(Impl {
-            tokenizer: vec![
-                LexRule::new(WHITESPACE, "\\s+", None),
-                LexRule::new(EOL_COMMENT, "//.*", None),
-                LexRule::new(EQ, "=", None),
-                LexRule::new(PIPE, "\\|", None),
-                LexRule::new(STAR, "\\*", None),
-                LexRule::new(QUESTION, "\\?", None),
-                LexRule::new(DOT, "\\.", None),
-                LexRule::new(COMMA, ",", None),
-                LexRule::new(HASH, "\\#", None),
-                LexRule::new(L_CURLY, "\\{", None),
-                LexRule::new(R_CURLY, "\\}", None),
-                LexRule::new(L_SQUARE, "\\[", None),
-                LexRule::new(R_SQUARE, "\\]", None),
-                LexRule::new(L_ANGLE, "<", None),
-                LexRule::new(R_ANGLE, ">", None),
-                LexRule::new(L_PAREN, "\\(", None),
-                LexRule::new(R_PAREN, "\\)", None),
-                LexRule::new(NUMBER, "\\d+", None),
-                LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
-                LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
-                LexRule::new(IDENT, "\\w+", None),
-            ],
-            parser: parser,
-        })
+        Language::new(Impl { parser_definition: create_parser_definition() })
     };
 }
 fn parse_raw_string(s: &str) -> Option<usize> {

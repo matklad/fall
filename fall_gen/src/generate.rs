@@ -322,25 +322,33 @@ pub use self::fall_tree::ERROR;
 pub const {{ node_type.0 | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
 {% endfor %}
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Parser};
-        const ALL_NODE_TYPES: &[NodeType] = &[
+
+fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+    use fall_parse::LexRule;
+    let parser_json = r##"{{ parser_json }}"##;
+
+    ::fall_parse::ParserDefinition {
+        node_types: vec![
             ERROR,
             {% for node_type in node_types %}{{ node_type.0 | upper }}, {% endfor %}
-        ];
-        let parser_json = r##"{{ parser_json }}"##;
-        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
+        ],
+        lexical_rules: vec![
+            {% for rule in lex_rules %}
+            LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
+            {% endfor %}
+        ],
+        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+    }
+}
 
-        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
+lazy_static! {
+    pub static ref LANG: Language = {
+        use fall_parse::ParserDefinition;
+
+        struct Impl { parser_definition: ParserDefinition };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                parse(
-                    text,
-                    &LANG,
-                    &self.tokenizer,
-                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                )
+                self.parser_definition.parse(text, &LANG)
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -354,14 +362,7 @@ lazy_static! {
             }
         }
 
-        Language::new(Impl {
-            tokenizer: vec![
-                {% for rule in lex_rules %}
-                LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
-                {% endfor %}
-            ],
-            parser: parser,
-        })
+        Language::new(Impl { parser_definition: create_parser_definition() })
     };
 }
 {% if verbatim is string %}

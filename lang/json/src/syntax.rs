@@ -19,25 +19,41 @@ pub const FIELD: NodeType = NodeType(113);
 pub const ARRAY: NodeType = NodeType(114);
 pub const PRIMITIVE: NodeType = NodeType(115);
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::{LexRule, SynRule, Parser};
-        const ALL_NODE_TYPES: &[NodeType] = &[
+
+fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+    use fall_parse::LexRule;
+    let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Token":2},{"Layer":[{"Rule":8},{"Rule":2}]},{"Token":3}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Token":10},{"Or":[{"And":[[{"Rule":3},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Token":10},{"Token":6},{"Rule":6}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":10},{"Rule":5}]},{"Token":5}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":2}],null]},{"And":[[{"Token":4}],null]}]},{"Or":[{"And":[[{"Rule":6},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]}},{"body":{"Pub":{"ty_idx":16,"body":{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":9}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":2},{"Rule":8},{"Token":3}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":3}},"Any"],null]}]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":4},{"Rule":10},{"Token":5}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":5}},"Any"],null]}]}],null]}]}}]"##;
+
+    ::fall_parse::ParserDefinition {
+        node_types: vec![
             ERROR,
             WHITESPACE, LBRACE, RBRACE, LBRACK, RBRACK, COLON, COMMA, NULL, BOOL, STRING, NUMBER, FILE, OBJECT, FIELD, ARRAY, PRIMITIVE,
-        ];
-        let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Token":2},{"Layer":[{"Rule":8},{"Rule":2}]},{"Token":3}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Token":10},{"Or":[{"And":[[{"Rule":3},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Token":10},{"Token":6},{"Rule":6}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":10},{"Rule":5}]},{"Token":5}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":2}],null]},{"And":[[{"Token":4}],null]}]},{"Or":[{"And":[[{"Rule":6},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]}},{"body":{"Pub":{"ty_idx":16,"body":{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":9}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":2},{"Rule":8},{"Token":3}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":3}},"Any"],null]}]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":4},{"Rule":10},{"Token":5}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":5}},"Any"],null]}]}],null]}]}}]"##;
-        let parser: Vec<SynRule> = serde_json::from_str(parser_json).unwrap();
+        ],
+        lexical_rules: vec![
+            LexRule::new(WHITESPACE, "\\s+", None),
+            LexRule::new(LBRACE, "\\{", None),
+            LexRule::new(RBRACE, "\\}", None),
+            LexRule::new(LBRACK, "\\[", None),
+            LexRule::new(RBRACK, "\\]", None),
+            LexRule::new(COLON, ":", None),
+            LexRule::new(COMMA, ",", None),
+            LexRule::new(NULL, "null", None),
+            LexRule::new(BOOL, "true|false", None),
+            LexRule::new(STRING, "\"[^\"]*\"", None),
+            LexRule::new(NUMBER, "\\d+", None),
+        ],
+        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+    }
+}
 
-        struct Impl { tokenizer: Vec<LexRule>, parser: Vec<SynRule> };
+lazy_static! {
+    pub static ref LANG: Language = {
+        use fall_parse::ParserDefinition;
+
+        struct Impl { parser_definition: ParserDefinition };
         impl LanguageImpl for Impl {
             fn parse(&self, text: &str) -> (FileStats, INode) {
-                parse(
-                    text,
-                    &LANG,
-                    &self.tokenizer,
-                    &|tokens, stats| Parser::new(ALL_NODE_TYPES, &self.parser).parse(tokens, stats)
-                )
+                self.parser_definition.parse(text, &LANG)
             }
 
             fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -64,22 +80,7 @@ lazy_static! {
             }
         }
 
-        Language::new(Impl {
-            tokenizer: vec![
-                LexRule::new(WHITESPACE, "\\s+", None),
-                LexRule::new(LBRACE, "\\{", None),
-                LexRule::new(RBRACE, "\\}", None),
-                LexRule::new(LBRACK, "\\[", None),
-                LexRule::new(RBRACK, "\\]", None),
-                LexRule::new(COLON, ":", None),
-                LexRule::new(COMMA, ",", None),
-                LexRule::new(NULL, "null", None),
-                LexRule::new(BOOL, "true|false", None),
-                LexRule::new(STRING, "\"[^\"]*\"", None),
-                LexRule::new(NUMBER, "\\d+", None),
-            ],
-            parser: parser,
-        })
+        Language::new(Impl { parser_definition: create_parser_definition() })
     };
 }
 

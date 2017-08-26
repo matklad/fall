@@ -7,11 +7,29 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use fall_tree::NodeType;
+use fall_tree::{Language, NodeType, FileStats, INode};
 
 mod lex_engine;
 mod syn_engine;
 mod tree_builder;
+
+
+pub struct ParserDefinition {
+    pub node_types: Vec<NodeType>,
+    pub lexical_rules: Vec<LexRule>,
+    pub syntactical_rules: Vec<SynRule>
+}
+
+impl ParserDefinition {
+    pub fn parse(&self, text: &str, lang: &Language,) -> (FileStats, INode) {
+        self::tree_builder::parse(
+            text,
+            lang,
+            &self.lexical_rules,
+            &|tokens, stats| Parser::new(&self.node_types, &self.syntactical_rules).parse(tokens, stats)
+        )
+    }
+}
 
 pub struct LexRule {
     pub ty: NodeType,
