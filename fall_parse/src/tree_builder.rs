@@ -1,36 +1,13 @@
-use elapsed::measure_time;
-
-use fall_tree::{NodeType, TextRange, FileStats, INode, TextUnit, Language};
-use super::LexRule;
-use syn_engine::{TokenSeq, BlackNode, BlackTokens};
-use lex_engine::{Token, tokenize};
+use fall_tree::{NodeType, INode, TextUnit, Language};
+use syn_engine::BlackNode;
+use lex_engine::Token;
 
 fn is_ws(lang: &Language, token: Token) -> bool {
     lang.node_type_info(token.ty).whitespace_like
 }
 
-pub fn parse(
-    text: &str,
-    lang: &Language,
-    tokenizer: &[LexRule],
-    parser: &Fn(TokenSeq, &mut FileStats) -> BlackNode
-) -> (FileStats, INode) {
-    let mut stats = FileStats::new();
-    let (lex_time, owned_tokens) = measure_time(|| tokenize(&text, tokenizer).collect::<Vec<_>>());
-    stats.lexing_time = lex_time.duration();
-    stats.reparsed_region = TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len()));
-
-    let tokens = BlackTokens::new(lang, text, &owned_tokens);
-    let (parse_time, node) = measure_time(|| parser(tokens.seq(), &mut stats));
-    stats.parsing_time = parse_time.duration();
-
-    let ws_node = to_ws_node(lang, node, &owned_tokens);
-    let inode = ws_node.into_inode().unwrap();
-    (stats, inode)
-}
-
 #[derive(Debug)]
-struct WsNode {
+pub struct WsNode {
     ty: Option<NodeType>,
     len: TextUnit,
     children: Vec<WsNode>,
@@ -78,7 +55,7 @@ impl WsNode {
         }
     }
 
-    fn into_inode(self) -> Result<INode, WsNode> {
+    pub fn into_inode(self) -> Result<INode, WsNode> {
         if let Some(ty) = self.ty {
             let mut node = INode::new(ty);
             for child in self.children {
@@ -101,7 +78,7 @@ fn token_ws_node(idx: usize, t: Token) -> WsNode {
     }
 }
 
-fn to_ws_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
+pub fn to_ws_node(lang: &Language, file_node: BlackNode, tokens: &[Token]) -> WsNode {
     let (ty, children) = match file_node {
         BlackNode::Composite { ty, children, .. } => (ty.unwrap(), children),
         _ => panic!("Root node must be composite")

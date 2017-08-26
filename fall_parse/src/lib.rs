@@ -7,7 +7,10 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use fall_tree::{Language, NodeType, FileStats, INode};
+use elapsed::measure_time;
+use tree_builder::to_ws_node;
+use syn_engine::BlackTokens;
+use fall_tree::{Language, NodeType, FileStats, INode, TextUnit, TextRange};
 
 mod lex_engine;
 mod syn_engine;
@@ -26,20 +29,24 @@ pub struct ParserDefinition {
 
 impl ParserDefinition {
     pub fn parse(&self, text: &str, lang: &Language) -> (FileStats, INode) {
-        self::tree_builder::parse(
-            text,
-            lang,
-            &self.lexical_rules,
-            &|tokens, stats| {
-                let (node, ticks) = ::syn_engine::parse(
-                    &self.node_types,
-                    &self.syntactical_rules,
-                    tokens
-                );
-                stats.parsing_ticks = ticks;
-                node
-            }
-        )
+        let (lex_time, owned_tokens) = measure_time(|| {
+            lex_engine::tokenize(&text, &self.lexical_rules).collect::<Vec<_>>()
+        });
+
+        let tokens = BlackTokens::new(lang, text, &owned_tokens);
+        let (parse_time, (node, ticks)) = measure_time(|| {
+            syn_engine::parse_black(&self.node_types, &self.syntactical_rules, tokens.seq())
+        });
+
+        let ws_node = to_ws_node(lang, node, &owned_tokens);
+        let inode = ws_node.into_inode().unwrap();
+        let stats = FileStats {
+            lexing_time: lex_time.duration(),
+            parsing_time: parse_time.duration(),
+            parsing_ticks: ticks,
+            reparsed_region: TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len())),
+        };
+        (stats, inode)
     }
 }
 
@@ -125,5 +132,4 @@ pub mod runtime {
     pub use regex;
     pub use fall_tree;
     pub use lazy_static::*;
-    pub use tree_builder::parse;
 }
