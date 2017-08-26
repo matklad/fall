@@ -43,9 +43,10 @@ impl ParserDefinition {
             reparsed_region: TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len())),
         };
 
-        let white_node = syn_engine::to_white_node(lang, black_node, &tokens);
-        let inode = white_node.into_inode().unwrap();
+//        let white_node = syn_engine::to_white_node(lang, black_node, &tokens);
+        let white_node = black_node.into_white_node(lang, &tokens);
 
+        let inode = white_node.into_inode(&tokens);
         (stats, inode)
     }
 }
