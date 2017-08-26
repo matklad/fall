@@ -1,8 +1,16 @@
-use fall_tree::{NodeType, FileStats};
+use fall_tree::NodeType;
 
 use tree_builder::{Node, TokenSequence};
 
 use {SynRule, Expr, PrattVariant};
+
+pub fn parse(
+    node_types: &[NodeType],
+    rules: &[SynRule],
+    tokens: TokenSequence
+) -> (Node, u64) {
+    Parser { node_types, rules: rules, start_rule: Expr::Rule(0) }.parse(tokens)
+}
 
 
 struct Ctx<'p> {
@@ -49,7 +57,7 @@ impl<'p> Ctx<'p> {
     }
 }
 
-pub struct Parser<'r> {
+struct Parser<'r> {
     node_types: &'r [NodeType],
     rules: &'r [SynRule],
     start_rule: Expr,
@@ -57,11 +65,7 @@ pub struct Parser<'r> {
 
 
 impl<'r> Parser<'r> {
-    pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {
-        Parser { node_types, rules: rules, start_rule: Expr::Rule(0) }
-    }
-
-    pub fn parse(&self, tokens: TokenSequence, stats: &mut FileStats) -> Node {
+    fn parse(&self, tokens: TokenSequence) -> (Node, u64) {
         let mut ctx = Ctx {
             ticks: 0,
             predicate_mode: false,
@@ -91,8 +95,7 @@ impl<'r> Parser<'r> {
         if skipped {
             ctx.push_child(&mut file_node, error)
         }
-        stats.parsing_ticks = ctx.ticks;
-        file_node
+        (file_node, ctx.ticks)
     }
 
     fn parse_exp<'t, 'p>(&'p self, expr: &'p Expr, tokens: TokenSequence<'t>, ctx: &mut Ctx<'p>)

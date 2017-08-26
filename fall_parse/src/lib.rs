@@ -21,12 +21,20 @@ pub struct ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn parse(&self, text: &str, lang: &Language,) -> (FileStats, INode) {
+    pub fn parse(&self, text: &str, lang: &Language) -> (FileStats, INode) {
         self::tree_builder::parse(
             text,
             lang,
             &self.lexical_rules,
-            &|tokens, stats| ::syn_engine::Parser::new(&self.node_types, &self.syntactical_rules).parse(tokens, stats)
+            &|tokens, stats| {
+                let (node, ticks) = ::syn_engine::parse(
+                    &self.node_types,
+                    &self.syntactical_rules,
+                    tokens
+                );
+                stats.parsing_ticks = ticks;
+                node
+            }
         )
     }
 }
