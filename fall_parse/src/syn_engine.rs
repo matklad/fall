@@ -2,7 +2,7 @@ use fall_tree::{NodeType, FileStats};
 
 use tree_builder::{Node, TokenSequence};
 
-use {Parser, SynRule, Expr, PrattVariant};
+use {SynRule, Expr, PrattVariant};
 
 
 struct Ctx<'p> {
@@ -48,6 +48,13 @@ impl<'p> Ctx<'p> {
         parent.push_child(child)
     }
 }
+
+pub struct Parser<'r> {
+    node_types: &'r [NodeType],
+    rules: &'r [SynRule],
+    start_rule: Expr,
+}
+
 
 impl<'r> Parser<'r> {
     pub fn new(node_types: &'r [NodeType], rules: &'r [SynRule]) -> Parser<'r> {

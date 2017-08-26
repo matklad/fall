@@ -26,7 +26,7 @@ impl ParserDefinition {
             text,
             lang,
             &self.lexical_rules,
-            &|tokens, stats| Parser::new(&self.node_types, &self.syntactical_rules).parse(tokens, stats)
+            &|tokens, stats| ::syn_engine::Parser::new(&self.node_types, &self.syntactical_rules).parse(tokens, stats)
         )
     }
 }
@@ -47,12 +47,6 @@ impl LexRule {
             f: f,
         }
     }
-}
-
-pub struct Parser<'r> {
-    node_types: &'r [NodeType],
-    rules: &'r [SynRule],
-    start_rule: Expr,
 }
 
 #[derive(Serialize, Deserialize)]
