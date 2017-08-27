@@ -535,6 +535,30 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { return; return (); }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        RETURN_EXPR
+          RETURN "return"
+        SEMI ";"
+      EXPR_STMT
+        RETURN_EXPR
+          RETURN "return"
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { if true { foo } else { bar } }
 
 FILE
@@ -692,68 +716,44 @@ FILE
       L_CURLY "{"
       MATCH_EXPR
         MATCH "match"
-        PATH_PATTERN
+        STRUCT_LITERAL
           PATH
             IDENT "x"
-        L_CURLY "{"
-        MATCH_ARM
-          TUPE_STRUCT_PATTERN
-            PATH
-              IDENT "Some"
+          L_CURLY "{"
+          STRUCT_LITERAL_FIELD
+            IDENT "Some"
+            ERROR ""
+          ERROR ""
+          ERROR
             L_PAREN "("
-            LITERAL_PATTERN
-              LITERAL
-                NUMBER "1"
+            NUMBER "1"
             R_PAREN ")"
-          PIPE "|"
-          TUPE_STRUCT_PATTERN
-            PATH
-              IDENT "Some"
+            PIPE "|"
+            IDENT "Some"
             L_PAREN "("
-            LITERAL_PATTERN
-              LITERAL
-                NUMBER "2"
+            NUMBER "2"
             R_PAREN ")"
-          FAT_ARROW "=>"
-          BLOCK_EXPR
+            FAT_ARROW "=>"
             L_CURLY "{"
-            PATH_EXPR
-              PATH
-                IDENT "no_comma"
+            IDENT "no_comma"
             R_CURLY "}"
-        MATCH_ARM
-          TUPE_STRUCT_PATTERN
-            PATH
-              IDENT "Some"
+            IDENT "Some"
             L_PAREN "("
-            PATH_PATTERN
-              PATH
-                IDENT "x"
+            IDENT "x"
             R_PAREN ")"
-          GUARD
             IF "if"
-            BIT_AND
-              PATH_EXPR
-                PATH
-                  IDENT "x"
-              AMPERSAND "&"
-              LITERAL
-                NUMBER "3"
-          FAT_ARROW "=>"
-          PATH_EXPR
-            PATH
-              IDENT "true"
-          COMMA ","
-        MATCH_ARM
-          PATH_PATTERN
-            PATH
-              IDENT "None"
-          FAT_ARROW "=>"
-          PATH_EXPR
-            PATH
-              IDENT "false"
-          COMMA ","
-        R_CURLY "}"
+            IDENT "x"
+            AMPERSAND "&"
+            NUMBER "3"
+            FAT_ARROW "=>"
+            IDENT "true"
+            COMMA ","
+            IDENT "None"
+            FAT_ARROW "=>"
+            IDENT "false"
+            COMMA ","
+          R_CURLY "}"
+        ERROR ""
       R_CURLY "}"
 
 ----------------------------------------

@@ -29,6 +29,7 @@ tokenizer {
   ref 'ref'
   trait 'trait'
   match 'match'
+  return 'return'
 
   l_paren '('
   r_paren ')'
@@ -389,9 +390,13 @@ test r"fn main() { let foo::bar = (); }"
 #[pratt]
 pub rule expr { 
   literal | struct_literal | path_expr | unit_expr | paren_expr 
-| lambda_expr | block_expr | if_expr | while_expr | loop_expr | match_expr
+| lambda_expr | return_expr
+| block_expr | if_expr | while_expr | loop_expr | match_expr
+
 | method_call_expr | call_expr | field_expr | index_expr
+
 | reference_expr | dereference_expr | negation_expr
+
 | product_expr | sum_expr 
 | bit_shift
 | bit_and | bit_or
@@ -475,6 +480,16 @@ fn binary_or_lambda_ambiguity() {
 "
 
 #[atom]
+pub rule return_expr {
+  'return' expr?
+}
+
+test r"
+fn main() { return; return (); }
+"
+
+
+#[atom]
 pub rule block_expr {
   <without_restrictions
     <block {block_form* expr?}>
@@ -542,7 +557,7 @@ fn main() { 'pool: loop { 92 }}
 
 #[atom]
 pub rule match_expr {
-  'match' <commit> pattern <block match_arm*>
+  'match' <commit> expr <block match_arm*>
 }
 
 pub rule match_arm {
