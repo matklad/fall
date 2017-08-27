@@ -1,9 +1,9 @@
-use fall_tree::{Language, NodeType, INode};
+use fall_tree::{NodeType, INode};
 use lex_engine::Token;
 use super::{BlackNode, BlackIdx};
 
-pub fn into_white(node: BlackNode, lang: &Language, tokens: &[Token]) -> WhiteNode {
-    black_to_white(lang, node, tokens, (0, tokens.len()), true)
+pub fn into_white(node: BlackNode, tokens: &[Token]) -> WhiteNode {
+    black_to_white(node, tokens, (0, tokens.len()), true)
 }
 
 
@@ -66,7 +66,6 @@ impl WhiteNode {
 
 
 fn black_to_white(
-    lang: &Language,
     black: BlackNode,
     tokens: &[Token],
     cover_range: (usize, usize),
@@ -90,7 +89,7 @@ fn black_to_white(
                     .and_then(|n| n.token_range())
                     .map(|(_, BlackIdx(i))| i)
                     .unwrap_or(cover_range.1);
-                let child = black_to_white(lang, child, tokens, (left_edge, right_edge), false);
+                let child = black_to_white(child, tokens, (left_edge, right_edge), false);
 
                 if !first_child {
                     for i in left_edge..child.token_range.0 {
