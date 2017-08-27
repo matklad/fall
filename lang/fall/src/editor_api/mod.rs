@@ -1,10 +1,12 @@
 use std::collections::HashSet;
 
-use fall_tree::{File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit, TextEdit};
+use fall_tree::{ERROR, File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset, ast_parent};
-use ::{ast, LANG_FALL, RefKind, CallKind, ChildKind};
-use ::syntax::*;
+use ::{LANG_FALL, WHITESPACE, EOL_COMMENT, HASH_STRING, RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS,
+       PUB, TEST, SIMPLE_STRING, PARAMETER, IDENT, R_ANGLE, L_ANGLE, SYN_RULE, CALL_EXPR,
+       RefKind, CallKind, ChildKind, FallFile, TestDef, AstClassDef, LexRule, SynRule, AstNodeDef,
+       RefExpr, CallExpr, Attributes, AstSelector, Parameter, ast};
 
 mod actions;
 mod formatter;

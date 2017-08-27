@@ -8,7 +8,7 @@ use lang_rust::LANG_RUST;
 
 #[test]
 fn inline_tests() {
-    check_inline_tests(&LANG_RUST, Path::new("src/syntax.fall"), Path::new("tests/inline.txt"))
+    check_inline_tests(&LANG_RUST, Path::new("src/rust.fall"), Path::new("tests/inline.txt"))
 }
 
 

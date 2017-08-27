@@ -1,4 +1,4 @@
-use syntax::{PIPE, L_ANGLE, R_ANGLE};
+use ::{PIPE, L_ANGLE, R_ANGLE};
 use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit};
 use fall_tree::search::{next_sibling, prev_sibling};
 
@@ -76,7 +76,7 @@ fn reformat_node<'f>(node: Node<'f>, edit: &mut FileEdit<'f>, spacer: &Spacer) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use syntax::WHITESPACE;
+    use ::WHITESPACE;
 
     use fall_tree::test_util::report_diff;
 

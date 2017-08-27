@@ -1,0 +1,30 @@
+rule foo {
+  'struct' type_parameters? '{' 
+    field_def*
+  '}'
+}
+
+FALL_FILE
+  SYN_RULE
+    RULE "rule"
+    IDENT "foo"
+    BLOCK_EXPR
+      L_CURLY "{"
+      SEQ_EXPR
+        REF_EXPR
+          SIMPLE_STRING "\'struct\'"
+        OPT_EXPR
+          REF_EXPR
+            IDENT "type_parameters"
+          QUESTION "?"
+        REF_EXPR
+          SIMPLE_STRING "\'{\'"
+        REP_EXPR
+          REF_EXPR
+            IDENT "field_def"
+          STAR "*"
+        REF_EXPR
+          SIMPLE_STRING "\'}\'"
+      R_CURLY "}"
+
+----------------------------------------

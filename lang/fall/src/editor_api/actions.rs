@@ -1,7 +1,7 @@
 use fall_tree::{AstNode, AstClass, File, Node, TextUnit};
 use fall_tree::FileEdit;
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
-use syntax::{PIPE, BlockExpr};
+use ::{PIPE, BlockExpr};
 
 
 #[derive(Clone, Copy, PartialEq, Eq)]

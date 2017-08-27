@@ -1,7 +1,7 @@
 extern crate fall_parse;
 
-mod syntax;
+mod json;
 
-pub use self::syntax::*;
-pub use self::syntax::LANG as LANG_JSON;
+pub use self::json::*;
+pub use self::json::LANG as LANG_JSON;
 

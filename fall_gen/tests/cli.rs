@@ -62,7 +62,7 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T, should_rewrite: bool) {
 fn test_grammars_are_fresh() {
     let bootsrap = ::std::env::var("rewrite").unwrap_or_default() == "bootstrap";
     if bootsrap {
-        check_by_path("../lang/fall/src/syntax.fall", true);
+        check_by_path("../lang/fall/src/fall.fall", true);
         return;
     }
 
@@ -71,15 +71,15 @@ fn test_grammars_are_fresh() {
         check_by_path("../fall_test/src/sexp.fall", true);
         check_by_path("../fall_test/src/weird.fall", true);
         check_by_path("../fall_test/src/arith.fall", true);
-        check_by_path("../lang/rust/src/syntax.fall", true);
-        check_by_path("../lang/json/src/syntax.fall", true);
+        check_by_path("../lang/rust/src/rust.fall", true);
+        check_by_path("../lang/json/src/json.fall", true);
         return;
     }
 
     check_by_path("../fall_test/src/sexp.fall", false);
     check_by_path("../fall_test/src/weird.fall", false);
     check_by_path("../fall_test/src/arith.fall", false);
-    check_by_path("../lang/rust/src/syntax.fall", false);
-    check_by_path("../lang/json/src/syntax.fall", false);
-    check_by_path("../lang/fall/src/syntax.fall", false);
+    check_by_path("../lang/rust/src/rust.fall", false);
+    check_by_path("../lang/json/src/json.fall", false);
+    check_by_path("../lang/fall/src/fall.fall", false);
 }

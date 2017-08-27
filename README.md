@@ -110,8 +110,8 @@ of parsing PEG.
 
 ### Grammar
 
-To learn the details of the grammar spec, it's best to read the (literalish) [grammar of the fall language itself](./lang/fall/src/syntax.fall )
-Other examples are also in the `lang` subdirectory, look for the `syntax.fall` files.
+To learn the details of the grammar spec, it's best to read the (literalish) [grammar of the fall language itself](./lang/fall/src/fall.fall )
+Other examples are also in the `lang` subdirectory, look for the `*.fall` files.
 
 Here are some interesting highlights of the grammar.
 
@@ -190,7 +190,7 @@ statically linking in the Rust crate, or by wrapping it into an RPC.
 
 Something works :)
 
-Here's a screenshoot showing [Rust grammar](https://github.com/matklad/fall/blob/master/lang/rust/src/syntax.fall),
+Here's a screenshoot showing [Rust grammar](https://github.com/matklad/fall/blob/master/lang/rust/src/rust.fall),
 inline test and the resulting syntax tree.
 
 ![Rust grammar](https://user-images.githubusercontent.com/1711539/28753615-abc20a4e-753f-11e7-886d-6f1c7ddea2db.png)
