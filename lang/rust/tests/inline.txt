@@ -1186,7 +1186,7 @@ FILE
 
 ----------------------------------------
 fn main() {
-    let _ = 0 .. 10;
+    let _ = .. 90 + 2;
     for j in 1 .. {
     }
 }
@@ -1205,11 +1205,13 @@ FILE
           UNDERSCORE "_"
         EQ "="
         RANGE_EXPR
-          LITERAL
-            NUMBER "0"
           DOTDOT ".."
-          LITERAL
-            NUMBER "10"
+          SUM_EXPR
+            LITERAL
+              NUMBER "90"
+            PLUS "+"
+            LITERAL
+              NUMBER "2"
         SEMI ";"
       EXPR_STMT
         FOR_EXPR
@@ -1221,10 +1223,11 @@ FILE
           LITERAL
             NUMBER "1"
           ERROR ""
-      ERROR
+      RANGE_EXPR
         DOTDOT ".."
-        L_CURLY "{"
-        R_CURLY "}"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------

@@ -500,7 +500,7 @@ pub rule expr {
 | bit_and | bit_or
 | comparison 	
 | logical_and | logical_or
-| range_expr
+| range_expr | prefix_range_expr
 | assignment_expr
 }
 
@@ -842,6 +842,11 @@ pub rule range_expr {
   expr <binop range_op> expr
 }
 
+#[prefix(2), type(range_expr)]
+pub rule prefix_range_expr {
+  range_op expr
+}
+
 rule range_op {
   { '..' | '...' }
   <not {'{' <is_in 'condition'>}>
@@ -849,7 +854,7 @@ rule range_op {
 
 test r"
 fn main() {
-    let _ = 0 .. 10;
+    let _ = .. 90 + 2;
     for j in 1 .. {
     }
 }
