@@ -30,6 +30,7 @@ tokenizer {
   trait 'trait'
   match 'match'
   return 'return'
+  in 'in'
 
   l_paren '('
   r_paren ')'
@@ -46,6 +47,10 @@ tokenizer {
   thin_arrow '->'
   fat_arrow '=>'
   eq '='
+  eqeq '=='
+  bangeq '!='
+  gtet '>='
+  lteq '<='
   semi ';'
   colon ':'
   coloncolon '::'
@@ -67,6 +72,7 @@ tokenizer {
   ident r"\p{XID_Start}\w*"
   number r"\d+"
   string r#""([^"]|\\")*""#
+  raw_string r#"r#*""# 'parse_raw_string'
 }
 
 pub rule file { mod_contents }
@@ -380,6 +386,7 @@ type F = fn(i32, x: f64) -> ();
 rule pattern {
   wildcard_pattern | tupe_struct_pattern | path_pattern
 | binding_pattern | literal_pattern | unit_pattern | paren_pattern
+| reference_pattern
 }
 
 pub rule wildcard_pattern {
@@ -435,6 +442,14 @@ fn main() {
 }
 "
 
+pub rule reference_pattern {
+  '&' 'mut'? pattern
+}
+
+test r"
+fn main() { let &mut foo = bar; }
+"
+
 // END PATTERNS
 
 // START EXPRESSIONS
@@ -443,7 +458,7 @@ fn main() {
 pub rule expr { 
   literal | struct_literal | path_expr | unit_expr | paren_expr 
 | lambda_expr | return_expr
-| block_expr | if_expr | while_expr | loop_expr | match_expr
+| block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
 
 | method_call_expr | call_expr | field_expr | index_expr
@@ -453,11 +468,12 @@ pub rule expr {
 | product_expr | sum_expr 
 | bit_shift
 | bit_and | bit_or
+| comparison 	
 | logical_and | logical_or
 }
 
 rule prev_is_block {
-  <prev_is block_expr if_expr while_expr loop_expr match_expr
+  <prev_is block_expr if_expr while_expr loop_expr for_expr match_expr
     block_macro_expr
   >
 }
@@ -468,8 +484,14 @@ rule without_restrictions(p) {
 
 #[atom]
 pub rule literal {
-  number | string
+  number | string | raw_string
 }
+
+test r###"
+fn main() {
+  (1, "", r"")
+}
+"###
 
 #[atom]
 pub rule struct_literal {
@@ -584,7 +606,7 @@ fn main() { if true { foo } else { bar } }
 
 #[atom]
 pub rule while_expr {
-  {lifetime ':'}? 'while' <commit>  
+  label? 'while' <commit>  
     block_condition block_expr 
     }
 
@@ -607,11 +629,25 @@ fn main() {
 
 #[atom]
 pub rule loop_expr {
-  {lifetime ':'}? 'loop' <commit> block_expr
+  label? 'loop' <commit> block_expr
 }
 
 test r"
 fn main() { 'pool: loop { 92 }}
+"
+
+#[atom]
+pub rule for_expr {
+  label? 'for' <commit> 
+  pattern 'in' expr block_expr
+}
+
+rule label {
+  lifetime ':'
+}
+
+test r"
+fn main() { for x in xs {} }
 "
 
 #[atom]
@@ -718,17 +754,17 @@ pub rule dereference_expr { '*' expr }
 #[prefix]
 pub rule negation_expr { '-' expr }
 
-#[bin(7)]
+#[bin(8)]
 pub rule product_expr {
   expr <binop {'*' | '/' | '%'}> expr
 }
 
-#[bin(6)]
+#[bin(7)]
 pub rule sum_expr {
   expr <binop {'+' | '-'}> expr
 }
 
-#[bin(5)]
+#[bin(6)]
 pub rule bit_shift {
   expr <binop {'<<' | '>>'}> expr
 }
@@ -738,14 +774,23 @@ rule binop(op) {
 | <not <is_in 'stmt'>> op
 }
 
-#[bin(4)]
+#[bin(5)]
 pub rule bit_and {
   expr <binop {'&' <not '&'>}> expr
 }
 
-#[bin(3)]
+#[bin(4)]
 pub rule bit_or {
   expr <binop {'|' <not '|'>}> expr
+}
+
+#[bin(3)]
+pub rule comparison {
+  expr <binop cmp_op> expr
+}
+
+rule cmp_op {
+  '==' | '!=' | '<' | '>' | '<=' | '>='
 }
 
 #[bin(2)]
@@ -831,7 +876,7 @@ rule balanced(bra, ket) {
 
 // END HELPERS
 
-verbatim r##"
+verbatim r##########"
 fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
     if !is_leading {
         return 0;
@@ -853,4 +898,12 @@ fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_le
         _ => 0,
     }
 }
-"##
+
+fn parse_raw_string(s: &str) -> Option<usize> {
+    let quote_start = s.find('"').unwrap();
+    // Who needs more then 25 hashes anyway? :)
+    let q_hashes = concat!('"', "######", "######", "######", "######", "######");
+    let closing = &q_hashes[..quote_start];
+    s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
+}
+"##########

@@ -125,14 +125,26 @@ FILE
               NUMBER "3"
         SEMI ";"
       EXPR_STMT
-        LOGICAL_AND
+        COMPARISON
           LITERAL
             NUMBER "1"
-          AND "&&"
+          EQEQ "=="
           BIT_OR
             LITERAL
               NUMBER "2"
             PIPE "|"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        LOGICAL_AND
+          LITERAL
+            NUMBER "1"
+          AND "&&"
+          COMPARISON
+            LITERAL
+              NUMBER "2"
+            EQEQ "=="
             LITERAL
               NUMBER "3"
         SEMI ";"

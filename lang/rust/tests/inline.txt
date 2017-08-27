@@ -506,6 +506,58 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { let &mut foo = bar; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        REFERENCE_PATTERN
+          AMPERSAND "&"
+          MUT "mut"
+          PATH_PATTERN
+            PATH
+              IDENT "foo"
+        EQ "="
+        PATH_EXPR
+          PATH
+            IDENT "bar"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
+  (1, "", r"")
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      TUPLE_EXPR
+        L_PAREN "("
+        LITERAL
+          NUMBER "1"
+        COMMA ","
+        LITERAL
+          STRING "\"\""
+        COMMA ","
+        LITERAL
+          RAW_STRING "r\"\""
+        R_PAREN ")"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() {
   ();
   (1);
@@ -809,6 +861,31 @@ FILE
           LITERAL
             NUMBER "92"
           R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() { for x in xs {} }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      FOR_EXPR
+        FOR "for"
+        PATH_PATTERN
+          PATH
+            IDENT "x"
+        IN "in"
+        STRUCT_LITERAL
+          PATH
+            IDENT "xs"
+          L_CURLY "{"
+          R_CURLY "}"
+        ERROR ""
       R_CURLY "}"
 
 ----------------------------------------
