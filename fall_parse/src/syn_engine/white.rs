@@ -2,8 +2,24 @@ use fall_tree::{NodeType, INode};
 use lex_engine::Token;
 use super::{BlackNode, BlackIdx};
 
-pub fn into_white(node: BlackNode, tokens: &[Token]) -> WhiteNode {
-    black_to_white(node, tokens, (0, tokens.len()), true)
+pub fn into_white(
+    node: BlackNode,
+    tokens: &[Token],
+    whitespace_binder: fn(ty: NodeType, adjacent_spaces: &[Token], leading: bool) -> usize
+) -> WhiteNode {
+    let file_ty = match node {
+        BlackNode::Composite { ty: Some(ty), .. } => ty,
+        _ => panic!("Bad file node")
+    };
+    let binder = |ty: Option<NodeType>, adjacent_spaces: &[Token], leading: bool| -> usize {
+        match ty {
+            None => 0,
+            Some(ty) if ty == file_ty => adjacent_spaces.len(),
+            Some(ty) => whitespace_binder(ty, adjacent_spaces, leading)
+        }
+    };
+
+    black_to_white(node, tokens, (0, tokens.len()), &binder)
 }
 
 
@@ -69,7 +85,7 @@ fn black_to_white(
     black: BlackNode,
     tokens: &[Token],
     cover_range: (usize, usize),
-    grow: bool
+    whitespace_binder: &Fn(Option<NodeType>, &[Token], bool) -> usize
 ) -> WhiteNode {
     if let Some((BlackIdx(l), BlackIdx(r))) = black.token_range() {
         assert!(cover_range.0 <= l && r <= cover_range.1);
@@ -89,7 +105,7 @@ fn black_to_white(
                     .and_then(|n| n.token_range())
                     .map(|(_, BlackIdx(i))| i)
                     .unwrap_or(cover_range.1);
-                let child = black_to_white(child, tokens, (left_edge, right_edge), false);
+                let child = black_to_white(child, tokens, (left_edge, right_edge), whitespace_binder);
 
                 if !first_child {
                     for i in left_edge..child.token_range.0 {
@@ -110,20 +126,22 @@ fn black_to_white(
                 .map(|n| n.token_range.1)
                 .unwrap_or(cover_range.0);
 
-            let (children, range) = if !grow {
-                (internal_children, (internal_start, internal_end))
-            } else {
-                let mut children = Vec::new();
-                for i in cover_range.0..internal_start {
-                    children.push(WhiteNode::leaf(Some(tokens[i].ty), i))
-                }
-                children.extend(internal_children);
-                for i in internal_end..cover_range.1 {
-                    children.push(WhiteNode::leaf(Some(tokens[i].ty), i))
-                }
-                (children, cover_range)
-            };
-            WhiteNode::new(ty, range, children)
+
+            let external_start = internal_start
+                - whitespace_binder(ty, &tokens[cover_range.0..internal_start], true);
+
+            let external_end = internal_end
+                + whitespace_binder(ty, &tokens[internal_end..cover_range.1], false);
+
+            let mut children = Vec::with_capacity(internal_children.len());
+            for i in external_start..internal_start {
+                children.push(WhiteNode::leaf(Some(tokens[i].ty), i))
+            }
+            children.extend(internal_children);
+            for i in internal_end..external_end {
+                children.push(WhiteNode::leaf(Some(tokens[i].ty), i))
+            }
+            WhiteNode::new(ty, (external_start, external_end), children)
         }
     }
 }
