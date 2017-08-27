@@ -56,6 +56,7 @@ tokenizer {
   coloncolon '::'
   comma ','
   dot '.'
+  dotdot '..'
   hash '#'
 
   star '*'
@@ -82,10 +83,9 @@ rule mod_contents {
 }
 
 rule mod_form_first { 
-  'pub' | 'extern' | '#'
-| 'fn' | 'struct' | 'union' | 'enum' | 'use' | 'mod' 
-| 'impl' | 'trait' | 'type'
-| 'const'
+  'struct' | 'union' | 'enum' | 'use' | 'mod' 
+| 'impl' | 'trait'
+| impl_form_first
 }
 
 rule mod_form { 
@@ -122,6 +122,12 @@ pub rule fn_def {
   {block_expr | ';'}
 }
 
+test r"
+fn foo(&mut self: Box<Self>, x: i32) -> () {
+  ()
+}
+"
+
 rule ret_type {
   '->' type_reference
 }
@@ -143,7 +149,7 @@ pub rule lambda_value_param {
 }
 
 pub rule self_parameter {
-  '&'? 'self' <commit> {',' | <eof>}
+  '&'? 'mut'? 'self' <commit> {':' type_reference}? {',' | <eof>}
 }
 
 pub rule struct_def {
@@ -214,7 +220,8 @@ rule impl_form {
 }
 
 rule impl_form_first {
-  'pub' | 'fn' | 'type'
+  'pub' | 'fn' | 'type' | 'const' | 'static'
+| '#' | 'extern'
 }
 
 pub rule type_def {
@@ -384,7 +391,7 @@ type F = fn(i32, x: f64) -> ();
 // START PATTERNS
 
 rule pattern {
-  wildcard_pattern | tupe_struct_pattern | path_pattern
+  wildcard_pattern | path_pattern
 | binding_pattern | literal_pattern | unit_pattern | paren_pattern
 | reference_pattern
 }
@@ -394,15 +401,37 @@ pub rule wildcard_pattern {
 }
 test r"fn main() { let _ = (); }"
 
-pub rule tupe_struct_pattern {
-  expr_path <in_parens <comma_list pattern>>
-}
-test r"fn main() { let S(foo, bar) = (); }"
 
+#[replaceable]
 pub rule path_pattern {
-  expr_path
+  expr_path {tupe_struct_pattern | struct_pattern}?
 }
-test r"fn main() { let foo::bar = (); }"
+
+#[replaces]
+pub rule tupe_struct_pattern {
+  <in_parens {
+    <comma_list pattern> {'..' ','?}?
+  }>
+}
+
+#[replaces]
+pub rule struct_pattern {
+  <block {
+    <comma_list struct_pattern_field> {'..' ','?}?
+  }>
+}
+
+pub rule struct_pattern_field {
+  binding_pattern <not ':'>
+| ident ':' <commit> pattern
+}
+
+test r"
+fn main() { 
+  let foo::bar = (); 
+  let S(foo, bar, .. ,) = ();
+  let foo::Bar { ref x, y: _, .. } = ();
+}"
 
 
 pub rule binding_pattern {
@@ -615,10 +644,13 @@ fn main() { 'w: while true {} }
 "    
 
 rule block_condition {
-  <enter 'condition' {
-    {'let' <commit> pattern '='}? expr 
-  }>
+  {'let' <commit> pattern '='}? no_struct_literal_expr 
 }
+
+rule no_struct_literal_expr {
+  <enter 'condition' expr>
+}
+
 test r"
 fn main() {
     if S {};
@@ -639,7 +671,7 @@ fn main() { 'pool: loop { 92 }}
 #[atom]
 pub rule for_expr {
   label? 'for' <commit> 
-  pattern 'in' expr block_expr
+  pattern 'in' no_struct_literal_expr block_expr
 }
 
 rule label {
@@ -652,7 +684,7 @@ fn main() { for x in xs {} }
 
 #[atom]
 pub rule match_expr {
-  'match' <commit> expr <block match_arm*>
+  'match' <commit> no_struct_literal_expr <block match_arm*>
 }
 
 pub rule match_arm {

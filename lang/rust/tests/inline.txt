@@ -1,3 +1,48 @@
+fn foo(&mut self: Box<Self>, x: i32) -> () {
+  ()
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "foo"
+    L_PAREN "("
+    SELF_PARAMETER
+      AMPERSAND "&"
+      MUT "mut"
+      SELF "self"
+      COLON ":"
+      PATH_TYPE
+        PATH
+          IDENT "Box"
+          TYPE_ARGUMENTS
+            L_ANGLE "<"
+            PATH_TYPE
+              PATH
+                IDENT "Self"
+            R_ANGLE ">"
+      COMMA ","
+    VALUE_PARAM
+      PATH_PATTERN
+        PATH
+          IDENT "x"
+      COLON ":"
+      PATH_TYPE
+        PATH
+          IDENT "i32"
+    R_PAREN ")"
+    THIN_ARROW "->"
+    UNIT_TYPE
+      L_PAREN "("
+      R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      UNIT_EXPR
+        L_PAREN "("
+        R_PAREN ")"
+      R_CURLY "}"
+
+----------------------------------------
 impl Node {}
 impl<'f> ::Debug for Node<'f> { }
 
@@ -340,39 +385,11 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { let S(foo, bar) = (); }
-
-FILE
-  FN_DEF
-    FN "fn"
-    IDENT "main"
-    L_PAREN "("
-    R_PAREN ")"
-    BLOCK_EXPR
-      L_CURLY "{"
-      LET_STMT
-        LET "let"
-        TUPE_STRUCT_PATTERN
-          PATH
-            IDENT "S"
-          L_PAREN "("
-          PATH_PATTERN
-            PATH
-              IDENT "foo"
-          COMMA ","
-          PATH_PATTERN
-            PATH
-              IDENT "bar"
-          R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
-        SEMI ";"
-      R_CURLY "}"
-
-----------------------------------------
-fn main() { let foo::bar = (); }
+fn main() { 
+  let foo::bar = (); 
+  let S(foo, bar, .. ,) = ();
+  let foo::Bar { ref x, y: _, .. } = ();
+}
 
 FILE
   FN_DEF
@@ -390,6 +407,55 @@ FILE
               IDENT "foo"
             COLONCOLON "::"
             IDENT "bar"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        TUPE_STRUCT_PATTERN
+          PATH
+            IDENT "S"
+          L_PAREN "("
+          PATH_PATTERN
+            PATH
+              IDENT "foo"
+          COMMA ","
+          PATH_PATTERN
+            PATH
+              IDENT "bar"
+          COMMA ","
+          DOTDOT ".."
+          COMMA ","
+          R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        STRUCT_PATTERN
+          PATH
+            PATH
+              IDENT "foo"
+            COLONCOLON "::"
+            IDENT "Bar"
+          L_CURLY "{"
+          STRUCT_PATTERN_FIELD
+            BINDING_PATTERN
+              REF "ref"
+              IDENT "x"
+          COMMA ","
+          STRUCT_PATTERN_FIELD
+            IDENT "y"
+            COLON ":"
+            WILDCARD_PATTERN
+              UNDERSCORE "_"
+          COMMA ","
+          DOTDOT ".."
+          R_CURLY "}"
         EQ "="
         UNIT_EXPR
           L_PAREN "("
@@ -880,12 +946,12 @@ FILE
           PATH
             IDENT "x"
         IN "in"
-        STRUCT_LITERAL
+        PATH_EXPR
           PATH
             IDENT "xs"
+        BLOCK_EXPR
           L_CURLY "{"
           R_CURLY "}"
-        ERROR ""
       R_CURLY "}"
 
 ----------------------------------------
@@ -907,44 +973,68 @@ FILE
       L_CURLY "{"
       MATCH_EXPR
         MATCH "match"
-        STRUCT_LITERAL
+        PATH_EXPR
           PATH
             IDENT "x"
-          L_CURLY "{"
-          STRUCT_LITERAL_FIELD
-            IDENT "Some"
-            ERROR ""
-          ERROR ""
-          ERROR
+        L_CURLY "{"
+        MATCH_ARM
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
             L_PAREN "("
-            NUMBER "1"
+            LITERAL_PATTERN
+              LITERAL
+                NUMBER "1"
             R_PAREN ")"
-            PIPE "|"
-            IDENT "Some"
+          PIPE "|"
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
             L_PAREN "("
-            NUMBER "2"
+            LITERAL_PATTERN
+              LITERAL
+                NUMBER "2"
             R_PAREN ")"
-            FAT_ARROW "=>"
+          FAT_ARROW "=>"
+          BLOCK_EXPR
             L_CURLY "{"
-            IDENT "no_comma"
+            PATH_EXPR
+              PATH
+                IDENT "no_comma"
             R_CURLY "}"
-            IDENT "Some"
+        MATCH_ARM
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
             L_PAREN "("
-            IDENT "x"
+            PATH_PATTERN
+              PATH
+                IDENT "x"
             R_PAREN ")"
+          GUARD
             IF "if"
-            IDENT "x"
-            AMPERSAND "&"
-            NUMBER "3"
-            FAT_ARROW "=>"
-            IDENT "true"
-            COMMA ","
-            IDENT "None"
-            FAT_ARROW "=>"
-            IDENT "false"
-            COMMA ","
-          R_CURLY "}"
-        ERROR ""
+            BIT_AND
+              PATH_EXPR
+                PATH
+                  IDENT "x"
+              AMPERSAND "&"
+              LITERAL
+                NUMBER "3"
+          FAT_ARROW "=>"
+          PATH_EXPR
+            PATH
+              IDENT "true"
+          COMMA ","
+        MATCH_ARM
+          PATH_PATTERN
+            PATH
+              IDENT "None"
+          FAT_ARROW "=>"
+          PATH_EXPR
+            PATH
+              IDENT "false"
+          COMMA ","
+        R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
