@@ -39,6 +39,6 @@ pub rule factorial_expr { expr '!' }
 #[prefix]
 pub rule negate_expr { '-' expr }
 
-example r"
+test r"
   1 + --1! - -2!
 "

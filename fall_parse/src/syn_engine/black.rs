@@ -462,17 +462,17 @@ fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant
                               -> Option<(BlackNode, TokenSeq<'t>)> {
     let prefix = expr_grammar.iter().filter_map(|v| {
         match *v {
-            PrattVariant::Prefix { ty, ref op } => Some((ty, op.as_ref())),
+            PrattVariant::Prefix { ty, ref op, priority } => Some((ty, op.as_ref(), priority)),
             _ => None
         }
     });
 
-    for (ty, op) in prefix {
+    for (ty, op, priority) in prefix {
         let ty = ctx.node_type(ty);
         if let Some((op_node, rest)) = parse_exp(ctx, op, tokens) {
             let mut node = ctx.create_composite_node(Some(ty));
             ctx.push_child(&mut node, op_node);
-            if let Some((expr, rest)) = parse_pratt(ctx, expr_grammar, rest, 999) {
+            if let Some((expr, rest)) = parse_pratt(ctx, expr_grammar, rest, priority) {
                 ctx.push_child(&mut node, expr);
                 ctx.prev = Some(ty);
                 return Some((node, rest));

@@ -118,7 +118,7 @@ pub enum PratKind {
     Atom,
     Bin(u32),
     Postfix,
-    Prefix
+    Prefix(u32),
 }
 
 impl<'f> SynRule<'f> {
@@ -155,7 +155,8 @@ impl<'f> SynRule<'f> {
         } else if attrs.has_attribute("postfix") {
             Some(PratKind::Postfix)
         } else if attrs.has_attribute("prefix") {
-            Some(PratKind::Prefix)
+            let priority = attrs.find("prefix").and_then(|attr| attr.u32_value()).unwrap_or(999);
+            Some(PratKind::Prefix(priority))
         } else if let Some(priority) = attrs.find("bin").and_then(|attr| attr.u32_value()) {
             Some(PratKind::Bin(priority))
         } else {

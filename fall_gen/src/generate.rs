@@ -216,7 +216,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     op: Box::new(compile_expr(op)?),
                 }
             }
-            PratKind::Prefix => {
+            PratKind::Prefix(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
                         "bad pratt rule"
@@ -230,6 +230,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                 fall_parse::PrattVariant::Prefix {
                     ty: ty,
                     op: Box::new(compile_expr(op)?),
+                    priority: priority,
                 }
             }
             PratKind::Bin(priority) => {

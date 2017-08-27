@@ -142,7 +142,8 @@ pub enum PrattVariant {
     },
     Prefix {
         ty: usize,
-        op: Box<Expr>
+        op: Box<Expr>,
+        priority: u32,
     }
 }
 
