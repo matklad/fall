@@ -161,6 +161,30 @@ FILE
               NUMBER "2"
         SEMI ";"
       EXPR_STMT
+        RANGE_EXPR
+          LITERAL
+            NUMBER "1"
+          DOTDOT ".."
+          LOGICAL_OR
+            LITERAL
+              NUMBER "2"
+            OR "||"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        ASSIGNMENT_EXPR
+          LITERAL
+            NUMBER "1"
+          EQ "="
+          RANGE_EXPR
+            LITERAL
+              NUMBER "2"
+            DOTDOT ".."
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
         SUM_EXPR
           NEGATION_EXPR
             MINUS "-"

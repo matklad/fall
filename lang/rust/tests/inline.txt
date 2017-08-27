@@ -1185,6 +1185,33 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() {
+    let _ = 0 .. 10;
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        WILDCARD_PATTERN
+          UNDERSCORE "_"
+        EQ "="
+        RANGE_EXPR
+          LITERAL
+            NUMBER "0"
+          DOTDOT ".."
+          LITERAL
+            NUMBER "10"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
 #[cfg(target_os="linux")] mod bar;
 

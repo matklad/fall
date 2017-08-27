@@ -57,6 +57,7 @@ tokenizer {
   comma ','
   dot '.'
   dotdot '..'
+  dotdotdot '...'
   hash '#'
 
   star '*'
@@ -499,6 +500,8 @@ pub rule expr {
 | bit_and | bit_or
 | comparison 	
 | logical_and | logical_or
+| range_expr
+| assignment_expr
 }
 
 rule prev_is_block {
@@ -785,17 +788,17 @@ pub rule dereference_expr { '*' expr }
 #[prefix]
 pub rule negation_expr { '-' expr }
 
-#[bin(8)]
+#[bin(10)]
 pub rule product_expr {
   expr <binop {'*' | '/' | '%'}> expr
 }
 
-#[bin(7)]
+#[bin(9)]
 pub rule sum_expr {
   expr <binop {'+' | '-'}> expr
 }
 
-#[bin(6)]
+#[bin(8)]
 pub rule bit_shift {
   expr <binop {'<<' | '>>'}> expr
 }
@@ -805,17 +808,17 @@ rule binop(op) {
 | <not <is_in 'stmt'>> op
 }
 
-#[bin(5)]
+#[bin(7)]
 pub rule bit_and {
   expr <binop {'&' <not '&'>}> expr
 }
 
-#[bin(4)]
+#[bin(6)]
 pub rule bit_or {
   expr <binop {'|' <not '|'>}> expr
 }
 
-#[bin(3)]
+#[bin(5)]
 pub rule comparison {
   expr <binop cmp_op> expr
 }
@@ -824,14 +827,30 @@ rule cmp_op {
   '==' | '!=' | '<' | '>' | '<=' | '>='
 }
 
-#[bin(2)]
+#[bin(4)]
 pub rule logical_and {
   expr <binop '&&'> expr
 }
 
-#[bin(1)]
+#[bin(3)]
 pub rule logical_or {
   expr <binop '||'> expr
+}
+
+#[bin(2)]
+pub rule range_expr {
+  expr <binop {'..' | '...'}> expr
+}
+
+test r"
+fn main() {
+    let _ = 0 .. 10;
+}
+"
+
+#[bin(1)]
+pub rule assignment_expr {
+  expr <binop '='> expr
 }
 
 // END EXPRESSIONS
