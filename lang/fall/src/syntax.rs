@@ -89,6 +89,7 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
             LexRule::new(IDENT, "\\w+", None),
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+        .. Default::default()
     }
 }
 

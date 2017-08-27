@@ -120,15 +120,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fall-test"
-version = "0.1.0"
-dependencies = [
- "fall_parse 0.1.0",
- "fall_tree 0.1.0",
- "lang_json 0.1.0",
-]
-
-[[package]]
 name = "fall_gen"
 version = "0.1.0"
 dependencies = [
@@ -156,6 +147,15 @@ dependencies = [
  "serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "fall_test"
+version = "0.1.0"
+dependencies = [
+ "fall_parse 0.1.0",
+ "fall_tree 0.1.0",
+ "lang_json 0.1.0",
 ]
 
 [[package]]

@@ -19,10 +19,11 @@ mod syn_engine;
 ///
 /// `ParserDefinition` is interpreted by `lex_engine` and `syn_engine`
 /// and is used to create an instance of `Language`.
+#[derive(Default)]
 pub struct ParserDefinition {
     pub node_types: Vec<NodeType>,
     pub lexical_rules: Vec<LexRule>,
-    pub syntactical_rules: Vec<SynRule>
+    pub syntactical_rules: Vec<SynRule>,
 }
 
 impl ParserDefinition {
