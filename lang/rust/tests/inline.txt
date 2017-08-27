@@ -142,7 +142,7 @@ FILE
     R_CURLY "}"
 
 ----------------------------------------
-struct B<'b, C>();
+struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
 
 FILE
   STRUCT_DEF
@@ -151,10 +151,31 @@ FILE
     TYPE_PARAMETERS
       L_ANGLE "<"
       LIFETIME_PARAMETER
+        LIFETIME "\'a"
+        COLON ":"
+      COMMA ","
+      LIFETIME_PARAMETER
         LIFETIME "\'b"
+        COLON ":"
+        LIFETIME "\'a"
+        PLUS "+"
+        LIFETIME "\'a"
       COMMA ","
       TYPE_PARAMETER
         IDENT "C"
+        COLON ":"
+        TYPE_BOUND
+          LIFETIME "\'b"
+        PLUS "+"
+        TYPE_BOUND
+          PATH_TYPE
+            PATH
+              IDENT "Clone"
+        PLUS "+"
+      COMMA ","
+      TYPE_PARAMETER
+        IDENT "D"
+        COLON ":"
       R_ANGLE ">"
     L_PAREN "("
     R_PAREN ")"

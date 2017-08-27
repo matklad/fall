@@ -264,17 +264,26 @@ pub rule type_parameters {
   }>
 }
 
-test r"
-struct B<'b, C>();
-"
-
 pub rule type_parameter {
-  ident
+  ident <commit> {':' 
+    {type_bound <commit> {'+' | <eof> | <not <not ','>>}}*
+  }?
+}
+
+pub rule type_bound {
+  lifetime | type_reference
 }
 
 pub rule lifetime_parameter {
-  lifetime
+  lifetime <commit> { ':'
+    {lifetime <commit> {'+' | <eof> | <not <not ','>>}}*
+  }?
 }
+
+test r"
+struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
+"
+
 
 pub rule visibility {
   'pub'
