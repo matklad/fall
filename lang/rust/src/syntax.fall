@@ -61,6 +61,7 @@ tokenizer {
   ampersand '&'
   pipe '|'
   underscore '_'
+  bang '!'
 
   lifetime r"'\p{XID_Continue}*"
   ident r"\p{XID_Start}\w*"
@@ -112,7 +113,7 @@ pub rule fn_def {
   type_parameters?
   value_parameters
   {'->' type_reference}?
-  {block_expr|';'}
+  {block_expr | ';'}
 }
 
 pub rule linkage { 
@@ -214,7 +215,7 @@ pub rule type_def {
 }
 
 pub rule const_def {
-  outer_attributes visibility? {'const'|'static'} <commit>
+  outer_attributes visibility? {'const' | 'static'} <commit>
   ident ':' type_reference
   {'=' expr}? ';'
 }
@@ -392,6 +393,7 @@ pub rule expr {
   literal | struct_literal | path_expr | unit_expr | paren_expr 
 | lambda_expr | return_expr
 | block_expr | if_expr | while_expr | loop_expr | match_expr
+| block_macro_expr | line_macro_expr
 
 | method_call_expr | call_expr | field_expr | index_expr
 
@@ -404,7 +406,9 @@ pub rule expr {
 }
 
 rule prev_is_block {
-  <prev_is if_expr block_expr>
+  <prev_is block_expr if_expr while_expr loop_expr match_expr
+    block_macro_expr
+  >
 }
 
 rule without_restrictions(p) {
@@ -429,6 +433,7 @@ pub rule struct_literal_field {
 
 #[atom]
 pub rule path_expr {
+  <not {ident '!'}>
   expr_path
 }
 
@@ -584,6 +589,26 @@ fn main() {
 }
 "
 
+#[atom]
+pub rule block_macro_expr {
+  block_macro
+}
+
+#[atom]
+pub rule line_macro_expr {
+  line_macro
+}
+
+test r#"
+fn main() {
+    block! {
+      foo => bar
+    }
+    println!("Hello, world");
+    vec![]
+}
+"#
+
 #[postfix]
 pub rule method_call_expr {
   expr { 
@@ -699,6 +724,26 @@ pub rule attr_value {
   { '=' expr 
   | <in_parens <comma_list attr_value>>
   }?
+}
+
+// Macros
+
+pub rule block_macro {
+  ident '!' ident? <block tt*>
+}
+
+pub rule line_macro {
+  ident '!' ident? {
+    '(' tt* ')' 
+  | '[' tt* ']'
+  }
+}
+
+pub rule tt {
+  <not {'(' | ')' | '{' | '}' | '[' | ']'}> <any>
+| '(' tt* ')'
+| '[' tt* ']'
+| '{' tt* '}'
 }
 
 // Helper rules
