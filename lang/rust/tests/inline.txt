@@ -287,6 +287,37 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+type F = fn(i32, x: f64) -> ();
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "F"
+    EQ "="
+    FN_POINTER_TYPE
+      FN "fn"
+      L_PAREN "("
+      VALUE_PARAM
+        PATH_TYPE
+          PATH
+            IDENT "i32"
+      COMMA ","
+      VALUE_PARAM
+        PATH_PATTERN
+          PATH
+            IDENT "x"
+        COLON ":"
+        PATH_TYPE
+          PATH
+            IDENT "f64"
+      R_PAREN ")"
+      THIN_ARROW "->"
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
+    SEMI ";"
+
+----------------------------------------
 fn main() { let _ = (); }
 
 FILE
@@ -341,6 +372,32 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { let foo::bar = (); }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
+            PATH
+              IDENT "foo"
+            COLONCOLON "::"
+            IDENT "bar"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() {
     let foo = ();
     let ref mut bar = 92;
@@ -377,7 +434,12 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { let foo::bar = (); }
+fn main() {
+  let (x) = ();
+  let (x,) = ();
+  let (x, y) = ();
+  let () = ();
+}
 
 FILE
   FN_DEF
@@ -389,12 +451,53 @@ FILE
       L_CURLY "{"
       LET_STMT
         LET "let"
-        PATH_PATTERN
-          PATH
+        PAREN_PATTERN
+          L_PAREN "("
+          PATH_PATTERN
             PATH
-              IDENT "foo"
-            COLONCOLON "::"
-            IDENT "bar"
+              IDENT "x"
+          R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        TUPLE_PATTERN
+          L_PAREN "("
+          PATH_PATTERN
+            PATH
+              IDENT "x"
+          COMMA ","
+          R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        TUPLE_PATTERN
+          L_PAREN "("
+          PATH_PATTERN
+            PATH
+              IDENT "x"
+          COMMA ","
+          PATH_PATTERN
+            PATH
+              IDENT "y"
+          R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        UNIT_PATTERN
+          L_PAREN "("
+          R_PAREN ")"
         EQ "="
         UNIT_EXPR
           L_PAREN "("
@@ -408,6 +511,7 @@ fn main() {
   (1);
   ((1));
   (1,);
+  (1, 2);
 }
 
 FILE
@@ -446,6 +550,16 @@ FILE
           LITERAL
             NUMBER "1"
           COMMA ","
+          R_PAREN ")"
+        SEMI ";"
+      EXPR_STMT
+        TUPLE_EXPR
+          L_PAREN "("
+          LITERAL
+            NUMBER "1"
+          COMMA ","
+          LITERAL
+            NUMBER "2"
           R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
@@ -754,6 +868,54 @@ FILE
             COMMA ","
           R_CURLY "}"
         ERROR ""
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
+    block! {
+      foo => bar
+    }
+    println!("Hello, world");
+    vec![]
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        BLOCK_MACRO_EXPR
+          BLOCK_MACRO
+            IDENT "block"
+            BANG "!"
+            L_CURLY "{"
+            TT
+              IDENT "foo"
+            TT
+              FAT_ARROW "=>"
+            TT
+              IDENT "bar"
+            R_CURLY "}"
+      EXPR_STMT
+        LINE_MACRO_EXPR
+          LINE_MACRO
+            IDENT "println"
+            BANG "!"
+            L_PAREN "("
+            TT
+              STRING "\"Hello, world\""
+            R_PAREN ")"
+        SEMI ";"
+      LINE_MACRO_EXPR
+        LINE_MACRO
+          IDENT "vec"
+          BANG "!"
+          L_BRACK "["
+          R_BRACK "]"
       R_CURLY "}"
 
 ----------------------------------------

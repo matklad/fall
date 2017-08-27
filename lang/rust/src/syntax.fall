@@ -105,15 +105,19 @@ pub rule use_spec_entry {
 }
 
 pub rule extern_crate_decl {
-  outer_attributes 'extern' 'crate' <commit> ident alias? ';'
+  outer_attributes visibility? 'extern' 'crate' <commit> ident alias? ';'
 }
 
 pub rule fn_def {
   outer_attributes visibility? linkage? 'fn' <commit> ident
   type_parameters?
   value_parameters
-  {'->' type_reference}?
+  ret_type?
   {block_expr | ';'}
+}
+
+rule ret_type {
+  '->' type_reference
 }
 
 pub rule linkage { 
@@ -304,6 +308,7 @@ rule type_reference {
   path_type | reference_type 
 | placeholder_type | unit_type | paren_type
 | array_type
+| fn_pointer_type
 }
 
 pub rule path_type {
@@ -353,10 +358,23 @@ type T = [(); 92];
 type T = &[()];
 "
 
+pub rule fn_pointer_type {
+  'fn' <commit> <in_parens <comma_list anon_value_param>> ret_type
+}
+
+#[type(value_param)]
+pub rule anon_value_param {
+  {pattern ':'}? type_reference
+}
+
+test r"
+type F = fn(i32, x: f64) -> ();
+"
+
 
 rule pattern {
   wildcard_pattern | tupe_struct_pattern | path_pattern
-| binding_pattern | literal_pattern
+| binding_pattern | literal_pattern | unit_pattern | paren_pattern
 }
 
 pub rule wildcard_pattern {
@@ -368,6 +386,12 @@ pub rule tupe_struct_pattern {
   expr_path <in_parens <comma_list pattern>>
 }
 test r"fn main() { let S(foo, bar) = (); }"
+
+pub rule path_pattern {
+  expr_path
+}
+test r"fn main() { let foo::bar = (); }"
+
 
 pub rule binding_pattern {
   'ref'? 'mut'? ident
@@ -383,10 +407,28 @@ pub rule literal_pattern {
   literal
 }
 
-pub rule path_pattern {
-  expr_path
+pub rule unit_pattern {
+  '(' ')'
 }
-test r"fn main() { let foo::bar = (); }"
+
+#[replaceable]
+pub rule paren_pattern {
+  <in_parens {pattern tuple_pattern?}>
+}
+
+#[replaces]
+pub rule tuple_pattern {
+  ',' <comma_list pattern>
+}
+
+test r"
+fn main() {
+  let (x) = ();
+  let (x,) = ();
+  let (x, y) = ();
+  let () = ();
+}
+"
 
 #[pratt]
 pub rule expr { 
@@ -442,7 +484,9 @@ pub rule unit_expr { '(' ')' }
 
 #[atom, replaceable]
 pub rule paren_expr {
-  '(' <without_restrictions expr> tuple_expr? ')'
+  <in_parens {
+    <without_restrictions expr> tuple_expr?
+  }>
 }
 
 #[replaces]
@@ -456,6 +500,7 @@ fn main() {
   (1);
   ((1));
   (1,);
+  (1, 2);
 }
 "
 
@@ -502,7 +547,7 @@ pub rule block_expr {
 }
 
 rule block_form {
-  let_stmt | expr_stmt | empty_stmt
+  let_stmt | expr_stmt | empty_stmt | mod_form
 }
 
 pub rule let_stmt {
