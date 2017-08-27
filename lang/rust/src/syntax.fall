@@ -304,6 +304,8 @@ pub rule type_arguments {
 
 pub rule alias { 'as' ident }
 
+// START TYPES
+
 rule type_reference {
   path_type | reference_type 
 | placeholder_type | unit_type | paren_type
@@ -371,6 +373,9 @@ test r"
 type F = fn(i32, x: f64) -> ();
 "
 
+// END TYPES
+
+// START PATTERNS
 
 rule pattern {
   wildcard_pattern | tupe_struct_pattern | path_pattern
@@ -429,6 +434,10 @@ fn main() {
   let () = ();
 }
 "
+
+// END PATTERNS
+
+// START EXPRESSIONS
 
 #[pratt]
 pub rule expr { 
@@ -749,7 +758,9 @@ pub rule logical_or {
   expr <binop '||'> expr
 }
 
-// Attributes
+// END EXPRESSIONS
+
+// STATART ATRIBUTES
 
 pub rule attribute {
   '#' <in_bracks <comma_list attr_value>>
@@ -771,7 +782,9 @@ pub rule attr_value {
   }?
 }
 
-// Macros
+// END ATRIBUTES
+
+// START MACROS
 
 pub rule block_macro {
   ident '!' ident? <block tt*>
@@ -791,7 +804,9 @@ pub rule tt {
 | '{' tt* '}'
 }
 
-// Helper rules
+// END MACROS
+
+// START HELPERS
 
 rule comma_list(el) {
   {el <commit> {<eof> | ','}}*
@@ -813,6 +828,8 @@ rule balanced(bra, ket) {
   | {<not ket> <any>}
   }*
 }
+
+// END HELPERS
 
 verbatim r##"
 fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
