@@ -61,7 +61,10 @@ pub fn generate(file: FallFile) -> Result<String> {
         }).collect::<Result<Vec<_>>>()?;
 
     context.add("lex_rules", &lex_rules);
-    context.add("verbatim", &file.verbatim_def().map(|v| v.contents()));
+
+    let verbatim = file.verbatim_def().map(|v| v.contents());
+    context.add("verbatim", &verbatim);
+    context.add("has_whitespace_binder", &verbatim.map(|t| t.contains("whitespace_binder")).unwrap_or(false));
 
     if let Some(ast) = file.ast_def() {
         context.add("ast_nodes", &ast.ast_nodes().map(|node| {
@@ -338,6 +341,9 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
             {% endfor %}
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+        {% if has_whitespace_binder %}
+            whitespace_binder: whitespace_binder,
+        {% endif %}
         .. Default::default()
     }
 }

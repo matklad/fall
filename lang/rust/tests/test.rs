@@ -72,8 +72,8 @@ struct B;
     "#, r#"
 FILE
   WHITESPACE "\n"
-  LINE_COMMENT "/// Doc comment attached\n"
   STRUCT_DEF
+    LINE_COMMENT "/// Doc comment attached\n"
     STRUCT "struct"
     WHITESPACE " "
     IDENT "A"
@@ -81,8 +81,8 @@ FILE
   WHITESPACE "\n\n"
   LINE_COMMENT "// Simple comment attached\n"
   WHITESPACE "\n"
-  LINE_COMMENT "// But only if there are no blank lines\n"
   STRUCT_DEF
+    LINE_COMMENT "// But only if there are no blank lines\n"
     STRUCT "struct"
     WHITESPACE " "
     IDENT "B"

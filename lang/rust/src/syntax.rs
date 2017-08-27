@@ -204,6 +204,7 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
             LexRule::new(STRING, "\"([^\"]|\\\\\")*\"", None),
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+        whitespace_binder: whitespace_binder,
         .. Default::default()
     }
 }
@@ -362,5 +363,25 @@ lazy_static! {
         Language::new(Impl { parser_definition: create_parser_definition() })
     };
 }
-
+fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
+    if !is_leading {
+        return 0;
+    }
+    match ty {
+        STRUCT_DEF => {
+            let mut has_comment = false;
+            adjacent_tokens.iter().rev()
+                .take_while(|&&(ty, text)| {
+                    if ty == LINE_COMMENT {
+                        has_comment = true;
+                        true
+                    } else {
+                        ty == WHITESPACE && text.chars().filter(|&c| c == '\n').next().is_none()
+                    }
+                })
+                .count()
+        }
+        _ => 0,
+    }
+}
 

@@ -12,7 +12,9 @@ use syn_engine::BlackTokens;
 use fall_tree::{Language, NodeType, FileStats, INode, TextUnit, TextRange};
 
 mod lex_engine;
+
 pub use lex_engine::Token;
+
 mod syn_engine;
 
 /// Describes both lexical and syntactical grammar
@@ -24,12 +26,12 @@ pub struct ParserDefinition {
     pub node_types: Vec<NodeType>,
     pub lexical_rules: Vec<LexRule>,
     pub syntactical_rules: Vec<SynRule>,
-    pub whitespace_binder: fn(ty: NodeType, adjacent_spaces: &[Token], leading: bool) -> usize
+    pub whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize
 }
 
 impl Default for ParserDefinition {
     fn default() -> Self {
-        fn no_binder(_: NodeType, _: &[Token], _: bool) -> usize {
+        fn no_binder(_: NodeType, _: Vec<(NodeType, &str)>, _: bool) -> usize {
             0
         }
 
@@ -60,7 +62,7 @@ impl ParserDefinition {
             reparsed_region: TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len())),
         };
 
-        let white_node = syn_engine::into_white(black_node, &tokens, self.whitespace_binder);
+        let white_node = syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder);
 
         let inode = white_node.into_inode(&tokens);
         (stats, inode)

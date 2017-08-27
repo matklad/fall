@@ -675,3 +675,27 @@ rule balanced(bra, ket) {
   | {<not ket> <any>}
   }*
 }
+
+verbatim r##"
+fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
+    if !is_leading {
+        return 0;
+    }
+    match ty {
+        STRUCT_DEF => {
+            let mut has_comment = false;
+            adjacent_tokens.iter().rev()
+                .take_while(|&&(ty, text)| {
+                    if ty == LINE_COMMENT {
+                        has_comment = true;
+                        true
+                    } else {
+                        ty == WHITESPACE && text.chars().filter(|&c| c == '\n').next().is_none()
+                    }
+                })
+                .count()
+        }
+        _ => 0,
+    }
+}
+"##

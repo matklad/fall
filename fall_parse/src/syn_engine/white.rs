@@ -3,15 +3,18 @@ use lex_engine::Token;
 use super::{BlackNode, BlackIdx};
 
 pub fn into_white(
+    text: &str,
     node: BlackNode,
     tokens: &[Token],
-    whitespace_binder: fn(ty: NodeType, adjacent_spaces: &[Token], leading: bool) -> usize
+    whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize
 ) -> WhiteNode {
     let file_ty = match node {
         BlackNode::Composite { ty: Some(ty), .. } => ty,
         _ => panic!("Bad file node")
     };
-    let binder = |ty: Option<NodeType>, adjacent_spaces: &[Token], leading: bool| -> usize {
+    let binder = |ty: Option<NodeType>,
+                  adjacent_spaces: Vec<(NodeType, &str)>,
+                  leading: bool| -> usize {
         match ty {
             None => 0,
             Some(ty) if ty == file_ty => adjacent_spaces.len(),
@@ -19,10 +22,7 @@ pub fn into_white(
         }
     };
 
-    Whitespacer {
-        tokens: tokens,
-        whitespace_binder: &binder,
-    }.black_to_white(node, (0, tokens.len()))
+    Whitespacer::new(text, tokens, &binder).black_to_white(node, (0, tokens.len()))
 }
 
 
@@ -80,11 +80,34 @@ impl WhiteNode {
 }
 
 struct Whitespacer<'a> {
+    text: &'a str,
     tokens: &'a [Token],
-    whitespace_binder: &'a Fn(Option<NodeType>, &[Token], bool) -> usize,
+    token_lens: Vec<usize>,
+    whitespace_binder: &'a Fn(Option<NodeType>, Vec<(NodeType, &str)>, bool) -> usize,
 }
 
 impl<'a> Whitespacer<'a> {
+    fn new(
+        text: &'a str,
+        tokens: &'a [Token],
+        whitespace_binder: &'a Fn(Option<NodeType>, Vec<(NodeType, &str)>, bool) -> usize
+    ) -> Whitespacer<'a> {
+        let mut token_lens = Vec::with_capacity(tokens.len() + 1);
+        let mut current = 0;
+        token_lens.push(current);
+        for t in tokens {
+            current += t.len.as_u32() as usize;
+            token_lens.push(current);
+        }
+
+        Whitespacer {
+            text,
+            tokens,
+            token_lens,
+            whitespace_binder,
+        }
+    }
+
     fn black_to_white(&self, black: BlackNode, cover_range: (usize, usize)) -> WhiteNode {
         if let Some((BlackIdx(l), BlackIdx(r))) = black.token_range() {
             assert!(cover_range.0 <= l && r <= cover_range.1);
@@ -130,11 +153,17 @@ impl<'a> Whitespacer<'a> {
                     .unwrap_or(cover_range.0);
 
 
+                let leading_space = (cover_range.0..internal_start).into_iter()
+                    .map(|token_idx| self.external_token(token_idx));
+
+                let trailing_space = (internal_end..cover_range.1).into_iter()
+                    .map(|token_idx| self.external_token(token_idx));
+
                 let external_start = internal_start
-                    - (self.whitespace_binder)(ty, &self.tokens[cover_range.0..internal_start], true);
+                    - (self.whitespace_binder)(ty, leading_space.collect(), true);
 
                 let external_end = internal_end
-                    + (self.whitespace_binder)(ty, &self.tokens[internal_end..cover_range.1], false);
+                    + (self.whitespace_binder)(ty, trailing_space.collect(), false);
 
                 let mut children = Vec::with_capacity(internal_children.len());
                 for i in external_start..internal_start {
@@ -147,6 +176,12 @@ impl<'a> Whitespacer<'a> {
                 WhiteNode::new(ty, (external_start, external_end), children)
             }
         }
+    }
+
+    fn external_token(&self, token_idx: usize) -> (NodeType, &'a str) {
+        let t = self.tokens[token_idx];
+        let start = self.token_lens[token_idx];
+        (t.ty, &self.text[start .. start + t.len.as_u32() as usize])
     }
 
     fn leaf(&self, token_idx: usize) -> WhiteNode {
