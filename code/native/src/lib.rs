@@ -6,19 +6,29 @@ extern crate fall_tree;
 extern crate fall_gen;
 extern crate lang_fall;
 
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 
-use neon::vm::{Call, JsResult, };
+use neon::vm::{Call, JsResult};
 use neon::scope::Scope;
 use neon::mem::Handle;
-use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, Object};
+use neon::js::{JsString, JsArray, JsInteger, JsObject, JsNull, JsValue, JsFunction, Object};
+use neon::task::Task;
 
 use lang_fall::editor_api;
 use lang_fall::editor_api::{FileStructureNode, Severity};
 use fall_tree::{TextRange, TextUnit, File, TextEdit};
+use fall_gen::TestRenderer;
 
 lazy_static! {
     static ref FILE: Mutex<Option<File>> = Mutex::new(None);
+}
+
+lazy_static! {
+    static ref TEST_RENDERER: Mutex<TestRenderer> = Mutex::new(TestRenderer);
+}
+
+fn renderer() -> MutexGuard<'static, TestRenderer> {
+    TEST_RENDERER.lock().unwrap()
 }
 
 macro_rules! get_file_or_return_null {
@@ -132,15 +142,6 @@ fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
     }
 }
 
-fn file_parse_test(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let tree = fall_gen::parse_test(file, test.value() as usize);
-    Ok(JsString::new(scope, &tree).unwrap().upcast())
-}
-
 fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -226,6 +227,34 @@ fn file_reformat(call: Call) -> JsResult<JsValue> {
     Ok(text_edit_to_js(scope, edit).upcast())
 }
 
+fn parse_test(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
+    let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file).clone();
+
+    struct RenderTask(File, usize);
+    impl Task for RenderTask {
+        type Output = String;
+        type Error = ();
+        type JsEvent = JsString;
+
+        fn perform(&self) -> Result<String, ()> {
+            let mut renderer = renderer();
+            let tree = renderer.render_one(&self.0, self.1);
+            Ok(tree)
+        }
+
+        fn complete<'a, T: Scope<'a>>(self, scope: &'a mut T, result: Result<String, ()>) -> JsResult<JsString> {
+            Ok(JsString::new(scope, &result.unwrap()).unwrap())
+        }
+    }
+
+    RenderTask(file, test).schedule(callback);
+    Ok(JsNull::new().upcast())
+}
+
 
 register_module!(m, {
     m.export("file_create", file_create)?;
@@ -241,7 +270,7 @@ register_module!(m, {
     m.export("file_reformat", file_reformat)?;
 
     m.export("file_find_test_at_offset", file_find_test_at_offset)?;
-    m.export("file_parse_test", file_parse_test)?;
+    m.export("parse_test", parse_test)?;
     Ok(())
 });
 

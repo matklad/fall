@@ -37,7 +37,9 @@ var backend = (() => {
         resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset),
         reformat: (): [number, number, string] => native.file_reformat(),
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
-        parse_test: (testId: number): string => native.file_parse_test(testId),
+        //parse_test: (testId: number): string => native.file_parse_test(testId),
+        parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
+        test_cb: cb => native.test_cb(cb)
     }
 })()
 
@@ -85,8 +87,13 @@ export function activate(context: vscode.ExtensionContext) {
     class TestTextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
-        public provideTextDocumentContent(uri: vscode.Uri): string {
-            return backend.parse_test(activeTest)
+        public provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
+            return new Promise((resolve, reject) => {
+                backend.parse_test(activeTest, (err, value) => {
+                    if (err) return reject(err) 
+                    resolve(value)
+                })
+            })
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -241,6 +248,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     let commands = [
         vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
+            backend.test_cb((err, value) => {
+                console.log(JSON.stringify(arguments));
+                console.log("Hello from Rust, ", value, err);
+            })
             let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
             vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         }),

@@ -4,6 +4,7 @@ use {Text, TextRange, NodeType, TextUnit, Language};
 use super::{Node, FileStats};
 use super::immutable::INode;
 
+#[derive(Clone)]
 pub struct FileImpl {
     pub lang: Language,
     stats: FileStats,
@@ -103,6 +104,7 @@ impl Index<NodeId> for FileImpl {
     }
 }
 
+#[derive(Clone)]
 pub struct NodeData {
     ty: NodeType,
     parent: Option<NodeId>,

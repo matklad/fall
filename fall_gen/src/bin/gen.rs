@@ -37,6 +37,7 @@ fn main() {
 }
 
 fn main_inner(command: Task) -> Result<(), Box<Error>> {
+    let mut renderer = fall_gen::TestRenderer;
     match command {
         Task::Generate(grammar) => {
             let input = file::get_text(&grammar)?;
@@ -47,7 +48,7 @@ fn main_inner(command: Task) -> Result<(), Box<Error>> {
         }
         Task::Examples(grammar) => {
             let input = file::get_text(&grammar)?;
-            let result = fall_gen::render_tests(input, None)?;
+            let result = renderer.render_all(input, None)?;
             file::put_text(grammar.with_extension("txt"), result)?;
         }
     }

@@ -24,33 +24,36 @@ pub fn generate(file: lang_fall::FallFile) -> generate::Result<String> {
     generate::generate(file)
 }
 
-pub fn parse_test(file: &File, test: usize) -> String {
-    let file = lang_fall::FallFile::new(file.root());
-    let text = match file.tests().nth(test).and_then(|t| t.contents()) {
-        None => return String::new(),
-        Some(text) => text.to_string()
-    };
+pub struct TestRenderer;
 
-    match render_tests(file.node().text().to_string(), Some(text)) {
-        Ok(result) => result,
-        Err(e) => format!("{}", e),
+impl TestRenderer {
+    pub fn render_one(&mut self, file: &File, test: usize) -> String {
+        let file = lang_fall::FallFile::new(file.root());
+        let text = match file.tests().nth(test).and_then(|t| t.contents()) {
+            None => return String::new(),
+            Some(text) => text.to_string()
+        };
+
+        match self.render_all(file.node().text().to_string(), Some(text)) {
+            Ok(result) => result,
+            Err(e) => format!("{}", e),
+        }
     }
-}
 
-pub fn render_tests(grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
-    let file = lang_fall::LANG_FALL.parse(grammar);
-    let ast = lang_fall::ast(&file);
-    let parser = match generate(ast) {
-        Ok(parser) => parser,
-        Err(e) => return Ok(format!("error:\n{}", e))
-    };
-    let base_dir = base_directory()?;
+    pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
+        let file = lang_fall::LANG_FALL.parse(grammar);
+        let ast = lang_fall::ast(&file);
+        let parser = match generate(ast) {
+            Ok(parser) => parser,
+            Err(e) => return Ok(format!("error:\n{}", e))
+        };
+        let base_dir = base_directory()?;
 
-    let syntax = base_dir.join("src").join("syntax.rs");
-    put_text_if_changed(&syntax, &parser)?;
+        let syntax = base_dir.join("src").join("syntax.rs");
+        put_text_if_changed(&syntax, &parser)?;
 
-    let toml = base_dir.join("Cargo.toml");
-    put_text_if_changed(&toml, &format!(r##"
+        let toml = base_dir.join("Cargo.toml");
+        put_text_if_changed(&toml, &format!(r##"
         [package]
         name = "fall_tests_rendering"
         version = "0.1.0"
@@ -63,7 +66,7 @@ pub fn render_tests(grammar: String, test: Option<String>) -> Result<String, Box
         fall_parse = {{ path = "{fall_dir}/fall_parse" }}
     "##, fall_dir = fall_dir().display()))?;
 
-    put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
+        put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
         #![allow(warnings)]
         extern crate fall_tree;
         extern crate fall_parse;
@@ -81,49 +84,50 @@ pub fn render_tests(grammar: String, test: Option<String>) -> Result<String, Box
         }
     "##)?;
 
-    let build = Command::new("cargo")
-        .arg("build")
-        .arg("--manifest-path")
-        .arg(&toml)
-        .spawn()?
-        .wait_with_output()?;
+        let build = Command::new("cargo")
+            .arg("build")
+            .arg("--manifest-path")
+            .arg(&toml)
+            .spawn()?
+            .wait_with_output()?;
 
-    if !build.status.success() {
-        return Ok(String::from_utf8(build.stderr).unwrap());
+        if !build.status.success() {
+            return Ok(String::from_utf8(build.stderr).unwrap());
+        }
+
+        let mut child = Command::new("cargo")
+            .arg("run")
+            .arg("--manifest-path")
+            .arg(&toml)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
+
+        let tests: String = match test {
+            Some(test) => test,
+            None => ast.tests()
+                .filter_map(|t| t.contents())
+                .map(|t| t.to_string())
+                .collect::<Vec<_>>()
+                .join("\n***###***\n")
+        };
+
+        {
+            let mut stdin = child.stdin.as_mut().unwrap();
+            stdin.write_all(tests.as_bytes()).unwrap();
+            stdin.flush().unwrap();
+        }
+
+        let rendered = child.wait_with_output()?;
+        assert!(rendered.status.success());
+        let mut result = String::new();
+        if !rendered.stderr.is_empty() {
+            result += &::std::str::from_utf8(&rendered.stderr).unwrap();
+            result += "\n\n";
+        }
+        result += &::std::str::from_utf8(&rendered.stdout).unwrap();
+        Ok(result)
     }
-
-    let mut child = Command::new("cargo")
-        .arg("run")
-        .arg("--manifest-path")
-        .arg(&toml)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()?;
-
-    let tests: String = match test {
-        Some(test) => test,
-        None => ast.tests()
-            .filter_map(|t| t.contents())
-            .map(|t| t.to_string())
-            .collect::<Vec<_>>()
-            .join("\n***###***\n")
-    };
-
-    {
-        let mut stdin = child.stdin.as_mut().unwrap();
-        stdin.write_all(tests.as_bytes()).unwrap();
-        stdin.flush().unwrap();
-    }
-
-    let rendered = child.wait_with_output()?;
-    assert!(rendered.status.success());
-    let mut result = String::new();
-    if !rendered.stderr.is_empty() {
-        result += &::std::str::from_utf8(&rendered.stderr).unwrap();
-        result += "\n\n";
-    }
-    result += &::std::str::from_utf8(&rendered.stdout).unwrap();
-    Ok(result)
 }
 
 fn base_directory() -> Result<PathBuf, Box<Error>> {

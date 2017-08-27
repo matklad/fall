@@ -9,6 +9,7 @@ pub use self::imp::NodeChildren;
 pub use self::immutable::INode;
 
 
+#[derive(Clone)]
 pub struct File {
     imp: imp::FileImpl,
     inode: INode,

@@ -12,11 +12,11 @@ name = "backend"
 crate-type = ["dylib"]
 
 [build-dependencies]
-neon-build = "0.1.15"
+neon-build = "0.1.20"
 
 [dependencies]
-neon = "0.1.15"
-lazy_static = "0.2"
+neon = "0.1.20"
+lazy_static = "0.2.8"
 fall_tree = { path = "../../fall_tree" }
 fall_gen = { path = "../../fall_gen" }
 lang_fall = { path = "../../lang/fall" }
