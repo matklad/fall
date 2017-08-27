@@ -26,7 +26,7 @@ impl BlackNode {
 
     #[allow(unused)]
     pub fn debug(&self, tokens: &TokenSeq) -> String {
-        let (l, r) = match self.token_range() {
+        let (BlackIdx(l), BlackIdx(r)) = match self.token_range() {
             Some(range) => range,
             _ => return "EMPTY-NODE".to_owned()
         };
@@ -41,7 +41,7 @@ impl BlackNode {
 
     pub fn token_range(&self) -> Option<(BlackIdx, BlackIdx)> {
         match *self {
-            BlackNode::Leaf { token_idx, .. } => Some((token_idx, token_idx + 1)),
+            BlackNode::Leaf { token_idx, .. } => Some((token_idx, BlackIdx(token_idx.0 + 1))),
             BlackNode::Composite { ref children, .. } => {
                 let mut non_empty_children = children.iter().filter_map(|n| n.token_range());
                 if let Some(first) = non_empty_children.next() {

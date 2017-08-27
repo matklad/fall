@@ -1,6 +1,6 @@
 use fall_tree::{Language, NodeType, INode};
 use lex_engine::Token;
-use super::BlackNode;
+use super::{BlackNode, BlackIdx};
 
 pub fn into_white(node: BlackNode, lang: &Language, tokens: &[Token]) -> WhiteNode {
     black_to_white(lang, node, tokens, (0, tokens.len()), true)
@@ -72,12 +72,12 @@ fn black_to_white(
     cover_range: (usize, usize),
     grow: bool
 ) -> WhiteNode {
-    if let Some(node_range) = black.token_range() {
-        assert!(cover_range.0 <= node_range.0 && node_range.1 <= cover_range.1);
+    if let Some((BlackIdx(l), BlackIdx(r))) = black.token_range() {
+        assert!(cover_range.0 <= l && r <= cover_range.1);
     }
 
     match black {
-        BlackNode::Leaf { ty, token_idx } =>
+        BlackNode::Leaf { ty, token_idx: BlackIdx(token_idx) } =>
             return WhiteNode::leaf(ty, token_idx),
         BlackNode::Composite { ty, mut children } => {
             let mut internal_children = Vec::new();
@@ -88,8 +88,8 @@ fn black_to_white(
             while let Some(child) = children.pop() {
                 let right_edge = children.last()
                     .and_then(|n| n.token_range())
-                    .unwrap_or(cover_range)
-                    .1;
+                    .map(|(_, BlackIdx(i))| i)
+                    .unwrap_or(cover_range.1);
                 let child = black_to_white(lang, child, tokens, (left_edge, right_edge), false);
 
                 if !first_child {

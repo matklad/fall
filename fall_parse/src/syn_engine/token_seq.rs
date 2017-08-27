@@ -2,7 +2,8 @@ use fall_tree::{Language, NodeType, TextUnit};
 
 use ::lex_engine::Token;
 
-pub type BlackIdx = usize;
+#[derive(Copy, Clone, Debug)]
+pub struct BlackIdx(pub usize);
 
 pub struct BlackTokens<'a> {
     text: &'a str,
@@ -15,7 +16,7 @@ impl<'a> BlackTokens<'a> {
         let is_ws = |t: Token| lang.node_type_info(t.ty).whitespace_like;
 
         let non_ws_indexes = tokens.iter().enumerate()
-            .filter_map(|(i, &t)| if is_ws(t) { None } else { Some(i) })
+            .filter_map(|(i, &t)| if is_ws(t) { None } else { Some(BlackIdx(i)) })
             .collect();
 
         let ws_len = tokens.iter()
@@ -52,7 +53,7 @@ pub struct TokenSeq<'a> {
 
 impl<'a> TokenSeq<'a> {
     pub fn current(&self) -> Option<Token> {
-        self.non_ws_indexes.first().map(|&idx| {
+        self.non_ws_indexes.first().map(|&BlackIdx(idx)| {
             self.original_tokens[idx]
         })
     }
@@ -71,8 +72,8 @@ impl<'a> TokenSeq<'a> {
         let (ty, idx) = (token.ty, self.non_ws_indexes[0]);
 
         let text_len = {
-            let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
-            self.original_tokens[self.non_ws_indexes[0] .. next_idx]
+            let next_idx = self.non_ws_indexes.get(1).map(|&BlackIdx(i)| i).unwrap_or(self.original_tokens.len());
+            self.original_tokens[self.non_ws_indexes[0].0 .. next_idx]
                 .iter()
                 .map(|t| t.len)
                 .sum::<TextUnit>()
