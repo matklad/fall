@@ -1187,6 +1187,8 @@ FILE
 ----------------------------------------
 fn main() {
     let _ = 0 .. 10;
+    for j in 1 .. {
+    }
 }
 
 FILE
@@ -1209,6 +1211,20 @@ FILE
           LITERAL
             NUMBER "10"
         SEMI ";"
+      EXPR_STMT
+        FOR_EXPR
+          FOR "for"
+          PATH_PATTERN
+            PATH
+              IDENT "j"
+          IN "in"
+          LITERAL
+            NUMBER "1"
+          ERROR ""
+      ERROR
+        DOTDOT ".."
+        L_CURLY "{"
+        R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------

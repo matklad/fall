@@ -839,12 +839,19 @@ pub rule logical_or {
 
 #[bin(2)]
 pub rule range_expr {
-  expr <binop {'..' | '...'}> expr
+  expr <binop range_op> expr
+}
+
+rule range_op {
+  { '..' | '...' }
+  <not {'{' <is_in 'condition'>}>
 }
 
 test r"
 fn main() {
     let _ = 0 .. 10;
+    for j in 1 .. {
+    }
 }
 "
 
