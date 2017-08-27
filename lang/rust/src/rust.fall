@@ -485,7 +485,7 @@ fn main() { let &mut foo = bar; }
 
 #[pratt]
 pub rule expr { 
-  literal | struct_literal | path_expr | unit_expr | paren_expr 
+  literal | path_expr | unit_expr | paren_expr 
 | lambda_expr | return_expr
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
@@ -522,21 +522,20 @@ fn main() {
 }
 "###
 
-#[atom]
+#[atom, replaceable]
+pub rule path_expr {
+  <not {ident '!'}>
+  expr_path struct_literal?
+}
+
+#[replaces]
 pub rule struct_literal {
   <not <is_in 'condition'>>
-  expr_path <block <comma_list struct_literal_field>>
+  <block <comma_list struct_literal_field>>
 }
 
 pub rule struct_literal_field {
   ident <commit> ':' expr
-}
-
-
-#[atom]
-pub rule path_expr {
-  <not {ident '!'}>
-  expr_path
 }
 
 #[atom]

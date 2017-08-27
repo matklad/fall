@@ -177,7 +177,10 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
             match parse_exp(ctx, body, tokens) {
                 Some((node, ts)) => {
                     let node_type = match (replaceable, ctx.replacement) {
-                        (true, Some(ty)) => ty,
+                        (true, Some(ty)) => {
+                            ctx.replacement = None;
+                            ty
+                        },
                         _ => ctx.node_type(ty_idx),
                     };
                     let mut result = ctx.create_composite_node(Some(node_type));

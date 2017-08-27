@@ -1,3 +1,6 @@
+test:
+    cargo test --all
+
 bootstrap:
     rewrite=bootstrap cargo test --package fall_gen --test cli
     cargo test --all
