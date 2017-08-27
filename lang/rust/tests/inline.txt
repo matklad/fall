@@ -674,6 +674,89 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() {
+    match x {
+      Some(1) | Some(2) => { no_comma }
+      Some(x) if x & 3 => true,
+      None => false,
+    }
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      MATCH_EXPR
+        MATCH "match"
+        PATH_PATTERN
+          PATH
+            IDENT "x"
+        L_CURLY "{"
+        MATCH_ARM
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
+            L_PAREN "("
+            LITERAL_PATTERN
+              LITERAL
+                NUMBER "1"
+            R_PAREN ")"
+          PIPE "|"
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
+            L_PAREN "("
+            LITERAL_PATTERN
+              LITERAL
+                NUMBER "2"
+            R_PAREN ")"
+          FAT_ARROW "=>"
+          BLOCK_EXPR
+            L_CURLY "{"
+            PATH_EXPR
+              PATH
+                IDENT "no_comma"
+            R_CURLY "}"
+        MATCH_ARM
+          TUPE_STRUCT_PATTERN
+            PATH
+              IDENT "Some"
+            L_PAREN "("
+            PATH_PATTERN
+              PATH
+                IDENT "x"
+            R_PAREN ")"
+          GUARD
+            IF "if"
+            BIT_AND
+              PATH_EXPR
+                PATH
+                  IDENT "x"
+              AMPERSAND "&"
+              LITERAL
+                NUMBER "3"
+          FAT_ARROW "=>"
+          PATH_EXPR
+            PATH
+              IDENT "true"
+          COMMA ","
+        MATCH_ARM
+          PATH_PATTERN
+            PATH
+              IDENT "None"
+          FAT_ARROW "=>"
+          PATH_EXPR
+            PATH
+              IDENT "false"
+          COMMA ","
+        R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { foo.bar::<i32>() }
 
 FILE

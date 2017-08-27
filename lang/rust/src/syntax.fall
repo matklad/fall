@@ -28,6 +28,7 @@ tokenizer {
   mut 'mut'
   ref 'ref'
   trait 'trait'
+  match 'match'
 
   l_paren '('
   r_paren ')'
@@ -42,6 +43,7 @@ tokenizer {
   #[contextual] and '&&'
   #[contextual] or  '||'
   thin_arrow '->'
+  fat_arrow '=>'
   eq '='
   semi ';'
   colon ':'
@@ -70,7 +72,6 @@ pub rule file { mod_contents }
 rule mod_contents {
   <with_skip mod_form_first mod_form>*
 }
-
 
 rule mod_form_first { 
   'pub' | 'extern' | '#'
@@ -353,7 +354,7 @@ type T = &[()];
 
 rule pattern {
   wildcard_pattern | tupe_struct_pattern | path_pattern
-| binding_pattern 
+| binding_pattern | literal_pattern
 }
 
 pub rule wildcard_pattern {
@@ -376,6 +377,10 @@ fn main() {
 }
 "
 
+pub rule literal_pattern {
+  literal
+}
+
 pub rule path_pattern {
   expr_path
 }
@@ -384,7 +389,7 @@ test r"fn main() { let foo::bar = (); }"
 #[pratt]
 pub rule expr { 
   literal | struct_literal | path_expr | unit_expr | paren_expr 
-| lambda_expr | block_expr | if_expr | while_expr | loop_expr
+| lambda_expr | block_expr | if_expr | while_expr | loop_expr | match_expr
 | method_call_expr | call_expr | field_expr | index_expr
 | reference_expr | dereference_expr | negation_expr
 | product_expr | sum_expr 
@@ -535,6 +540,34 @@ test r"
 fn main() { 'pool: loop { 92 }}
 "
 
+#[atom]
+pub rule match_expr {
+  'match' <commit> pattern <block match_arm*>
+}
+
+pub rule match_arm {
+  match_arm_pattern <commit> 
+  '=>' expr 
+  {',' | <eof> | prev_is_block}
+}
+
+rule match_arm_pattern {
+  pattern {'|' pattern}* guard?
+}
+
+pub rule guard { 
+  'if' expr
+}
+
+test r"
+fn main() {
+    match x {
+      Some(1) | Some(2) => { no_comma }
+      Some(x) if x & 3 => true,
+      None => false,
+    }
+}
+"
 
 #[postfix]
 pub rule method_call_expr {
