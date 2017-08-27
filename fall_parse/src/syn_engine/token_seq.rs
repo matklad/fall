@@ -70,12 +70,15 @@ impl<'a> TokenSeq<'a> {
         let token = self.current().expect("Can't bump an empty token sequence");
         let (ty, idx) = (token.ty, self.non_ws_indexes[0]);
 
-        // CLEANUP
-        let mut text_len = 0;
-        let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
-        for i in self.non_ws_indexes[0]..next_idx {
-            text_len += self.original_tokens[i].len.as_u32() as usize;
-        }
+        let text_len = {
+            let next_idx = self.non_ws_indexes.get(1).map(|&i| i).unwrap_or(self.original_tokens.len());
+            self.original_tokens[self.non_ws_indexes[0] .. next_idx]
+                .iter()
+                .map(|t| t.len)
+                .sum::<TextUnit>()
+                .as_u32() as usize
+        };
+
         let rest = TokenSeq {
             text: &self.text[text_len..],
             non_ws_indexes: &self.non_ws_indexes[1..],
