@@ -6,7 +6,7 @@ extern crate fall_tree;
 extern crate fall_gen;
 extern crate lang_fall;
 
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use neon::vm::{Call, JsResult};
 use neon::scope::Scope;
@@ -20,7 +20,7 @@ use fall_tree::{TextRange, TextUnit, File, TextEdit};
 use fall_gen::TestRenderer;
 
 lazy_static! {
-    static ref FILE: Mutex<Option<File>> = Mutex::new(None);
+    static ref FILE: Mutex<Option<Arc<File>>> = Mutex::new(None);
 }
 
 lazy_static! {
@@ -44,7 +44,7 @@ fn file_create(call: Call) -> JsResult<JsNull> {
     let scope = call.scope;
     let text = call.arguments.require(scope, 0)?.check::<JsString>()?;
     let text = text.value();
-    *FILE.lock().unwrap() = Some(editor_api::parse(text));
+    *FILE.lock().unwrap() = Some(Arc::new(editor_api::parse(text)));
     Ok(JsNull::new())
 }
 
@@ -234,7 +234,7 @@ fn parse_test(call: Call) -> JsResult<JsValue> {
     let file = FILE.lock().unwrap();
     let file = get_file_or_return_null!(file).clone();
 
-    struct RenderTask(File, usize);
+    struct RenderTask(Arc<File>, usize);
     impl Task for RenderTask {
         type Output = String;
         type Error = ();
