@@ -51,7 +51,7 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
 
     let parent = match pipe.parent() {
         None => return None,
-        Some(n) => if n.ty() == BlockExpr::ty() {
+        Some(n) => if n.ty() == BlockExpr::NODE_TYPE {
             BlockExpr::new(n)
         } else {
             return None;

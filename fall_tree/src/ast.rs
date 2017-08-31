@@ -4,7 +4,8 @@ use {Node, NodeType};
 use node::NodeChildren;
 
 pub trait AstNode<'f>: Copy {
-    fn ty() -> NodeType;
+    const NODE_TYPE: NodeType = ::ERROR;
+
     fn new(node: Node<'f>) -> Self;
     fn node(&self) -> Node<'f>;
 }
@@ -28,7 +29,7 @@ impl<'f, A: AstNode<'f>> Iterator for AstChildren<'f, A> {
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(node) = self.inner.next() {
-            if node.ty() == A::ty() {
+            if node.ty() == A::NODE_TYPE {
                 return Some(A::new(node));
             }
         }
@@ -37,7 +38,8 @@ impl<'f, A: AstNode<'f>> Iterator for AstChildren<'f, A> {
 }
 
 pub trait AstClass<'f>: Copy {
-    fn tys() -> &'static [NodeType];
+    const NODE_TYPES: &'static [NodeType] = &[];
+
     fn new(node: Node<'f>) -> Self;
     fn node(&self) -> Node<'f>;
 }
@@ -61,7 +63,7 @@ impl<'f, A: AstClass<'f>> Iterator for AstClassChildren<'f, A> {
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(node) = self.inner.next() {
-            if A::tys().contains(&node.ty()) {
+            if A::NODE_TYPES.contains(&node.ty()) {
                 return Some(A::new(node));
             }
         }

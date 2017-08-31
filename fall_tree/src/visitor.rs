@@ -68,7 +68,7 @@ impl<'f, C, V, T, F> NodeVisitor<'f, C> for AstVisitor<V, T, F>
 
     fn do_visit(&mut self, node: Node<'f>) {
         self.visitor.do_visit(node);
-        if T::ty() == node.ty() {
+        if T::NODE_TYPE == node.ty() {
             let f = &mut self.f;
             let c = self.visitor.context();
             f(c, T::new(node))

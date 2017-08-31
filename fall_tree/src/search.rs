@@ -38,7 +38,7 @@ impl<'f> Iterator for Ancestors<'f> {
 pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
     let mut curr = Some(node);
     while let Some(node) = curr {
-        if node.ty() == T::ty() {
+        if node.ty() == T::NODE_TYPE {
             return Some(T::new(node));
         }
         curr = node.parent()

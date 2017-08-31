@@ -182,9 +182,9 @@ use self::fall_tree::search::{child_of_type_exn, child_of_type};
 pub struct FallFile<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for FallFile<'f> {
-    fn ty() -> NodeType { FALL_FILE }
+    const NODE_TYPE: NodeType  = FALL_FILE;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         FallFile { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -211,9 +211,9 @@ impl<'f> FallFile<'f> {
 pub struct TokenizerDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for TokenizerDef<'f> {
-    fn ty() -> NodeType { TOKENIZER_DEF }
+    const NODE_TYPE: NodeType  = TOKENIZER_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         TokenizerDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -228,9 +228,9 @@ impl<'f> TokenizerDef<'f> {
 pub struct LexRule<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for LexRule<'f> {
-    fn ty() -> NodeType { LEX_RULE }
+    const NODE_TYPE: NodeType  = LEX_RULE;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         LexRule { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -248,9 +248,9 @@ impl<'f> LexRule<'f> {
 pub struct SynRule<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for SynRule<'f> {
-    fn ty() -> NodeType { SYN_RULE }
+    const NODE_TYPE: NodeType  = SYN_RULE;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         SynRule { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -277,9 +277,9 @@ impl<'f> SynRule<'f> {
 pub struct Parameters<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Parameters<'f> {
-    fn ty() -> NodeType { PARAMETERS }
+    const NODE_TYPE: NodeType  = PARAMETERS;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         Parameters { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -294,9 +294,9 @@ impl<'f> Parameters<'f> {
 pub struct Parameter<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Parameter<'f> {
-    fn ty() -> NodeType { PARAMETER }
+    const NODE_TYPE: NodeType  = PARAMETER;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         Parameter { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -311,9 +311,9 @@ impl<'f> Parameter<'f> {
 pub struct Attributes<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Attributes<'f> {
-    fn ty() -> NodeType { ATTRIBUTES }
+    const NODE_TYPE: NodeType  = ATTRIBUTES;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         Attributes { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -328,9 +328,9 @@ impl<'f> Attributes<'f> {
 pub struct Attribute<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Attribute<'f> {
-    fn ty() -> NodeType { ATTRIBUTE }
+    const NODE_TYPE: NodeType  = ATTRIBUTE;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         Attribute { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -348,9 +348,9 @@ impl<'f> Attribute<'f> {
 pub struct AttributeValue<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AttributeValue<'f> {
-    fn ty() -> NodeType { ATTRIBUTE_VALUE }
+    const NODE_TYPE: NodeType  = ATTRIBUTE_VALUE;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         AttributeValue { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -363,9 +363,9 @@ impl<'f> AttributeValue<'f> {
 pub struct VerbatimDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for VerbatimDef<'f> {
-    fn ty() -> NodeType { VERBATIM_DEF }
+    const NODE_TYPE: NodeType  = VERBATIM_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         VerbatimDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -380,9 +380,9 @@ impl<'f> VerbatimDef<'f> {
 pub struct AstDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstDef<'f> {
-    fn ty() -> NodeType { AST_DEF }
+    const NODE_TYPE: NodeType  = AST_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         AstDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -400,9 +400,9 @@ impl<'f> AstDef<'f> {
 pub struct AstNodeDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstNodeDef<'f> {
-    fn ty() -> NodeType { AST_NODE_DEF }
+    const NODE_TYPE: NodeType  = AST_NODE_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         AstNodeDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -423,9 +423,9 @@ impl<'f> AstNodeDef<'f> {
 pub struct AstClassDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstClassDef<'f> {
-    fn ty() -> NodeType { AST_CLASS_DEF }
+    const NODE_TYPE: NodeType  = AST_CLASS_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         AstClassDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -440,9 +440,9 @@ impl<'f> AstClassDef<'f> {
 pub struct MethodDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for MethodDef<'f> {
-    fn ty() -> NodeType { METHOD_DEF }
+    const NODE_TYPE: NodeType  = METHOD_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         MethodDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -460,9 +460,9 @@ impl<'f> MethodDef<'f> {
 pub struct AstSelector<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstSelector<'f> {
-    fn ty() -> NodeType { AST_SELECTOR }
+    const NODE_TYPE: NodeType  = AST_SELECTOR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         AstSelector { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -486,9 +486,9 @@ impl<'f> AstSelector<'f> {
 pub struct TestDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for TestDef<'f> {
-    fn ty() -> NodeType { TEST_DEF }
+    const NODE_TYPE: NodeType  = TEST_DEF;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         TestDef { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -503,9 +503,9 @@ impl<'f> TestDef<'f> {
 pub struct RefExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for RefExpr<'f> {
-    fn ty() -> NodeType { REF_EXPR }
+    const NODE_TYPE: NodeType  = REF_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         RefExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -518,9 +518,9 @@ impl<'f> RefExpr<'f> {
 pub struct CallExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for CallExpr<'f> {
-    fn ty() -> NodeType { CALL_EXPR }
+    const NODE_TYPE: NodeType  = CALL_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         CallExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -538,9 +538,9 @@ impl<'f> CallExpr<'f> {
 pub struct BlockExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for BlockExpr<'f> {
-    fn ty() -> NodeType { BLOCK_EXPR }
+    const NODE_TYPE: NodeType  = BLOCK_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         BlockExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -555,9 +555,9 @@ impl<'f> BlockExpr<'f> {
 pub struct OptExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for OptExpr<'f> {
-    fn ty() -> NodeType { OPT_EXPR }
+    const NODE_TYPE: NodeType  = OPT_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         OptExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -572,9 +572,9 @@ impl<'f> OptExpr<'f> {
 pub struct RepExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for RepExpr<'f> {
-    fn ty() -> NodeType { REP_EXPR }
+    const NODE_TYPE: NodeType  = REP_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         RepExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -589,9 +589,9 @@ impl<'f> RepExpr<'f> {
 pub struct SeqExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for SeqExpr<'f> {
-    fn ty() -> NodeType { SEQ_EXPR }
+    const NODE_TYPE: NodeType  = SEQ_EXPR;
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         SeqExpr { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -614,17 +614,14 @@ pub enum Expr<'f> {
 }
 
 impl<'f> AstClass<'f> for Expr<'f> {
-    fn tys() -> &'static [NodeType] {
-        const TYS: &[NodeType] = &[
-            REF_EXPR,
-            CALL_EXPR,
-            BLOCK_EXPR,
-            OPT_EXPR,
-            REP_EXPR,
-            SEQ_EXPR,
-        ];
-        TYS
-    }
+    const NODE_TYPES: &'static [NodeType] = &[
+        REF_EXPR,
+        CALL_EXPR,
+        BLOCK_EXPR,
+        OPT_EXPR,
+        REP_EXPR,
+        SEQ_EXPR,
+    ];
 
     fn new(node: Node<'f>) -> Self {
         match node.ty() {

@@ -386,9 +386,9 @@ use self::fall_tree::search::{child_of_type_exn, child_of_type};
 pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
-    fn ty() -> NodeType { {{ node.node_type_name }} }
+    const NODE_TYPE: NodeType  = {{ node.node_type_name }};
     fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::ty());
+        assert_eq!(node.ty(), Self::NODE_TYPE);
         {{ node.struct_name }} { node: node }
     }
     fn node(&self) -> Node<'f> { self.node }
@@ -412,14 +412,11 @@ pub enum {{ class.enum_name }}<'f> {
 }
 
 impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
-    fn tys() -> &'static [NodeType] {
-        const TYS: &[NodeType] = &[
-            {% for v in class.variants %}
-                {{ v.0 }},
-            {% endfor %}
-        ];
-        TYS
-    }
+    const NODE_TYPES: &'static [NodeType] = &[
+        {% for v in class.variants %}
+            {{ v.0 }},
+        {% endfor %}
+    ];
 
     fn new(node: Node<'f>) -> Self {
         match node.ty() {
