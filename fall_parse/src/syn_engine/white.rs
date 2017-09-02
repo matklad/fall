@@ -116,7 +116,7 @@ impl<'a> Whitespacer<'a> {
         match black {
             BlackNode::Leaf { ty, token_idx: BlackIdx(token_idx) } =>
                 return WhiteNode {
-                    ty: ty,
+                    ty,
                     token_range: (token_idx, token_idx + 1),
                     children: Vec::new(),
                 },

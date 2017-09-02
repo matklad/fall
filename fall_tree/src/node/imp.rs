@@ -60,7 +60,7 @@ impl<'f> NodeImpl<'f> {
     }
 
     pub fn parent(&self) -> Option<Node<'f>> {
-        self.data().parent.map(|id| Node(NodeImpl { id: id, file: self.file }))
+        self.data().parent.map(|id| Node(NodeImpl { id, file: self.file }))
     }
 
     pub fn children(&self) -> NodeChildren<'f> {
@@ -89,7 +89,7 @@ impl<'f> Iterator for NodeChildren<'f> {
     type Item = Node<'f>;
 
     fn next(&mut self) -> Option<Node<'f>> {
-        self.inner.next().map(|&id| Node(NodeImpl { id: id, file: self.file }))
+        self.inner.next().map(|&id| Node(NodeImpl { id, file: self.file }))
     }
 }
 
@@ -116,11 +116,11 @@ pub fn new_file(lang: Language, text: String, stats: FileStats, node: &INode) ->
     go(TextUnit::zero(), node, &mut nodes);
 
     return FileImpl {
-        lang: lang,
-        stats: stats,
-        text: text,
+        lang,
+        stats,
+        text,
         root: NodeId(0),
-        nodes: nodes,
+        nodes,
     };
 
     fn go(range_start: TextUnit, node: &INode, nodes: &mut Vec<NodeData>) {

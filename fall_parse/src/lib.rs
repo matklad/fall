@@ -83,9 +83,9 @@ pub type CustomLexRule = fn(&str) -> Option<usize>;
 impl LexRule {
     pub fn new(ty: NodeType, re: &str, f: Option<CustomLexRule>) -> LexRule {
         LexRule {
-            ty: ty,
+            ty,
             re: Regex::new(&format!("^({})", re)).unwrap(),
-            f: f,
+            f,
         }
     }
 }

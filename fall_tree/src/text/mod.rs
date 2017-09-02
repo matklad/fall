@@ -17,7 +17,7 @@ pub struct Text<'f> {
 impl<'f> Text<'f> {
     pub fn from_owned(owned: &String) -> Text {
         Text {
-            owned: owned,
+            owned,
             range: TextRange::from_to(TextUnit::zero(), TextUnit::measure(owned))
         }
     }

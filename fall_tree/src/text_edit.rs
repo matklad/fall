@@ -49,7 +49,7 @@ pub(crate) fn combine_edits(text: Text, edit1: &TextEdit, edit2: &TextEdit) -> O
     let insert = left.insert.clone()
         + text.slice(TextRange::from_to(left.delete.end(), right.delete.start())).to_cow().as_ref()
         + &right.insert;
-    Some(TextEdit { delete: delete, insert: insert })
+    Some(TextEdit { delete, insert })
 }
 
 fn is_empty_edit(edit: &TextEdit) -> bool {

@@ -18,7 +18,7 @@ impl INode {
     pub fn new(ty: NodeType) -> INode {
         INode {
             inner: Arc::new(Inner {
-                ty: ty,
+                ty,
                 children: Vec::new(),
                 len: TextUnit::zero(),
             })
@@ -28,9 +28,9 @@ impl INode {
     pub fn new_leaf(ty: NodeType, len: TextUnit) -> INode {
         INode {
             inner: Arc::new(Inner {
-                ty: ty,
+                ty,
                 children: Vec::new(),
-                len: len,
+                len,
             })
         }
     }

@@ -22,7 +22,7 @@ pub const FALL_SPACING: &[Rule] = &[
 ];
 
 pub fn reformat_file(file: &File, rules: &[Rule], ws_type: NodeType) -> TextEdit {
-    let spacer = Spacer { rules: rules, ws_type: ws_type };
+    let spacer = Spacer { rules, ws_type };
     let mut edit = FileEdit::new(file);
     reformat_node(file.root(), &mut edit, &spacer);
     edit.into_text_edit()

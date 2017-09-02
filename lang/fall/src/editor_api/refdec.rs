@@ -8,11 +8,11 @@ pub struct Declaration<'f> {
 
 impl<'f> Declaration<'f> {
     pub fn new(node: Node<'f>) -> Declaration<'f> {
-        Declaration { node: node, name_ident: None }
+        Declaration { node, name_ident: None }
     }
 
     pub fn with_name_ident(node: Node<'f>, name_identifier: Option<Node<'f>>) -> Declaration<'f> {
-        Declaration { node: node, name_ident: name_identifier }
+        Declaration { node, name_ident: name_identifier }
     }
 }
 
@@ -24,7 +24,7 @@ pub struct Reference<'f> {
 
 impl<'f> Reference<'f> {
     pub fn new(node: Node<'f>, resolve: fn(Node<'f>) -> Option<Declaration<'f>>) -> Reference<'f> {
-        Reference { node: node, resolve: resolve }
+        Reference { node, resolve }
     }
 
     fn resolve(&self) -> Option<Declaration<'f>> {

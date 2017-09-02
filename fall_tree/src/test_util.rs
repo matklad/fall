@@ -115,7 +115,7 @@ fn make_edit(before: &str, after: &str) -> TextEdit {
         TextUnit::from_usize(before.len() - suffix)
     );
     let insert = after[prefix..after.len() - suffix].to_string();
-    TextEdit { delete: delete, insert: insert }
+    TextEdit { delete, insert }
 }
 
 

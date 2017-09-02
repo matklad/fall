@@ -147,7 +147,7 @@ fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
         }
     };
 
-    Ok(CtxMethod { name: method.name(), ret_type: ret_type, body: body })
+    Ok(CtxMethod { name: method.name(), ret_type, body })
 }
 
 fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
@@ -212,7 +212,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     _ => return Err(error!("bad pratt rule"))
                 };
                 fall_parse::PrattVariant::Postfix {
-                    ty: ty,
+                    ty,
                     op: Box::new(compile_expr(op)?),
                 }
             }
@@ -228,9 +228,9 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     _ => return Err(error!("bad pratt rule"))
                 };
                 fall_parse::PrattVariant::Prefix {
-                    ty: ty,
+                    ty,
                     op: Box::new(compile_expr(op)?),
-                    priority: priority,
+                    priority,
                 }
             }
             PratKind::Bin(priority) => {
@@ -245,9 +245,9 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     _ => return Err(error!("bad pratt rule"))
                 };
                 fall_parse::PrattVariant::Binary {
-                    ty: ty,
+                    ty,
                     op: Box::new(compile_expr(op)?),
-                    priority: priority
+                    priority
                 }
             }
         };
@@ -394,7 +394,7 @@ impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
     const NODE_TYPE: NodeType  = {{ node.node_type_name }};
     fn new(node: Node<'f>) -> Self {
         assert_eq!(node.ty(), Self::NODE_TYPE);
-        {{ node.struct_name }} { node: node }
+        {{ node.struct_name }} { node }
     }
     fn node(&self) -> Node<'f> { self.node }
 }

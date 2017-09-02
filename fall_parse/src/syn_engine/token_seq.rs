@@ -26,7 +26,7 @@ impl<'a> BlackTokens<'a> {
 
         BlackTokens {
             text: &text[ws_len..],
-            non_ws_indexes: non_ws_indexes,
+            non_ws_indexes,
             original_tokens: tokens,
         }
     }
