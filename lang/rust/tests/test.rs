@@ -14,6 +14,29 @@ fn inline_tests() {
     check_inline_tests(&lang_rust(), Path::new("src/rust.fall"), Path::new("tests/inline.txt"))
 }
 
+#[test]
+fn lexer() {
+    check_syntax_ws(&lang_rust(), r"
+/* comment
+  /* nested */
+*/
+
+struct S;
+/*
+", r#"
+FILE
+  WHITESPACE "\n"
+  BLOCK_COMMENT "/* comment\n  /* nested */\n*/"
+  WHITESPACE "\n\n"
+  STRUCT_DEF
+    STRUCT "struct"
+    WHITESPACE " "
+    IDENT "S"
+    SEMI ";"
+  WHITESPACE "\n"
+  BLOCK_COMMENT "/*\n"
+"#)
+}
 
 #[test]
 fn missing_token() {
@@ -90,6 +113,7 @@ FILE
     SEMI ";"
   WHITESPACE "\n    ""#)
 }
+
 
 
 #[test]
