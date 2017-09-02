@@ -1,4 +1,5 @@
 use {Node, NodeType, TextUnit};
+use ::visitor::{Visitor, NodeVisitor};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -7,6 +8,12 @@ pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
 
 pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
     Box::new(node.children().filter(move |n| n.ty() == ty))
+}
+
+pub fn descendants_of_type<'f>(node: Node<'f>, ty: NodeType) -> Vec<Node<'f>> {
+    Visitor(Vec::new())
+        .visit_nodes(&[ty], |nodes, node| nodes.push(node))
+        .walk_recursively_children_first(node)
 }
 
 pub fn child_of_type_exn(node: Node, ty: NodeType) -> Node {

@@ -8,12 +8,12 @@ pub trait NodeVisitor<'f, C> {
 
     fn visit<T, F>(self, f: F) -> AstVisitor<Self, T, F>
         where Self: Sized, T: AstNode<'f>, F: FnMut(&mut C, T) {
-        AstVisitor { visitor: self, f: f, t: PhantomData }
+        AstVisitor { visitor: self, f, t: PhantomData }
     }
 
     fn visit_nodes<'n, F>(self, nodes: &'n [NodeType], f: F) -> NodesVisitor<'n, Self, F>
         where Self: Sized, F: FnMut(&mut C, Node<'f>) {
-        NodesVisitor { visitor: self, f: f, nodes: nodes }
+        NodesVisitor { visitor: self, f, nodes }
     }
 
 

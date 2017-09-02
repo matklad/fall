@@ -102,6 +102,12 @@ fn performance_test() {
         .spawn(|| {
             let (total, file) = elapsed::measure_time(|| LANG_RUST.parse(text));
             let ast_len = fall_tree::dump_file(&file).len();
+            let errors = fall_tree::search::descendants_of_type(file.root(), fall_tree::ERROR);
+            if let Some(err) = errors.into_iter().next() {
+                let parent = err.parent().unwrap();
+                let ctx = parent.parent().unwrap_or(parent);
+                eprintln!("\nError in\n----------\n{}\n----------\n\n", ctx.text());
+            }
             assert!(ast_len > 10000);
             println!("{}\ntotal: {}", file.stats(), total);
         })
