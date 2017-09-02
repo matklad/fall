@@ -54,35 +54,35 @@ impl TestRenderer {
 
         let toml = base_dir.join("Cargo.toml");
         put_text_if_changed(&toml, &format!(r##"
-        [package]
-        name = "fall_tests_rendering"
-        version = "0.1.0"
-        authors = []
+            [package]
+            name = "fall_tests_rendering"
+            version = "0.1.0"
+            authors = []
 
-        [workspace]
+            [workspace]
 
-        [dependencies]
-        fall_tree = {{ path = "{fall_dir}/fall_tree" }}
-        fall_parse = {{ path = "{fall_dir}/fall_parse" }}
-    "##, fall_dir = fall_dir().display()))?;
+            [dependencies]
+            fall_tree = {{ path = "{fall_dir}/fall_tree" }}
+            fall_parse = {{ path = "{fall_dir}/fall_parse" }}
+        "##, fall_dir = fall_dir().display()))?;
 
         put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"
-        #![allow(warnings)]
-        extern crate fall_tree;
-        extern crate fall_parse;
-        mod syntax;
+            #![allow(warnings)]
+            extern crate fall_tree;
+            extern crate fall_parse;
+            mod syntax;
 
-        use std::io::Read;
+            use std::io::Read;
 
-        fn main() {
-            let mut input = String::new();
-            ::std::io::stdin().read_to_string(&mut input).unwrap();
-            for test in input.split("\n***###***\n") {
-                let file = syntax::LANG.parse(test.to_owned());
-                println!("{}\n", fall_tree::dump_file(&file));
+            fn main() {
+                let mut input = String::new();
+                ::std::io::stdin().read_to_string(&mut input).unwrap();
+                for test in input.split("\n***###***\n") {
+                    let file = syntax::language().parse(test.to_owned());
+                    println!("{}\n", fall_tree::dump_file(&file));
+                }
             }
-        }
-    "##)?;
+        "##)?;
 
         let build = Command::new("cargo")
             .arg("build")
@@ -92,7 +92,10 @@ impl TestRenderer {
             .wait_with_output()?;
 
         if !build.status.success() {
-            return Ok(String::from_utf8(build.stderr).unwrap());
+            let mut output = String::from_utf8(build.stderr).unwrap_or_default();
+            output += "\n\n";
+            output += &String::from_utf8(build.stdout).unwrap_or_default();
+            return Ok(output);
         }
 
         let mut child = Command::new("cargo")
