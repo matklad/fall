@@ -32,6 +32,7 @@ tokenizer {
   match 'match'
   return 'return'
   in 'in'
+  unsafe 'unsafe'
 
   l_paren '('
   r_paren ')'
@@ -645,7 +646,7 @@ fn main() { return; return (); }
 #[atom]
 pub rule block_expr {
   <without_restrictions
-    <block {block_form* expr?}>
+    {'unsafe'? <block {block_form* expr?}>}
   >
 }
 
@@ -664,6 +665,15 @@ pub rule expr_stmt {
     {expr {prev_is_block <not <eof>> | ';'}}
   >
 }
+
+test r"
+fn main() {
+    {1};
+    {1}
+    {1;}
+    unsafe { let _ = (); }
+}
+"
 
 #[atom]
 pub rule if_expr {

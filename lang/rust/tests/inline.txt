@@ -916,6 +916,59 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() {
+    {1};
+    {1}
+    {1;}
+    unsafe { let _ = (); }
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          LITERAL
+            NUMBER "1"
+          R_CURLY "}"
+      EMPTY_STMT
+        SEMI ";"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          LITERAL
+            NUMBER "1"
+          R_CURLY "}"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          EXPR_STMT
+            LITERAL
+              NUMBER "1"
+            SEMI ";"
+          R_CURLY "}"
+      BLOCK_EXPR
+        UNSAFE "unsafe"
+        L_CURLY "{"
+        LET_STMT
+          LET "let"
+          WILDCARD_PATTERN
+            UNDERSCORE "_"
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
+          SEMI ";"
+        R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { 
   if true { foo } else { bar } 
   if 1 { 2 } else if 3 { 4 } else { 5 }
