@@ -658,7 +658,7 @@ FILE
 
 ----------------------------------------
 fn main() {
-  (1, "", r"")
+  (1, "", r"", ' ', 'hell', '')
 }
 
 FILE
@@ -679,6 +679,15 @@ FILE
         COMMA ","
         LITERAL
           RAW_STRING "r\"\""
+        COMMA ","
+        LITERAL
+          CHAR "\' \'"
+        COMMA ","
+        LITERAL
+          CHAR "\'hell\'"
+        COMMA ","
+        LITERAL
+          CHAR "\'\'"
         R_PAREN ")"
       R_CURLY "}"
 

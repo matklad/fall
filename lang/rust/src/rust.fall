@@ -72,6 +72,7 @@ tokenizer {
   underscore '_'
   bang '!'
 
+  char r"'(\s*|\S*)'"
   lifetime r"'\p{XID_Continue}*"
   ident r"\p{XID_Start}\w*"
   number r"\d+"
@@ -541,12 +542,12 @@ rule without_restrictions(p) {
 
 #[atom]
 pub rule literal {
-  number | string | raw_string
+  number | string | raw_string | char
 }
 
 test r###"
 fn main() {
-  (1, "", r"")
+  (1, "", r"", ' ', 'hell', '')
 }
 "###
 
@@ -808,7 +809,7 @@ pub rule value_argument {
 }
 
 #[prefix]
-pub rule reference_expr { '&' expr }
+pub rule reference_expr { {'&' 'mut'?} expr }
 
 #[prefix]
 pub rule dereference_expr { '*' expr }
