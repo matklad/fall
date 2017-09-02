@@ -2,11 +2,10 @@ use std::collections::HashSet;
 
 use fall_tree::{ERROR, File, AstNode, NodeType, Node, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset, ast_parent};
-use ::{LANG_FALL, WHITESPACE, EOL_COMMENT, HASH_STRING, RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS,
-       PUB, TEST, SIMPLE_STRING, PARAMETER, IDENT, R_ANGLE, L_ANGLE, SYN_RULE, CALL_EXPR,
-       RefKind, CallKind, ChildKind, FallFile, TestDef, AstClassDef, LexRule, SynRule, AstNodeDef,
-       RefExpr, CallExpr, Attributes, AstSelector, Parameter, ast};
+use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
+use fall_tree::search::ast;
+
+use ::*;
 
 mod actions;
 mod formatter;
@@ -168,7 +167,7 @@ impl Diagnostic {
 }
 
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
-    let used_rules: HashSet<Node> = descendants_of_type::<RefExpr>(file.root())
+    let used_rules: HashSet<Node> = ast::descendants_of_type::<RefExpr>(file.root())
         .into_iter()
         .filter_map(|node| node.resolve())
         .filter_map(|r| match r {
@@ -176,7 +175,7 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
             _ => None
         })
         .chain(
-            descendants_of_type::<CallExpr>(file.root())
+            ast::descendants_of_type::<CallExpr>(file.root())
                 .into_iter()
                 .filter_map(|call| call.kind().ok())
                 .filter_map(|kind| match kind {
@@ -190,7 +189,7 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
     Visitor(Vec::new())
         .visit::<RefExpr, _>(|acc, ref_| {
             if ref_.resolve().is_none() {
-                if let Some(call) = ast_parent::<CallExpr>(ref_.node()) {
+                if let Some(call) = ast::parent::<CallExpr>(ref_.node()) {
                     if call.resolve_context().is_some() {
                         return;
                     }
@@ -304,19 +303,13 @@ pub fn reformat(file: &File) -> TextEdit {
 pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
     let test = find_leaf_at_offset(file.root(), offset)
         .right_biased()
-        .and_then(|node| ast_parent::<TestDef>(node));
+        .and_then(|node| ast::parent::<TestDef>(node));
 
     if let Some(test) = test {
         Some(FallFile::new(file.root()).tests().position(|t| t.node() == test.node()).unwrap())
     } else {
         None
     }
-}
-
-fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
-    Visitor(Vec::new())
-        .visit::<N, _>(|acc, node| acc.push(node))
-        .walk_recursively_children_first(node)
 }
 
 fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {

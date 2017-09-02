@@ -1,4 +1,4 @@
-use {Node, NodeType, AstNode, TextUnit};
+use {Node, NodeType, TextUnit};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -35,49 +35,8 @@ impl<'f> Iterator for Ancestors<'f> {
     }
 }
 
-pub fn ast_parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
-    let mut curr = Some(node);
-    while let Some(node) = curr {
-        if node.ty() == T::NODE_TYPE {
-            return Some(T::new(node));
-        }
-        curr = node.parent()
-    }
-    None
-}
-
-pub fn ast_parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
-    ast_parent(node).unwrap()
-}
-
-
 pub fn is_leaf(node: Node) -> bool {
     node.children().next().is_none() && !node.range().is_empty()
-}
-
-#[derive(Clone, Copy)]
-pub enum LeafAtOffset<'f> {
-    None,
-    Single(Node<'f>),
-    Between(Node<'f>, Node<'f>)
-}
-
-impl<'f> LeafAtOffset<'f> {
-    pub fn right_biased(self) -> Option<Node<'f>> {
-        match self {
-            LeafAtOffset::None => None,
-            LeafAtOffset::Single(node) => Some(node),
-            LeafAtOffset::Between(_, right) => Some(right)
-        }
-    }
-
-    pub fn left_biased(self) -> Option<Node<'f>> {
-        match self {
-            LeafAtOffset::None => None,
-            LeafAtOffset::Single(node) => Some(node),
-            LeafAtOffset::Between(left, _) => Some(left)
-        }
-    }
 }
 
 pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
@@ -109,6 +68,30 @@ pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     };
 }
 
+#[derive(Clone, Copy)]
+pub enum LeafAtOffset<'f> {
+    None,
+    Single(Node<'f>),
+    Between(Node<'f>, Node<'f>)
+}
+
+impl<'f> LeafAtOffset<'f> {
+    pub fn right_biased(self) -> Option<Node<'f>> {
+        match self {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => Some(node),
+            LeafAtOffset::Between(_, right) => Some(right)
+        }
+    }
+
+    pub fn left_biased(self) -> Option<Node<'f>> {
+        match self {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => Some(node),
+            LeafAtOffset::Between(left, _) => Some(left)
+        }
+    }
+}
 
 pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
     match child_position(node) {
@@ -121,6 +104,33 @@ pub fn prev_sibling(node: Node) -> Option<Node> {
     match child_position(node) {
         Some((parent, idx)) if idx > 0 => parent.children().nth(idx - 1),
         _ => None
+    }
+}
+
+pub mod ast {
+    use {Node, AstNode};
+    use visitor::{NodeVisitor, Visitor};
+
+    pub fn parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
+        let mut curr = Some(node);
+        while let Some(node) = curr {
+            if node.ty() == T::NODE_TYPE {
+                return Some(T::new(node));
+            }
+            curr = node.parent()
+        }
+        None
+    }
+
+    pub fn parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
+        parent(node).unwrap()
+    }
+
+
+    pub fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
+        Visitor(Vec::new())
+            .visit::<N, _>(|acc, node| acc.push(node))
+            .walk_recursively_children_first(node)
     }
 }
 
