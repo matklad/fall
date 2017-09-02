@@ -693,6 +693,37 @@ FILE
 
 ----------------------------------------
 fn main() {
+    S { foo, bar: baz };
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        STRUCT_LITERAL
+          PATH
+            IDENT "S"
+          L_CURLY "{"
+          STRUCT_LITERAL_FIELD
+            IDENT "foo"
+          COMMA ","
+          STRUCT_LITERAL_FIELD
+            IDENT "bar"
+            COLON ":"
+            PATH_EXPR
+              PATH
+                IDENT "baz"
+          R_CURLY "}"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
   ();
   (1);
   ((1));

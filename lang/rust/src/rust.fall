@@ -564,8 +564,14 @@ pub rule struct_literal {
 }
 
 pub rule struct_literal_field {
-  ident <commit> ':' expr
+  ident <commit> {':' expr}?
 }
+
+test r"
+fn main() {
+    S { foo, bar: baz };
+}
+"
 
 #[atom]
 pub rule unit_expr { '(' ')' }
