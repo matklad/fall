@@ -59,6 +59,7 @@ tokenizer {
   dotdot '..'
   dotdotdot '...'
   hash '#'
+  dollar '$'
 
   star '*'
   slash '/'
@@ -90,8 +91,9 @@ rule mod_form_first {
 }
 
 rule mod_form { 
-  use_decl | extern_crate_decl | fn_def | struct_def | enum_def | mod_def 
-| impl_def | trait_def | type_def | const_def
+  impl_form
+| use_decl | extern_crate_decl | struct_def | enum_def | mod_def 
+| impl_def | trait_def
 | extern_block
 }
 
@@ -221,12 +223,12 @@ pub rule members {
 
 
 rule impl_form {
-  fn_def | type_def
+  fn_def | type_def | const_def | macro_item
 }
 
 rule impl_form_first {
   'pub' | 'fn' | 'type' | 'const' | 'static'
-| '#' | 'extern'
+| '#' | 'extern' | {ident '!'}
 }
 
 pub rule type_def {
@@ -244,6 +246,15 @@ pub rule const_def {
 
 test r"
 pub const X: i32 = 0;
+"
+
+pub rule macro_item {
+  block_macro | line_macro ';'
+}
+
+test r"
+foo!{}
+bar!();
 "
 
 pub rule extern_block {

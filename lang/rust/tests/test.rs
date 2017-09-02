@@ -6,6 +6,7 @@ extern crate lang_rust;
 use std::path::{Path, PathBuf};
 
 use fall_tree::test_util::{check_syntax_ws, check_syntax, check_directory, check_inline_tests};
+use fall_tree::{TextRange, TextUnit};
 use lang_rust::lang_rust;
 
 #[test]
@@ -104,9 +105,14 @@ fn performance_test() {
             let ast_len = fall_tree::dump_file(&file).len();
             let errors = fall_tree::search::descendants_of_type(file.root(), fall_tree::ERROR);
             if let Some(err) = errors.into_iter().next() {
+                let err_range = TextRange::from_len(err.range().start(), TextUnit::from_usize(80));
+                let error_text = &file.text().to_string()[err_range];
                 let parent = err.parent().unwrap();
                 let ctx = parent.parent().unwrap_or(parent);
-                eprintln!("\nError in\n----------\n{}\n----------\n\n", ctx.text());
+                eprintln!("\nError in\n----------\n{}\n----------\n{:?}\n----------\n{}\n----------\n\n",
+                          ctx.text(),
+                          parent,
+                          error_text);
             }
             assert!(ast_len > 10000);
             println!("{}\ntotal: {}", file.stats(), total);

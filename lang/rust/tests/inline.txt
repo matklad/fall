@@ -134,6 +134,25 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+foo!{}
+bar!();
+
+FILE
+  MACRO_ITEM
+    BLOCK_MACRO
+      IDENT "foo"
+      BANG "!"
+      L_CURLY "{"
+      R_CURLY "}"
+  MACRO_ITEM
+    LINE_MACRO
+      IDENT "bar"
+      BANG "!"
+      L_PAREN "("
+      R_PAREN ")"
+    SEMI ";"
+
+----------------------------------------
 extern {
   static errno: i32;
   fn foo();
