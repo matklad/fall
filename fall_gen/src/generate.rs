@@ -349,30 +349,35 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
     }
 }
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::ParserDefinition;
+pub fn language() -> &'static Language {
+    lazy_static! {
+        static ref LANG: Language = {
+            use fall_parse::ParserDefinition;
 
-        struct Impl { parser_definition: ParserDefinition };
-        impl LanguageImpl for Impl {
-            fn parse(&self, text: &str) -> (FileStats, INode) {
-                self.parser_definition.parse(text, &LANG)
-            }
+            struct Impl { parser_definition: ParserDefinition };
+            impl LanguageImpl for Impl {
+                fn parse(&self, text: &str) -> (FileStats, INode) {
+                    self.parser_definition.parse(text, &LANG)
+                }
 
-            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
-                match ty {
-                    ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
-                    {% for node_type in node_types %}
-                    {{ node_type.0 | upper }} => NodeTypeInfo { name: "{{ node_type.0 | upper }}", whitespace_like: {{ node_type.1 }} },
-                    {% endfor %}
-                    _ => panic!("Unknown NodeType: {:?}", ty)
+                fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                    match ty {
+                        ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
+                        {% for node_type in node_types %}
+                        {{ node_type.0 | upper }} => NodeTypeInfo { name: "{{ node_type.0 | upper }}", whitespace_like: {{ node_type.1 }} },
+                        {% endfor %}
+                        _ => panic!("Unknown NodeType: {:?}", ty)
+                    }
                 }
             }
-        }
 
-        Language::new(Impl { parser_definition: create_parser_definition() })
-    };
+            Language::new(Impl { parser_definition: create_parser_definition() })
+        };
+    }
+
+    &*LANG
 }
+
 {% if verbatim is string %}
 {{ verbatim }}
 {% endif %}

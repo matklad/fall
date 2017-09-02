@@ -2,11 +2,11 @@ extern crate fall_tree;
 extern crate lang_json;
 
 use fall_tree::test_util::check_syntax;
-use lang_json::LANG_JSON;
+use lang_json::lang_json;
 
 #[test]
 fn obj() {
-    check_syntax(&LANG_JSON, r##"{ "foo": [1, 2, 3] }"##, r#"
+    check_syntax(&lang_json(), r##"{ "foo": [1, 2, 3] }"##, r#"
 FILE
   OBJECT
     LBRACE "{"
@@ -30,7 +30,7 @@ FILE
 
 #[test]
 fn comma1() {
-    check_syntax(&LANG_JSON, r##"{ "a": 1 "b": 2 }"##, r#"
+    check_syntax(&lang_json(), r##"{ "a": 1 "b": 2 }"##, r#"
 FILE
   OBJECT
     LBRACE "{"
@@ -51,7 +51,7 @@ FILE
 
 #[test]
 fn comma2() {
-    check_syntax(&LANG_JSON, r##"{ "a": 1, "b": 2, }"##, r#"
+    check_syntax(&lang_json(), r##"{ "a": 1, "b": 2, }"##, r#"
 FILE
   OBJECT
     LBRACE "{"
@@ -75,7 +75,7 @@ FILE
 
 #[test]
 fn comma3() { //FIXME
-    check_syntax(&LANG_JSON, r##"[1 2 3,]"##, r#"
+    check_syntax(&lang_json(), r##"[1 2 3,]"##, r#"
 FILE
   ARRAY
     LBRACK "["
@@ -96,7 +96,7 @@ FILE
 
 #[test]
 fn obj_recovery1() {
-    check_syntax(&LANG_JSON, r##"{"foo": 1, 92, "bar": 3}"##, r##"
+    check_syntax(&lang_json(), r##"{"foo": 1, 92, "bar": 3}"##, r##"
 FILE
   OBJECT
     LBRACE "{"
@@ -120,7 +120,7 @@ FILE
 
 #[test]
 fn obj_recovery2() {
-    check_syntax(&LANG_JSON, r##"{"foo": 1, "baz":: 92, "bar": 3}"##, r##"
+    check_syntax(&lang_json(), r##"{"foo": 1, "baz":: 92, "bar": 3}"##, r##"
 FILE
   OBJECT
     LBRACE "{"
@@ -150,7 +150,7 @@ FILE
 
 #[test]
 fn array_recovery2() {
-    check_syntax(&LANG_JSON, r##"[1, 2, } 2 3, "foo", null 92]"##, r##"
+    check_syntax(&lang_json(), r##"[1, 2, } 2 3, "foo", null 92]"##, r##"
 FILE
   ARRAY
     LBRACK "["
@@ -184,14 +184,14 @@ FILE
 fn accidentally_quadratic() {
     let n = 10;
     let input = "[".repeat(n) + &"]".repeat(n);
-    let file = LANG_JSON.parse(input);
+    let file = lang_json().parse(input);
     let ticks = file.stats().parsing_ticks;
     assert!(1000 < ticks && ticks < 2000, "spend {} ticks", ticks);
 }
 
 #[test]
 fn example() {
-    check_syntax(&LANG_JSON, r#"
+    check_syntax(&lang_json(), r#"
 {"widget": {
     "debug": "on",
     "window": {

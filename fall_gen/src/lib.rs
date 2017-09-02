@@ -41,7 +41,7 @@ impl TestRenderer {
     }
 
     pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
-        let file = lang_fall::LANG_FALL.parse(grammar);
+        let file = lang_fall::lang_fall().parse(grammar);
         let ast = lang_fall::ast(&file);
         let parser = match generate(ast) {
             Ok(parser) => parser,

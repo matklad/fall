@@ -6,7 +6,7 @@ use fall_tree::dump_file;
 
 
 fn ast(code: &str) -> String {
-    dump_file(&arith::LANG.parse(code.to_owned()))
+    dump_file(&arith::language().parse(code.to_owned()))
 }
 
 #[test]

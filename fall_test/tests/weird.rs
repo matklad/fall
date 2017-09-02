@@ -6,7 +6,7 @@ use fall_tree::dump_file_ws;
 
 
 fn ast(code: &str) -> String {
-    dump_file_ws(&weird::LANG.parse(code.to_owned()))
+    dump_file_ws(&weird::language().parse(code.to_owned()))
 }
 
 #[test]

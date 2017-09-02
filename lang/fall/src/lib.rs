@@ -12,7 +12,7 @@ pub mod editor_api;
 
 pub use self::fall::*;
 pub use self::ast_ext::{RefKind, PratKind, CallKind, MethodDescription, Arity, ChildKind};
-pub use self::fall::LANG as LANG_FALL;
+pub use self::fall::language as lang_fall;
 
 pub fn ast(file: &File) -> FallFile {
     FallFile::new(file.root())

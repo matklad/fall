@@ -47,42 +47,47 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
     }
 }
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::ParserDefinition;
+pub fn language() -> &'static Language {
+    lazy_static! {
+        static ref LANG: Language = {
+            use fall_parse::ParserDefinition;
 
-        struct Impl { parser_definition: ParserDefinition };
-        impl LanguageImpl for Impl {
-            fn parse(&self, text: &str) -> (FileStats, INode) {
-                self.parser_definition.parse(text, &LANG)
-            }
+            struct Impl { parser_definition: ParserDefinition };
+            impl LanguageImpl for Impl {
+                fn parse(&self, text: &str) -> (FileStats, INode) {
+                    self.parser_definition.parse(text, &LANG)
+                }
 
-            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
-                match ty {
-                    ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
-                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE", whitespace_like: true },
-                    RAW_STRING => NodeTypeInfo { name: "RAW_STRING", whitespace_like: false },
-                    FOO => NodeTypeInfo { name: "FOO", whitespace_like: false },
-                    BAR => NodeTypeInfo { name: "BAR", whitespace_like: false },
-                    T1 => NodeTypeInfo { name: "T1", whitespace_like: false },
-                    T2 => NodeTypeInfo { name: "T2", whitespace_like: false },
-                    T3 => NodeTypeInfo { name: "T3", whitespace_like: false },
-                    T4 => NodeTypeInfo { name: "T4", whitespace_like: false },
-                    LBRACE => NodeTypeInfo { name: "LBRACE", whitespace_like: false },
-                    RBRACE => NodeTypeInfo { name: "RBRACE", whitespace_like: false },
-                    ATOM => NodeTypeInfo { name: "ATOM", whitespace_like: false },
-                    FILE => NodeTypeInfo { name: "FILE", whitespace_like: false },
-                    PRIVATE_PARTIAL => NodeTypeInfo { name: "PRIVATE_PARTIAL", whitespace_like: false },
-                    EMPTY => NodeTypeInfo { name: "EMPTY", whitespace_like: false },
-                    BLOCK => NodeTypeInfo { name: "BLOCK", whitespace_like: false },
-                    _ => panic!("Unknown NodeType: {:?}", ty)
+                fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                    match ty {
+                        ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
+                        WHITESPACE => NodeTypeInfo { name: "WHITESPACE", whitespace_like: true },
+                        RAW_STRING => NodeTypeInfo { name: "RAW_STRING", whitespace_like: false },
+                        FOO => NodeTypeInfo { name: "FOO", whitespace_like: false },
+                        BAR => NodeTypeInfo { name: "BAR", whitespace_like: false },
+                        T1 => NodeTypeInfo { name: "T1", whitespace_like: false },
+                        T2 => NodeTypeInfo { name: "T2", whitespace_like: false },
+                        T3 => NodeTypeInfo { name: "T3", whitespace_like: false },
+                        T4 => NodeTypeInfo { name: "T4", whitespace_like: false },
+                        LBRACE => NodeTypeInfo { name: "LBRACE", whitespace_like: false },
+                        RBRACE => NodeTypeInfo { name: "RBRACE", whitespace_like: false },
+                        ATOM => NodeTypeInfo { name: "ATOM", whitespace_like: false },
+                        FILE => NodeTypeInfo { name: "FILE", whitespace_like: false },
+                        PRIVATE_PARTIAL => NodeTypeInfo { name: "PRIVATE_PARTIAL", whitespace_like: false },
+                        EMPTY => NodeTypeInfo { name: "EMPTY", whitespace_like: false },
+                        BLOCK => NodeTypeInfo { name: "BLOCK", whitespace_like: false },
+                        _ => panic!("Unknown NodeType: {:?}", ty)
+                    }
                 }
             }
-        }
 
-        Language::new(Impl { parser_definition: create_parser_definition() })
-    };
+            Language::new(Impl { parser_definition: create_parser_definition() })
+        };
+    }
+
+    &*LANG
 }
+
 fn parse_raw_string(s: &str) -> Option<usize> {
     let quote_start = s.find('"').unwrap();
     let q_hashes = concat!('"', "######", "######", "######", "######", "######");

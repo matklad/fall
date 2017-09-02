@@ -15,7 +15,7 @@ use self::actions::{ACTIONS, ContextActionId};
 use self::refdec::{Declaration, Reference};
 
 pub fn parse(text: String) -> File {
-    LANG_FALL.parse(text)
+    lang_fall().parse(text)
 }
 
 pub fn tree_as_text(file: &File) -> String {

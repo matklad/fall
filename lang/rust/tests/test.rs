@@ -6,17 +6,17 @@ extern crate lang_rust;
 use std::path::{Path, PathBuf};
 
 use fall_tree::test_util::{check_syntax_ws, check_syntax, check_directory, check_inline_tests};
-use lang_rust::LANG_RUST;
+use lang_rust::lang_rust;
 
 #[test]
 fn inline_tests() {
-    check_inline_tests(&LANG_RUST, Path::new("src/rust.fall"), Path::new("tests/inline.txt"))
+    check_inline_tests(&lang_rust(), Path::new("src/rust.fall"), Path::new("tests/inline.txt"))
 }
 
 
 #[test]
 fn missing_token() {
-    check_syntax(&LANG_RUST, "fn foo foo", r#"
+    check_syntax(&lang_rust(), "fn foo foo", r#"
 FILE
   FN_DEF
     FN "fn"
@@ -29,7 +29,7 @@ FILE
 
 #[test]
 fn skipping() {
-    check_syntax(&LANG_RUST, "foo fn foo(){} bar baz struct S {} quuz", r#"
+    check_syntax(&lang_rust(), "foo fn foo(){} bar baz struct S {} quuz", r#"
 FILE
   ERROR
     IDENT "foo"
@@ -55,13 +55,13 @@ FILE
 
 #[test]
 fn check_by_data() {
-    check_directory(&LANG_RUST, &test_data())
+    check_directory(&lang_rust(), &test_data())
 }
 
 
 #[test]
 fn comments_attachment() {
-    check_syntax_ws(&LANG_RUST, r#"
+    check_syntax_ws(&lang_rust(), r#"
 /// Doc comment attached
 struct A;
 
@@ -100,7 +100,7 @@ fn performance_test() {
     let thread = ::std::thread::Builder::new()
         .stack_size(8 * 1024 * 1024)
         .spawn(|| {
-            let (total, file) = elapsed::measure_time(|| LANG_RUST.parse(text));
+            let (total, file) = elapsed::measure_time(|| lang_rust().parse(text));
             let ast_len = fall_tree::dump_file(&file).len();
             let errors = fall_tree::search::descendants_of_type(file.root(), fall_tree::ERROR);
             if let Some(err) = errors.into_iter().next() {

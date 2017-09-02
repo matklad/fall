@@ -94,79 +94,84 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
     }
 }
 
-lazy_static! {
-    pub static ref LANG: Language = {
-        use fall_parse::ParserDefinition;
+pub fn language() -> &'static Language {
+    lazy_static! {
+        static ref LANG: Language = {
+            use fall_parse::ParserDefinition;
 
-        struct Impl { parser_definition: ParserDefinition };
-        impl LanguageImpl for Impl {
-            fn parse(&self, text: &str) -> (FileStats, INode) {
-                self.parser_definition.parse(text, &LANG)
-            }
+            struct Impl { parser_definition: ParserDefinition };
+            impl LanguageImpl for Impl {
+                fn parse(&self, text: &str) -> (FileStats, INode) {
+                    self.parser_definition.parse(text, &LANG)
+                }
 
-            fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
-                match ty {
-                    ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
-                    WHITESPACE => NodeTypeInfo { name: "WHITESPACE", whitespace_like: true },
-                    EOL_COMMENT => NodeTypeInfo { name: "EOL_COMMENT", whitespace_like: true },
-                    NODE => NodeTypeInfo { name: "NODE", whitespace_like: false },
-                    CLASS => NodeTypeInfo { name: "CLASS", whitespace_like: false },
-                    TOKENIZER => NodeTypeInfo { name: "TOKENIZER", whitespace_like: false },
-                    RULE => NodeTypeInfo { name: "RULE", whitespace_like: false },
-                    VERBATIM => NodeTypeInfo { name: "VERBATIM", whitespace_like: false },
-                    AST => NodeTypeInfo { name: "AST", whitespace_like: false },
-                    PUB => NodeTypeInfo { name: "PUB", whitespace_like: false },
-                    TEST => NodeTypeInfo { name: "TEST", whitespace_like: false },
-                    EQ => NodeTypeInfo { name: "EQ", whitespace_like: false },
-                    PIPE => NodeTypeInfo { name: "PIPE", whitespace_like: false },
-                    STAR => NodeTypeInfo { name: "STAR", whitespace_like: false },
-                    QUESTION => NodeTypeInfo { name: "QUESTION", whitespace_like: false },
-                    DOT => NodeTypeInfo { name: "DOT", whitespace_like: false },
-                    COMMA => NodeTypeInfo { name: "COMMA", whitespace_like: false },
-                    HASH => NodeTypeInfo { name: "HASH", whitespace_like: false },
-                    L_CURLY => NodeTypeInfo { name: "L_CURLY", whitespace_like: false },
-                    R_CURLY => NodeTypeInfo { name: "R_CURLY", whitespace_like: false },
-                    L_SQUARE => NodeTypeInfo { name: "L_SQUARE", whitespace_like: false },
-                    R_SQUARE => NodeTypeInfo { name: "R_SQUARE", whitespace_like: false },
-                    L_ANGLE => NodeTypeInfo { name: "L_ANGLE", whitespace_like: false },
-                    R_ANGLE => NodeTypeInfo { name: "R_ANGLE", whitespace_like: false },
-                    L_PAREN => NodeTypeInfo { name: "L_PAREN", whitespace_like: false },
-                    R_PAREN => NodeTypeInfo { name: "R_PAREN", whitespace_like: false },
-                    NUMBER => NodeTypeInfo { name: "NUMBER", whitespace_like: false },
-                    SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING", whitespace_like: false },
-                    HASH_STRING => NodeTypeInfo { name: "HASH_STRING", whitespace_like: false },
-                    IDENT => NodeTypeInfo { name: "IDENT", whitespace_like: false },
-                    FALL_FILE => NodeTypeInfo { name: "FALL_FILE", whitespace_like: false },
-                    SYN_RULE => NodeTypeInfo { name: "SYN_RULE", whitespace_like: false },
-                    PARAMETERS => NodeTypeInfo { name: "PARAMETERS", whitespace_like: false },
-                    PARAMETER => NodeTypeInfo { name: "PARAMETER", whitespace_like: false },
-                    REF_EXPR => NodeTypeInfo { name: "REF_EXPR", whitespace_like: false },
-                    SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR", whitespace_like: false },
-                    BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR", whitespace_like: false },
-                    OPT_EXPR => NodeTypeInfo { name: "OPT_EXPR", whitespace_like: false },
-                    REP_EXPR => NodeTypeInfo { name: "REP_EXPR", whitespace_like: false },
-                    CALL_EXPR => NodeTypeInfo { name: "CALL_EXPR", whitespace_like: false },
-                    TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF", whitespace_like: false },
-                    LEX_RULE => NodeTypeInfo { name: "LEX_RULE", whitespace_like: false },
-                    TEST_DEF => NodeTypeInfo { name: "TEST_DEF", whitespace_like: false },
-                    ATTRIBUTES => NodeTypeInfo { name: "ATTRIBUTES", whitespace_like: false },
-                    ATTRIBUTE => NodeTypeInfo { name: "ATTRIBUTE", whitespace_like: false },
-                    ATTRIBUTE_VALUE => NodeTypeInfo { name: "ATTRIBUTE_VALUE", whitespace_like: false },
-                    STRING => NodeTypeInfo { name: "STRING", whitespace_like: false },
-                    VERBATIM_DEF => NodeTypeInfo { name: "VERBATIM_DEF", whitespace_like: false },
-                    AST_DEF => NodeTypeInfo { name: "AST_DEF", whitespace_like: false },
-                    AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF", whitespace_like: false },
-                    AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF", whitespace_like: false },
-                    METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF", whitespace_like: false },
-                    AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR", whitespace_like: false },
-                    _ => panic!("Unknown NodeType: {:?}", ty)
+                fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                    match ty {
+                        ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
+                        WHITESPACE => NodeTypeInfo { name: "WHITESPACE", whitespace_like: true },
+                        EOL_COMMENT => NodeTypeInfo { name: "EOL_COMMENT", whitespace_like: true },
+                        NODE => NodeTypeInfo { name: "NODE", whitespace_like: false },
+                        CLASS => NodeTypeInfo { name: "CLASS", whitespace_like: false },
+                        TOKENIZER => NodeTypeInfo { name: "TOKENIZER", whitespace_like: false },
+                        RULE => NodeTypeInfo { name: "RULE", whitespace_like: false },
+                        VERBATIM => NodeTypeInfo { name: "VERBATIM", whitespace_like: false },
+                        AST => NodeTypeInfo { name: "AST", whitespace_like: false },
+                        PUB => NodeTypeInfo { name: "PUB", whitespace_like: false },
+                        TEST => NodeTypeInfo { name: "TEST", whitespace_like: false },
+                        EQ => NodeTypeInfo { name: "EQ", whitespace_like: false },
+                        PIPE => NodeTypeInfo { name: "PIPE", whitespace_like: false },
+                        STAR => NodeTypeInfo { name: "STAR", whitespace_like: false },
+                        QUESTION => NodeTypeInfo { name: "QUESTION", whitespace_like: false },
+                        DOT => NodeTypeInfo { name: "DOT", whitespace_like: false },
+                        COMMA => NodeTypeInfo { name: "COMMA", whitespace_like: false },
+                        HASH => NodeTypeInfo { name: "HASH", whitespace_like: false },
+                        L_CURLY => NodeTypeInfo { name: "L_CURLY", whitespace_like: false },
+                        R_CURLY => NodeTypeInfo { name: "R_CURLY", whitespace_like: false },
+                        L_SQUARE => NodeTypeInfo { name: "L_SQUARE", whitespace_like: false },
+                        R_SQUARE => NodeTypeInfo { name: "R_SQUARE", whitespace_like: false },
+                        L_ANGLE => NodeTypeInfo { name: "L_ANGLE", whitespace_like: false },
+                        R_ANGLE => NodeTypeInfo { name: "R_ANGLE", whitespace_like: false },
+                        L_PAREN => NodeTypeInfo { name: "L_PAREN", whitespace_like: false },
+                        R_PAREN => NodeTypeInfo { name: "R_PAREN", whitespace_like: false },
+                        NUMBER => NodeTypeInfo { name: "NUMBER", whitespace_like: false },
+                        SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING", whitespace_like: false },
+                        HASH_STRING => NodeTypeInfo { name: "HASH_STRING", whitespace_like: false },
+                        IDENT => NodeTypeInfo { name: "IDENT", whitespace_like: false },
+                        FALL_FILE => NodeTypeInfo { name: "FALL_FILE", whitespace_like: false },
+                        SYN_RULE => NodeTypeInfo { name: "SYN_RULE", whitespace_like: false },
+                        PARAMETERS => NodeTypeInfo { name: "PARAMETERS", whitespace_like: false },
+                        PARAMETER => NodeTypeInfo { name: "PARAMETER", whitespace_like: false },
+                        REF_EXPR => NodeTypeInfo { name: "REF_EXPR", whitespace_like: false },
+                        SEQ_EXPR => NodeTypeInfo { name: "SEQ_EXPR", whitespace_like: false },
+                        BLOCK_EXPR => NodeTypeInfo { name: "BLOCK_EXPR", whitespace_like: false },
+                        OPT_EXPR => NodeTypeInfo { name: "OPT_EXPR", whitespace_like: false },
+                        REP_EXPR => NodeTypeInfo { name: "REP_EXPR", whitespace_like: false },
+                        CALL_EXPR => NodeTypeInfo { name: "CALL_EXPR", whitespace_like: false },
+                        TOKENIZER_DEF => NodeTypeInfo { name: "TOKENIZER_DEF", whitespace_like: false },
+                        LEX_RULE => NodeTypeInfo { name: "LEX_RULE", whitespace_like: false },
+                        TEST_DEF => NodeTypeInfo { name: "TEST_DEF", whitespace_like: false },
+                        ATTRIBUTES => NodeTypeInfo { name: "ATTRIBUTES", whitespace_like: false },
+                        ATTRIBUTE => NodeTypeInfo { name: "ATTRIBUTE", whitespace_like: false },
+                        ATTRIBUTE_VALUE => NodeTypeInfo { name: "ATTRIBUTE_VALUE", whitespace_like: false },
+                        STRING => NodeTypeInfo { name: "STRING", whitespace_like: false },
+                        VERBATIM_DEF => NodeTypeInfo { name: "VERBATIM_DEF", whitespace_like: false },
+                        AST_DEF => NodeTypeInfo { name: "AST_DEF", whitespace_like: false },
+                        AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF", whitespace_like: false },
+                        AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF", whitespace_like: false },
+                        METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF", whitespace_like: false },
+                        AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR", whitespace_like: false },
+                        _ => panic!("Unknown NodeType: {:?}", ty)
+                    }
                 }
             }
-        }
 
-        Language::new(Impl { parser_definition: create_parser_definition() })
-    };
+            Language::new(Impl { parser_definition: create_parser_definition() })
+        };
+    }
+
+    &*LANG
 }
+
 fn parse_raw_string(s: &str) -> Option<usize> {
     let quote_start = s.find('"').unwrap();
     // Who needs more then 25 hashes anyway? :)

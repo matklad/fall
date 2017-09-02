@@ -41,7 +41,7 @@ fn main_inner(command: Task) -> Result<(), Box<Error>> {
     match command {
         Task::Generate(grammar) => {
             let input = file::get_text(&grammar)?;
-            let file = lang_fall::LANG_FALL.parse(input);
+            let file = lang_fall::lang_fall().parse(input);
             let ast = lang_fall::ast(&file);
             let result = fall_gen::generate(ast)?;
             file::put_text(grammar.with_extension("rs"), result)?;
