@@ -1,6 +1,9 @@
 test:
     cargo test --all
 
+performance:
+    slow_tests=1 cargo test --release --package lang_rust --test test -- performance_test
+
 bootstrap:
     rewrite=bootstrap cargo test --package fall_gen --test cli
     cargo test --all

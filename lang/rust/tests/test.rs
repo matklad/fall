@@ -93,6 +93,9 @@ FILE
 
 #[test]
 fn performance_test() {
+    if !::std::env::var("slow_tests").is_ok() {
+        return;
+    }
     let text = file::get_text(test_data().join("parser.rs_")).unwrap();
     let thread = ::std::thread::Builder::new()
         .stack_size(8 * 1024 * 1024)
