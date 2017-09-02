@@ -1,3 +1,5 @@
+extern crate elapsed;
+extern crate file;
 extern crate fall_tree;
 extern crate lang_rust;
 
@@ -53,9 +55,7 @@ FILE
 
 #[test]
 fn check_by_data() {
-    let dir = env!("CARGO_MANIFEST_DIR");
-    let test_data_path = PathBuf::from(dir).join("tests").join("data");
-    check_directory(&LANG_RUST, &test_data_path)
+    check_directory(&LANG_RUST, &test_data())
 }
 
 
@@ -88,4 +88,25 @@ FILE
     IDENT "B"
     SEMI ";"
   WHITESPACE "\n    ""#)
+}
+
+
+#[test]
+fn performance_test() {
+    let text = file::get_text(test_data().join("parser.rs_")).unwrap();
+    let thread = ::std::thread::Builder::new()
+        .stack_size(8 * 1024 * 1024)
+        .spawn(|| {
+            let (total, file) = elapsed::measure_time(|| LANG_RUST.parse(text));
+            let ast_len = fall_tree::dump_file(&file).len();
+            assert!(ast_len > 10000);
+            println!("{}\ntotal: {}", file.stats(), total);
+        })
+        .unwrap();
+    thread.join().unwrap()
+}
+
+fn test_data() -> PathBuf {
+    let dir = env!("CARGO_MANIFEST_DIR");
+    PathBuf::from(dir).join("tests/data")
 }

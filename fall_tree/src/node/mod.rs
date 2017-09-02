@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::fmt;
 use {Text, TextRange, NodeType, Language};
 use text_edit::TextEdit;
 
@@ -87,12 +88,20 @@ pub struct FileStats {
 }
 
 impl FileStats {
-    pub fn new() -> FileStats  {
+    pub fn new() -> FileStats {
         FileStats {
             lexing_time: Default::default(),
             parsing_time: Default::default(),
             parsing_ticks: Default::default(),
             reparsed_region: TextRange::empty()
         }
+    }
+}
+
+impl fmt::Display for FileStats {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "lexing: {}; parsing: {}",
+               ::elapsed::ElapsedDuration::new(self.lexing_time),
+               ::elapsed::ElapsedDuration::new(self.parsing_time))
     }
 }
