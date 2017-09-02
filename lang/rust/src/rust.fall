@@ -512,7 +512,7 @@ fn main() { let &mut foo = bar; }
 
 #[pratt]
 pub rule expr { 
-  literal | path_expr | unit_expr | paren_expr 
+  literal | path_expr | unit_expr | paren_expr | array_literal
 | lambda_expr | return_expr
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
@@ -590,6 +590,15 @@ fn main() {
   (1,);
   (1, 2);
 }
+"
+
+#[atom]
+pub rule array_literal {
+  <in_bracks <without_restrictions <comma_list expr>>>
+}
+
+test r"
+fn main() { [1, 2, 3]; }
 "
 
 #[atom]

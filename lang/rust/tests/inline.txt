@@ -751,6 +751,32 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { [1, 2, 3]; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        ARRAY_LITERAL
+          L_BRACK "["
+          LITERAL
+            NUMBER "1"
+          COMMA ","
+          LITERAL
+            NUMBER "2"
+          COMMA ","
+          LITERAL
+            NUMBER "3"
+          R_BRACK "]"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn foo() { 
     |x, y: i32,| 1 + 1;
     move || -> i32 { 92 };
