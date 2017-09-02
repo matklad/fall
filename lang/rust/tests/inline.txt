@@ -1,3 +1,22 @@
+use abi::{self, Abi};
+
+FILE
+  USE_DECL
+    USE "use"
+    PATH
+      IDENT "abi"
+    COLONCOLON "::"
+    USE_SPEC
+      L_CURLY "{"
+      USE_SPEC_ENTRY
+        SELF "self"
+      COMMA ","
+      USE_SPEC_ENTRY
+        IDENT "Abi"
+      R_CURLY "}"
+    SEMI ";"
+
+----------------------------------------
 fn foo(&mut self: Box<Self>, x: i32) -> () {
   ()
 }

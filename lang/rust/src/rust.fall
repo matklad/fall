@@ -108,8 +108,12 @@ pub rule use_spec {
 }
 
 pub rule use_spec_entry {
-  ident <commit> alias?
+  'self' | ident <commit> alias?
 }
+
+test r"
+use abi::{self, Abi};
+"
 
 pub rule extern_crate_decl {
   outer_attributes visibility? 'extern' 'crate' <commit> ident alias? ';'
