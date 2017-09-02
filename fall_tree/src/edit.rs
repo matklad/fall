@@ -11,7 +11,7 @@ pub struct FileEdit<'f> {
 impl<'f> FileEdit<'f> {
     pub fn new(file: &File) -> FileEdit {
         FileEdit {
-            file: file,
+            file,
             inserted: Vec::new(),
             replaced: Vec::new(),
             deleted: Vec::new(),
