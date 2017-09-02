@@ -850,7 +850,10 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { if true { foo } else { bar } }
+fn main() { 
+  if true { foo } else { bar } 
+  if 1 { 2 } else if 3 { 4 } else { 5 }
+}
 
 FILE
   FN_DEF
@@ -860,24 +863,50 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PATH_EXPR
+            PATH
+              IDENT "true"
+          BLOCK_EXPR
+            L_CURLY "{"
+            PATH_EXPR
+              PATH
+                IDENT "foo"
+            R_CURLY "}"
+          ELSE "else"
+          BLOCK_EXPR
+            L_CURLY "{"
+            PATH_EXPR
+              PATH
+                IDENT "bar"
+            R_CURLY "}"
       IF_EXPR
         IF "if"
-        PATH_EXPR
-          PATH
-            IDENT "true"
+        LITERAL
+          NUMBER "1"
         BLOCK_EXPR
           L_CURLY "{"
-          PATH_EXPR
-            PATH
-              IDENT "foo"
+          LITERAL
+            NUMBER "2"
           R_CURLY "}"
         ELSE "else"
-        BLOCK_EXPR
-          L_CURLY "{"
-          PATH_EXPR
-            PATH
-              IDENT "bar"
-          R_CURLY "}"
+        IF_EXPR
+          IF "if"
+          LITERAL
+            NUMBER "3"
+          BLOCK_EXPR
+            L_CURLY "{"
+            LITERAL
+              NUMBER "4"
+            R_CURLY "}"
+          ELSE "else"
+          BLOCK_EXPR
+            L_CURLY "{"
+            LITERAL
+              NUMBER "5"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------

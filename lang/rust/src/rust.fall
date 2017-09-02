@@ -518,7 +518,7 @@ pub rule expr {
 
 | method_call_expr | call_expr | field_expr | index_expr
 
-| reference_expr | dereference_expr | negation_expr
+| reference_expr | dereference_expr | negation_expr | not_expr
 
 | product_expr | sum_expr 
 | bit_shift
@@ -653,11 +653,14 @@ pub rule expr_stmt {
 pub rule if_expr {
   'if' <commit>  
     block_condition block_expr 
-    {'else' block_expr}?
+    {'else' {block_expr | if_expr}}?
 }
 
 test r"
-fn main() { if true { foo } else { bar } }
+fn main() { 
+  if true { foo } else { bar } 
+  if 1 { 2 } else if 3 { 4 } else { 5 }
+}
 "
 
 #[atom]
@@ -812,6 +815,9 @@ pub rule dereference_expr { '*' expr }
 
 #[prefix]
 pub rule negation_expr { '-' expr }
+
+#[prefix]
+pub rule not_expr { '!' expr }
 
 #[bin(10)]
 pub rule product_expr {
