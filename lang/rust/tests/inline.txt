@@ -693,7 +693,7 @@ FILE
 
 ----------------------------------------
 fn main() {
-    S { foo, bar: baz };
+    S { foo, bar: baz, ..Default::default() };
 }
 
 FILE
@@ -718,6 +718,17 @@ FILE
             PATH_EXPR
               PATH
                 IDENT "baz"
+          COMMA ","
+          DOTDOT ".."
+          CALL_EXPR
+            PATH_EXPR
+              PATH
+                PATH
+                  IDENT "Default"
+                COLONCOLON "::"
+                IDENT "default"
+            L_PAREN "("
+            R_PAREN ")"
           R_CURLY "}"
         SEMI ";"
       R_CURLY "}"

@@ -561,7 +561,10 @@ pub rule path_expr {
 #[replaces]
 pub rule struct_literal {
   <not <is_in 'condition'>>
-  <block <comma_list struct_literal_field>>
+  <block {
+    <comma_list struct_literal_field>
+    {'..' <without_restrictions expr>}?
+  }>
 }
 
 pub rule struct_literal_field {
@@ -570,7 +573,7 @@ pub rule struct_literal_field {
 
 test r"
 fn main() {
-    S { foo, bar: baz };
+    S { foo, bar: baz, ..Default::default() };
 }
 "
 
