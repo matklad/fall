@@ -290,7 +290,7 @@ pub rule type_parameter {
 
 rule type_bounds {
   ':' {
-    type_bound <commit> {'+' | <eof> | <not <not ','>>}
+    type_bound <commit> {'+' | <eof> | <not <not ','>> | <not <not '{'>>}
   }*
 }
 

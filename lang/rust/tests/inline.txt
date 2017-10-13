@@ -254,7 +254,6 @@ FILE
         PATH_TYPE
           PATH
             IDENT "Bar"
-      ERROR ""
     BLOCK_EXPR
       L_CURLY "{"
       R_CURLY "}"
