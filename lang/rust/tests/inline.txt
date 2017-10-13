@@ -220,6 +220,46 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+fn f() 
+  where T: Clone + Copy, Foo: Bar
+{}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "f"
+    L_PAREN "("
+    R_PAREN ")"
+    WHERE_CLAUSE
+      WHERE "where"
+      PATH_TYPE
+        PATH
+          IDENT "T"
+      COLON ":"
+      TYPE_BOUND
+        PATH_TYPE
+          PATH
+            IDENT "Clone"
+      PLUS "+"
+      TYPE_BOUND
+        PATH_TYPE
+          PATH
+            IDENT "Copy"
+      COMMA ","
+      PATH_TYPE
+        PATH
+          IDENT "Foo"
+      COLON ":"
+      TYPE_BOUND
+        PATH_TYPE
+          PATH
+            IDENT "Bar"
+      ERROR ""
+    BLOCK_EXPR
+      L_CURLY "{"
+      R_CURLY "}"
+
+----------------------------------------
 const C: Foo<Bar> = foo::<'bar, Baz>;
 
 FILE
