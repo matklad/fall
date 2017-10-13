@@ -39,7 +39,6 @@ var backend = (() => {
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
         parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
-        test_cb: cb => native.test_cb(cb)
     }
 })()
 
@@ -248,10 +247,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     let commands = [
         vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
-            backend.test_cb((err, value) => {
-                console.log(JSON.stringify(arguments));
-                console.log("Hello from Rust, ", value, err);
-            })
             let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
             vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         }),

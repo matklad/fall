@@ -33,6 +33,7 @@ tokenizer {
   return 'return'
   in 'in'
   unsafe 'unsafe'
+  where 'where'
 
   l_paren '('
   r_paren ')'
@@ -129,6 +130,7 @@ pub rule fn_def {
   type_parameters?
   value_parameters
   ret_type?
+  where_clause?
   {block_expr | ';'}
 }
 
@@ -283,9 +285,13 @@ pub rule type_parameters {
 }
 
 pub rule type_parameter {
-  ident <commit> {':' 
-    {type_bound <commit> {'+' | <eof> | <not <not ','>>}}*
-  }?
+  ident <commit> type_bounds?
+}
+
+rule type_bounds {
+  ':' {
+    type_bound <commit> {'+' | <eof> | <not <not ','>>}
+  }*
 }
 
 pub rule type_bound {
@@ -306,6 +312,17 @@ struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
 pub rule visibility {
   'pub'
 }
+
+pub rule where_clause {
+  'where' <commit>
+    {type_reference type_bounds {',' | <eof> | <not <not '{'>>}}*
+}
+
+test r"
+fn f() 
+  where T: Clone + Copy, Foo: Bar
+{}
+"
 
 rule mod_path { path }
 rule type_path { <enter 'type_path' path> }
@@ -989,6 +1006,7 @@ rule balanced_layer(bra, ket, contents) {
     <layer <balanced bra ket> contents> 
   ket
 }
+
 
 rule balanced(bra, ket) {
   { bra <commit> <balanced bra ket> ket

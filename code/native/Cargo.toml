@@ -1,4 +1,4 @@
-[package]
+    [package]
 name = "backend"
 version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
@@ -16,7 +16,13 @@ neon-build = "0.1.20"
 
 [dependencies]
 neon = "0.1.20"
+
+serde = "1.0"
+serde_derive = "1.0"
+neon-serde = "0.0.1"
+
 lazy_static = "0.2.8"
+
 fall_tree = { path = "../../fall_tree" }
 fall_gen = { path = "../../fall_gen" }
 lang_fall = { path = "../../lang/fall" }

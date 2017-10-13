@@ -116,7 +116,7 @@ impl TestRenderer {
         };
 
         {
-            let mut stdin = child.stdin.as_mut().unwrap();
+            let stdin = child.stdin.as_mut().unwrap();
             stdin.write_all(tests.as_bytes()).unwrap();
             stdin.flush().unwrap();
         }
