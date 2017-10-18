@@ -260,6 +260,7 @@ FILE
 
 ----------------------------------------
 const C: Foo<Bar> = foo::<'bar, Baz>;
+const C: Fn(i32, i64) -> () = foo;
 
 FILE
   CONST_DEF
@@ -288,6 +289,32 @@ FILE
             PATH
               IDENT "Baz"
           R_ANGLE ">"
+    SEMI ";"
+  CONST_DEF
+    CONST "const"
+    IDENT "C"
+    COLON ":"
+    PATH_TYPE
+      PATH
+        IDENT "Fn"
+        FN_TRAIT_SUGAR
+          L_PAREN "("
+          PATH_TYPE
+            PATH
+              IDENT "i32"
+          COMMA ","
+          PATH_TYPE
+            PATH
+              IDENT "i64"
+          R_PAREN ")"
+          THIN_ARROW "->"
+          UNIT_TYPE
+            L_PAREN "("
+            R_PAREN ")"
+    EQ "="
+    PATH_EXPR
+      PATH
+        IDENT "foo"
     SEMI ";"
 
 ----------------------------------------

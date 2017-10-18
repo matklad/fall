@@ -330,6 +330,7 @@ rule expr_path { <enter 'expr_path' path> }
 
 test r"
 const C: Foo<Bar> = foo::<'bar, Baz>;
+const C: Fn(i32, i64) -> () = foo;
 "
 
 #[pratt]
@@ -348,17 +349,21 @@ pub rule qualified_path {
 }
 
 rule path_segment {
-  { ident | 'self' | 'super' } type_arguments?
+  { ident | 'self' | 'super' } 
+  { type_arguments | <is_in 'type_path'> fn_trait_sugar}?
 }
 
 pub rule type_arguments {
-  { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
+  { <is_in 'type_path'> | <is_in 'expr_path'> '::' } 
   <in_angles {
     <comma_list lifetime>
     <comma_list type_reference>
   }> 
 }
 
+pub rule fn_trait_sugar {
+  <in_parens <comma_list type_reference>> ret_type?
+}
 
 pub rule alias { 'as' ident }
 
