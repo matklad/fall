@@ -30,11 +30,12 @@ var backend = (() => {
             return native.file_extend_selection(start, end);
         },
         tree: (): string => native.file_tree(),
-        findContextActions: (offset: number): [string] => native.file_find_context_actions(offset),
+        findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
         diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
         resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset),
+        findUsages: (offset: number): [number, number][] => native.file_find_usages(offset),
         reformat: (): [number, number, string] => native.file_reformat(),
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
@@ -156,6 +157,20 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    class ReferenceProvider implements vscode.ReferenceProvider {
+        provideReferences(document: TextDocument, position: Position, context: vscode.ReferenceContext, token: CancellationToken): vscode.Location[] {
+            console.log("Provide references");
+            
+            if (!activeEditor) return
+            if (activeEditor.document.languageId != "fall") return
+            if (document != activeEditor.document) return null
+            let usages = backend.findUsages(document.offsetAt(position))
+            console.log(usages);
+            console.log("Mapping");
+            return usages.map((range) => new vscode.Location(document.uri, convertRange(document, range)))
+        }
+    }
+
     class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
         provideDocumentFormattingEdits(document: TextDocument, options: vscode.FormattingOptions, token: CancellationToken): TextEdit[] {
             if (!activeEditor) return
@@ -242,6 +257,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
         vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider()),
         vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider()),
+        vscode.languages.registerReferenceProvider('fall', new ReferenceProvider()),
         vscode.languages.registerDocumentFormattingEditProvider('fall', new DocumentFormattingEditProvider()),
     ]
 

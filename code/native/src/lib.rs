@@ -232,6 +232,20 @@ fn file_resolve_reference(call: Call) -> JsResult<JsValue> {
     Ok(result)
 }
 
+fn file_find_usages(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = get_file_or_return_null!(file);
+    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
+    let offset = TextUnit::from_usize(offset.value() as usize);
+
+    let result = editor_api::find_usages(file, offset)
+        .into_iter()
+        .map(|range| (range.start().as_u32(), range.end().as_u32()))
+        .collect::<Vec<_>>();
+    Ok(to_value(&result, scope)?)
+}
+
 fn file_reformat(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -281,6 +295,7 @@ register_module!(m, {
     m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_resolve_reference", file_resolve_reference)?;
+    m.export("file_find_usages", file_find_usages)?;
     m.export("file_reformat", file_reformat)?;
 
     m.export("file_find_test_at_offset", file_find_test_at_offset)?;

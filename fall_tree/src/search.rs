@@ -10,6 +10,10 @@ pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<Iterator<Item=N
     Box::new(node.children().filter(move |n| n.ty() == ty))
 }
 
+pub fn subtree<'f>(node: Node<'f>) -> Box<Iterator<Item=Node<'f>> + 'f> {
+    Box::new(node.children().flat_map(subtree).chain(::std::iter::once(node)))
+}
+
 pub fn descendants_of_type<'f>(node: Node<'f>, ty: NodeType) -> Vec<Node<'f>> {
     Visitor(Vec::new())
         .visit_nodes(&[ty], |nodes, node| nodes.push(node))
