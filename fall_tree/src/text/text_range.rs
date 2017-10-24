@@ -2,6 +2,8 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::ops;
 
+use serde::{Serialize, Serializer};
+
 use super::TextUnit;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -21,6 +23,13 @@ impl fmt::Display for TextRange {
         write!(f, "[{}; {})", self.start(), self.end())
     }
 }
+
+impl Serialize for TextRange {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        (self.start, self.end).serialize(serializer)
+    }
+}
+
 
 impl TextRange {
     pub fn empty() -> TextRange {

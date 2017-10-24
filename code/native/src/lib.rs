@@ -58,13 +58,7 @@ fn file_highlight(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
     let file = get_file_or_return_null!(file);
-    let spans = editor_api::highlight(&file)
-        .into_iter()
-        .map(|(range, color)| {
-            (range.start().as_u32(), range.end().as_u32(), color)
-        })
-        .collect::<Vec<_>>();
-    Ok(to_value(&spans, scope)?)
+    Ok(to_value(&editor_api::highlight(&file), scope)?)
 }
 
 

@@ -16,7 +16,7 @@ var backend = (() => {
     var native = require('../../native')
     return {
         create: (text) => native.file_create(text),
-        highlight: () => native.file_highlight(),
+        highlight: (): [[number, number], string][] => native.file_highlight(),
         stats: () => {
             let stats = native.file_stats()
             if (stats == null) return stats
@@ -159,14 +159,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     class ReferenceProvider implements vscode.ReferenceProvider {
         provideReferences(document: TextDocument, position: Position, context: vscode.ReferenceContext, token: CancellationToken): vscode.Location[] {
-            console.log("Provide references");
-            
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
             let usages = backend.findUsages(document.offsetAt(position))
-            console.log(usages);
-            console.log("Mapping");
             return usages.map((range) => new vscode.Location(document.uri, convertRange(document, range)))
         }
     }
@@ -200,7 +196,7 @@ export function activate(context: vscode.ExtensionContext) {
             + ` reparse: ${stats.reparse_range[1] - stats.reparse_range[0]}`
         status.show()
 
-        for (let [x, y, type] of backend.highlight()) {
+        for (let [[x, y], type] of backend.highlight()) {
             if (!decorationSets[type]) {
                 console.log(x, y, type)
                 continue

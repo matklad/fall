@@ -4,10 +4,25 @@ extern crate lang_fall;
 use lang_fall::editor_api;
 use fall_tree::{TextUnit, TextRange};
 
+#[test]
+fn test_highlighting() {
+    let file = parse(r####"
+tokenizer { number r"\d+"}
+pub rue foo { bar }
+rule bar { number }
+"####);
+
+    let spans = editor_api::highlight(&file);
+    assert_eq!(
+        format!("{:?}", spans),
+        r#"[([1; 10), "keyword"), ([20; 26), "string"), ([13; 19), "token"), ([28; 47), "error"), ([48; 52), "keyword"), ([59; 65), "token"), ([53; 56), "rule")]"#
+    );
+}
+
 
 #[test]
 fn test_find_refs() {
-    let file = lang_fall::lang_fall().parse(TEXT.to_owned());
+    let file = parse(TEXT);
     let usages = editor_api::find_usages(
         &file,
         TextUnit::from_usize(309)
@@ -17,6 +32,10 @@ fn test_find_refs() {
         TextUnit::from_usize(202),
         TextUnit::from_usize(12)
     )]);
+}
+
+fn parse(text: &str) -> fall_tree::File {
+    lang_fall::lang_fall().parse(text.to_owned())
 }
 
 

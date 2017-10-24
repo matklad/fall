@@ -1,8 +1,9 @@
 use std::ops;
 use std::fmt;
+use serde::{Serialize, Serializer};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TextUnit(pub(super) u32);
+pub struct TextUnit(pub (super) u32);
 
 impl fmt::Debug for TextUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -13,6 +14,12 @@ impl fmt::Debug for TextUnit {
 impl fmt::Display for TextUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl Serialize for TextUnit {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
     }
 }
 
