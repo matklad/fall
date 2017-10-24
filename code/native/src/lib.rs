@@ -20,7 +20,7 @@ use neon::scope::{Scope, RootScope};
 use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsNull, JsValue, JsFunction, Object};
 use neon::task::Task;
-use neon_serde::{to_value, from_handle};
+use neon_serde::to_value;
 
 use lang_fall::editor_api;
 use lang_fall::editor_api::{FileStructureNode, Severity, Diagnostic};
@@ -268,21 +268,13 @@ fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
     f: fn(&File, D) -> Option<S>
 ) -> JsResult<'c, JsValue> {
     let scope: &'c mut RootScope<'c> = call.scope;
-    let arguments = call.arguments;
     let file = FILE.lock().unwrap();
     let file = match *file {
         None => return Ok(JsNull::new().upcast()),
         Some(ref file) => file,
     };
-    let result = {
-        let arg: Handle<'c, JsValue> = arguments.require(scope, 0)?;
-        // https://github.com/GabrielCastro/neon-serde/issues/4
-        let arg: D = from_handle(arg, unsafe { ::std::mem::transmute(&mut *scope) })?;
-        f(file, arg)
-    };
-    let value = to_value(&result, scope);
-
-    Ok(value?)
+    let arg: D = from_handle(call.arguments.require(scope, 0)?, scope)?;
+    Ok(to_value(&f(file, arg), scope)?)
 }
 
 register_module!(m, {
@@ -322,4 +314,12 @@ fn text_edit_to_js<'a>(scope: &'a mut RootScope, edit: TextEdit) -> Handle<'a, J
         &edit.insert
     );
     to_value(&tuple, scope).unwrap()
+}
+
+pub fn from_handle<'a, T: serde::Deserialize<'a> + ? Sized>(
+    input: Handle<'a, JsValue>,
+    scope: &mut RootScope<'a>,
+) -> neon_serde::errors::Result<T> {
+    let scope: &'a mut RootScope<'a> = unsafe { ::std::mem::transmute(scope) };
+    neon_serde::from_handle(input, scope)
 }
