@@ -80,14 +80,6 @@ fn file_stats(call: Call) -> JsResult<JsValue> {
     Ok(to_value(&stats, scope)?)
 }
 
-fn file_tree(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let tree = editor_api::tree_as_text(&file);
-    Ok(to_value(&tree, scope)?)
-}
-
 fn file_find_context_actions(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -278,11 +270,11 @@ fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
 }
 
 register_module!(m, {
+    m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
     m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("file_create", file_create)?;
     m.export("file_stats", file_stats)?;
-    m.export("file_tree", file_tree)?;
     m.export("file_find_context_actions", file_find_context_actions)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;

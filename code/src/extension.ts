@@ -15,6 +15,7 @@ interface FileStructureNode {
 var backend = (() => {
     var native = require('../../native')
     return {
+        treeAsText: (): string => native.tree_as_text(),
         highlight: (): [[number, number], string][] => native.highlight(),
         extendSelection: (range: [number, number]) => native.extend_selection(range),
         create: (text) => native.file_create(text),
@@ -27,7 +28,6 @@ var backend = (() => {
                 reparse_range: [stats.reparse_start, stats.reparse_end]
             }
         },
-        tree: (): string => native.file_tree(),
         findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
-            return backend.tree()
+            return backend.treeAsText()
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
