@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::ops;
 
-use serde::{Serialize, Serializer};
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
 use super::TextUnit;
 
@@ -27,6 +27,13 @@ impl fmt::Display for TextRange {
 impl Serialize for TextRange {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         (self.start, self.end).serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for TextRange {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let (start, end) = Deserialize::deserialize(deserializer)?;
+        Ok(TextRange { start, end })
     }
 }
 

@@ -15,8 +15,9 @@ interface FileStructureNode {
 var backend = (() => {
     var native = require('../../native')
     return {
-        create: (text) => native.file_create(text),
         highlight: (): [[number, number], string][] => native.highlight(),
+        extendSelection: (range: [number, number]) => native.extend_selection(range),
+        create: (text) => native.file_create(text),
         stats: () => {
             let stats = native.file_stats()
             if (stats == null) return stats
@@ -25,9 +26,6 @@ var backend = (() => {
                 parsing_time: stats.parsing_time,
                 reparse_range: [stats.reparse_start, stats.reparse_end]
             }
-        },
-        extendSelection: ([start, end]) => {
-            return native.file_extend_selection(start, end);
         },
         tree: (): string => native.file_tree(),
         findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
@@ -196,11 +194,6 @@ export function activate(context: vscode.ExtensionContext) {
             + ` reparse: ${stats.reparse_range[1] - stats.reparse_range[0]}`
         status.show()
 
-        console.log("A");
-        console.log(backend.highlight());
-        console.log("B");
-        
-        
         for (let [[x, y], type] of backend.highlight()) {
             if (!decorationSets[type]) {
                 console.log(x, y, type)

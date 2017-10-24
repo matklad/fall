@@ -1,6 +1,6 @@
 use std::ops;
 use std::fmt;
-use serde::{Serialize, Serializer};
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TextUnit(pub (super) u32);
@@ -22,6 +22,13 @@ impl Serialize for TextUnit {
         self.0.serialize(serializer)
     }
 }
+impl<'de> Deserialize<'de> for TextUnit {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Deserialize::deserialize(deserializer)?;
+        Ok(TextUnit(value))
+    }
+}
+
 
 impl TextUnit {
     pub fn zero() -> TextUnit {

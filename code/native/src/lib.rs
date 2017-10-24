@@ -11,7 +11,7 @@ extern crate neon_serde;
 extern crate serde_derive;
 extern crate serde;
 
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -20,7 +20,7 @@ use neon::scope::{Scope, RootScope};
 use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsNull, JsValue, JsFunction, Object};
 use neon::task::Task;
-use neon_serde::to_value;
+use neon_serde::{to_value, from_handle};
 
 use lang_fall::editor_api;
 use lang_fall::editor_api::{FileStructureNode, Severity, Diagnostic};
@@ -86,22 +86,6 @@ fn file_tree(call: Call) -> JsResult<JsValue> {
     let file = get_file_or_return_null!(file);
     let tree = editor_api::tree_as_text(&file);
     Ok(to_value(&tree, scope)?)
-}
-
-fn file_extend_selection(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let start = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value();
-    let end = call.arguments.require(scope, 1)?.check::<JsInteger>()?.value();
-    let range = TextRange::from_to(
-        TextUnit::from_usize(start as usize),
-        TextUnit::from_usize(end as usize),
-    );
-    match editor_api::extend_selection(&file, range) {
-        None => Ok(JsNull::new().upcast()),
-        Some(range) => Ok(to_value(&range, scope)?),
-    }
 }
 
 fn file_find_context_actions(call: Call) -> JsResult<JsValue> {
@@ -269,7 +253,7 @@ fn parse_test(call: Call) -> JsResult<JsValue> {
     Ok(JsNull::new().upcast())
 }
 
-fn file_fn<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
+fn file_fn0<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
     let file = match *file {
@@ -279,12 +263,34 @@ fn file_fn<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
     Ok(to_value(&f(file), scope)?)
 }
 
+fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
+    call: Call<'c>,
+    f: fn(&File, D) -> Option<S>
+) -> JsResult<'c, JsValue> {
+    let scope: &'c mut RootScope<'c> = call.scope;
+    let arguments = call.arguments;
+    let file = FILE.lock().unwrap();
+    let file = match *file {
+        None => return Ok(JsNull::new().upcast()),
+        Some(ref file) => file,
+    };
+    let result = {
+        let arg: Handle<'c, JsValue> = arguments.require(scope, 0)?;
+        // https://github.com/GabrielCastro/neon-serde/issues/4
+        let arg: D = from_handle(arg, unsafe { ::std::mem::transmute(&mut *scope) })?;
+        f(file, arg)
+    };
+    let value = to_value(&result, scope);
+
+    Ok(value?)
+}
+
 register_module!(m, {
+    m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
+    m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("file_create", file_create)?;
-    m.export("highlight", |call| file_fn(call, editor_api::highlight))?;
     m.export("file_stats", file_stats)?;
     m.export("file_tree", file_tree)?;
-    m.export("file_extend_selection", file_extend_selection)?;
     m.export("file_find_context_actions", file_find_context_actions)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;
