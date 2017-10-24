@@ -7,12 +7,10 @@ use fall_tree::search::ast;
 
 use ::*;
 
-mod actions;
 mod formatter;
 mod refdec;
 mod api_impl;
 
-use self::actions::{ACTIONS, ContextActionId};
 use self::refdec::{Declaration, Reference};
 
 pub fn parse(text: String) -> File {
@@ -31,16 +29,12 @@ pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
     api_impl::extend_selection::extend_selection(file, range)
 }
 
-pub fn collect_applicable_context_actions(file: &File, offset: TextUnit) -> Vec<ContextActionId> {
-    ACTIONS.iter()
-        .filter(|action| action.apply(file, offset).is_some())
-        .map(|action| action.id())
-        .collect()
+pub fn context_actions(file: &File, offset: TextUnit) -> Vec<&'static str> {
+    api_impl::actions::context_actions(file, offset)
 }
 
 pub fn apply_context_action(file: &File, offset: TextUnit, action_id: &str) -> TextEdit {
-    let action = ACTIONS.iter().find(|action| action.id().0 == action_id).unwrap();
-    action.apply(file, offset).unwrap().into_text_edit()
+    api_impl::actions::apply_context_action(file, offset, action_id)
 }
 
 pub struct FileStructureNode {

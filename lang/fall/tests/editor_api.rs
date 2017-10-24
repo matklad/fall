@@ -39,6 +39,25 @@ rule bar { number }
     );
 }
 
+#[test]
+fn test_actions() {
+    let file = parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar | baz }
+"####);
+    let offset = TextUnit::from_usize(47);
+    let actions = editor_api::context_actions(&file, offset);
+    assert_eq!(
+        format!("{:?}", actions),
+        r#"["Swap Alternatives"]"#
+    );
+    let edit = editor_api::apply_context_action(&file, offset, "Swap Alternatives");
+    assert_eq!(
+        format!("{:?}", edit),
+        r#"TextEdit { delete: [43; 52), insert: "baz | bar" }"#
+    )
+}
+
 
 #[test]
 fn test_find_refs() {

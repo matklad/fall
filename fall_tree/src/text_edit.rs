@@ -1,7 +1,7 @@
 use std::cmp::{min, max, Ordering, PartialOrd};
 use {Text, TextRange, TextUnit};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextEdit {
     pub delete: TextRange,
     pub insert: String,

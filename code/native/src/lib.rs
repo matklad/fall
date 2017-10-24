@@ -80,20 +80,6 @@ fn file_stats(call: Call) -> JsResult<JsValue> {
     Ok(to_value(&stats, scope)?)
 }
 
-fn file_find_context_actions(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let offset = TextUnit::from_usize(offset.value() as usize);
-
-    let actions = editor_api::collect_applicable_context_actions(file, offset)
-        .into_iter()
-        .map(|id| id.0)
-        .collect::<Vec<_>>();
-    Ok(to_value(&actions, scope)?)
-}
-
 fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -257,7 +243,7 @@ fn file_fn0<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
 
 fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
     call: Call<'c>,
-    f: fn(&File, D) -> Option<S>
+    f: fn(&File, D) -> S
 ) -> JsResult<'c, JsValue> {
     let scope: &'c mut RootScope<'c> = call.scope;
     let file = FILE.lock().unwrap();
@@ -273,9 +259,9 @@ register_module!(m, {
     m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
     m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
+    m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
     m.export("file_create", file_create)?;
     m.export("file_stats", file_stats)?;
-    m.export("file_find_context_actions", file_find_context_actions)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
