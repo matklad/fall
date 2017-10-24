@@ -16,7 +16,7 @@ var backend = (() => {
     var native = require('../../native')
     return {
         create: (text) => native.file_create(text),
-        highlight: (): [[number, number], string][] => native.file_highlight(),
+        highlight: (): [[number, number], string][] => native.highlight(),
         stats: () => {
             let stats = native.file_stats()
             if (stats == null) return stats
@@ -196,6 +196,11 @@ export function activate(context: vscode.ExtensionContext) {
             + ` reparse: ${stats.reparse_range[1] - stats.reparse_range[0]}`
         status.show()
 
+        console.log("A");
+        console.log(backend.highlight());
+        console.log("B");
+        
+        
         for (let [[x, y], type] of backend.highlight()) {
             if (!decorationSets[type]) {
                 console.log(x, y, type)

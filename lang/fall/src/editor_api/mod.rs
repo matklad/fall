@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use fall_tree::{File, AstNode, Node, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::search::{child_of_type, ancestors, find_leaf_at_offset};
+use fall_tree::search::{child_of_type, find_leaf_at_offset};
 use fall_tree::search::ast;
 
 use ::*;
@@ -28,17 +28,8 @@ pub fn highlight(file: &File) -> Vec<(TextRange, &'static str)> {
 }
 
 pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
-    let node = match find_node_at_range(&file, range) {
-        Some(node) => node,
-        None => return None,
-    };
-
-    match ancestors(node).skip_while(|n| n.range() == range).next() {
-        None => None,
-        Some(parent) => Some(parent.range()),
-    }
+    api_impl::extend_selection::extend_selection(file, range)
 }
-
 
 pub fn collect_applicable_context_actions(file: &File, offset: TextUnit) -> Vec<ContextActionId> {
     ACTIONS.iter()
@@ -261,41 +252,4 @@ pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
     } else {
         None
     }
-}
-
-fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
-    if range.is_empty() {
-        return try_find_non_ws_node_at_offset(file, range.start());
-    }
-
-    let root = file.root();
-    let (left, right) = match (
-        find_leaf_at_offset(root, range.start()).right_biased(),
-        find_leaf_at_offset(root, range.end()).left_biased()
-    ) {
-        (Some(l), Some(r)) => (l, r),
-        _ => return None
-    };
-
-    Some(common_ancestor(left, right))
-}
-
-fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node> {
-    let leaves = find_leaf_at_offset(file.root(), offset);
-    if let Some(leaf) = leaves.left_biased() {
-        if file.language().node_type_info(leaf.ty()).whitespace_like {
-            return leaves.right_biased();
-        }
-    }
-
-    leaves.left_biased()
-}
-
-fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {
-    for p in ancestors(n1) {
-        if ancestors(n2).any(|a| a == p) {
-            return p;
-        }
-    }
-    panic!("Can't find common ancestor of {:?} and {:?}", n1, n2)
 }

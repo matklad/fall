@@ -8,14 +8,35 @@ use fall_tree::{TextUnit, TextRange};
 fn test_highlighting() {
     let file = parse(r####"
 tokenizer { number r"\d+"}
-pub rue foo { bar }
+pub rule foo { bar }
 rule bar { number }
 "####);
 
     let spans = editor_api::highlight(&file);
+    eprintln!("spans = {:?}", spans);
     assert_eq!(
         format!("{:?}", spans),
-        r#"[([1; 10), "keyword"), ([20; 26), "string"), ([13; 19), "token"), ([28; 47), "error"), ([48; 52), "keyword"), ([59; 65), "token"), ([53; 56), "rule")]"#
+        r#"[([1; 10), "keyword"), ([20; 26), "string"), ([13; 19), "token"), ([28; 31), "keyword"), ([32; 36), "keyword"), ([43; 46), "rule"), ([37; 40), "rule"), ([49; 53), "keyword"), ([60; 66), "token"), ([54; 57), "rule")]"#
+    );
+}
+
+
+#[test]
+fn test_extend_selection() {
+    let file = parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar }
+rule bar { number }
+"####);
+    let offset = TextUnit::from_usize(44);
+    let s1 =
+        editor_api::extend_selection(&file, TextRange::from_len(offset, TextUnit::zero()))
+            .unwrap();
+    let s2 = editor_api::extend_selection(&file, s1).unwrap();
+    let s3 = editor_api::extend_selection(&file, s2).unwrap();
+    assert_eq!(
+        format!("{:?}", (s1, s2, s3)),
+        "([43; 46), [41; 48), [28; 48))"
     );
 }
 

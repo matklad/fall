@@ -11,6 +11,8 @@ extern crate neon_serde;
 extern crate serde_derive;
 extern crate serde;
 
+use serde::Serialize;
+
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use neon::vm::{Call, JsResult};
@@ -54,13 +56,6 @@ fn file_create(call: Call) -> JsResult<JsNull> {
     Ok(JsNull::new())
 }
 
-fn file_highlight(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    Ok(to_value(&editor_api::highlight(&file), scope)?)
-}
-
 
 fn file_stats(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
@@ -97,18 +92,15 @@ fn file_extend_selection(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
     let file = get_file_or_return_null!(file);
-    let start = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let end = call.arguments.require(scope, 1)?.check::<JsInteger>()?;
+    let start = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value();
+    let end = call.arguments.require(scope, 1)?.check::<JsInteger>()?.value();
     let range = TextRange::from_to(
-        TextUnit::from_usize(start.value() as usize),
-        TextUnit::from_usize(end.value() as usize),
+        TextUnit::from_usize(start as usize),
+        TextUnit::from_usize(end as usize),
     );
     match editor_api::extend_selection(&file, range) {
         None => Ok(JsNull::new().upcast()),
-        Some(range) => {
-            let range = (range.start().as_u32(), range.end().as_u32());
-            Ok(to_value(&range, scope)?)
-        }
+        Some(range) => Ok(to_value(&range, scope)?),
     }
 }
 
@@ -277,10 +269,19 @@ fn parse_test(call: Call) -> JsResult<JsValue> {
     Ok(JsNull::new().upcast())
 }
 
+fn file_fn<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let file = FILE.lock().unwrap();
+    let file = match *file {
+        None => return Ok(JsNull::new().upcast()),
+        Some(ref file) => file,
+    };
+    Ok(to_value(&f(file), scope)?)
+}
 
 register_module!(m, {
     m.export("file_create", file_create)?;
-    m.export("file_highlight", file_highlight)?;
+    m.export("highlight", |call| file_fn(call, editor_api::highlight))?;
     m.export("file_stats", file_stats)?;
     m.export("file_tree", file_tree)?;
     m.export("file_extend_selection", file_extend_selection)?;
