@@ -14,7 +14,7 @@ fn test_find_refs() {
     );
 
     assert_eq!(usages, vec![TextRange::from_len(
-        TextUnit::from_usize(202,),
+        TextUnit::from_usize(202),
         TextUnit::from_usize(12)
     )]);
 }
