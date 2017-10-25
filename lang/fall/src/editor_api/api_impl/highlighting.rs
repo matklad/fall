@@ -74,3 +74,17 @@ fn colorize_child(node: Node, child: NodeType, color: &'static str, spans: &mut 
     }
 }
 
+#[test]
+fn test_highlighting() {
+    let file = parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar }
+rule bar { number }
+"####);
+
+    let spans = highlight(&file);
+    assert_eq!(
+        format!("{:?}", spans),
+        r#"[([1; 10), "keyword"), ([20; 26), "string"), ([13; 19), "token"), ([28; 31), "keyword"), ([32; 36), "keyword"), ([43; 46), "rule"), ([37; 40), "rule"), ([49; 53), "keyword"), ([60; 66), "token"), ([54; 57), "rule")]"#
+    );
+}

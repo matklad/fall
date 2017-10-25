@@ -73,3 +73,22 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
     None
 }
 
+
+#[test]
+fn test_actions() {
+    let file = ::parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar | baz }
+"####);
+    let offset = TextUnit::from_usize(47);
+    let actions = context_actions(&file, offset);
+    assert_eq!(
+        format!("{:?}", actions),
+        r#"["Swap Alternatives"]"#
+    );
+    let edit = apply_context_action(&file, offset, "Swap Alternatives");
+    assert_eq!(
+        format!("{:?}", edit),
+        r#"TextEdit { delete: [43; 52), insert: "baz | bar" }"#
+    )
+}

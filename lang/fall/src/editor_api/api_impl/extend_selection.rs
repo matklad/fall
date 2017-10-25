@@ -51,3 +51,22 @@ fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {
     }
     panic!("Can't find common ancestor of {:?} and {:?}", n1, n2)
 }
+
+#[test]
+fn test_extend_selection() {
+    let file = ::parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar }
+rule bar { number }
+"####);
+    let offset = TextUnit::from_usize(44);
+    let s1 =
+        extend_selection(&file, TextRange::from_len(offset, TextUnit::zero()))
+            .unwrap();
+    let s2 = extend_selection(&file, s1).unwrap();
+    let s3 = extend_selection(&file, s2).unwrap();
+    assert_eq!(
+        format!("{:?}", (s1, s2, s3)),
+        "([43; 46), [41; 48), [28; 48))"
+    );
+}
