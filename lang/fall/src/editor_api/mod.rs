@@ -242,7 +242,7 @@ pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
 
 #[test]
 fn test_find_refs() {
-    let file = ::parse(r#####"
+    let file = parse(r#####"
 tokenizer {
   #[skip] whitespace r"\s+"
 

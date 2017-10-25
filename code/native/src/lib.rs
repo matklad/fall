@@ -18,7 +18,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use neon::vm::{Call, VmResult, JsResult};
 use neon::scope::{Scope, RootScope};
 use neon::mem::Handle;
-use neon::js::{JsString, JsArray, JsInteger, JsNull, JsValue, JsFunction, Object};
+use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
 
 use lang_fall::editor_api;
@@ -115,36 +115,6 @@ fn file_diagnostics(call: Call) -> JsResult<JsValue> {
     Ok(to_value(&result, scope)?)
 }
 
-fn file_resolve_reference(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let offset = TextUnit::from_usize(offset.value() as usize);
-
-    let result = if let Some(range) = editor_api::resolve_reference(file, offset) {
-        range_to_js(scope, range).upcast()
-    } else {
-        JsNull::new().upcast()
-    };
-
-    Ok(result)
-}
-
-fn file_find_usages(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let offset = TextUnit::from_usize(offset.value() as usize);
-
-    let result = editor_api::find_usages(file, offset)
-        .into_iter()
-        .map(|range| (range.start().as_u32(), range.end().as_u32()))
-        .collect::<Vec<_>>();
-    Ok(to_value(&result, scope)?)
-}
-
 fn file_reformat(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let file = FILE.lock().unwrap();
@@ -229,27 +199,16 @@ register_module!(m, {
     m.export("apply_context_action", |call| file_fn2(call, |file, offset: TextUnit, aid: String| {
         editor_api::apply_context_action(file, offset, &aid)
     }))?;
+    m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
+    m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
     m.export("file_create", file_create)?;
     m.export("file_diagnostics", file_diagnostics)?;
-    m.export("file_resolve_reference", file_resolve_reference)?;
-    m.export("file_find_usages", file_find_usages)?;
     m.export("file_reformat", file_reformat)?;
 
     m.export("file_find_test_at_offset", file_find_test_at_offset)?;
     m.export("parse_test", parse_test)?;
     Ok(())
 });
-
-fn text_unit_to_js<'a, T: Scope<'a>>(scope: &mut T, u: TextUnit) -> Handle<'a, JsInteger> {
-    JsInteger::new(scope, u.as_u32() as i32)
-}
-
-fn range_to_js<'a, T: Scope<'a>>(scope: &mut T, range: TextRange) -> Handle<'a, JsArray> {
-    let result = JsArray::new(scope, 2);
-    result.set(0, text_unit_to_js(scope, range.start())).unwrap();
-    result.set(1, text_unit_to_js(scope, range.end())).unwrap();
-    result
-}
 
 fn text_edit_to_js<'a>(scope: &'a mut RootScope, edit: TextEdit) -> Handle<'a, JsValue> {
     let tuple = (
