@@ -32,7 +32,7 @@ var backend = (() => {
         diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
         create: (text) => native.file_create(text),
         reformat: (): FallTextEdit => native.reformat(),
-        findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
+        testAtOffset: (offset: number): number => native.test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
         parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
     }
@@ -100,7 +100,7 @@ export function activate(context: vscode.ExtensionContext) {
     class CodeActionProvider implements vscode.CodeActionProvider {
         provideCodeActions(document: TextDocument, range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
             let offset = document.offsetAt(range.start);
-            let test = backend.findTestAtOffset(offset);
+            let test = backend.testAtOffset(offset);
             if (test != null) {
                 return [{
                     title: "Parse test",

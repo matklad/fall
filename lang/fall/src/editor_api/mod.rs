@@ -67,7 +67,7 @@ pub fn reformat(file: &File) -> TextEdit {
     api_impl::formatter::reformat(file)
 }
 
-pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
+pub fn test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
     let test = find_leaf_at_offset(file.root(), offset)
         .right_biased()
         .and_then(|node| ast::parent::<TestDef>(node));

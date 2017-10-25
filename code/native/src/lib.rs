@@ -70,19 +70,6 @@ fn performance_counters(file: &File) -> PerformanceCounters {
     }
 }
 
-fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let offset = TextUnit::from_usize(offset.value() as usize);
-    if let Some(idx) = editor_api::find_test_at_offset(file, offset) {
-        Ok(to_value(&idx, scope)?)
-    } else {
-        Ok(JsNull::new().upcast())
-    }
-}
-
 fn parse_test(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
@@ -162,10 +149,9 @@ register_module!(m, {
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
     m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
     m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
-    m.export("file_create", file_create)?;
-
-    m.export("file_find_test_at_offset", file_find_test_at_offset)?;
+    m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
     m.export("parse_test", parse_test)?;
+    m.export("file_create", file_create)?;
     Ok(())
 });
 
