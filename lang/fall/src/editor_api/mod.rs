@@ -4,7 +4,6 @@ use fall_tree::search::ast;
 
 use ::*;
 
-mod formatter;
 mod api_impl;
 
 pub fn parse(text: String) -> File {
@@ -83,7 +82,7 @@ pub fn find_usages(file: &File, offset: TextUnit) -> Vec<TextRange> {
 }
 
 pub fn reformat(file: &File) -> TextEdit {
-    self::formatter::reformat_file(file, self::formatter::FALL_SPACING, WHITESPACE)
+    api_impl::formatter::reformat(file)
 }
 
 pub fn find_test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {

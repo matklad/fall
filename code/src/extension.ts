@@ -13,24 +13,25 @@ interface FileStructureNode {
 }
 
 type TextRange = [number, number]
+type FallTextEdit = { delete: TextRange, insert: string }
 
 var backend = (() => {
     var native = require('../../native')
     return {
         treeAsText: (): string => native.tree_as_text(),
-        performaceCounters: (): {lexing_time: number, parsing_time: number, reparsed_region: TextRange} => {
+        performanceCounters: (): { lexing_time: number, parsing_time: number, reparsed_region: TextRange } => {
             return native.performance_counters()
         },
         highlight: (): [TextRange, string][] => native.highlight(),
         structure: (): [FileStructureNode] => native.structure(),
         extendSelection: (range: TextRange) => native.extend_selection(range),
         contextActions: (offset: number): string[] => native.context_actions(offset),
-        applyContextAction: (offset: number, id: string) => native.apply_context_action(offset, id),
+        applyContextAction: (offset: number, id: string): FallTextEdit => native.apply_context_action(offset, id),
         resolveReference: (offset: number): TextRange => native.resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.find_usages(offset),
         diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
         create: (text) => native.file_create(text),
-        reformat: (): [number, number, string] => native.file_reformat(),
+        reformat: (): FallTextEdit => native.reformat(),
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
         parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
@@ -84,7 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
         public provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
             return new Promise((resolve, reject) => {
                 backend.parse_test(activeTest, (err, value) => {
-                    if (err) return reject(err) 
+                    if (err) return reject(err)
                     resolve(value)
                 })
             })
@@ -119,8 +120,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    function convertRange(document: TextDocument, range: TextRange): Range {
-        return new Range(document.positionAt(range[0]), document.positionAt(range[1]))
+    function convertRange(document: TextDocument, [start, end]: TextRange): Range {
+        return new Range(document.positionAt(start), document.positionAt(end))
     }
 
     class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
@@ -166,8 +167,8 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let rawEdit = backend.reformat()
-            return [new TextEdit(convertRange(document, [rawEdit[0], rawEdit[1]]), rawEdit[2])]
+            let { delete: del, insert } = backend.reformat()
+            return [new TextEdit(convertRange(document, del), insert)]
         }
     }
 
@@ -183,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
         let text = activeEditor.document.getText()
         backend.create(text)
         treeTextDocumentProvider.eventEmitter.fire(syntaxTreeUri)
-        let stats = backend.performaceCounters()
+        let stats = backend.performanceCounters()
         const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
         status.text = `lexing: ${to_ms(stats.lexing_time)}`
             + ` parsing: ${to_ms(stats.parsing_time)}`
@@ -280,11 +281,8 @@ export function activate(context: vscode.ExtensionContext) {
                 return
             }
 
-            let {delete: [start, end], insert} = backend.applyContextAction(offset, id);
-            let range = new Range(
-                activeEditor.document.positionAt(start),
-                activeEditor.document.positionAt(end),
-            )
+            let { delete: del, insert } = backend.applyContextAction(offset, id);
+            let range = convertRange(activeEditor.document, del)
             activeEditor.edit((bulder) => {
                 bulder.replace(range, insert)
             })

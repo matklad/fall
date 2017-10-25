@@ -22,7 +22,7 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
 
 use lang_fall::editor_api;
-use fall_tree::{TextRange, TextUnit, File, TextEdit};
+use fall_tree::{TextRange, TextUnit, File};
 use fall_gen::TestRenderer;
 
 lazy_static! {
@@ -81,15 +81,6 @@ fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
     } else {
         Ok(JsNull::new().upcast())
     }
-}
-
-fn file_reformat(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let edit = editor_api::reformat(file);
-
-    Ok(text_edit_to_js(scope, edit).upcast())
 }
 
 fn parse_test(call: Call) -> JsResult<JsValue> {
@@ -170,22 +161,13 @@ register_module!(m, {
     m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
     m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
+    m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
     m.export("file_create", file_create)?;
-    m.export("file_reformat", file_reformat)?;
 
     m.export("file_find_test_at_offset", file_find_test_at_offset)?;
     m.export("parse_test", parse_test)?;
     Ok(())
 });
-
-fn text_edit_to_js<'a>(scope: &'a mut RootScope, edit: TextEdit) -> Handle<'a, JsValue> {
-    let tuple = (
-        edit.delete.start().as_u32(),
-        edit.delete.end().as_u32(),
-        &edit.insert
-    );
-    to_value(&tuple, scope).unwrap()
-}
 
 fn from_handle<'a, T: serde::Deserialize<'a> + ? Sized>(
     input: Handle<'a, JsValue>,

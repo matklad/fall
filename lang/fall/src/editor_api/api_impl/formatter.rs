@@ -1,27 +1,33 @@
-use ::{PIPE, L_ANGLE, R_ANGLE};
 use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit};
 use fall_tree::search::{next_sibling, prev_sibling};
+use ::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 
-#[derive(Clone, Copy)]
-pub enum Rule {
-    After(NodeType, Spaces),
-    Before(NodeType, Spaces)
+pub fn reformat(file: &File) -> TextEdit {
+    reformat_file(file, FALL_SPACING, WHITESPACE)
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Spaces {
-    None,
-    Single
-}
-
-pub const FALL_SPACING: &[Rule] = &[
+const FALL_SPACING: &[Rule] = &[
     Rule::After(PIPE, Spaces::Single),
     Rule::Before(PIPE, Spaces::Single),
     Rule::After(L_ANGLE, Spaces::None),
     Rule::Before(R_ANGLE, Spaces::None),
 ];
 
-pub fn reformat_file(file: &File, rules: &[Rule], ws_type: NodeType) -> TextEdit {
+
+#[derive(Clone, Copy)]
+enum Rule {
+    After(NodeType, Spaces),
+    Before(NodeType, Spaces)
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Spaces {
+    None,
+    Single
+}
+
+
+fn reformat_file(file: &File, rules: &[Rule], ws_type: NodeType) -> TextEdit {
     let spacer = Spacer { rules, ws_type };
     let mut edit = FileEdit::new(file);
     reformat_node(file.root(), &mut edit, &spacer);
@@ -74,40 +80,33 @@ fn reformat_node<'f>(node: Node<'f>, edit: &mut FileEdit<'f>, spacer: &Spacer) {
 
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use ::WHITESPACE;
+fn test_reformat(before: &str, after: &str) {
+    let file = ::parse(before.trim());
+    let edit = reformat_file(&file, FALL_SPACING, WHITESPACE);
+    let actual = edit.apply(file.text());
+    ::fall_tree::test_util::report_diff(after.trim(), &actual);
+}
 
-    use fall_tree::test_util::report_diff;
+#[test]
+fn test_adds_spaces_after_pipe() {
+    test_reformat(r"
+           rule foo { x|y }
+       ", r"
+           rule foo { x | y }
+       ")
+}
 
-    fn test_reformat(before: &str, after: &str) {
-        let file = ::editor_api::parse(before.trim().to_owned());
-        let edit = reformat_file(&file, FALL_SPACING, WHITESPACE);
-        let actual = edit.apply(file.text());
-        report_diff(after.trim(), &actual);
-    }
-
-    #[test]
-    fn test_adds_spaces_after_pipe() {
-        test_reformat(r"
-            rule foo { x|y }
-        ", r"
-            rule foo { x | y }
-        ")
-    }
-
-    #[test]
-    fn test_dont_mess_newlines() {
-        test_reformat(r"
-            rule foo {
-              x
-            | y
-            }
-        ", r"
-            rule foo {
-              x
-            | y
-            }
-        ")
-    }
+#[test]
+fn test_dont_mess_newlines() {
+    test_reformat(r"
+           rule foo {
+             x
+           | y
+           }
+       ", r"
+           rule foo {
+             x
+           | y
+           }
+       ")
 }
