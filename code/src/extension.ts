@@ -25,8 +25,8 @@ var backend = (() => {
         structure: (): [FileStructureNode] => native.structure(),
         extendSelection: (range: TextRange) => native.extend_selection(range),
         create: (text) => native.file_create(text),
-        findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
-        applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
+        contextActions: (offset: number): string[] => native.context_actions(offset),
+        applyContextAction: (offset: number, id: string) => native.apply_context_action(offset, id),
         diagnostics: (): [{ range: TextRange, text: string, severity: string }] => native.file_diagnostics(),
         resolveReference: (offset: number): TextRange => native.file_resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.file_find_usages(offset),
@@ -108,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }]
             }
 
-            let actions = backend.findContextActions(offset);
+            let actions = backend.contextActions(offset);
             return actions.map((id) => {
                 return {
                     title: id,
@@ -280,13 +280,13 @@ export function activate(context: vscode.ExtensionContext) {
                 return
             }
 
-            let edit = backend.applyContextAction(offset, id);
+            let {delete: [start, end], insert} = backend.applyContextAction(offset, id);
             let range = new Range(
-                activeEditor.document.positionAt(edit[0]),
-                activeEditor.document.positionAt(edit[1]),
+                activeEditor.document.positionAt(start),
+                activeEditor.document.positionAt(end),
             )
             activeEditor.edit((bulder) => {
-                bulder.replace(range, edit[2])
+                bulder.replace(range, insert)
             })
         })
     ]

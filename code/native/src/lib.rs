@@ -15,12 +15,11 @@ use serde::{Serialize, Deserialize};
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use neon::vm::{Call, JsResult};
+use neon::vm::{Call, VmResult, JsResult};
 use neon::scope::{Scope, RootScope};
 use neon::mem::Handle;
 use neon::js::{JsString, JsArray, JsInteger, JsNull, JsValue, JsFunction, Object};
 use neon::task::Task;
-use neon_serde::to_value;
 
 use lang_fall::editor_api;
 use lang_fall::editor_api::{Severity, Diagnostic};
@@ -83,19 +82,6 @@ fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
     } else {
         Ok(JsNull::new().upcast())
     }
-}
-
-fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let offset = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-    let offset = TextUnit::from_usize(offset.value() as usize);
-    let id = call.arguments.require(scope, 1)?.check::<JsString>()?;
-
-    let edit = editor_api::apply_context_action(file, offset, &id.value());
-
-    Ok(text_edit_to_js(scope, edit).upcast())
 }
 
 fn file_diagnostics(call: Call) -> JsResult<JsValue> {
@@ -196,28 +182,41 @@ fn parse_test(call: Call) -> JsResult<JsValue> {
     Ok(JsNull::new().upcast())
 }
 
-fn file_fn0<S: Serialize>(call: Call, f: fn(&File) -> S) -> JsResult<JsValue> {
-    let scope = call.scope;
+fn file_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
+    where S: Serialize,
+          F: Fn(&mut Call<'a>, &File) -> VmResult<S> {
     let file = FILE.lock().unwrap();
     let file = match *file {
         None => return Ok(JsNull::new().upcast()),
         Some(ref file) => file,
     };
-    Ok(to_value(&f(file), scope)?)
+    let result = f(call, file)?;
+    Ok(to_value(&result, call.scope)?)
+}
+
+fn file_fn0<S: Serialize, F: Fn(&File) -> S>(mut call: Call, f: F) -> JsResult<JsValue> {
+    file_fn(&mut call, |_, file| Ok(f(file)))
 }
 
 fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
-    call: Call<'c>,
+    mut call: Call<'c>,
     f: fn(&File, D) -> S
 ) -> JsResult<'c, JsValue> {
-    let scope: &'c mut RootScope<'c> = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = match *file {
-        None => return Ok(JsNull::new().upcast()),
-        Some(ref file) => file,
-    };
-    let arg: D = from_handle(call.arguments.require(scope, 0)?, scope)?;
-    Ok(to_value(&f(file, arg), scope)?)
+    file_fn(&mut call, |call, file| {
+        let arg: D = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
+        Ok(f(file, arg))
+    })
+}
+
+fn file_fn2<'c, S: Serialize, D1: Deserialize<'c>, D2: Deserialize<'c>>(
+    mut call: Call<'c>,
+    f: fn(&File, D1, D2) -> S
+) -> JsResult<'c, JsValue> {
+    file_fn(&mut call, |call, file| {
+        let arg1: D1 = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
+        let arg2: D2 = from_handle(call.arguments.require(call.scope, 1)?, call.scope)?;
+        Ok(f(file, arg1, arg2))
+    })
 }
 
 register_module!(m, {
@@ -227,8 +226,10 @@ register_module!(m, {
     m.export("structure", |call| file_fn0(call, editor_api::structure))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
+    m.export("apply_context_action", |call| file_fn2(call, |file, offset: TextUnit, aid: String| {
+        editor_api::apply_context_action(file, offset, &aid)
+    }))?;
     m.export("file_create", file_create)?;
-    m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_resolve_reference", file_resolve_reference)?;
     m.export("file_find_usages", file_find_usages)?;
@@ -259,10 +260,19 @@ fn text_edit_to_js<'a>(scope: &'a mut RootScope, edit: TextEdit) -> Handle<'a, J
     to_value(&tuple, scope).unwrap()
 }
 
-pub fn from_handle<'a, T: serde::Deserialize<'a> + ? Sized>(
+fn from_handle<'a, T: serde::Deserialize<'a> + ? Sized>(
     input: Handle<'a, JsValue>,
     scope: &mut RootScope<'a>,
 ) -> neon_serde::errors::Result<T> {
     let scope: &'a mut RootScope<'a> = unsafe { ::std::mem::transmute(scope) };
     neon_serde::from_handle(input, scope)
 }
+
+fn to_value<'value, 'scope, V: Serialize + ?Sized>(
+    value: &'value V,
+    scope: &mut RootScope<'scope>,
+) -> neon_serde::errors::Result<Handle<'scope, JsValue>> {
+    let scope: &'scope mut RootScope<'scope> = unsafe { ::std::mem::transmute(scope) };
+    neon_serde::to_value(value, scope)
+}
+

@@ -1,6 +1,8 @@
 extern crate difference;
 extern crate elapsed;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate file;
 
 mod text;

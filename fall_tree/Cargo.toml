@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 
 [dependencies]
+serde = "1.*"
+serde_derive = "1.*"
 difference = "1.0.0"
 elapsed = "0.1"
-serde = "1.*"
 file = "*"
