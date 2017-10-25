@@ -1,8 +1,6 @@
 use fall_tree::{Node, File, TextUnit, TextRange};
 use fall_tree::search::{ancestors, subtree, find_leaf_at_offset};
 
-pub type DeclarationProvider = fn(Node) -> Option<Declaration>;
-
 #[derive(Eq, PartialEq)]
 pub struct Declaration<'f> {
     node: Node<'f>,
@@ -23,8 +21,6 @@ impl<'f> Declaration<'f> {
     }
 }
 
-pub type ReferenceProvider = fn(Node) -> Option<Reference>;
-
 pub struct Reference<'f> {
     node: Node<'f>,
     resolve: fn(Node<'f>) -> Option<Declaration<'f>>
@@ -40,6 +36,9 @@ impl<'f> Reference<'f> {
     }
 }
 
+pub type DeclarationProvider = fn(Node) -> Option<Declaration>;
+
+pub type ReferenceProvider = fn(Node) -> Option<Reference>;
 
 pub fn resolve_reference(
     file: &File,
