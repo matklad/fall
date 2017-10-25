@@ -28,8 +28,8 @@ var backend = (() => {
         applyContextAction: (offset: number, id: string) => native.apply_context_action(offset, id),
         resolveReference: (offset: number): TextRange => native.resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.find_usages(offset),
+        diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
         create: (text) => native.file_create(text),
-        diagnostics: (): [{ range: TextRange, text: string, severity: string }] => native.file_diagnostics(),
         reformat: (): [number, number, string] => native.file_reformat(),
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
@@ -219,7 +219,7 @@ export function activate(context: vscode.ExtensionContext) {
                     ? vscode.DiagnosticSeverity.Error
                     : vscode.DiagnosticSeverity.Warning
 
-                return new vscode.Diagnostic(range, d.text, severity)
+                return new vscode.Diagnostic(range, d.message, severity)
             })
         )
     }

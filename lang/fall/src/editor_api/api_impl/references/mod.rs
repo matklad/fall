@@ -103,3 +103,62 @@ impl<'f> From<AstClassDef<'f>> for Declaration<'f> {
         Declaration::with_name_ident(rule.node(), Some(rule.name_ident()))
     }
 }
+
+#[test]
+fn test_find_refs() {
+    let file = parse(r#####"
+tokenizer {
+  #[skip] whitespace r"\s+"
+
+  number r"\d+"
+  plus '+'
+  minus '-'
+  star '*'
+  slash '/'
+  bang '!'
+  lparen '('
+  rparen ')'
+}
+
+pub rule file { expr }
+
+#[pratt]
+rule expr {
+  sum_expr | product_expr
+  | factorial_expr
+  | negate_expr
+  | constant_expr | paren_expr
+}
+
+#[bin(2)]
+pub rule product_expr { expr {'*' | '/'} expr }
+
+#[bin(1)]
+pub rule sum_expr { expr {'+' | '-'} expr }
+
+#[atom]
+pub rule constant_expr { number }
+
+#[atom]
+pub rule paren_expr { '(' expr ')' }
+
+#[postfix]
+pub rule factorial_expr { expr '!' }
+
+#[prefix]
+pub rule negate_expr { '-' expr }
+
+test r"
+  1 + --1! - -2!
+"
+"#####);
+    let usages = find_usages(
+        &file,
+        TextUnit::from_usize(309)
+    );
+
+    assert_eq!(usages, vec![TextRange::from_len(
+        TextUnit::from_usize(202),
+        TextUnit::from_usize(12)
+    )]);
+}

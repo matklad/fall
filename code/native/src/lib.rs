@@ -22,7 +22,6 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
 
 use lang_fall::editor_api;
-use lang_fall::editor_api::{Severity, Diagnostic};
 use fall_tree::{TextRange, TextUnit, File, TextEdit};
 use fall_gen::TestRenderer;
 
@@ -82,37 +81,6 @@ fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
     } else {
         Ok(JsNull::new().upcast())
     }
-}
-
-fn file_diagnostics(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-
-    #[derive(Serialize)]
-    struct Diag {
-        text: String,
-        range: (u32, u32),
-        severity: &'static str
-    }
-
-    impl From<Diagnostic> for Diag {
-        fn from(d: Diagnostic) -> Diag {
-            Diag {
-                text: d.text,
-                range: (d.range.start().as_u32(), d.range.end().as_u32()),
-                severity: match d.severity {
-                    Severity::Error => "error",
-                    Severity::Warning => "warning",
-                },
-            }
-        }
-    }
-
-    let result = editor_api::diagnostics(file).into_iter()
-        .map(Into::<Diag>::into)
-        .collect::<Vec<_>>();
-    Ok(to_value(&result, scope)?)
 }
 
 fn file_reformat(call: Call) -> JsResult<JsValue> {
@@ -201,8 +169,8 @@ register_module!(m, {
     }))?;
     m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
+    m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
     m.export("file_create", file_create)?;
-    m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_reformat", file_reformat)?;
 
     m.export("file_find_test_at_offset", file_find_test_at_offset)?;
