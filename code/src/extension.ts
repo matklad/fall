@@ -8,32 +8,28 @@ import {
 
 interface FileStructureNode {
     name: string,
-    range: [number, number],
+    range: TextRange,
     children: [FileStructureNode]
 }
+
+type TextRange = [number, number]
 
 var backend = (() => {
     var native = require('../../native')
     return {
         treeAsText: (): string => native.tree_as_text(),
-        highlight: (): [[number, number], string][] => native.highlight(),
-        extendSelection: (range: [number, number]) => native.extend_selection(range),
+        highlight: (): [TextRange, string][] => native.highlight(),
+        extendSelection: (range: TextRange) => native.extend_selection(range),
         create: (text) => native.file_create(text),
-        stats: () => {
-            let stats = native.file_stats()
-            if (stats == null) return stats
-            return {
-                lexing_time: stats.lexing_time,
-                parsing_time: stats.parsing_time,
-                reparse_range: [stats.reparse_start, stats.reparse_end]
-            }
+        performaceCounters: (): {lexing_time: number, parsing_time: number, reparsed_region: TextRange} => {
+            return native.performance_counters()
         },
         findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
         fileStructure: (): [FileStructureNode] => native.file_structure(),
-        diagnostics: (): [{ range: [number, number], text: string, severity: string }] => native.file_diagnostics(),
-        resolveReference: (offset: number): [number, number] => native.file_resolve_reference(offset),
-        findUsages: (offset: number): [number, number][] => native.file_find_usages(offset),
+        diagnostics: (): [{ range: TextRange, text: string, severity: string }] => native.file_diagnostics(),
+        resolveReference: (offset: number): TextRange => native.file_resolve_reference(offset),
+        findUsages: (offset: number): TextRange[] => native.file_find_usages(offset),
         reformat: (): [number, number, string] => native.file_reformat(),
         findTestAtOffset: (offset: number): number => native.file_find_test_at_offset(offset),
         //parse_test: (testId: number): string => native.file_parse_test(testId),
@@ -123,7 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    function convertRange(document: TextDocument, range: [number, number]): Range {
+    function convertRange(document: TextDocument, range: TextRange): Range {
         return new Range(document.positionAt(range[0]), document.positionAt(range[1]))
     }
 
@@ -187,11 +183,11 @@ export function activate(context: vscode.ExtensionContext) {
         let text = activeEditor.document.getText()
         backend.create(text)
         treeTextDocumentProvider.eventEmitter.fire(syntaxTreeUri)
-        let stats = backend.stats()
+        let stats = backend.performaceCounters()
         const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
         status.text = `lexing: ${to_ms(stats.lexing_time)}`
             + ` parsing: ${to_ms(stats.parsing_time)}`
-            + ` reparse: ${stats.reparse_range[1] - stats.reparse_range[0]}`
+            + ` reparse: ${stats.reparsed_region[1] - stats.reparsed_region[0]}`
         status.show()
 
         for (let [[x, y], type] of backend.highlight()) {

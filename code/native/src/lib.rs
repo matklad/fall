@@ -56,28 +56,20 @@ fn file_create(call: Call) -> JsResult<JsNull> {
     Ok(JsNull::new())
 }
 
+#[derive(Serialize)]
+struct PerformanceCounters {
+    lexing_time: u32,
+    parsing_time: u32,
+    reparsed_region: TextRange,
+}
 
-fn file_stats(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
+fn performance_counters(file: &File) -> PerformanceCounters {
     let stats = file.stats();
-
-    #[derive(Serialize)]
-    struct Stats {
-        lexing_time: u32,
-        parsing_time: u32,
-        reparse_start: u32,
-        reparse_end: u32,
-    }
-
-    let stats = Stats {
+    PerformanceCounters {
         lexing_time: stats.lexing_time.subsec_nanos(),
         parsing_time: stats.parsing_time.subsec_nanos(),
-        reparse_start: stats.reparsed_region.start().as_u32(),
-        reparse_end: stats.reparsed_region.end().as_u32(),
-    };
-    Ok(to_value(&stats, scope)?)
+        reparsed_region: stats.reparsed_region,
+    }
 }
 
 fn file_find_test_at_offset(call: Call) -> JsResult<JsValue> {
@@ -257,11 +249,11 @@ fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
 
 register_module!(m, {
     m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
+    m.export("performance_counters", |call| file_fn0(call, performance_counters))?;
     m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
     m.export("file_create", file_create)?;
-    m.export("file_stats", file_stats)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
     m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
