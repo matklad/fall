@@ -5,7 +5,7 @@ use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::ast;
 use fall_tree::search::child_of_type;
 
-use editor_api::Diagnostic;
+use editor_api::{Diagnostic, Severity};
 use ::*;
 
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
@@ -52,4 +52,22 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
             }
         })
         .walk_recursively_children_first(file.root())
+}
+
+impl Diagnostic {
+    fn error(node: Node, message: String) -> Diagnostic {
+        Diagnostic {
+            range: node.range(),
+            severity: Severity::Error,
+            message,
+        }
+    }
+
+    fn warning(node: Node, message: String) -> Diagnostic {
+        Diagnostic {
+            range: node.range(),
+            severity: Severity::Warning,
+            message,
+        }
+    }
 }

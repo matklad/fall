@@ -1,4 +1,4 @@
-use fall_tree::{File, AstNode, Node, dump_file, TextRange, TextUnit, TextEdit};
+use fall_tree::{File, AstNode, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::search::find_leaf_at_offset;
 use fall_tree::search::ast;
 
@@ -7,7 +7,7 @@ use ::*;
 mod api_impl;
 
 pub fn parse(text: String) -> File {
-    lang_fall().parse(text)
+    ::parse(text)
 }
 
 pub fn tree_as_text(file: &File) -> String {
@@ -49,24 +49,6 @@ pub struct Diagnostic {
     pub range: TextRange,
     pub severity: Severity,
     pub message: String
-}
-
-impl Diagnostic {
-    pub fn error(node: Node, message: String) -> Diagnostic {
-        Diagnostic {
-            range: node.range(),
-            severity: Severity::Error,
-            message,
-        }
-    }
-
-    pub fn warning(node: Node, message: String) -> Diagnostic {
-        Diagnostic {
-            range: node.range(),
-            severity: Severity::Warning,
-            message,
-        }
-    }
 }
 
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
