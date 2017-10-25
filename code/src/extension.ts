@@ -18,15 +18,15 @@ var backend = (() => {
     var native = require('../../native')
     return {
         treeAsText: (): string => native.tree_as_text(),
-        highlight: (): [TextRange, string][] => native.highlight(),
-        extendSelection: (range: TextRange) => native.extend_selection(range),
-        create: (text) => native.file_create(text),
         performaceCounters: (): {lexing_time: number, parsing_time: number, reparsed_region: TextRange} => {
             return native.performance_counters()
         },
+        highlight: (): [TextRange, string][] => native.highlight(),
+        structure: (): [FileStructureNode] => native.structure(),
+        extendSelection: (range: TextRange) => native.extend_selection(range),
+        create: (text) => native.file_create(text),
         findContextActions: (offset: number): string[] => native.file_find_context_actions(offset),
         applyContextAction: (offset: number, id: string) => native.file_apply_context_action(offset, id),
-        fileStructure: (): [FileStructureNode] => native.file_structure(),
         diagnostics: (): [{ range: TextRange, text: string, severity: string }] => native.file_diagnostics(),
         resolveReference: (offset: number): TextRange => native.file_resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.file_find_usages(offset),
@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            return backend.fileStructure().map((node) => {
+            return backend.structure().map((node) => {
                 return new SymbolInformation(
                     node.name,
                     vscode.SymbolKind.Function,

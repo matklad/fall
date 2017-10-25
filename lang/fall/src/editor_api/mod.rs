@@ -37,24 +37,15 @@ pub fn apply_context_action(file: &File, offset: TextUnit, action_id: &str) -> T
     api_impl::actions::apply_context_action(file, offset, action_id)
 }
 
+#[derive(Serialize, Debug)]
 pub struct FileStructureNode {
     pub name: String,
     pub range: TextRange,
     pub children: Vec<FileStructureNode>
 }
 
-pub fn file_structure(file: &File) -> Vec<FileStructureNode> {
-    Visitor(Vec::new())
-        .visit::<SynRule, _>(|nodes, rule| {
-            if let Some(name) = rule.name() {
-                nodes.push(FileStructureNode {
-                    name: name.to_string(),
-                    range: rule.node().range(),
-                    children: Vec::new(),
-                })
-            }
-        })
-        .walk_recursively_children_first(file.root())
+pub fn structure(file: &File) -> Vec<FileStructureNode> {
+    api_impl::structure::structure(file)
 }
 
 pub enum Severity {

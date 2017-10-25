@@ -23,7 +23,7 @@ use neon::task::Task;
 use neon_serde::to_value;
 
 use lang_fall::editor_api;
-use lang_fall::editor_api::{FileStructureNode, Severity, Diagnostic};
+use lang_fall::editor_api::{Severity, Diagnostic};
 use fall_tree::{TextRange, TextUnit, File, TextEdit};
 use fall_gen::TestRenderer;
 
@@ -96,33 +96,6 @@ fn file_apply_context_action(call: Call) -> JsResult<JsValue> {
     let edit = editor_api::apply_context_action(file, offset, &id.value());
 
     Ok(text_edit_to_js(scope, edit).upcast())
-}
-
-fn file_structure(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file);
-    let nodes = editor_api::file_structure(file);
-
-    #[derive(Serialize)]
-    struct Node {
-        name: String,
-        children: Vec<Node>,
-        range: (u32, u32)
-    }
-    impl Node {
-        fn new(fsn: FileStructureNode) -> Node {
-            Node {
-                name: fsn.name,
-                children: fsn.children.into_iter().map(Node::new).collect(),
-                range: (fsn.range.start().as_u32(), fsn.range.end().as_u32()),
-            }
-        }
-    }
-    let nodes = nodes.into_iter()
-        .map(Node::new)
-        .collect::<Vec<_>>();
-    return Ok(to_value(&nodes, scope)?);
 }
 
 fn file_diagnostics(call: Call) -> JsResult<JsValue> {
@@ -251,11 +224,11 @@ register_module!(m, {
     m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
     m.export("performance_counters", |call| file_fn0(call, performance_counters))?;
     m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
+    m.export("structure", |call| file_fn0(call, editor_api::structure))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
     m.export("file_create", file_create)?;
     m.export("file_apply_context_action", file_apply_context_action)?;
-    m.export("file_structure", file_structure)?;
     m.export("file_diagnostics", file_diagnostics)?;
     m.export("file_resolve_reference", file_resolve_reference)?;
     m.export("file_find_usages", file_find_usages)?;
