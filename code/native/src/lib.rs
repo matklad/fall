@@ -13,7 +13,7 @@ extern crate serde;
 
 use serde::{Serialize, Deserialize};
 
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 
 use neon::vm::{Call, VmResult, JsResult};
 use neon::scope::{Scope, RootScope};
@@ -27,23 +27,6 @@ use fall_gen::TestRenderer;
 
 lazy_static! {
     static ref FILE: Mutex<Option<Arc<File>>> = Mutex::new(None);
-}
-
-lazy_static! {
-    static ref TEST_RENDERER: Mutex<TestRenderer> = Mutex::new(TestRenderer);
-}
-
-fn renderer() -> MutexGuard<'static, TestRenderer> {
-    TEST_RENDERER.lock().unwrap()
-}
-
-macro_rules! get_file_or_return_null {
-    ($guard:expr) => {
-        match *$guard {
-            None => return Ok(JsNull::new().upcast()),
-            Some(ref f) => f,
-        }
-    }
 }
 
 fn file_create(call: Call) -> JsResult<JsNull> {
@@ -70,31 +53,36 @@ fn performance_counters(file: &File) -> PerformanceCounters {
     }
 }
 
+struct RenderTask(Arc<File>, usize);
+impl Task for RenderTask {
+    type Output = String;
+    type Error = ();
+    type JsEvent = JsString;
+
+    fn perform(&self) -> Result<String, ()> {
+        lazy_static! {
+            static ref TEST_RENDERER: Mutex<TestRenderer> = Mutex::new(TestRenderer);
+        }
+
+        let mut renderer = TEST_RENDERER.lock().unwrap();
+        let tree = renderer.render_one(&self.0, self.1);
+        Ok(tree)
+    }
+
+    fn complete<'a, T: Scope<'a>>(self, scope: &'a mut T, result: Result<String, ()>) -> JsResult<JsString> {
+        Ok(JsString::new(scope, &result.unwrap()).unwrap())
+    }
+}
+
 fn parse_test(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
     let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
     let file = FILE.lock().unwrap();
-    let file = get_file_or_return_null!(file).clone();
 
-    struct RenderTask(Arc<File>, usize);
-    impl Task for RenderTask {
-        type Output = String;
-        type Error = ();
-        type JsEvent = JsString;
-
-        fn perform(&self) -> Result<String, ()> {
-            let mut renderer = renderer();
-            let tree = renderer.render_one(&self.0, self.1);
-            Ok(tree)
-        }
-
-        fn complete<'a, T: Scope<'a>>(self, scope: &'a mut T, result: Result<String, ()>) -> JsResult<JsString> {
-            Ok(JsString::new(scope, &result.unwrap()).unwrap())
-        }
+    if let Some(ref file) = *file {
+        RenderTask(file.clone(), test).schedule(callback);
     }
-
-    RenderTask(file, test).schedule(callback);
     Ok(JsNull::new().upcast())
 }
 
