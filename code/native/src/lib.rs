@@ -22,7 +22,7 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
 
 use lang_fall::editor_api;
-use fall_tree::{TextRange, TextUnit, File};
+use fall_tree::{TextRange, File};
 use fall_gen::TestRenderer;
 
 lazy_static! {
@@ -130,8 +130,8 @@ register_module!(m, {
     m.export("structure", |call| file_fn0(call, editor_api::structure))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
-    m.export("apply_context_action", |call| file_fn2(call, |file, offset: TextUnit, aid: String| {
-        editor_api::apply_context_action(file, offset, &aid)
+    m.export("apply_context_action", |call| file_fn2(call, |file, range: TextRange, aid: String| {
+        editor_api::apply_context_action(file, range, &aid)
     }))?;
     m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;

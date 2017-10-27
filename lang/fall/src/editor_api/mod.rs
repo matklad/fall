@@ -22,12 +22,12 @@ pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
     api_impl::extend_selection::extend_selection(file, range)
 }
 
-pub fn context_actions(file: &File, offset: TextUnit) -> Vec<&'static str> {
-    api_impl::actions::context_actions(file, offset)
+pub fn context_actions(file: &File, range: TextRange) -> Vec<&'static str> {
+    api_impl::actions::context_actions(file, range)
 }
 
-pub fn apply_context_action(file: &File, offset: TextUnit, action_id: &str) -> TextEdit {
-    api_impl::actions::apply_context_action(file, offset, action_id)
+pub fn apply_context_action(file: &File, range: TextRange, action_id: &str) -> TextEdit {
+    api_impl::actions::apply_context_action(file, range, action_id)
 }
 
 #[derive(Serialize, Debug)]

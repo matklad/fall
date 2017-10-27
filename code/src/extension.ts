@@ -25,8 +25,8 @@ var backend = (() => {
         highlight: (): [TextRange, string][] => native.highlight(),
         structure: (): [FileStructureNode] => native.structure(),
         extendSelection: (range: TextRange) => native.extend_selection(range),
-        contextActions: (offset: number): string[] => native.context_actions(offset),
-        applyContextAction: (offset: number, id: string): FallTextEdit => native.apply_context_action(offset, id),
+        contextActions: (range: TextRange): string[] => native.context_actions(range),
+        applyContextAction: (range: TextRange, id: string): FallTextEdit => native.apply_context_action(range, id),
         resolveReference: (offset: number): TextRange => native.resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.find_usages(offset),
         diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
@@ -98,9 +98,12 @@ export function activate(context: vscode.ExtensionContext) {
     let testTextDocumentProvider = new TestTextDocumentProvider();
 
     class CodeActionProvider implements vscode.CodeActionProvider {
-        provideCodeActions(document: TextDocument, range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
-            let offset = document.offsetAt(range.start);
-            let test = backend.testAtOffset(offset);
+        provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
+            let range: TextRange = [
+                document.offsetAt(_range.start),
+                document.offsetAt(_range.end)
+            ];
+            let test = backend.testAtOffset(range[0]);
             if (test != null) {
                 return [{
                     title: "Parse test",
@@ -109,12 +112,12 @@ export function activate(context: vscode.ExtensionContext) {
                 }]
             }
 
-            let actions = backend.contextActions(offset);
+            let actions = backend.contextActions(range);
             return actions.map((id) => {
                 return {
                     title: id,
                     command: 'extension.applyContextAction',
-                    arguments: [offset, id]
+                    arguments: [range, id]
                 }
             })
         }
