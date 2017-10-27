@@ -68,13 +68,13 @@ pub fn reformat(file: &File) -> TextEdit {
 }
 
 pub fn test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
-    let test = find_leaf_at_offset(file.root(), offset)
+    find_leaf_at_offset(file.root(), offset)
         .right_biased()
-        .and_then(|node| ast::parent::<TestDef>(node));
-
-    if let Some(test) = test {
-        Some(FallFile::new(file.root()).tests().position(|t| t.node() == test.node()).unwrap())
-    } else {
-        None
-    }
+        .and_then(|node| ast::parent::<TestDef>(node))
+        .map(|test| {
+            ::ast(file)
+                .tests()
+                .position(|t| t.node() == test.node())
+                .unwrap()
+        })
 }
