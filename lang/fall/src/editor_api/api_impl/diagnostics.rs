@@ -31,7 +31,7 @@ pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
     Visitor(Vec::new())
         .visit::<RefExpr, _>(|acc, ref_| {
             if ref_.resolve().is_none() {
-                if let Some(call) = ast::parent::<CallExpr>(ref_.node()) {
+                if let Some(call) = ast::ancestor::<CallExpr>(ref_.node()) {
                     if call.resolve_context().is_some() {
                         return;
                     }

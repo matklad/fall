@@ -106,7 +106,7 @@ impl<'f> LexRule<'f> {
     }
 
     pub fn node_type_index(&self) -> usize {
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
         file.resolve_ty(self.node_type()).unwrap()
     }
 
@@ -128,7 +128,7 @@ impl<'f> SynRule<'f> {
             return None;
         }
 
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
         if let Some(name) = self.ty_name() {
             file.resolve_ty(name)
         } else {
@@ -141,7 +141,7 @@ impl<'f> SynRule<'f> {
     }
 
     pub fn index(&self) -> usize {
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
         file.syn_rules().position(|r| r.node() == self.node()).unwrap()
     }
 
@@ -211,7 +211,7 @@ impl<'f> TestDef<'f> {
 
 impl<'f> MethodDef<'f> {
     pub fn resolve(&self) -> Option<MethodDescription<'f>> {
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
         let kind = match self.selector().child_kind() {
             None => return None,
             Some(kind) => kind,
@@ -241,9 +241,9 @@ impl<'f> MethodDef<'f> {
 
 impl<'f> AstSelector<'f> {
     pub fn child_kind(&self) -> Option<ChildKind<'f>> {
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
 
-        let ast_def = ast::parent_exn::<AstDef>(self.node());
+        let ast_def = ast::ancestor_exn::<AstDef>(self.node());
         if let Some(ast) = ast_def.ast_nodes().find(|a| a.name() == self.child()) {
             return Some(ChildKind::AstNode(ast));
         }
@@ -294,10 +294,10 @@ pub enum RefKind<'f> {
 
 impl<'f> RefExpr<'f> {
     pub fn resolve(&self) -> Option<RefKind<'f>> {
-        let file = ast::parent_exn::<FallFile>(self.node());
+        let file = ast::ancestor_exn::<FallFile>(self.node());
 
         if let Some(ident) = child_of_type(self.node(), IDENT) {
-            let rule: SynRule = ast::parent_exn(self.node());
+            let rule: SynRule = ast::ancestor_exn(self.node());
             if let Some(parameters) = rule.parameters() {
                 if let Some(p) = parameters.parameters().find(|p| p.name() == ident.text()) {
                     return Some(RefKind::Param(p));
@@ -346,7 +346,7 @@ impl<'f> CallExpr<'f> {
         if let Some(Expr::RefExpr(e)) = self.args().next() {
             if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
                 let ctx_name = lit_body(context.text());
-                let file: FallFile = ast::parent_exn(self.node());
+                let file: FallFile = ast::ancestor_exn(self.node());
                 return file.contexts().into_iter().position(|c| c == ctx_name).map(|i| i as u32);
             }
         }
@@ -354,7 +354,7 @@ impl<'f> CallExpr<'f> {
     }
 
     pub fn kind(&self) -> Result<CallKind<'f>, &'static str> {
-        let file: FallFile = ast::parent_exn(self.node());
+        let file: FallFile = ast::ancestor_exn(self.node());
         macro_rules! check_args {
             ($n:expr) => {
                 if self.args().count() != $n {
@@ -444,7 +444,7 @@ impl<'f> CallExpr<'f> {
 
 impl<'f> Parameter<'f> {
     pub fn idx(&self) -> u32 {
-        let file: FallFile = ast::parent_exn(self.node());
+        let file: FallFile = ast::ancestor_exn(self.node());
         let idx = file.syn_rules()
             .filter_map(|rule| rule.parameters())
             .flat_map(|p| p.parameters())

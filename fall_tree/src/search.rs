@@ -5,7 +5,6 @@ pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
 }
 
-
 pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
     Box::new(node.children().filter(move |n| n.ty() == ty))
 }
@@ -104,13 +103,6 @@ impl<'f> LeafAtOffset<'f> {
     }
 }
 
-pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
-    match child_position(node) {
-        Some((parent, idx)) => parent.children().nth(idx + 1),
-        _ => None
-    }
-}
-
 pub fn prev_sibling(node: Node) -> Option<Node> {
     match child_position(node) {
         Some((parent, idx)) if idx > 0 => parent.children().nth(idx - 1),
@@ -118,25 +110,27 @@ pub fn prev_sibling(node: Node) -> Option<Node> {
     }
 }
 
+pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
+    match child_position(node) {
+        Some((parent, idx)) => parent.children().nth(idx + 1),
+        _ => None
+    }
+}
+
 pub mod ast {
     use {Node, AstNode};
     use visitor::{NodeVisitor, Visitor};
+    use super::ancestors;
 
-    pub fn parent<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
-        let mut curr = Some(node);
-        while let Some(node) = curr {
-            if node.ty() == T::NODE_TYPE {
-                return Some(T::new(node));
-            }
-            curr = node.parent()
-        }
-        None
+    pub fn ancestor<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
+        ancestors(node)
+            .find(|node| node.ty() == T::NODE_TYPE)
+            .map(T::new)
     }
 
-    pub fn parent_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
-        parent(node).unwrap()
+    pub fn ancestor_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
+        ancestor(node).unwrap()
     }
-
 
     pub fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
         Visitor(Vec::new())
@@ -146,8 +140,8 @@ pub mod ast {
 }
 
 fn child_position(child: Node) -> Option<(Node, usize)> {
-    if let Some(parent) = child.parent() {
-        return Some((parent, parent.children().position(|n| n == child).unwrap()));
-    }
-    None
+    child.parent()
+        .map(|parent| {
+            (parent, parent.children().position(|n| n == child).unwrap())
+        })
 }

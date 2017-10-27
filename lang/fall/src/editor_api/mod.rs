@@ -70,7 +70,7 @@ pub fn reformat(file: &File) -> TextEdit {
 pub fn test_at_offset(file: &File, offset: TextUnit) -> Option<usize> {
     find_leaf_at_offset(file.root(), offset)
         .right_biased()
-        .and_then(|node| ast::parent::<TestDef>(node))
+        .and_then(|node| ast::ancestor::<TestDef>(node))
         .map(|test| {
             ::ast(file)
                 .tests()
