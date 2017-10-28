@@ -1,4 +1,4 @@
-use {Node, NodeType, TextUnit};
+use {Node, NodeType, TextUnit, TextRange};
 use ::visitor::{Visitor, NodeVisitor};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
@@ -103,6 +103,19 @@ impl<'f> LeafAtOffset<'f> {
     }
 }
 
+pub fn find_covering_node(root: Node, range: TextRange) -> Node {
+    assert!(range.is_subrange_of(root.range()));
+    let (left, right) = match (
+        find_leaf_at_offset(root, range.start()).right_biased(),
+        find_leaf_at_offset(root, range.end()).left_biased()
+    ) {
+        (Some(l), Some(r)) => (l, r),
+        _ => return root
+    };
+
+    common_ancestor(left, right)
+}
+
 pub fn prev_sibling(node: Node) -> Option<Node> {
     match child_position(node) {
         Some((parent, idx)) if idx > 0 => parent.children().nth(idx - 1),
@@ -145,3 +158,13 @@ fn child_position(child: Node) -> Option<(Node, usize)> {
             (parent, parent.children().position(|n| n == child).unwrap())
         })
 }
+
+fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {
+    for p in ancestors(n1) {
+        if ancestors(n2).any(|a| a == p) {
+            return p;
+        }
+    }
+    panic!("Can't find common ancestor of {:?} and {:?}", n1, n2)
+}
+

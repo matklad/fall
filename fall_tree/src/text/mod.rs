@@ -5,7 +5,7 @@ use std::borrow::Cow;
 mod text_unit;
 mod text_range;
 
-pub use self::text_unit::TextUnit;
+pub use self::text_unit::{TextUnit, tu};
 pub use self::text_range::TextRange;
 
 #[derive(Clone, Copy)]

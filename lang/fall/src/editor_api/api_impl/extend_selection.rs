@@ -1,35 +1,17 @@
 use fall_tree::{TextUnit, TextRange, Node, File};
-use fall_tree::search::{ancestors, find_leaf_at_offset};
+use fall_tree::search::{ancestors, find_leaf_at_offset, find_covering_node};
 
 
 pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {
-    let node = match find_node_at_range(&file, range) {
-        Some(node) => node,
-        None => return None,
-    };
+    if range.is_empty() {
+        return try_find_non_ws_node_at_offset(file, range.start()).map(|n| n.range());
+    }
+    let node = find_covering_node(file.root(), range);
 
     match ancestors(node).skip_while(|n| n.range() == range).next() {
         None => None,
         Some(parent) => Some(parent.range()),
     }
-}
-
-
-fn find_node_at_range(file: &File, range: TextRange) -> Option<Node> {
-    if range.is_empty() {
-        return try_find_non_ws_node_at_offset(file, range.start());
-    }
-
-    let root = file.root();
-    let (left, right) = match (
-        find_leaf_at_offset(root, range.start()).right_biased(),
-        find_leaf_at_offset(root, range.end()).left_biased()
-    ) {
-        (Some(l), Some(r)) => (l, r),
-        _ => return None
-    };
-
-    Some(common_ancestor(left, right))
 }
 
 fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node> {
@@ -43,14 +25,6 @@ fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node>
     leaves.left_biased()
 }
 
-fn common_ancestor<'f>(n1: Node<'f>, n2: Node<'f>) -> Node<'f> {
-    for p in ancestors(n1) {
-        if ancestors(n2).any(|a| a == p) {
-            return p;
-        }
-    }
-    panic!("Can't find common ancestor of {:?} and {:?}", n1, n2)
-}
 
 #[test]
 fn test_extend_selection() {

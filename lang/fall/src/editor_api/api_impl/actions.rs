@@ -1,6 +1,8 @@
-use fall_tree::{AstNode, AstClass, File, Node, TextUnit, TextRange, FileEdit, TextEdit};
-use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
-use ::{PIPE, BlockExpr};
+use fall_tree::{AstNode, AstClass, File, Node, TextUnit, tu, TextRange, FileEdit, TextEdit};
+use fall_tree::search::{find_leaf_at_offset, LeafAtOffset, find_covering_node, ancestors};
+use fall_tree::search::ast;
+use fall_tree::test_util;
+use ::{PIPE, BlockExpr, Expr, SynRule};
 
 pub fn context_actions(file: &File, range: TextRange) -> Vec<&'static str> {
     ACTIONS.iter()
@@ -16,6 +18,7 @@ pub fn apply_context_action(file: &File, range: TextRange, action_id: &str) -> T
 
 const ACTIONS: &[&ContextAction] = &[
     &SwapAlternatives,
+    &ExtractRule,
 ];
 
 pub trait ContextAction {
@@ -75,20 +78,73 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
 
 
 #[test]
-fn test_actions() {
+fn test_swap_alternatives() {
     let file = ::parse(r####"
 tokenizer { number r"\d+"}
 pub rule foo { bar | baz }
 "####);
-    let offset = TextUnit::from_usize(47);
-    let actions = context_actions(&file, offset);
+    let position = TextRange::from_len(tu(47), tu(0));
+    let actions = context_actions(&file, position);
     assert_eq!(
         format!("{:?}", actions),
         r#"["Swap Alternatives"]"#
     );
-    let edit = apply_context_action(&file, offset, "Swap Alternatives");
+    let edit = apply_context_action(&file, position, "Swap Alternatives");
     assert_eq!(
         format!("{:?}", edit),
         r#"TextEdit { delete: [43; 52), insert: "baz | bar" }"#
     )
+}
+
+
+struct ExtractRule;
+
+impl ContextAction for ExtractRule {
+    fn id(&self) -> &'static str {
+        "Extract Rule"
+    }
+
+    fn apply<'f>(&self, file: &'f File, range: TextRange) -> Option<FileEdit<'f>> {
+        let expr = ancestors(find_covering_node(file.root(), range))
+            .find(|n| {
+                Expr::NODE_TYPES.iter().any(|&ty| ty == n.ty())
+            });
+        let expr = match expr {
+            None => return None,
+            Some(expr) => expr,
+        };
+        let rule = ast::ancestor_exn::<SynRule>(expr).node();
+
+        let new_rule = format!("\n\nrule new_rule {{\n  {}\n}}", expr.text());
+        let mut edit = FileEdit::new(file);
+        edit.replace_with_text(expr, "new_rule".to_owned());
+        edit.insert_text_after(rule, new_rule);
+
+        Some(edit)
+    }
+}
+
+#[test]
+fn test_extract_rules() {
+    let file = ::parse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar baz }
+"####);
+    let range = TextRange::from_to(tu(43), tu(50));
+    let actions = context_actions(&file, range);
+    assert_eq!(
+        format!("{:?}", actions),
+        r#"["Extract Rule"]"#
+    );
+    let edit = apply_context_action(&file, range, "Extract Rule");
+    let expected = r##"
+tokenizer { number r"\d+"}
+pub rule foo { new_rule }
+
+rule new_rule {
+  bar baz
+}
+"##;
+    let actual = edit.apply(file.text());
+    test_util::report_diff(expected.trim(), actual.trim())
 }

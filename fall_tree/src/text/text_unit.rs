@@ -29,6 +29,10 @@ impl<'de> Deserialize<'de> for TextUnit {
     }
 }
 
+pub fn tu(value: u32) -> TextUnit {
+    TextUnit(value)
+}
+
 
 impl TextUnit {
     pub fn zero() -> TextUnit {
