@@ -325,7 +325,7 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
             }
         }
 
-        Expr::Pratt(ref g) => pratt::parse_pratt(ctx, &*g, tokens, 0),
+        Expr::Pratt(ref g) => pratt::parse_pratt(ctx, &*g, tokens),
 
         Expr::Enter(idx, ref e) => {
             let idx = idx as usize;

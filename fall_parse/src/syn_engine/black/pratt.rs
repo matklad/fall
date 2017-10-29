@@ -1,7 +1,15 @@
-use {PrattVariant};
+use PrattVariant;
 use super::{Ctx, TokenSeq, BlackNode, parse_exp, parse_any};
 
-pub(super) fn parse_pratt<'t, 'p>(
+pub (super) fn parse_pratt<'t, 'p>(
+    ctx: &mut Ctx<'p>,
+    expr_grammar: &'p [PrattVariant],
+    tokens: TokenSeq<'t>,
+) -> Option<(BlackNode, TokenSeq<'t>)> {
+    with_prior(ctx, expr_grammar, tokens, 0)
+}
+
+fn with_prior<'t, 'p>(
     ctx: &mut Ctx<'p>,
     expr_grammar: &'p [PrattVariant],
     tokens: TokenSeq<'t>,
@@ -49,7 +57,7 @@ pub(super) fn parse_pratt<'t, 'p>(
         for (ty, op, p) in bins {
             let ty = ctx.node_type(ty);
             if let Some((op_node, rest)) = parse_exp(ctx, op, tokens) {
-                if let Some((rhs_node, rest)) = parse_pratt(ctx, expr_grammar, rest, p) {
+                if let Some((rhs_node, rest)) = with_prior(ctx, expr_grammar, rest, p) {
                     let mut node = ctx.create_composite_node(Some(ty));
                     ::std::mem::swap(&mut node, &mut lhs);
                     ctx.push_child(&mut lhs, node);
@@ -80,7 +88,7 @@ fn parse_pratt_prefix<'t, 'p>(ctx: &mut Ctx<'p>, expr_grammar: &'p [PrattVariant
         if let Some((op_node, rest)) = parse_exp(ctx, op, tokens) {
             let mut node = ctx.create_composite_node(Some(ty));
             ctx.push_child(&mut node, op_node);
-            if let Some((expr, rest)) = parse_pratt(ctx, expr_grammar, rest, priority) {
+            if let Some((expr, rest)) = with_prior(ctx, expr_grammar, rest, priority) {
                 ctx.push_child(&mut node, expr);
                 ctx.prev = Some(ty);
                 return Some((node, rest));
