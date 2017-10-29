@@ -10,6 +10,10 @@ pub fn parse(text: String) -> File {
     ::parse(text)
 }
 
+pub fn analyse(text: String) -> FileWithAnalysis {
+    FileWithAnalysis::new(text)
+}
+
 pub fn tree_as_text(file: &File) -> String {
     dump_file(file)
 }
@@ -52,7 +56,12 @@ pub struct Diagnostic {
 }
 
 pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
-    api_impl::diagnostics::diagnostics(file)
+    let analysis = ::Analysis::new(FallFile::new(file.root()));
+    api_impl::diagnostics::diagnostics(file, &analysis)
+}
+
+pub fn diagnostics2(analysis: &Analysis) -> Vec<Diagnostic> {
+    api_impl::diagnostics::diagnostics2(analysis)
 }
 
 pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {

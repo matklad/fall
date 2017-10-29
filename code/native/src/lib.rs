@@ -21,19 +21,19 @@ use neon::mem::Handle;
 use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
 
-use lang_fall::editor_api;
+use lang_fall::{editor_api, FileWithAnalysis, Analysis};
 use fall_tree::{TextRange, File};
 use fall_gen::TestRenderer;
 
 lazy_static! {
-    static ref FILE: Mutex<Option<Arc<File>>> = Mutex::new(None);
+    static ref FILE: Mutex<Option<Arc<FileWithAnalysis>>> = Mutex::new(None);
 }
 
 fn file_create(call: Call) -> JsResult<JsNull> {
     let scope = call.scope;
     let text = call.arguments.require(scope, 0)?.check::<JsString>()?;
     let text = text.value();
-    *FILE.lock().unwrap() = Some(Arc::new(editor_api::parse(text)));
+    *FILE.lock().unwrap() = Some(Arc::new(editor_api::analyse(text)));
     Ok(JsNull::new())
 }
 
@@ -53,7 +53,7 @@ fn performance_counters(file: &File) -> PerformanceCounters {
     }
 }
 
-struct RenderTask(Arc<File>, usize);
+struct RenderTask(Arc<FileWithAnalysis>, usize);
 impl Task for RenderTask {
     type Output = String;
     type Error = ();
@@ -65,7 +65,7 @@ impl Task for RenderTask {
         }
 
         let mut renderer = TEST_RENDERER.lock().unwrap();
-        let tree = renderer.render_one(&self.0, self.1);
+        let tree = renderer.render_one(&self.0.file(), self.1);
         Ok(tree)
     }
 
@@ -86,13 +86,31 @@ fn parse_test(call: Call) -> JsResult<JsValue> {
     Ok(JsNull::new().upcast())
 }
 
+fn a_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
+    where S: Serialize,
+          F: Fn(&mut Call<'a>, &Analysis) -> VmResult<S> {
+    let file = FILE.lock().unwrap();
+    let file: &FileWithAnalysis = match *file {
+        None => return Ok(JsNull::new().upcast()),
+        Some(ref file) => &*file,
+    };
+    file.analyse(|a| {
+        let result = f(call, a)?;
+        Ok(to_value(&result, call.scope)?)
+    })
+}
+
+fn a_fn0<S: Serialize, F: Fn(&Analysis) -> S>(mut call: Call, f: F) -> JsResult<JsValue> {
+    a_fn(&mut call, |_, file| Ok(f(file)))
+}
+
 fn file_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
     where S: Serialize,
           F: Fn(&mut Call<'a>, &File) -> VmResult<S> {
     let file = FILE.lock().unwrap();
     let file = match *file {
         None => return Ok(JsNull::new().upcast()),
-        Some(ref file) => file,
+        Some(ref file) => file.file(),
     };
     let result = f(call, file)?;
     Ok(to_value(&result, call.scope)?)
@@ -135,7 +153,8 @@ register_module!(m, {
     }))?;
     m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
-    m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
+//    m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
+    m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics2))?;
     m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
     m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
     m.export("parse_test", parse_test)?;

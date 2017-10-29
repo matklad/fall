@@ -219,7 +219,8 @@ export function activate(context: vscode.ExtensionContext) {
                     activeEditor.document.positionAt(d.range[0]),
                     activeEditor.document.positionAt(d.range[1]),
                 )
-                let severity = d.severity == "error"
+                
+                let severity = d.severity == "Error"
                     ? vscode.DiagnosticSeverity.Error
                     : vscode.DiagnosticSeverity.Warning
 
