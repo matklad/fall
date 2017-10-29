@@ -177,7 +177,7 @@ fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
     Ok(Some(fall_parse::SynRule { body: expr }))
 }
 
-fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
+fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
     fn alt_to_rule<'f>(alt: Expr<'f>) -> Result<SynRule<'f>> {
         match alt {
             Expr::SeqExpr(expr) => match expr.parts().next() {
@@ -191,15 +191,18 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
         }
     }
 
-    let mut result = Vec::new();
+    let mut result = fall_parse::PrattTable {
+        atoms: Vec::new(),
+        prefixes: Vec::new(),
+        infixes: Vec::new(),
+    };
     for alt in ast.alts() {
         let rule = alt_to_rule(alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
         let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
-        let variant = match prat_kind {
-            PratKind::Atom => fall_parse::PrattVariant::Atom {
-                body: Box::new(compile_rule(rule)?.unwrap().body),
-            },
+        match prat_kind {
+            PratKind::Atom =>
+                result.atoms.push(compile_rule(rule)?.unwrap().body),
             PratKind::Postfix => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
@@ -211,10 +214,12 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
                     _ => return Err(error!("bad pratt rule"))
                 };
-                fall_parse::PrattVariant::Postfix {
+                result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: Box::new(compile_expr(op)?),
-                }
+                    op: compile_expr(op)?,
+                    priority: 999,
+                    has_rhs: false
+                });
             }
             PratKind::Prefix(priority) => {
                 let alt = match rule.body() {
@@ -227,11 +232,11 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     Expr::SeqExpr(seq) => seq.parts().nth(0).unwrap(),
                     _ => return Err(error!("bad pratt rule"))
                 };
-                fall_parse::PrattVariant::Prefix {
+                result.prefixes.push(fall_parse::Prefix {
                     ty,
-                    op: Box::new(compile_expr(op)?),
-                    priority,
-                }
+                    op: compile_expr(op)?,
+                    priority
+                })
             }
             PratKind::Bin(priority) => {
                 let alt = match rule.body() {
@@ -244,15 +249,14 @@ fn compile_pratt(ast: BlockExpr) -> Result<Vec<fall_parse::PrattVariant>> {
                     Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
                     _ => return Err(error!("bad pratt rule"))
                 };
-                fall_parse::PrattVariant::Binary {
+                result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: Box::new(compile_expr(op)?),
-                    priority
-                }
+                    op: compile_expr(op)?,
+                    priority,
+                    has_rhs: true,
+                })
             }
         };
-
-        result.push(variant)
     }
 
     Ok(result)

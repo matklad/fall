@@ -119,7 +119,7 @@ pub enum Expr {
     Eof,
     Any,
     Layer(Box<Expr>, Box<Expr>),
-    Pratt(Vec<PrattVariant>),
+    Pratt(PrattTable),
     Enter(u32, Box<Expr>),
     Exit(u32, Box<Expr>),
     IsIn(u32),
@@ -129,22 +129,34 @@ pub enum Expr {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum PrattVariant {
-    Atom { body: Box<Expr> },
-    Prefix {
-        ty: usize,
-        op: Box<Expr>,
-        priority: u32,
-    },
-    Binary {
-        ty: usize,
-        op: Box<Expr>,
-        priority: u32,
-    },
-    Postfix {
-        ty: usize,
-        op: Box<Expr>
-    },
+pub struct PrattTable {
+    pub atoms: Vec<Expr>,
+    pub prefixes: Vec<Prefix>,
+    pub infixes: Vec<Infix>
+}
+
+impl PrattTable {
+    fn infixes<'p>(&'p self, min_prior: u32) -> Box<Iterator<Item=&'p Infix> + 'p> {
+        Box::new(
+            self.infixes.iter()
+                .filter(move |ix| ix.priority >= min_prior)
+        )
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Prefix {
+    pub ty: usize,
+    pub op: Expr,
+    pub priority: u32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Infix {
+    pub ty: usize,
+    pub op: Expr,
+    pub priority: u32,
+    pub has_rhs: bool,
 }
 
 pub mod runtime {
