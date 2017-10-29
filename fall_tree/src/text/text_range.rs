@@ -71,6 +71,14 @@ impl TextRange {
         other.start() <= self.start() && self.end() <= other.end()
     }
 
+    pub fn intersects(&self, other: TextRange) -> bool {
+        !self.disjoint(other)
+    }
+
+    pub fn disjoint(&self, other: TextRange) -> bool {
+        self.end() <= other.start() || other.end() <= self.start()
+    }
+
     pub fn contains_offset_nonstrict(&self, offset: TextUnit) -> bool {
         self.start() <= offset && offset <= self.end()
     }

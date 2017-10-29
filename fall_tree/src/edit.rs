@@ -1,5 +1,5 @@
 use text_edit::{TextEdit, combine_edits};
-use {Node, File};
+use {Node, File, TextRange};
 
 pub struct FileEdit<'f> {
     file: &'f File,
@@ -24,6 +24,17 @@ impl<'f> FileEdit<'f> {
 
     pub fn replace_with_text(&mut self, node: Node<'f>, replacement: String) {
         self.replaced.push((node, replacement))
+    }
+
+    pub fn replace_substring(&mut self, node: Node<'f>, range: TextRange, replacement: String) {
+        assert!(range.is_subrange_of(node.range()));
+        let file_text = self.file.text();
+        let prefix = file_text.slice(TextRange::from_to(node.range().start(), range.start()));
+        let suffix = file_text.slice(TextRange::from_to(range.end(), node.range().end()));
+        let new_text = prefix.to_string()
+            + &replacement
+            + &suffix.to_cow();
+        self.replace_with_text(node, new_text);
     }
 
     pub fn delete(&mut self, node: Node<'f>) {
