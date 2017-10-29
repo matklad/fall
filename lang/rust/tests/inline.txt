@@ -424,6 +424,22 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+fn main() -> ! { }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    THIN_ARROW "->"
+    NEVER_TYPE
+      BANG "!"
+    BLOCK_EXPR
+      L_CURLY "{"
+      R_CURLY "}"
+
+----------------------------------------
 type T = [(); 92];
 type T = &[()];
 

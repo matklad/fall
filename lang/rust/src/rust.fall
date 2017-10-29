@@ -373,7 +373,7 @@ pub rule alias { 'as' ident }
 
 rule type_reference {
   path_type | reference_type 
-| placeholder_type | unit_type | paren_type
+| placeholder_type | unit_type | paren_type | never_type
 | array_type
 | fn_pointer_type
 }
@@ -413,6 +413,14 @@ type T = ();
 type T = (A);
 type T = (A,);
 type T = (A, B);
+"
+
+pub rule never_type { 
+  '!'
+}
+
+test r"
+fn main() -> ! { }
 "
 
 pub rule array_type {
