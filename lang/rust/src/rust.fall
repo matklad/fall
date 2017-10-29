@@ -73,6 +73,7 @@ tokenizer {
   pipe '|'
   underscore '_'
   bang '!'
+  question '?'
 
   char r"'(\s*|\S*)'"
   lifetime r"'\p{XID_Continue}*"
@@ -540,7 +541,7 @@ pub rule expr {
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
 
-| method_call_expr | call_expr | field_expr | index_expr
+| method_call_expr | call_expr | field_expr | index_expr | try_expr
 
 | reference_expr | dereference_expr | negation_expr | not_expr
 
@@ -833,6 +834,10 @@ rule call_args {
   <without_restrictions <in_parens <comma_list value_argument>>>
 }
 
+pub rule value_argument {
+  expr
+}
+
 test r"
   fn main() { foo() }
 "
@@ -854,9 +859,13 @@ test r"
 fn main() { xs[92]; }
 "
 
-pub rule value_argument {
-  expr
+#[postfix]
+pub rule try_expr {
+  expr '?'
 }
+test r"
+fn main() { -x??; }
+"
 
 #[prefix]
 pub rule reference_expr { {'&' 'mut'?} expr }

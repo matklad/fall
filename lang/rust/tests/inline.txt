@@ -1469,6 +1469,30 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { -x??; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        NEGATION_EXPR
+          MINUS "-"
+          TRY_EXPR
+            TRY_EXPR
+              PATH_EXPR
+                PATH
+                  IDENT "x"
+              QUESTION "?"
+            QUESTION "?"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() {
     1     .. 2 + 3;
     1 + 2 .. 3;
