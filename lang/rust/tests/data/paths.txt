@@ -44,26 +44,27 @@ FILE
         PATH_PATTERN
           PATH
             IDENT "x"
-        EQ "="
-        PATH_EXPR
-          PATH
+        INITIALIZER
+          EQ "="
+          PATH_EXPR
             PATH
-              COLONCOLON "::"
-              IDENT "Vec"
-              TYPE_ARGUMENTS
+              PATH
                 COLONCOLON "::"
-                L_ANGLE "<"
-                PATH_TYPE
-                  PATH
-                    IDENT "Vec"
-                    TYPE_ARGUMENTS
-                      L_ANGLE "<"
-                      PATH_TYPE
-                        PATH
-                          IDENT "i32"
-                      R_ANGLE ">"
-                R_ANGLE ">"
-            COLONCOLON "::"
-            IDENT "new"
+                IDENT "Vec"
+                TYPE_ARGUMENTS
+                  COLONCOLON "::"
+                  L_ANGLE "<"
+                  PATH_TYPE
+                    PATH
+                      IDENT "Vec"
+                      TYPE_ARGUMENTS
+                        L_ANGLE "<"
+                        PATH_TYPE
+                          PATH
+                            IDENT "i32"
+                        R_ANGLE ">"
+                  R_ANGLE ">"
+              COLONCOLON "::"
+              IDENT "new"
         SEMI ";"
       R_CURLY "}"

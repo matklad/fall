@@ -699,15 +699,22 @@ fn main() {
 "
 
 pub rule let_stmt {
-  'let' <commit> pattern type_ascription? '=' expr ';'
+  'let' <commit> pattern type_ascription? initializer? ';'
 }
 
 pub rule type_ascription {
   ':' type_reference
 }
 
+pub rule initializer {
+  '=' expr
+}  
+
 test r"
-fn main() { let b: bool = true; }
+fn main() { 
+  let d;
+  let b: bool = true; 
+}
 "
 
 pub rule empty_stmt { ';' }

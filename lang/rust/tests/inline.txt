@@ -518,10 +518,11 @@ FILE
         LET "let"
         WILDCARD_PATTERN
           UNDERSCORE "_"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -548,10 +549,11 @@ FILE
               IDENT "foo"
             COLONCOLON "::"
             IDENT "bar"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -570,10 +572,11 @@ FILE
           DOTDOT ".."
           COMMA ","
           R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -597,10 +600,11 @@ FILE
           COMMA ","
           DOTDOT ".."
           R_CURLY "}"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -623,10 +627,11 @@ FILE
         PATH_PATTERN
           PATH
             IDENT "foo"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -634,9 +639,10 @@ FILE
           REF "ref"
           MUT "mut"
           IDENT "bar"
-        EQ "="
-        LITERAL
-          NUMBER "92"
+        INITIALIZER
+          EQ "="
+          LITERAL
+            NUMBER "92"
         SEMI ";"
       R_CURLY "}"
 
@@ -664,10 +670,11 @@ FILE
             PATH
               IDENT "x"
           R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -678,10 +685,11 @@ FILE
               IDENT "x"
           COMMA ","
           R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -695,20 +703,22 @@ FILE
             PATH
               IDENT "y"
           R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
         UNIT_PATTERN
           L_PAREN "("
           R_PAREN ")"
-        EQ "="
-        UNIT_EXPR
-          L_PAREN "("
-          R_PAREN ")"
+        INITIALIZER
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -731,10 +741,11 @@ FILE
           PATH_PATTERN
             PATH
               IDENT "foo"
-        EQ "="
-        PATH_EXPR
-          PATH
-            IDENT "bar"
+        INITIALIZER
+          EQ "="
+          PATH_EXPR
+            PATH
+              IDENT "bar"
         SEMI ";"
       R_CURLY "}"
 
@@ -1057,16 +1068,20 @@ FILE
           LET "let"
           WILDCARD_PATTERN
             UNDERSCORE "_"
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+          INITIALIZER
+            EQ "="
+            UNIT_EXPR
+              L_PAREN "("
+              R_PAREN ")"
           SEMI ";"
         R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { let b: bool = true; }
+fn main() { 
+  let d;
+  let b: bool = true; 
+}
 
 FILE
   FN_DEF
@@ -1080,15 +1095,22 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
+            IDENT "d"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
             IDENT "b"
         TYPE_ASCRIPTION
           COLON ":"
           PATH_TYPE
             PATH
               IDENT "bool"
-        EQ "="
-        LITERAL
-          BOOL "true"
+        INITIALIZER
+          EQ "="
+          LITERAL
+            BOOL "true"
         SEMI ";"
       R_CURLY "}"
 

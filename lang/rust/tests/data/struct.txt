@@ -104,8 +104,9 @@ FILE
         PATH_PATTERN
           PATH
             IDENT "union"
-        EQ "="
-        LITERAL
-          NUMBER "92"
+        INITIALIZER
+          EQ "="
+          LITERAL
+            NUMBER "92"
         SEMI ";"
       R_CURLY "}"
