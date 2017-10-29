@@ -34,19 +34,17 @@ impl ContextAction for ExtractRule {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use fall_tree::tu;
     use fall_tree::test_util::report_diff;
+    use ::test_util::parse_with_range;
     use ::editor_api::{context_actions, apply_context_action};
 
 
     #[test]
     fn test_extract_rules() {
-        let file = ::parse(r####"
+        let (file, range) = parse_with_range(r####"
 tokenizer { number r"\d+"}
-pub rule foo { bar baz }
+pub rule foo { ^bar baz^ }
 "####);
-        let range = TextRange::from_to(tu(43), tu(50));
         let actions = context_actions(&file, range);
         assert_eq!(
             format!("{:?}", actions),

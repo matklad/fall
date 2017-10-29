@@ -1,9 +1,38 @@
 use std::path::Path;
 
 use file;
-use {Language, dump_file, dump_file_ws, TextRange, TextUnit};
+use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit};
 use text_edit::TextEdit;
 use difference::Changeset;
+
+
+pub fn parse_with_caret(lang: &Language, input: &str, caret: &str) -> (File, TextUnit) {
+    let offset = input.find(caret).expect(
+        &format!("No caret ({}) in\n{}\n", caret, input)
+    );
+    let input = input[..offset].to_string() + &input[offset + caret.len()..];
+    (lang.parse(input), TextUnit::from_usize(offset))
+}
+
+pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, TextRange) {
+    let left_offset = input.find(caret).expect(
+        &format!("No caret ({}) in\n{}\n", caret, input)
+    );
+    let mid_offset = left_offset + caret.len();
+    let right_offset = mid_offset + input[mid_offset..].find(caret).expect(
+        &format!("Only single caret ({}) in \n{}\n", caret, input)
+    );
+    let input = input[..left_offset].to_string()
+        + &input[mid_offset..right_offset]
+        + &input[right_offset + caret.len()..];
+
+    let file = lang.parse(input);
+    let range = TextRange::from_to(
+        TextUnit::from_usize(left_offset),
+        TextUnit::from_usize(right_offset - caret.len()),
+    );
+    (file, range)
+}
 
 pub fn check_syntax(lang: &Language, input: &str, expected_tree: &str) {
     let file = lang.parse(input.to_owned());
@@ -76,7 +105,7 @@ fn collect_tests(mut grammar: &str) -> Vec<String> {
         grammar = &grammar[pos + "test r".len()..];
         let n_hashes = grammar.chars().take_while(|&c| c == '#').count();
         grammar = &grammar[n_hashes + 1..];
-        if let Some(end) = grammar.find(&"\"################"[.. 1 + n_hashes]) {
+        if let Some(end) = grammar.find(&"\"################"[..1 + n_hashes]) {
             let example = &grammar[..end].trim();
             result.push(example.to_string())
         }

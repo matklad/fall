@@ -58,14 +58,18 @@ mod tests {
     use super::*;
     use fall_tree::tu;
     use ::editor_api::{context_actions, apply_context_action};
+    use ::test_util::parse_with_caret;
 
     #[test]
     fn test_swap_alternatives() {
-        let file = ::parse(r####"
+        let (file, offset) = parse_with_caret(r####"
 tokenizer { number r"\d+"}
-pub rule foo { bar | baz }
+pub rule foo { bar ^| baz }
 "####);
-        let position = TextRange::from_len(tu(47), tu(0));
+
+        let position = TextRange::from_len(offset, tu(0));
+        eprintln!("position = {:?}", position);
+        eprintln!("file.text() = \n{}\n", file.text());
         let actions = context_actions(&file, position);
         assert_eq!(
             format!("{:?}", actions),

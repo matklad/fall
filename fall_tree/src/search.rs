@@ -78,7 +78,7 @@ pub fn find_leaf_at_offset(node: Node, offset: TextUnit) -> LeafAtOffset {
     };
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum LeafAtOffset<'f> {
     None,
     Single(Node<'f>),

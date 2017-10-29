@@ -24,3 +24,15 @@ pub fn ast(file: &File) -> FallFile {
     FallFile::new(file.root())
 }
 
+#[cfg(test)]
+mod test_util {
+    use fall_tree::{File, TextUnit, TextRange};
+
+    pub fn parse_with_caret(text: &str) -> (File, TextUnit) {
+        ::fall_tree::test_util::parse_with_caret(::lang_fall(), text, "^")
+    }
+
+    pub fn parse_with_range(text: &str) -> (File, TextRange) {
+        ::fall_tree::test_util::parse_with_range(::lang_fall(), text, "^")
+    }
+}
