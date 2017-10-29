@@ -681,18 +681,6 @@ rule block_form {
   let_stmt | expr_stmt | empty_stmt | mod_form
 }
 
-pub rule let_stmt {
-  'let' <commit> pattern '=' expr ';'
-}
-
-pub rule empty_stmt { ';' }
-
-pub rule expr_stmt {
-  <enter 'stmt'
-    {expr {prev_is_block <not <eof>> | ';'}}
-  >
-}
-
 test r"
 fn main() {
     {1};
@@ -701,6 +689,26 @@ fn main() {
     unsafe { let _ = (); }
 }
 "
+
+pub rule let_stmt {
+  'let' <commit> pattern type_ascription? '=' expr ';'
+}
+
+pub rule type_ascription {
+  ':' type_reference
+}
+
+test r"
+fn main() { let b: bool = true; }
+"
+
+pub rule empty_stmt { ';' }
+
+pub rule expr_stmt {
+  <enter 'stmt'
+    {expr {prev_is_block <not <eof>> | ';'}}
+  >
+}
 
 #[atom]
 pub rule if_expr {

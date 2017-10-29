@@ -1050,6 +1050,33 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() { let b: bool = true; }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
+            IDENT "b"
+        TYPE_ASCRIPTION
+          COLON ":"
+          PATH_TYPE
+            PATH
+              IDENT "bool"
+        EQ "="
+        LITERAL
+          BOOL "true"
+        SEMI ";"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { 
   if true { foo } else { bar } 
   if 1 { 2 } else if 3 { 4 } else { 5 }
