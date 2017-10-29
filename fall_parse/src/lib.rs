@@ -131,6 +131,11 @@ pub enum Expr {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum PrattVariant {
     Atom { body: Box<Expr> },
+    Prefix {
+        ty: usize,
+        op: Box<Expr>,
+        priority: u32,
+    },
     Binary {
         ty: usize,
         op: Box<Expr>,
@@ -140,11 +145,6 @@ pub enum PrattVariant {
         ty: usize,
         op: Box<Expr>
     },
-    Prefix {
-        ty: usize,
-        op: Box<Expr>,
-        priority: u32,
-    }
 }
 
 pub mod runtime {
