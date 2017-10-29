@@ -32,6 +32,9 @@ fn go<'t, 'p>(
                     if let Some((rhs, rest)) = go(ctx, table, tokens, ix.priority + 1) {
                         tokens = rest;
                         ctx.push_child(&mut node, rhs);
+                    } else {
+                        let error = ctx.create_error_node();
+                        ctx.push_child(&mut node, error);
                     }
                 }
                 ctx.prev = Some(ty);

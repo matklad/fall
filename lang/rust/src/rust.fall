@@ -549,7 +549,7 @@ pub rule expr {
 | bit_and | bit_or
 | comparison 	
 | logical_and | logical_or
-| range_expr | prefix_range_expr
+| range_expr | prefix_range_expr | postfix_range_expr
 | assignment_expr
 }
 
@@ -921,24 +921,34 @@ pub rule logical_or {
 
 #[bin(2)]
 pub rule range_expr {
-  expr <binop range_op> expr
+  expr <binop infix_range_op> expr
 }
 
 #[prefix(2), type(range_expr)]
 pub rule prefix_range_expr {
-  range_op expr
+  infix_range_op expr
+}
+
+#[postfix(2), type(range_expr)]
+pub rule postfix_range_expr {
+  expr range_op
 }
 
 rule range_op {
-  { '..' | '...' }
-  <not {'{' <is_in 'condition'>}>
+  '..' | '...'
+}
+
+rule infix_range_op {
+  range_op <not {'{' <is_in 'condition'>}>
 }
 
 test r"
 fn main() {
-    let _ = .. 90 + 2;
-    for j in 1 .. {
-    }
+    1     .. 2 + 3;
+    1 + 2 .. 3;
+          .. 1 + 2;
+    1 + 2 .. ;
+    for j in 1 .. { }
 }
 "
 

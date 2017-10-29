@@ -1470,9 +1470,11 @@ FILE
 
 ----------------------------------------
 fn main() {
-    let _ = .. 90 + 2;
-    for j in 1 .. {
-    }
+    1     .. 2 + 3;
+    1 + 2 .. 3;
+          .. 1 + 2;
+    1 + 2 .. ;
+    for j in 1 .. { }
 }
 
 FILE
@@ -1483,32 +1485,61 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      LET_STMT
-        LET "let"
-        WILDCARD_PATTERN
-          UNDERSCORE "_"
-        EQ "="
+      EXPR_STMT
+        RANGE_EXPR
+          LITERAL
+            NUMBER "1"
+          DOTDOT ".."
+          SUM_EXPR
+            LITERAL
+              NUMBER "2"
+            PLUS "+"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        RANGE_EXPR
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            LITERAL
+              NUMBER "2"
+          DOTDOT ".."
+          LITERAL
+            NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
         RANGE_EXPR
           DOTDOT ".."
           SUM_EXPR
             LITERAL
-              NUMBER "90"
+              NUMBER "1"
             PLUS "+"
             LITERAL
               NUMBER "2"
         SEMI ";"
       EXPR_STMT
-        FOR_EXPR
-          FOR "for"
-          PATH_PATTERN
-            PATH
-              IDENT "j"
-          IN "in"
+        RANGE_EXPR
+          SUM_EXPR
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
+            LITERAL
+              NUMBER "2"
+          DOTDOT ".."
+          ERROR ""
+        SEMI ";"
+      FOR_EXPR
+        FOR "for"
+        PATH_PATTERN
+          PATH
+            IDENT "j"
+        IN "in"
+        RANGE_EXPR
           LITERAL
             NUMBER "1"
-          ERROR ""
-      RANGE_EXPR
-        DOTDOT ".."
+          DOTDOT ".."
         BLOCK_EXPR
           L_CURLY "{"
           R_CURLY "}"

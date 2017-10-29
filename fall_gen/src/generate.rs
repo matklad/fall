@@ -203,7 +203,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
         match prat_kind {
             PratKind::Atom =>
                 result.atoms.push(compile_rule(rule)?.unwrap().body),
-            PratKind::Postfix => {
+            PratKind::Postfix(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
                         "bad pratt rule"
@@ -217,7 +217,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
                 result.infixes.push(fall_parse::Infix {
                     ty,
                     op: compile_expr(op)?,
-                    priority: 999,
+                    priority,
                     has_rhs: false
                 });
             }
@@ -251,7 +251,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
                 };
                 result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: compile_expr(op)?,
+                    op: (compile_expr(op)?),
                     priority,
                     has_rhs: true,
                 })
