@@ -77,10 +77,11 @@ tokenizer {
 
   char r"'(\s*|\S*)'"
   lifetime r"'\p{XID_Continue}*"
-  ident r"\p{XID_Start}\w*"
+  bool r"true|false"
   number r"\d+"
   string r#""([^"]|\\")*""#
   raw_string r#"r#*""# 'parse_raw_string'
+  ident r"\p{XID_Start}\w*"
 }
 
 pub rule file { mod_contents }
@@ -566,12 +567,12 @@ rule without_restrictions(p) {
 
 #[atom]
 pub rule literal {
-  number | string | raw_string | char
+  number | string | raw_string | char | bool
 }
 
 test r###"
 fn main() {
-  (1, "", r"", ' ', 'hell', '')
+  (1, "", r"", ' ', 'hell', '', true, false)
 }
 "###
 

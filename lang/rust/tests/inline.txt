@@ -724,7 +724,7 @@ FILE
 
 ----------------------------------------
 fn main() {
-  (1, "", r"", ' ', 'hell', '')
+  (1, "", r"", ' ', 'hell', '', true, false)
 }
 
 FILE
@@ -754,6 +754,12 @@ FILE
         COMMA ","
         LITERAL
           CHAR "\'\'"
+        COMMA ","
+        LITERAL
+          BOOL "true"
+        COMMA ","
+        LITERAL
+          BOOL "false"
         R_PAREN ")"
       R_CURLY "}"
 
@@ -958,13 +964,11 @@ FILE
           PIPE "|"
           PIPE "|"
           LOGICAL_OR
-            PATH_EXPR
-              PATH
-                IDENT "true"
+            LITERAL
+              BOOL "true"
             OR "||"
-            PATH_EXPR
-              PATH
-                IDENT "false"
+            LITERAL
+              BOOL "false"
         SEMI ";"
       R_CURLY "}"
 
@@ -1062,9 +1066,8 @@ FILE
       EXPR_STMT
         IF_EXPR
           IF "if"
-          PATH_EXPR
-            PATH
-              IDENT "true"
+          LITERAL
+            BOOL "true"
           BLOCK_EXPR
             L_CURLY "{"
             PATH_EXPR
@@ -1120,9 +1123,8 @@ FILE
         LIFETIME "\'w"
         COLON ":"
         WHILE "while"
-        PATH_EXPR
-          PATH
-            IDENT "true"
+        LITERAL
+          BOOL "true"
         BLOCK_EXPR
           L_CURLY "{"
           R_CURLY "}"
@@ -1305,18 +1307,16 @@ FILE
               LITERAL
                 NUMBER "3"
           FAT_ARROW "=>"
-          PATH_EXPR
-            PATH
-              IDENT "true"
+          LITERAL
+            BOOL "true"
           COMMA ","
         MATCH_ARM
           PATH_PATTERN
             PATH
               IDENT "None"
           FAT_ARROW "=>"
-          PATH_EXPR
-            PATH
-              IDENT "false"
+          LITERAL
+            BOOL "false"
           COMMA ","
         R_CURLY "}"
       R_CURLY "}"
