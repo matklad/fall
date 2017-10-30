@@ -153,8 +153,7 @@ register_module!(m, {
     }))?;
     m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
-//    m.export("diagnostics", |call| file_fn0(call, editor_api::diagnostics))?;
-    m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics2))?;
+    m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics))?;
     m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
     m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
     m.export("parse_test", parse_test)?;

@@ -55,13 +55,8 @@ pub struct Diagnostic {
     pub message: String
 }
 
-pub fn diagnostics(file: &File) -> Vec<Diagnostic> {
-    let analysis = ::Analysis::new(FallFile::new(file.root()));
-    api_impl::diagnostics::diagnostics(file, &analysis)
-}
-
-pub fn diagnostics2(analysis: &Analysis) -> Vec<Diagnostic> {
-    api_impl::diagnostics::diagnostics2(analysis)
+pub fn diagnostics(analysis: &Analysis) -> Vec<Diagnostic> {
+    api_impl::diagnostics::diagnostics(analysis)
 }
 
 pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
