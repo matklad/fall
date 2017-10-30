@@ -9,16 +9,6 @@ use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        CallExpr, Parameter, AstSelector};
 
 impl<'f> FallFile<'f> {
-    pub fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
-        self.syn_rules()
-            .find(|r| r.name().is_some() && r.name().unwrap() == name)
-    }
-
-    pub fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
-        self.node_types().iter().position(|&it| it.0 == name)
-            .map(|idx| idx + 1)
-    }
-
     pub fn node_types(&self) -> Vec<(Text<'f>, bool)> {
         let mut result = Vec::new();
         if let Some(tokenizer) = self.tokenizer_def() {
@@ -46,6 +36,16 @@ impl<'f> FallFile<'f> {
                 }
             })
             .walk_recursively_children_first(self.node())
+    }
+
+    fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
+        self.node_types().iter().position(|&it| it.0 == name)
+            .map(|idx| idx + 1)
+    }
+
+    fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
+        self.syn_rules()
+            .find(|r| r.name().is_some() && r.name().unwrap() == name)
     }
 }
 
