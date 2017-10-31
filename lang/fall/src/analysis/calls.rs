@@ -14,6 +14,9 @@ pub enum CallKind<'f> {
     Not(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
+    //    Enter(u32, Expr<'f>),
+    //    Exit(u32, Expr<'f>),
+    //    IsIn(u32),
 }
 
 
@@ -28,13 +31,13 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
         }
     };
 
-    let simple = vec![
+    let zero_arg = vec![
         ("any", CallKind::Any),
         ("commit", CallKind::Commit),
         ("eof", CallKind::Eof)
     ];
 
-    for (name, kind) in simple.into_iter() {
+    for (name, kind) in zero_arg.into_iter() {
         if call.fn_name() == name {
             expect_args(0);
             return Some(kind);
@@ -43,20 +46,19 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
 
     if call.fn_name() == "not" {
         expect_args(1);
-        if let Some(arg) = call.args().next() {
-            return Some(CallKind::Not(arg));
-        }
+        return call.args().next().map(CallKind::Not);
     }
-    if call.fn_name() == "layer" {
-        expect_args(2);
-        if let Some((arg1, arg2)) = call.args().next_tuple() {
-            return Some(CallKind::Layer(arg1, arg2));
-        }
-    }
-    if call.fn_name() == "with_skip" {
-        expect_args(2);
-        if let Some((arg1, arg2)) = call.args().next_tuple() {
-            return Some(CallKind::WithSkip(arg1, arg2));
+
+    let two_arg = vec![
+        ("layer", CallKind::Layer as fn(_, _) -> _),
+        ("with_skip", CallKind::WithSkip)
+    ];
+
+    for (name, kind) in two_arg.into_iter() {
+        if call.fn_name() == name {
+            expect_args(2);
+            return call.args().next_tuple()
+                .map(|(a, b)| kind(a, b))
         }
     }
 
@@ -129,7 +131,7 @@ mod tests {
 
         check(
             r" rule foo { <^not> }",
-            Some(CallKind::Commit),
+            None,
             r#"[(<not>, "Wrong number of arguments, expected 1, got 0")]"#
         );
     }
