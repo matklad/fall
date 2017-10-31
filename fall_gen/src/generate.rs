@@ -391,7 +391,7 @@ use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, No
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
@@ -421,7 +421,7 @@ impl<'f> ::std::fmt::Debug for {{ node.struct_name }}<'f> {
 {% endfor %}
 
 {% for class in ast_classes %}
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum {{ class.enum_name }}<'f> {
     {% for v in class.variants %}
         {{ v.1 }}({{ v.1 }}<'f>),
