@@ -1,7 +1,8 @@
 use itertools::Itertools;
 
-use fall_tree::AstNode;
+use fall_tree::{AstNode, AstClass};
 use fall_tree::search::child_of_type_exn;
+use fall_tree::search::ast;
 
 use super::Analysis;
 use ::{Expr, CallExpr, IDENT};
@@ -14,9 +15,9 @@ pub enum CallKind<'f> {
     Not(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
-    //    Enter(u32, Expr<'f>),
-    //    Exit(u32, Expr<'f>),
-    //    IsIn(u32),
+    Enter(u32, Expr<'f>),
+    Exit(u32, Expr<'f>),
+    IsIn(u32),
 }
 
 
@@ -58,7 +59,29 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
         if call.fn_name() == name {
             expect_args(2);
             return call.args().next_tuple()
-                .map(|(a, b)| kind(a, b))
+                .map(|(a, b)| kind(a, b));
+        }
+    }
+
+    if call.fn_name() == "is_in" {
+        expect_args(1);
+        return call.args().next()
+            .and_then(|ctx| resolve_context(a, ctx))
+            .map(CallKind::IsIn);
+    }
+
+    let layer_expr = vec![
+        ("enter", CallKind::Enter as fn(_, _) -> _),
+        ("exit", CallKind::Exit),
+    ];
+
+    for (name, kind) in layer_expr.into_iter() {
+        if call.fn_name() == name {
+            expect_args(2);
+            return call.args().next_tuple()
+                .and_then(|(ctx, body)| {
+                    resolve_context(a, ctx).map(|ctx| kind(ctx, body))
+                });
         }
     }
 
@@ -67,6 +90,15 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
         "Unresolved reference"
     );
     return None;
+}
+
+fn resolve_context(a: &Analysis, ctx: Expr) -> Option<u32> {
+    if let Some(ctx) = ast::ancestor_exn::<CallExpr>(ctx.node()).resolve_context() {
+        Some(ctx)
+    } else {
+        a.diagnostics.error(ctx.node(), "Context should be a single quoted string");
+        None
+    }
 }
 
 #[cfg(test)]
@@ -93,6 +125,26 @@ mod tests {
     }
 
     #[test]
+    fn test_resolve_layer() {
+        check_resolved("rule foo { <^enter 'ctx' a> }", "Enter(0, RefExpr@[24; 25))");
+        check_resolved("rule foo { <^exit  'ctx' a> }", "Exit(0, RefExpr@[24; 25))");
+
+        check_resolved("rule foo { <is_in 'ctx1'> <^enter 'ctx2' a> }", "Enter(1, RefExpr@[40; 41))");
+        check_resolved("rule foo { <is_in 'ctx1'> <^exit  'ctx2' a> }", "Exit(1, RefExpr@[40; 41))");
+
+        check_resolved(
+            "rule foo { <enter 'ctx1' a> <enter 'ctx2' b> <^is_in 'ctx2'> }",
+            "IsIn(1)"
+        );
+
+        check(
+            r" rule foo { <^is_in foo>}",
+            None,
+            r#"[(foo, "Context should be a single quoted string")]"#,
+        )
+    }
+
+    #[test]
     fn test_not() {
         resolve_call("rule foo { <^not bar>}", |c, _| {
             let c = c.unwrap();
@@ -103,7 +155,7 @@ mod tests {
     #[test]
     fn test_unresolved_call() {
         check(
-            r"rule foo {  <^abracadabra>}",
+            r"rule foo { <^abracadabra>}",
             None,
             r#"[(abracadabra, "Unresolved reference")]"#
         );
