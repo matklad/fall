@@ -6,18 +6,26 @@ use fall_tree::{File, Node, AstNode};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
 
-use {FallFile, SynRule, RefExpr, RefKind, CallKind, CallExpr, SYN_RULE};
+use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
+
+mod calls;
+mod diagnostics;
+use self::diagnostics::Diagnostics;
+
+pub use self::calls::CallKind;
 
 pub struct Analysis<'f> {
     file: FallFile<'f>,
 
-    used_rules: AtomicLazyCell<HashSet<Node<'f>>>
+    diagnostics: Diagnostics,
+    used_rules: AtomicLazyCell<HashSet<Node<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
     pub fn new(file: FallFile) -> Analysis {
         Analysis {
             file,
+            diagnostics: Diagnostics::new(),
             used_rules: AtomicLazyCell::new(),
         }
     }
@@ -30,6 +38,10 @@ impl<'f> Analysis<'f> {
         !self.used_rules().contains(&rule.node())
     }
 
+    pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind> {
+        calls::resolve(self, call)
+    }
+
     fn used_rules(&self) -> &HashSet<Node<'f>> {
         if !self.used_rules.filled() {
             let _ = self.used_rules.fill(self.calculate_used_rules());
@@ -38,6 +50,7 @@ impl<'f> Analysis<'f> {
     }
 
     fn calculate_used_rules(&self) -> HashSet<Node<'f>> {
+        use CallKind;
         ast::descendants_of_type::<RefExpr>(self.file.node())
             .into_iter()
             .filter_map(|node| node.resolve())
@@ -58,6 +71,7 @@ impl<'f> Analysis<'f> {
             .collect()
     }
 }
+
 
 pub struct FileWithAnalysis {
     rent: rent::R
