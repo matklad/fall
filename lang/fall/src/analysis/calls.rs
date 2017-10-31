@@ -1,19 +1,23 @@
-use fall_tree::{AstNode};
-use fall_tree::search::child_of_type_exn;
-use super::Analysis;
+use itertools::Itertools;
 
-use ::{CallExpr, IDENT};
+use fall_tree::AstNode;
+use fall_tree::search::child_of_type_exn;
+
+use super::Analysis;
+use ::{Expr, CallExpr, IDENT};
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum CallKind {
+pub enum CallKind<'f> {
     Eof,
     Any,
     Commit,
-//    Not(Expr<'f>),
+    Not(Expr<'f>),
+    Layer(Expr<'f>, Expr<'f>),
+    WithSkip(Expr<'f>, Expr<'f>),
 }
 
 
-pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind> {
+pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>> {
     let n_args = call.args().count();
     let expect_args = |n_expected: usize| {
         if n_expected != n_args {
@@ -37,6 +41,25 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind> {
         }
     }
 
+    if call.fn_name() == "not" {
+        expect_args(1);
+        if let Some(arg) = call.args().next() {
+            return Some(CallKind::Not(arg));
+        }
+    }
+    if call.fn_name() == "layer" {
+        expect_args(2);
+        if let Some((arg1, arg2)) = call.args().next_tuple() {
+            return Some(CallKind::Layer(arg1, arg2));
+        }
+    }
+    if call.fn_name() == "with_skip" {
+        expect_args(2);
+        if let Some((arg1, arg2)) = call.args().next_tuple() {
+            return Some(CallKind::WithSkip(arg1, arg2));
+        }
+    }
+
     a.diagnostics.error(
         child_of_type_exn(call.node(), IDENT),
         "Unresolved reference"
@@ -54,17 +77,31 @@ mod tests {
     use ::test_util::parse_with_caret;
 
     #[test]
-    fn test_call_resolve() {
-        check_simple_call("eof", CallKind::Eof);
-        check_simple_call("any", CallKind::Any);
-        check_simple_call("commit", CallKind::Commit);
+    fn test_resolve_no_args() {
+        check_resolved("rule foo { <^eof> }", "Eof");
+        check_resolved("rule foo { <^any> }", "Any");
+        check_resolved("rule foo { <^commit> }", "Commit");
     }
 
+    #[test]
+    fn test_resolve_simple_args() {
+        check_resolved("rule foo { <^not a> }", "Not(RefExpr@[16; 17))");
+        check_resolved("rule foo { <^with_skip a b> }", "WithSkip(RefExpr@[22; 23), RefExpr@[24; 25))");
+        check_resolved("rule foo { <^layer a b> }", "Layer(RefExpr@[18; 19), RefExpr@[20; 21))");
+    }
+
+    #[test]
+    fn test_not() {
+        resolve_call("rule foo { <^not bar>}", |c, _| {
+            let c = c.unwrap();
+            assert_eq!(format!("{:?}", c), "Not(RefExpr@[16; 19))");
+        })
+    }
 
     #[test]
     fn test_unresolved_call() {
         check(
-            r" rule foo {  <^abracadabra>}",
+            r"rule foo {  <^abracadabra>}",
             None,
             r#"[(abracadabra, "Unresolved reference")]"#
         );
@@ -89,6 +126,12 @@ mod tests {
             Some(CallKind::Commit),
             r#"[(<commit foo bar baz>, "Wrong number of arguments, expected 0, got 3")]"#
         );
+
+        check(
+            r" rule foo { <^not> }",
+            Some(CallKind::Commit),
+            r#"[(<not>, "Wrong number of arguments, expected 1, got 0")]"#
+        );
     }
 
     fn check(text: &str, kind: Option<CallKind>, diagnostics: &str) {
@@ -98,12 +141,12 @@ mod tests {
         })
     }
 
-    fn check_simple_call(name: &str, kind: CallKind) {
-        check(
-            &format!("rule foo {{ <^{}> }}", name),
-            Some(kind),
-            "[]"
-        );
+    fn check_resolved(text: &str, kind: &str) {
+        resolve_call(text, |c, a| {
+            let c = c.unwrap();
+            assert_eq!(format!("{:?}", c), kind);
+            assert_eq!(a.diagnostics.debug(a.file.node().text()), "[]");
+        })
     }
 
     fn resolve_call<F: FnOnce(Option<CallKind>, Analysis)>(text: &str, f: F) {

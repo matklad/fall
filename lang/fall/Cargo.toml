@@ -3,6 +3,7 @@ name = "lang_fall"
 version = "0.1.0"
 
 [dependencies]
+itertools = "0.7"
 lazycell = "0.5"
 rental = "0.4"
 serde = "1.*"

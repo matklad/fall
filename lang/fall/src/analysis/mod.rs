@@ -38,7 +38,7 @@ impl<'f> Analysis<'f> {
         !self.used_rules().contains(&rule.node())
     }
 
-    pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind> {
+    pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
         calls::resolve(self, call)
     }
 
