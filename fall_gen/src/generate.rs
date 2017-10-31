@@ -410,6 +410,14 @@ impl<'f> {{ node.struct_name }}<'f> {
     }
     {% endfor %}
 }
+
+impl<'f> ::std::fmt::Debug for {{ node.struct_name }}<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("{{ node.struct_name }}@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 {% endfor %}
 
 {% for class in ast_classes %}
@@ -442,6 +450,18 @@ impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
                 {{ class.enum_name }}::{{ v.1 }}(n) => n.node(),
             {% endfor %}
         }
+    }
+}
+
+impl<'f> ::std::fmt::Debug for {{ class.enum_name }}<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str(match *self {
+            {% for v in class.variants %}
+                {{ class.enum_name }}::{{ v.1 }}(..) => "{{ v.1 }}@",
+            {% endfor %}
+        })?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 {% endfor %}

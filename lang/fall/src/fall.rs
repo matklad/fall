@@ -212,6 +212,14 @@ impl<'f> FallFile<'f> {
         AstChildren::new(self.node.children())
     }
 }
+
+impl<'f> ::std::fmt::Debug for FallFile<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("FallFile@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct TokenizerDef<'f> { node: Node<'f> }
 
@@ -227,6 +235,14 @@ impl<'f> AstNode<'f> for TokenizerDef<'f> {
 impl<'f> TokenizerDef<'f> {
     pub fn lex_rules(&self) -> AstChildren<'f, LexRule<'f>> {
         AstChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for TokenizerDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TokenizerDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -247,6 +263,14 @@ impl<'f> LexRule<'f> {
     }
     pub fn node_type(&self) -> Text<'f> {
         child_of_type_exn(self.node, IDENT).text()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for LexRule<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("LexRule@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -278,6 +302,14 @@ impl<'f> SynRule<'f> {
         AstChildren::new(self.node.children()).next()
     }
 }
+
+impl<'f> ::std::fmt::Debug for SynRule<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("SynRule@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct Parameters<'f> { node: Node<'f> }
 
@@ -293,6 +325,14 @@ impl<'f> AstNode<'f> for Parameters<'f> {
 impl<'f> Parameters<'f> {
     pub fn parameters(&self) -> AstChildren<'f, Parameter<'f>> {
         AstChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for Parameters<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("Parameters@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -312,6 +352,14 @@ impl<'f> Parameter<'f> {
         child_of_type_exn(self.node, IDENT).text()
     }
 }
+
+impl<'f> ::std::fmt::Debug for Parameter<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("Parameter@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct Attributes<'f> { node: Node<'f> }
 
@@ -327,6 +375,14 @@ impl<'f> AstNode<'f> for Attributes<'f> {
 impl<'f> Attributes<'f> {
     pub fn attributes(&self) -> AstChildren<'f, Attribute<'f>> {
         AstChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for Attributes<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("Attributes@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -349,6 +405,14 @@ impl<'f> Attribute<'f> {
         AstChildren::new(self.node.children()).next()
     }
 }
+
+impl<'f> ::std::fmt::Debug for Attribute<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("Attribute@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct AttributeValue<'f> { node: Node<'f> }
 
@@ -363,6 +427,14 @@ impl<'f> AstNode<'f> for AttributeValue<'f> {
 
 impl<'f> AttributeValue<'f> {
     
+}
+
+impl<'f> ::std::fmt::Debug for AttributeValue<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AttributeValue@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct VerbatimDef<'f> { node: Node<'f> }
@@ -379,6 +451,14 @@ impl<'f> AstNode<'f> for VerbatimDef<'f> {
 impl<'f> VerbatimDef<'f> {
     pub fn literal_string(&self) -> Text<'f> {
         child_of_type_exn(self.node, HASH_STRING).text()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for VerbatimDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("VerbatimDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -399,6 +479,14 @@ impl<'f> AstDef<'f> {
     }
     pub fn ast_classes(&self) -> AstChildren<'f, AstClassDef<'f>> {
         AstChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for AstDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AstDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -424,6 +512,14 @@ impl<'f> AstNodeDef<'f> {
         AstChildren::new(self.node.children())
     }
 }
+
+impl<'f> ::std::fmt::Debug for AstNodeDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AstNodeDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct AstClassDef<'f> { node: Node<'f> }
 
@@ -439,6 +535,14 @@ impl<'f> AstNode<'f> for AstClassDef<'f> {
 impl<'f> AstClassDef<'f> {
     pub fn name_ident(&self) -> Node<'f> {
         self.node().children().find(|n| n.ty() == IDENT).unwrap()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for AstClassDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AstClassDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -459,6 +563,14 @@ impl<'f> MethodDef<'f> {
     }
     pub fn selector(&self) -> AstSelector<'f> {
         AstChildren::new(self.node.children()).next().unwrap()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for MethodDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("MethodDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -487,6 +599,14 @@ impl<'f> AstSelector<'f> {
         self.node().children().find(|n| n.ty() == DOT)
     }
 }
+
+impl<'f> ::std::fmt::Debug for AstSelector<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AstSelector@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct TestDef<'f> { node: Node<'f> }
 
@@ -504,6 +624,14 @@ impl<'f> TestDef<'f> {
         child_of_type(self.node, HASH_STRING).map(|n| n.text())
     }
 }
+
+impl<'f> ::std::fmt::Debug for TestDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TestDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct RefExpr<'f> { node: Node<'f> }
 
@@ -518,6 +646,14 @@ impl<'f> AstNode<'f> for RefExpr<'f> {
 
 impl<'f> RefExpr<'f> {
     
+}
+
+impl<'f> ::std::fmt::Debug for RefExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("RefExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
 }
 #[derive(Clone, Copy)]
 pub struct CallExpr<'f> { node: Node<'f> }
@@ -539,6 +675,14 @@ impl<'f> CallExpr<'f> {
         AstClassChildren::new(self.node.children())
     }
 }
+
+impl<'f> ::std::fmt::Debug for CallExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("CallExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct BlockExpr<'f> { node: Node<'f> }
 
@@ -554,6 +698,14 @@ impl<'f> AstNode<'f> for BlockExpr<'f> {
 impl<'f> BlockExpr<'f> {
     pub fn alts(&self) -> AstClassChildren<'f, Expr<'f>> {
         AstClassChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for BlockExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("BlockExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 #[derive(Clone, Copy)]
@@ -573,6 +725,14 @@ impl<'f> OptExpr<'f> {
         AstClassChildren::new(self.node.children()).next().unwrap()
     }
 }
+
+impl<'f> ::std::fmt::Debug for OptExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("OptExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct RepExpr<'f> { node: Node<'f> }
 
@@ -590,6 +750,14 @@ impl<'f> RepExpr<'f> {
         AstClassChildren::new(self.node.children()).next().unwrap()
     }
 }
+
+impl<'f> ::std::fmt::Debug for RepExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("RepExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub struct SeqExpr<'f> { node: Node<'f> }
 
@@ -605,6 +773,14 @@ impl<'f> AstNode<'f> for SeqExpr<'f> {
 impl<'f> SeqExpr<'f> {
     pub fn parts(&self) -> AstClassChildren<'f, Expr<'f>> {
         AstClassChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for SeqExpr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("SeqExpr@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
 
@@ -649,5 +825,20 @@ impl<'f> AstClass<'f> for Expr<'f> {
             Expr::RepExpr(n) => n.node(),
             Expr::SeqExpr(n) => n.node(),
         }
+    }
+}
+
+impl<'f> ::std::fmt::Debug for Expr<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str(match *self {
+            Expr::RefExpr(..) => "RefExpr@",
+            Expr::CallExpr(..) => "CallExpr@",
+            Expr::BlockExpr(..) => "BlockExpr@",
+            Expr::OptExpr(..) => "OptExpr@",
+            Expr::RepExpr(..) => "RepExpr@",
+            Expr::SeqExpr(..) => "SeqExpr@",
+        })?;
+        self.node().range().fmt(f)?;
+        Ok(())
     }
 }
