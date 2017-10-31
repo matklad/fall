@@ -477,7 +477,7 @@ impl<'f> Attribute<'f> {
     }
 }
 
-fn lit_body(lit: Text) -> Text {
+pub(crate) fn lit_body(lit: Text) -> Text {
     let q = if lit.starts_with("'") { "'" } else { "\"" };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use lazycell::AtomicLazyCell;
 
-use fall_tree::{File, Node, AstNode};
+use fall_tree::{File, Node, AstNode, Text};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
 
@@ -19,6 +19,7 @@ pub struct Analysis<'f> {
 
     diagnostics: Diagnostics,
     used_rules: AtomicLazyCell<HashSet<Node<'f>>>,
+    contexts: AtomicLazyCell<Vec<Text<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -27,6 +28,7 @@ impl<'f> Analysis<'f> {
             file,
             diagnostics: Diagnostics::new(),
             used_rules: AtomicLazyCell::new(),
+            contexts: AtomicLazyCell::new(),
         }
     }
 
@@ -40,6 +42,13 @@ impl<'f> Analysis<'f> {
 
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
         calls::resolve(self, call)
+    }
+
+    fn contexts(&self) -> &[Text<'f>] {
+        if !self.contexts.filled() {
+            let _ = self.contexts.fill(calls::contexts(self));
+        }
+        self.contexts.borrow().unwrap().as_ref()
     }
 
     fn used_rules(&self) -> &HashSet<Node<'f>> {

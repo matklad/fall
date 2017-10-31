@@ -1,11 +1,11 @@
 use itertools::Itertools;
 
-use fall_tree::{AstNode, AstClass};
-use fall_tree::search::child_of_type_exn;
-use fall_tree::search::ast;
+use fall_tree::{AstNode, AstClass, Text};
+use fall_tree::search::{child_of_type, child_of_type_exn};
+use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use super::Analysis;
-use ::{Expr, CallExpr, IDENT};
+use ::{Expr, CallExpr, IDENT, SIMPLE_STRING};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum CallKind<'f> {
@@ -92,9 +92,28 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
     return None;
 }
 
+pub fn contexts<'f>(a: &Analysis<'f>) -> Vec<Text<'f>> {
+    Visitor(Vec::new())
+        .visit::<CallExpr, _>(|contexts, call| {
+            if call.fn_name() == "is_in" || call.fn_name() == "enter" || call.fn_name() == "exit" {
+                if let Some(ctx) = call.args().next().and_then(context_name) {
+                    contexts.push(ctx);
+                }
+            }
+        })
+        .walk_recursively_children_first(a.file().node())
+}
+
+fn context_name<'f>(ctx: Expr<'f>) -> Option<Text<'f>> {
+    child_of_type(ctx.node(), SIMPLE_STRING)
+        .map(|n| ::ast_ext::lit_body(n.text()))
+}
+
 fn resolve_context(a: &Analysis, ctx: Expr) -> Option<u32> {
-    if let Some(ctx) = ast::ancestor_exn::<CallExpr>(ctx.node()).resolve_context() {
-        Some(ctx)
+    if let Some(name) = context_name(ctx) {
+        a.contexts().iter()
+            .position(|&c| c == name)
+            .map(|usize_| usize_ as u32)
     } else {
         a.diagnostics.error(ctx.node(), "Context should be a single quoted string");
         None
