@@ -5,19 +5,23 @@ use fall_tree::search::{child_of_type, child_of_type_exn};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use super::Analysis;
-use ::{Expr, CallExpr, IDENT, SIMPLE_STRING};
+use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum CallKind<'f> {
     Eof,
     Any,
     Commit,
+
     Not(Expr<'f>),
     Layer(Expr<'f>, Expr<'f>),
     WithSkip(Expr<'f>, Expr<'f>),
+
     Enter(u32, Expr<'f>),
     Exit(u32, Expr<'f>),
     IsIn(u32),
+
+    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>),
 }
 
 
@@ -82,6 +86,16 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
                 .and_then(|(ctx, body)| {
                     resolve_context(a, ctx).map(|ctx| kind(ctx, body))
                 });
+        }
+    }
+
+    if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
+        if let Some(parameters) = rule.parameters() {
+            let params = parameters.parameters()
+                .map(|p| p.idx())
+                .zip(call.args())
+                .collect();
+            return Some(CallKind::RuleCall(rule, params));
         }
     }
 
@@ -183,28 +197,38 @@ mod tests {
     #[test]
     fn wrong_arity() {
         check(
-            r" rule foo { <^eof foo> }",
+            "rule foo { <^eof foo> }",
             Some(CallKind::Eof),
             r#"[(<eof foo>, "Wrong number of arguments, expected 0, got 1")]"#
         );
 
         check(
-            r" rule foo { <^any foo bar> }",
+            "rule foo { <^any foo bar> }",
             Some(CallKind::Any),
             r#"[(<any foo bar>, "Wrong number of arguments, expected 0, got 2")]"#
         );
 
         check(
-            r" rule foo { <^commit foo bar baz> }",
+            "rule foo { <^commit foo bar baz> }",
             Some(CallKind::Commit),
             r#"[(<commit foo bar baz>, "Wrong number of arguments, expected 0, got 3")]"#
         );
 
         check(
-            r" rule foo { <^not> }",
+            "rule foo { <^not> }",
             None,
             r#"[(<not>, "Wrong number of arguments, expected 1, got 0")]"#
         );
+    }
+
+    #[test]
+    fn call_custom_rule() {
+        //TODO: check number of arguments
+        //TODO: analysis based resolve of SynRule
+        check_resolved(
+            "rule foo { <^bar a b>} rule bar(x, y) { }",
+            "RuleCall(SynRule@[22; 40), [(0, RefExpr@[16; 17)), (1, RefExpr@[18; 19))])"
+        )
     }
 
     fn check(text: &str, kind: Option<CallKind>, diagnostics: &str) {

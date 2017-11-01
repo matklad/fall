@@ -43,7 +43,7 @@ impl<'f> FallFile<'f> {
             .map(|idx| idx + 1)
     }
 
-    fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
+    pub(crate) fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
         self.syn_rules()
             .find(|r| r.name().is_some() && r.name().unwrap() == name)
     }
