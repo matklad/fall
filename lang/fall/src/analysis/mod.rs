@@ -10,6 +10,7 @@ use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
 
 mod calls;
 mod diagnostics;
+
 use self::diagnostics::Diagnostics;
 
 pub use self::calls::CallKind;
@@ -59,7 +60,6 @@ impl<'f> Analysis<'f> {
     }
 
     fn calculate_used_rules(&self) -> HashSet<Node<'f>> {
-        use CallKind;
         ast::descendants_of_type::<RefExpr>(self.file.node())
             .into_iter()
             .filter_map(|node| node.resolve())
@@ -70,7 +70,7 @@ impl<'f> Analysis<'f> {
             .chain(
                 ast::descendants_of_type::<CallExpr>(self.file.node())
                     .into_iter()
-                    .filter_map(|call| call.kind().ok())
+                    .filter_map(|call| self.resolve_call(call))
                     .filter_map(|kind| match kind {
                         CallKind::RuleCall(rule, ..) => Some(rule.node()),
                         _ => None,
