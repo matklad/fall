@@ -5,7 +5,7 @@ use fall_tree::search::{child_of_type, child_of_type_exn};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use super::Analysis;
-use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING};
+use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING, RefKind};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum CallKind<'f> {
@@ -21,7 +21,8 @@ pub enum CallKind<'f> {
     Exit(u32, Expr<'f>),
     IsIn(u32),
 
-    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>),
+    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>), // TODO: u32 is unclear
+    PrevIs(Vec<usize>)
 }
 
 
@@ -87,6 +88,25 @@ pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>>
                     resolve_context(a, ctx).map(|ctx| kind(ctx, body))
                 });
         }
+    }
+
+    if call.fn_name() == "prev_is" {
+        let mut args = Vec::new();
+        for arg in call.args() {
+            let mut ok = false;
+            if let Expr::RefExpr(expr) = arg {
+                if let Some(RefKind::RuleReference(rule)) = expr.resolve() {
+                    if let Some(ty) = rule.resolve_ty() {
+                        args.push(ty);
+                        ok = true;
+                    }
+                }
+            }
+            if !ok {
+                a.diagnostics.error(call.node(), "<prev_is> arguments must be public rules")
+            }
+        }
+        return Some(CallKind::PrevIs(args))
     }
 
     if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
@@ -219,6 +239,15 @@ mod tests {
             None,
             r#"[(<not>, "Wrong number of arguments, expected 1, got 0")]"#
         );
+    }
+
+    #[test]
+    fn check_prev_is() {
+        //TODO: check for errors
+        check_resolved(
+            "pub rule foo {} pub rule bar {} rule baz { <^prev_is foo bar> }",
+            "PrevIs([1, 2])"
+        )
     }
 
     #[test]
