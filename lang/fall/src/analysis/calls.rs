@@ -26,7 +26,7 @@ pub enum CallKind<'f> {
 }
 
 
-pub fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>> {
+pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>> {
     let n_args = call.args().count();
     let expect_args = |n_expected: usize| {
         if n_expected != n_args {

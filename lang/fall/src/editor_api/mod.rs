@@ -18,8 +18,8 @@ pub fn tree_as_text(file: &File) -> String {
     dump_file(file)
 }
 
-pub fn highlight(file: &File) -> Vec<(TextRange, &'static str)> {
-    api_impl::highlighting::highlight(file)
+pub fn highlight(analysis: &Analysis) -> Vec<(TextRange, &'static str)> {
+    api_impl::highlighting::highlight(analysis)
 }
 
 pub fn extend_selection(file: &File, range: TextRange) -> Option<TextRange> {

@@ -1,13 +1,14 @@
-use fall_tree::{TextUnit, TextRange, File, Node, NodeType};
+use fall_tree::{TextUnit, TextRange, Node, NodeType};
 use fall_tree::search::child_of_type;
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use ::*;
+use analysis::CallKind;
 
 type Spans = Vec<(TextRange, &'static str)>;
 
-pub fn highlight(file: &File) -> Spans {
-    let file = ast(file);
+pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
+    let file = analysis.file();
     return Visitor(Vec::new())
         .visit_nodes(&[EOL_COMMENT], |spans, node| {
             colorize_node(node, "comment", spans)
@@ -48,10 +49,10 @@ pub fn highlight(file: &File) -> Spans {
             colorize_child(sel.node(), IDENT, color, spans)
         })
         .visit::<CallExpr, _>(|spans, call| {
-            let color = match call.kind() {
-                Err(_) => "unresolved",
-                Ok(CallKind::RuleCall(..)) => "rule",
-                _ => "builtin"
+            let color = match analysis.resolve_call(call) {
+                None => "unresolved",
+                Some(CallKind::RuleCall(..)) => "rule",
+                Some(_) => "builtin"
             };
 
             colorize_child(call.node(), IDENT, color, spans);
@@ -76,15 +77,41 @@ fn colorize_child(node: Node, child: NodeType, color: &'static str, spans: &mut 
 
 #[test]
 fn test_highlighting() {
-    let file = parse(r####"
+    let file = ::editor_api::analyse(r####"
 tokenizer { number r"\d+"}
-pub rule foo { bar }
-rule bar { number }
-"####);
+pub rule foo { bar <eof> <abracadabra> }
+rule bar { number <m foo> }
 
-    let spans = highlight(&file);
-    assert_eq!(
-        format!("{:?}", spans),
-        r#"[([1; 10), "keyword"), ([20; 26), "string"), ([13; 19), "token"), ([28; 31), "keyword"), ([32; 36), "keyword"), ([43; 46), "rule"), ([37; 40), "rule"), ([49; 53), "keyword"), ([60; 66), "token"), ([54; 57), "rule")]"#
-    );
+rule m(f) {}
+"####.to_owned());
+
+    file.analyse(|a| {
+        let spans = highlight(a);
+        let result = spans.into_iter().map(|(range, d)| {
+            format!("{}: {}", a.file().node().text().slice(range), d)
+        }).collect::<Vec<_>>().join("\n");
+        assert_eq!(result, r##"tokenizer: keyword
+r"\d+": string
+number: token
+pub: keyword
+rule: keyword
+bar: rule
+eof: builtin
+<: builtin
+>: builtin
+abracadabra: unresolved
+<: unresolved
+>: unresolved
+foo: rule
+rule: keyword
+number: token
+foo: rule
+m: rule
+<: rule
+>: rule
+bar: rule
+rule: keyword
+f: value_parameter
+m: rule"##);
+    });
 }
