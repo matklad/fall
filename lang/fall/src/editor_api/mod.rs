@@ -45,10 +45,10 @@ pub fn structure(file: &File) -> Vec<FileStructureNode> {
     api_impl::structure::structure(file)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub enum Severity { Error, Warning }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Diagnostic {
     pub range: TextRange,
     pub severity: Severity,

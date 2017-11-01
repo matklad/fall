@@ -51,3 +51,22 @@ impl Diagnostic {
         }
     }
 }
+
+
+#[test]
+fn test_diagnostics() {
+    let file = ::editor_api::analyse(r"
+       rule foo { <eof 1> }
+       rule bar { foo <abracadabra> <prev_is {foo}>}
+    ".to_string());
+
+    file.analyse(|a| {
+        let d = diagnostics(a);
+        assert_eq!(
+            format!("{:?}", d),
+            "[Diagnostic { range: [51; 64), severity: Error, message: \"unknown rule\" }, \
+              Diagnostic { range: [65; 80), severity: Error, message: \"Bad prev_is\" }, \
+              Diagnostic { range: [41; 44), severity: Warning, message: \"Unused rule\" }]"
+        );
+    })
+}
