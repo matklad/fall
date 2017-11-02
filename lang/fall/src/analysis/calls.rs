@@ -5,7 +5,7 @@ use fall_tree::{AstNode, AstClass, Text};
 use fall_tree::search::{child_of_type, child_of_type_exn};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
-use super::Analysis;
+use super::{Analysis, DiagnosticSink};
 use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING, RefKind};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -22,16 +22,17 @@ pub enum CallKind<'f> {
     Exit(u32, Expr<'f>),
     IsIn(u32),
 
-    RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>), // TODO: u32 is unclear
+    RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>),
+    // TODO: u32 is unclear
     PrevIs(Arc<Vec<usize>>)
 }
 
 
-pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKind<'f>> {
+pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallExpr<'f>) -> Option<CallKind<'f>> {
     let n_args = call.args().count();
-    let expect_args = |n_expected: usize| {
+    let expect_args = |d: &mut DiagnosticSink, n_expected: usize| {
         if n_expected != n_args {
-            a.diagnostics.error(
+            d.error(
                 call.node(),
                 format!("Wrong number of arguments, expected {}, got {}", n_expected, n_args)
             )
@@ -46,13 +47,13 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
 
     for (name, kind) in zero_arg.into_iter() {
         if call.fn_name() == name {
-            expect_args(0);
+            expect_args(d, 0);
             return Some(kind);
         }
     }
 
     if call.fn_name() == "not" {
-        expect_args(1);
+        expect_args(d, 1);
         return call.args().next().map(CallKind::Not);
     }
 
@@ -63,16 +64,16 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
 
     for (name, kind) in two_arg.into_iter() {
         if call.fn_name() == name {
-            expect_args(2);
+            expect_args(d, 2);
             return call.args().next_tuple()
                 .map(|(a, b)| kind(a, b));
         }
     }
 
     if call.fn_name() == "is_in" {
-        expect_args(1);
+        expect_args(d, 1);
         return call.args().next()
-            .and_then(|ctx| resolve_context(a, ctx))
+            .and_then(|ctx| resolve_context(a, d, ctx))
             .map(CallKind::IsIn);
     }
 
@@ -83,10 +84,10 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
 
     for (name, kind) in layer_expr.into_iter() {
         if call.fn_name() == name {
-            expect_args(2);
+            expect_args(d, 2);
             return call.args().next_tuple()
                 .and_then(|(ctx, body)| {
-                    resolve_context(a, ctx).map(|ctx| kind(ctx, body))
+                    resolve_context(a, d, ctx).map(|ctx| kind(ctx, body))
                 });
         }
     }
@@ -104,10 +105,10 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
                 }
             }
             if !ok {
-                a.diagnostics.error(call.node(), "<prev_is> arguments must be public rules")
+                d.error(call.node(), "<prev_is> arguments must be public rules")
             }
         }
-        return Some(CallKind::PrevIs(Arc::new(args)))
+        return Some(CallKind::PrevIs(Arc::new(args)));
     }
 
     if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
@@ -120,7 +121,7 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
         }
     }
 
-    a.diagnostics.error(
+    d.error(
         child_of_type_exn(call.node(), IDENT),
         "Unresolved reference"
     );
@@ -144,13 +145,13 @@ fn context_name<'f>(ctx: Expr<'f>) -> Option<Text<'f>> {
         .map(|n| ::ast_ext::lit_body(n.text()))
 }
 
-fn resolve_context(a: &Analysis, ctx: Expr) -> Option<u32> {
+fn resolve_context(a: &Analysis, d: &mut DiagnosticSink, ctx: Expr) -> Option<u32> {
     if let Some(name) = context_name(ctx) {
         a.contexts().iter()
             .position(|&c| c == name)
             .map(|usize_| usize_ as u32)
     } else {
-        a.diagnostics.error(ctx.node(), "Context should be a single quoted string");
+        d.error(ctx.node(), "Context should be a single quoted string");
         None
     }
 }
@@ -264,7 +265,7 @@ mod tests {
     fn check(text: &str, kind: Option<CallKind>, diagnostics: &str) {
         resolve_call(text, |c, a| {
             assert_eq!(c, kind);
-            assert_eq!(a.diagnostics.debug(a.file.node().text()), diagnostics);
+            assert_eq!(a.debug_diagnostics(), diagnostics);
         })
     }
 
@@ -272,7 +273,7 @@ mod tests {
         resolve_call(text, |c, a| {
             let c = c.unwrap();
             assert_eq!(format!("{:?}", c), kind);
-            assert_eq!(a.diagnostics.debug(a.file.node().text()), "[]");
+            assert_eq!(a.debug_diagnostics(), "[]");
         })
     }
 

@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::sync::Mutex;
 
 use fall_tree::{File, Node, AstNode, Text};
 use fall_tree::search::child_of_type;
@@ -19,7 +20,7 @@ pub use self::calls::CallKind;
 pub struct Analysis<'f> {
     file: FallFile<'f>,
 
-    diagnostics: DiagnosticSink,
+    diagnostics: Mutex<Vec<Diagnostic>>,
 
     used_rules: FileCache<HashSet<Node<'f>>>,
     contexts: FileCache<Vec<Text<'f>>>,
@@ -31,7 +32,7 @@ impl<'f> Analysis<'f> {
     pub fn new(file: FallFile) -> Analysis {
         Analysis {
             file,
-            diagnostics: DiagnosticSink::new(),
+            diagnostics: Default::default(),
             used_rules: Default::default(),
             contexts: Default::default(),
             calls: Default::default(),
@@ -47,11 +48,26 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
-        self.calls.get(call.node(), || calls::resolve(self, call))
+        let mut diagnostics = Vec::new();
+        let (value, committed) = {
+            let mut sink = DiagnosticSink::new(&mut diagnostics);
+            self.calls.get(call.node(), || {
+                calls::resolve(self, &mut sink, call)
+            })
+        };
+        if committed {
+            self.diagnostics.lock().unwrap().extend(diagnostics)
+        }
+        value
     }
 
     pub fn diagnostics(&self) -> Vec<Diagnostic> {
-        self.diagnostics.diagnostics()
+        self.diagnostics.lock().unwrap().clone()
+    }
+
+    #[allow(unused)] // for debugging
+    pub fn debug_diagnostics(&self) -> String {
+        diagnostics::debug_diagnostics(&self.diagnostics(), self.file().node().text())
     }
 
     fn contexts(&self) -> &[Text<'f>] {

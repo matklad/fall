@@ -33,14 +33,14 @@ pub (super) struct NodeCache<'f, V: Sync> {
 }
 
 impl<'f, V: Sync + Clone> NodeCache<'f, V> {
-    pub fn get<F: FnOnce() -> V>(&self, node: Node<'f>, f: F) -> V {
+    pub fn get<F: FnOnce() -> V>(&self, node: Node<'f>, f: F) -> (V, bool) {
         {
             let guard = self.map.lock().unwrap();
             if let Some(v) = guard.get(&node) {
-                return v.clone();
+                return (v.clone(), false);
             }
         }
-        let v = f();
-        self.map.lock().unwrap().entry(node).or_insert(v).clone()
+        let value = self.map.lock().unwrap().entry(node).or_insert_with(f).clone();
+        (value, true)
     }
 }
