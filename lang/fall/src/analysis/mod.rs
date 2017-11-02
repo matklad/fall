@@ -7,12 +7,13 @@ use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
 
 use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
+use editor_api::Diagnostic;
 
 mod calls;
 mod diagnostics;
 mod map;
 
-use self::diagnostics::Diagnostics;
+use self::diagnostics::DiagnosticSink;
 use self::map::NodeMap;
 pub use self::calls::CallKind;
 
@@ -20,7 +21,7 @@ pub use self::calls::CallKind;
 pub struct Analysis<'f> {
     file: FallFile<'f>,
 
-    diagnostics: Diagnostics,
+    diagnostics: DiagnosticSink,
     used_rules: AtomicLazyCell<HashSet<Node<'f>>>,
     contexts: AtomicLazyCell<Vec<Text<'f>>>,
 
@@ -31,7 +32,7 @@ impl<'f> Analysis<'f> {
     pub fn new(file: FallFile) -> Analysis {
         Analysis {
             file,
-            diagnostics: Diagnostics::new(),
+            diagnostics: DiagnosticSink::new(),
             used_rules: AtomicLazyCell::new(),
             contexts: AtomicLazyCell::new(),
             calls: NodeMap::new(),
@@ -48,6 +49,10 @@ impl<'f> Analysis<'f> {
 
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
         self.calls.get(call.node(), || calls::resolve(self, call))
+    }
+
+    pub fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.diagnostics.diagnostics()
     }
 
     fn contexts(&self) -> &[Text<'f>] {

@@ -1,18 +1,27 @@
 use std::cell::RefCell;
-use fall_tree::{Text, Node, TextRange};
+use fall_tree::{Text, Node};
 
-pub struct Diagnostics {
-    errors: RefCell<Vec<(TextRange, String)>>,
+use editor_api::{Diagnostic, Severity};
+
+pub struct DiagnosticSink {
+    errors: RefCell<Vec<Diagnostic>>,
 }
 
-impl Diagnostics {
-    pub fn new() -> Diagnostics {
-        Diagnostics { errors: Default::default() }
+impl DiagnosticSink {
+    pub fn new() -> DiagnosticSink {
+        DiagnosticSink { errors: Default::default() }
     }
 
-
     pub fn error<T: Into<String>>(&self, node: Node, message: T) {
-        self.errors.borrow_mut().push((node.range(), message.into()))
+        self.errors.borrow_mut().push(Diagnostic {
+            range: node.range(),
+            severity: Severity::Error,
+            message: message.into(),
+        })
+    }
+
+    pub fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.errors.borrow().clone()
     }
 
     #[allow(unused)] // for debugging
@@ -20,8 +29,8 @@ impl Diagnostics {
         let contents =
             self.errors.borrow()
                 .iter()
-                .map(|&(range, ref message)| {
-                    format!("({}, {:?})", text.slice(range), message)
+                .map(|d| {
+                    format!("({}, {:?})", text.slice(d.range), d.message)
                 })
                 .collect::<Vec<String>>()
                 .join(", ");
