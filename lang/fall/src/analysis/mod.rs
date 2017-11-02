@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use lazycell::AtomicLazyCell;
-
 use fall_tree::{File, Node, AstNode, Text};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
@@ -11,10 +9,10 @@ use editor_api::Diagnostic;
 
 mod calls;
 mod diagnostics;
-mod map;
+mod cache;
 
 use self::diagnostics::DiagnosticSink;
-use self::map::NodeMap;
+use self::cache::{FileCache, NodeCache};
 pub use self::calls::CallKind;
 
 
@@ -22,10 +20,11 @@ pub struct Analysis<'f> {
     file: FallFile<'f>,
 
     diagnostics: DiagnosticSink,
-    used_rules: AtomicLazyCell<HashSet<Node<'f>>>,
-    contexts: AtomicLazyCell<Vec<Text<'f>>>,
 
-    calls: NodeMap<'f, Option<CallKind<'f>>>,
+    used_rules: FileCache<HashSet<Node<'f>>>,
+    contexts: FileCache<Vec<Text<'f>>>,
+
+    calls: NodeCache<'f, Option<CallKind<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -33,9 +32,9 @@ impl<'f> Analysis<'f> {
         Analysis {
             file,
             diagnostics: DiagnosticSink::new(),
-            used_rules: AtomicLazyCell::new(),
-            contexts: AtomicLazyCell::new(),
-            calls: NodeMap::new(),
+            used_rules: Default::default(),
+            contexts: Default::default(),
+            calls: Default::default(),
         }
     }
 
@@ -56,17 +55,11 @@ impl<'f> Analysis<'f> {
     }
 
     fn contexts(&self) -> &[Text<'f>] {
-        if !self.contexts.filled() {
-            let _ = self.contexts.fill(calls::contexts(self));
-        }
-        self.contexts.borrow().unwrap().as_ref()
+        self.contexts.get(|| calls::contexts(self)).as_ref()
     }
 
     fn used_rules(&self) -> &HashSet<Node<'f>> {
-        if !self.used_rules.filled() {
-            let _ = self.used_rules.fill(self.calculate_used_rules());
-        }
-        self.used_rules.borrow().unwrap()
+        self.used_rules.get(|| self.calculate_used_rules())
     }
 
     fn calculate_used_rules(&self) -> HashSet<Node<'f>> {
