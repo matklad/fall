@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use itertools::Itertools;
 
 use fall_tree::{AstNode, AstClass, Text};
@@ -7,7 +8,7 @@ use fall_tree::visitor::{Visitor, NodeVisitor};
 use super::Analysis;
 use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING, RefKind};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum CallKind<'f> {
     Eof,
     Any,
@@ -21,8 +22,8 @@ pub enum CallKind<'f> {
     Exit(u32, Expr<'f>),
     IsIn(u32),
 
-    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>), // TODO: u32 is unclear
-    PrevIs(Vec<usize>)
+    RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>), // TODO: u32 is unclear
+    PrevIs(Arc<Vec<usize>>)
 }
 
 
@@ -106,7 +107,7 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
                 a.diagnostics.error(call.node(), "<prev_is> arguments must be public rules")
             }
         }
-        return Some(CallKind::PrevIs(args))
+        return Some(CallKind::PrevIs(Arc::new(args)))
     }
 
     if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
@@ -115,7 +116,7 @@ pub(super) fn resolve<'f>(a: &Analysis<'f>, call: CallExpr<'f>) -> Option<CallKi
                 .map(|p| p.idx())
                 .zip(call.args())
                 .collect();
-            return Some(CallKind::RuleCall(rule, params));
+            return Some(CallKind::RuleCall(rule, Arc::new(params)));
         }
     }
 

@@ -10,10 +10,12 @@ use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
 
 mod calls;
 mod diagnostics;
+mod map;
 
 use self::diagnostics::Diagnostics;
-
+use self::map::NodeMap;
 pub use self::calls::CallKind;
+
 
 pub struct Analysis<'f> {
     file: FallFile<'f>,
@@ -21,6 +23,8 @@ pub struct Analysis<'f> {
     diagnostics: Diagnostics,
     used_rules: AtomicLazyCell<HashSet<Node<'f>>>,
     contexts: AtomicLazyCell<Vec<Text<'f>>>,
+
+    calls: NodeMap<'f, Option<CallKind<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -30,6 +34,7 @@ impl<'f> Analysis<'f> {
             diagnostics: Diagnostics::new(),
             used_rules: AtomicLazyCell::new(),
             contexts: AtomicLazyCell::new(),
+            calls: NodeMap::new(),
         }
     }
 
@@ -42,7 +47,7 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
-        calls::resolve(self, call)
+        self.calls.get(call.node(), || calls::resolve(self, call))
     }
 
     fn contexts(&self) -> &[Text<'f>] {
