@@ -1,5 +1,6 @@
-use fall_tree::{Node, File, TextUnit, TextRange};
+use fall_tree::{Node, File, TextUnit, TextRange, AstNode};
 use fall_tree::search::{ancestors, subtree, find_leaf_at_offset};
+use ::Analysis;
 
 #[derive(Eq, PartialEq)]
 pub struct Declaration<'f> {
@@ -36,16 +37,16 @@ impl<'f> Reference<'f> {
     }
 }
 
-pub type DeclarationProvider = fn(Node) -> Option<Declaration>;
+pub type DeclarationProvider<'f> = fn(Node<'f>) -> Option<Declaration<'f>>;
 
-pub type ReferenceProvider = fn(Node) -> Option<Reference>;
+pub type ReferenceProvider<'r, 'f> = &'r Fn(Node<'f>) -> Option<Reference<'f>>;
 
-pub fn resolve_reference(
-    file: &File,
+pub fn resolve_reference<'f, 'r>(
+    analysis: &Analysis<'f>,
     offset: TextUnit,
-    provider: ReferenceProvider
+    provider: ReferenceProvider<'r, 'f>
 ) -> Option<TextRange> {
-    let reference = match try_find_at_offset(file, offset, |node| provider(node)) {
+    let reference = match try_find_at_offset(analysis.file().node().file(), offset, |node| provider(node)) {
         Some(ref_) => ref_,
         None => return None,
     };
@@ -53,13 +54,14 @@ pub fn resolve_reference(
     reference.resolve().map(|d| d.navigation_range())
 }
 
-pub fn find_usages(
-    file: &File,
+pub fn find_usages<'a, 'f>(
+    analysis: &Analysis<'f>,
     offset: TextUnit,
-    reference_provider: ReferenceProvider,
-    declaration_provider: DeclarationProvider
+    reference_provider: ReferenceProvider<'a, 'f>,
+    declaration_provider: DeclarationProvider<'f>
 ) -> Vec<TextRange> {
-    let declaration = try_find_at_offset(file, offset, |node| {
+    let file = analysis.file();
+    let declaration = try_find_at_offset(file.node().file(), offset, |node| {
         declaration_provider(node)
             .and_then(|d| {
                 if d.navigation_range().contains_offset_nonstrict(offset) { Some(d) } else { None }
@@ -71,7 +73,7 @@ pub fn find_usages(
         None => return Vec::new(),
     };
 
-    subtree(file.root())
+    subtree(file.node())
         .filter_map(|node| reference_provider(node))
         .filter(|ref_| ref_.resolve().as_ref() == Some(&declaration))
         .map(|ref_| ref_.node.range())

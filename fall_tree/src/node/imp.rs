@@ -13,8 +13,8 @@ pub struct FileImpl {
 }
 
 impl FileImpl {
-    pub fn root(&self) -> Node {
-        Node(NodeImpl { id: self.root, file: self })
+    pub fn root<'i, 'f: 'i>(&'i self, file: &'f super::File) -> Node<'f> {
+        Node(NodeImpl { id: self.root, file })
     }
 
     pub fn text(&self) -> Text {
@@ -29,7 +29,7 @@ impl FileImpl {
 #[derive(Clone, Copy)]
 pub struct NodeImpl<'f> {
     id: NodeId,
-    file: &'f FileImpl,
+    file: &'f super::File,
 }
 
 impl<'f> ::std::cmp::PartialEq for NodeImpl<'f> {
@@ -59,6 +59,8 @@ impl<'f> NodeImpl<'f> {
         self.file.text().slice(self.range())
     }
 
+    pub fn file(&self) -> &'f super::File { self.file }
+
     pub fn parent(&self) -> Option<Node<'f>> {
         self.data().parent.map(|id| Node(NodeImpl { id, file: self.file }))
     }
@@ -68,20 +70,20 @@ impl<'f> NodeImpl<'f> {
     }
 
     pub fn debug(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "Node({})", self.file.lang.node_type_info(self.ty()).name)
+        write!(f, "Node({})", self.file.imp.lang.node_type_info(self.ty()).name)
     }
 
     fn data(&self) -> &'f NodeData {
-        &self.file[self.id]
+        &self.file.imp[self.id]
     }
 
-    fn key(&self) -> (*const FileImpl, NodeId) {
-        (self.file as *const FileImpl, self.id)
+    fn key(&self) -> (*const super::File, NodeId) {
+        (self.file as *const super::File, self.id)
     }
 }
 
 pub struct NodeChildren<'f> {
-    file: &'f FileImpl,
+    file: &'f super::File,
     inner: ::std::slice::Iter<'f, NodeId>,
 }
 

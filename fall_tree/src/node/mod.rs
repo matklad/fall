@@ -28,7 +28,7 @@ impl File {
     }
 
     pub fn root(&self) -> Node {
-        self.imp.root()
+        self.imp.root(self)
     }
 
     pub fn text(&self) -> Text {
@@ -69,6 +69,8 @@ impl<'f> Node<'f> {
     pub fn text(&self) -> Text<'f> {
         self.0.text()
     }
+
+    pub fn file(&self) -> &'f File { self.0.file() }
 
     pub fn parent(&self) -> Option<Node<'f>> {
         self.0.parent()

@@ -59,12 +59,12 @@ pub fn diagnostics(analysis: &Analysis) -> Vec<Diagnostic> {
     api_impl::diagnostics::diagnostics(analysis)
 }
 
-pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
-    api_impl::references::resolve_reference(file, offset)
+pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {
+    api_impl::references::resolve_reference(analysis, offset)
 }
 
-pub fn find_usages(file: &File, offset: TextUnit) -> Vec<TextRange> {
-    api_impl::references::find_usages(file, offset)
+pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
+    api_impl::references::find_usages(analysis, offset)
 }
 
 pub fn reformat(file: &File) -> TextEdit {

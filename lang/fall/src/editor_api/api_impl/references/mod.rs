@@ -1,19 +1,29 @@
-use fall_tree::{Node, File, TextUnit, TextRange};
+use fall_tree::{Node, TextUnit, TextRange};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use ::*;
 
 mod refdec;
+
 use self::refdec::{Reference, Declaration};
 
-pub fn resolve_reference(file: &File, offset: TextUnit) -> Option<TextRange> {
-    return refdec::resolve_reference(file, offset, ref_provider);
+pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {
+    return refdec::resolve_reference(
+        analysis,
+        offset,
+        &|node| ref_provider(analysis, node)
+    );
 }
 
-pub fn find_usages(file: &File, offset: TextUnit) -> Vec<TextRange> {
-    return refdec::find_usages(file, offset, ref_provider, def_provider);
+pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
+    return refdec::find_usages(
+        analysis,
+        offset,
+        &|node| ref_provider(analysis, node),
+        def_provider
+    );
 }
 
-fn ref_provider<'f>(node: Node<'f>) -> Option<Reference<'f>> {
+fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference<'f>> {
     Visitor(None)
         .visit::<RefExpr, _>(|result, ref_expr| {
             *result = Some(Reference::new(ref_expr.node(), |node| {
@@ -106,7 +116,9 @@ impl<'f> From<AstClassDef<'f>> for Declaration<'f> {
 
 #[test]
 fn test_find_refs() {
-    let file = parse(r#####"
+    use fall_tree::tu;
+
+    let file = ::editor_api::analyse(r#####"
 tokenizer {
   #[skip] whitespace r"\s+"
 
@@ -151,14 +163,10 @@ pub rule negate_expr { '-' expr }
 test r"
   1 + --1! - -2!
 "
-"#####);
-    let usages = find_usages(
-        &file,
-        TextUnit::from_usize(309)
-    );
+"#####.to_string());
+    file.analyse(|analysis| {
+        let usages = find_usages(analysis, tu(309));
 
-    assert_eq!(usages, vec![TextRange::from_len(
-        TextUnit::from_usize(202),
-        TextUnit::from_usize(12)
-    )]);
+        assert_eq!(usages, vec![TextRange::from_len(tu(202), tu(12))]);
+    })
 }
