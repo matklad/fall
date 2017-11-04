@@ -2,7 +2,7 @@ use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use {FallFile, RefExpr, CallExpr};
-use editor_api::Diagnostic;
+use editor_api::{Diagnostic, Severity};
 
 mod diagnostics;
 mod db;
@@ -50,7 +50,14 @@ impl<'f> Analysis<'f> {
 
     fn diagnostics(&self) -> Vec<Diagnostic> {
         let mut result = self.db.diagnostics.lock().unwrap().clone();
-        result.sort_by_key(|d| (d.range.start(), d.range.end()));
+
+        result.sort_by_key(|d| {
+            let priority = match d.severity {
+                Severity::Error => 0,
+                Severity::Warning => 1,
+            };
+            (priority, d.range.start(), d.range.end())
+        });
         result
     }
 }
@@ -142,10 +149,10 @@ mod tests {
 <eof x>: E Wrong number of arguments, expected 0, got 1
 x: E Unresolved reference
 abracadabra: E Unresolved reference
-baz: W Unused rule
 <prev_is bar>: E <prev_is> arguments must be public rules
 <prev_is {foo}>: E <prev_is> arguments must be public rules
 dupe: E Duplicate rule
+baz: W Unused rule
 dupe: W Unused rule");
     }
 
