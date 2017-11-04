@@ -20,8 +20,8 @@ use fall_tree::{File, AstNode};
 mod util;
 mod generate;
 
-pub fn generate(file: lang_fall::FallFile) -> generate::Result<String> {
-    generate::generate(file)
+pub fn generate(analysis: &lang_fall::Analysis) -> generate::Result<String> {
+    generate::generate(analysis)
 }
 
 pub struct TestRenderer;
@@ -41,9 +41,8 @@ impl TestRenderer {
     }
 
     pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
-        let file = lang_fall::lang_fall().parse(grammar);
-        let ast = lang_fall::ast(&file);
-        let parser = match generate(ast) {
+        let file = lang_fall::editor_api::analyse(grammar);
+        let parser = match file.analyse(generate) {
             Ok(parser) => parser,
             Err(e) => return Ok(format!("error:\n{}", e))
         };
@@ -108,11 +107,13 @@ impl TestRenderer {
 
         let tests: String = match test {
             Some(test) => test,
-            None => ast.tests()
+
+            None => file.analyse(|a| a.file().tests()
                 .filter_map(|t| t.contents())
                 .map(|t| t.to_string())
                 .collect::<Vec<_>>()
                 .join("\n***###***\n")
+            )
         };
 
         {

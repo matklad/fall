@@ -1,8 +1,8 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use lang_fall::{RefKind, SynRule, Expr, FallFile, BlockExpr, PratKind, CallKind,
-                MethodDef, MethodDescription, Arity, ChildKind};
+use lang_fall::{RefKind, SynRule, Expr, BlockExpr, PratKind, CallKind,
+                MethodDef, MethodDescription, Arity, ChildKind, Analysis};
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -29,7 +29,7 @@ macro_rules! error {
     ( $($tt:tt)* ) => { Error { msg: format!($($tt)*) } };
 }
 
-pub fn generate(file: FallFile) -> Result<String> {
+pub fn generate(analysis: &Analysis) -> Result<String> {
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: Text<'f>, re: String, f: Option<Text<'f>> };
 
@@ -39,12 +39,13 @@ pub fn generate(file: FallFile) -> Result<String> {
     #[derive(Serialize)]
     struct CtxAstClass { enum_name: String, variants: Vec<(String, String)> }
 
+    let file = analysis.file();
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
 
     let mut parser = Vec::new();
     for r in file.syn_rules() {
-        if let Some(r) = compile_rule(r)? {
+        if let Some(r) = compile_rule(analysis,r)? {
             parser.push(r)
         }
     }
@@ -150,11 +151,11 @@ fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
     Ok(CtxMethod { name: method.name(), ret_type, body })
 }
 
-fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
+fn compile_rule<'f>(analysis: &Analysis<'f>, ast: SynRule<'f>) -> Result<Option<fall_parse::SynRule>> {
     let expr = match (ast.is_pratt(), ast.body()) {
-        (true, Expr::BlockExpr(block)) => fall_parse::Expr::Pratt(compile_pratt(block)?),
+        (true, Expr::BlockExpr(block)) => fall_parse::Expr::Pratt(compile_pratt(analysis, block)?),
         (true, _) => unreachable!(),
-        (false, body) => compile_expr(body)?
+        (false, body) => compile_expr(analysis, body)?
     };
 
     let expr = if let Some(idx) = ast.resolve_ty() {
@@ -177,7 +178,7 @@ fn compile_rule(ast: SynRule) -> Result<Option<fall_parse::SynRule>> {
     Ok(Some(fall_parse::SynRule { body: expr }))
 }
 
-fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
+fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall_parse::PrattTable> {
     fn alt_to_rule<'f>(alt: Expr<'f>) -> Result<SynRule<'f>> {
         match alt {
             Expr::SeqExpr(expr) => match expr.parts().next() {
@@ -202,7 +203,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
         let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
         match prat_kind {
             PratKind::Atom =>
-                result.atoms.push(compile_rule(rule)?.unwrap().body),
+                result.atoms.push(compile_rule(analysis,rule)?.unwrap().body),
             PratKind::Postfix(priority) => {
                 let alt = match rule.body() {
                     Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
@@ -216,7 +217,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
                 };
                 result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: compile_expr(op)?,
+                    op: compile_expr(analysis, op)?,
                     priority,
                     has_rhs: false
                 });
@@ -234,7 +235,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
                 };
                 result.prefixes.push(fall_parse::Prefix {
                     ty,
-                    op: compile_expr(op)?,
+                    op: compile_expr(analysis, op)?,
                     priority
                 })
             }
@@ -251,7 +252,7 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
                 };
                 result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: (compile_expr(op)?),
+                    op: (compile_expr(analysis, op)?),
                     priority,
                     has_rhs: true,
                 })
@@ -262,9 +263,9 @@ fn compile_pratt(ast: BlockExpr) -> Result<fall_parse::PrattTable> {
     Ok(result)
 }
 
-fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
+fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse::Expr> {
     let result = match ast {
-        Expr::BlockExpr(block) => fall_parse::Expr::Or(block.alts().map(compile_expr).collect::<Result<Vec<_>>>()?),
+        Expr::BlockExpr(block) => fall_parse::Expr::Or(block.alts().map(|e| compile_expr(analysis, e)).collect::<Result<Vec<_>>>()?),
         Expr::SeqExpr(seq) => {
             fn is_commit(part: Expr) -> bool {
                 part.node().text() == "<commit>"
@@ -272,7 +273,7 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             let commit = seq.parts().position(is_commit);
             let parts = seq.parts()
                 .filter(|&p| !is_commit(p))
-                .map(compile_expr);
+                .map(|e| compile_expr(analysis, e));
             fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
         Expr::RefExpr(ref_) => match ref_.resolve().ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
@@ -291,22 +292,22 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {
                 CallKind::Eof => fall_parse::Expr::Eof,
                 CallKind::Any => fall_parse::Expr::Any,
-                CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(expr)?)),
-                CallKind::Exit(idx, expr) => fall_parse::Expr::Exit(idx, Box::new(compile_expr(expr)?)),
+                CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(analysis, expr)?)),
+                CallKind::Exit(idx, expr) => fall_parse::Expr::Exit(idx, Box::new(compile_expr(analysis, expr)?)),
                 CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
-                CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(expr)?)),
+                CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(analysis, expr)?)),
                 CallKind::Layer(e1, e2) => fall_parse::Expr::Layer(
-                    Box::new(compile_expr(e1)?),
-                    Box::new(compile_expr(e2)?)
+                    Box::new(compile_expr(analysis, e1)?),
+                    Box::new(compile_expr(analysis, e2)?)
                 ),
                 CallKind::WithSkip(e1, e2) => fall_parse::Expr::WithSkip(
-                    Box::new(compile_expr(e1)?),
-                    Box::new(compile_expr(e2)?)
+                    Box::new(compile_expr(analysis, e1)?),
+                    Box::new(compile_expr(analysis, e2)?)
                 ),
                 CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
                     Box::new(fall_parse::Expr::Rule(rule.index())),
                     args.into_iter()
-                        .map(|(i, e)| Ok((i, compile_expr(e)?)))
+                        .map(|(i, e)| Ok((i, compile_expr(analysis, e)?)))
                         .collect::<Result<Vec<_>>>()?
                 ),
                 CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(tokens),
@@ -314,8 +315,8 @@ fn compile_expr(ast: Expr) -> Result<fall_parse::Expr> {
             };
             return Ok(r);
         }
-        Expr::OptExpr(opt_expr) => fall_parse::Expr::Opt(Box::new(compile_expr(opt_expr.expr())?)),
-        Expr::RepExpr(rep_expr) => fall_parse::Expr::Rep(Box::new(compile_expr(rep_expr.expr())?)),
+        Expr::OptExpr(opt_expr) => fall_parse::Expr::Opt(Box::new(compile_expr(analysis, opt_expr.expr())?)),
+        Expr::RepExpr(rep_expr) => fall_parse::Expr::Rep(Box::new(compile_expr(analysis, rep_expr.expr())?)),
     };
 
     Ok(result)
