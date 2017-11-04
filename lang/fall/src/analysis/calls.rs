@@ -44,7 +44,6 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         ("commit", CallKind::Commit),
         ("eof", CallKind::Eof)
     ];
-
     for (name, kind) in zero_arg.into_iter() {
         if call.fn_name() == name {
             expect_args(d, 0);
@@ -52,43 +51,36 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         }
     }
 
-    if call.fn_name() == "not" {
-        expect_args(d, 1);
-        return call.args().next().map(CallKind::Not);
+    let one_arg: Vec<(_, fn(&Analysis<'f>, &mut DiagnosticSink, Expr<'f>) -> Option<CallKind<'f>>)> = vec![
+        ("not", |_, _, arg| Some(CallKind::Not(arg))),
+        ("is_in", |a, d, arg| resolve_context(a, d, arg).map(CallKind::IsIn))
+    ];
+    for (name, kind) in one_arg.into_iter() {
+        if call.fn_name() == name {
+            expect_args(d, 1);
+            return call.args().next().and_then(|arg| kind(a,d, arg))
+        }
     }
 
-    let two_arg = vec![
-        ("layer", CallKind::Layer as fn(_, _) -> _),
-        ("with_skip", CallKind::WithSkip)
+    let two_arg: Vec<(_, fn(&Analysis<'f>, &mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>)> = vec![
+        ("layer", |_, _, arg1, arg2 | {
+            Some(CallKind::Layer(arg1, arg2))
+        }),
+        ("with_skip", |_, _, arg1, arg2 | {
+            Some(CallKind::WithSkip(arg1, arg2))
+        }),
+        ("enter", |a, d, arg1, arg2| {
+            resolve_context(a, d, arg1).map(|ctx| CallKind::Enter(ctx, arg2))
+        }),
+        ("exit", |a, d, arg1, arg2| {
+            resolve_context(a, d, arg1).map(|ctx| CallKind::Exit(ctx, arg2))
+        }),
     ];
-
     for (name, kind) in two_arg.into_iter() {
         if call.fn_name() == name {
             expect_args(d, 2);
             return call.args().next_tuple()
-                .map(|(a, b)| kind(a, b));
-        }
-    }
-
-    if call.fn_name() == "is_in" {
-        expect_args(d, 1);
-        return call.args().next()
-            .and_then(|ctx| resolve_context(a, d, ctx))
-            .map(CallKind::IsIn);
-    }
-
-    let layer_expr = vec![
-        ("enter", CallKind::Enter as fn(_, _) -> _),
-        ("exit", CallKind::Exit),
-    ];
-
-    for (name, kind) in layer_expr.into_iter() {
-        if call.fn_name() == name {
-            expect_args(d, 2);
-            return call.args().next_tuple()
-                .and_then(|(ctx, body)| {
-                    resolve_context(a, d, ctx).map(|ctx| kind(ctx, body))
-                });
+                .and_then(|(arg1, arg2)| kind(a, d,arg1, arg2));
         }
     }
 
