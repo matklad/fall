@@ -183,7 +183,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FallFile<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for FallFile<'f> {
@@ -220,7 +220,7 @@ impl<'f> ::std::fmt::Debug for FallFile<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TokenizerDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for TokenizerDef<'f> {
@@ -245,7 +245,7 @@ impl<'f> ::std::fmt::Debug for TokenizerDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LexRule<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for LexRule<'f> {
@@ -273,7 +273,7 @@ impl<'f> ::std::fmt::Debug for LexRule<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SynRule<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for SynRule<'f> {
@@ -310,7 +310,7 @@ impl<'f> ::std::fmt::Debug for SynRule<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Parameters<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Parameters<'f> {
@@ -335,7 +335,7 @@ impl<'f> ::std::fmt::Debug for Parameters<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Parameter<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Parameter<'f> {
@@ -360,7 +360,7 @@ impl<'f> ::std::fmt::Debug for Parameter<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Attributes<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Attributes<'f> {
@@ -385,7 +385,7 @@ impl<'f> ::std::fmt::Debug for Attributes<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Attribute<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for Attribute<'f> {
@@ -413,7 +413,7 @@ impl<'f> ::std::fmt::Debug for Attribute<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AttributeValue<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AttributeValue<'f> {
@@ -436,7 +436,7 @@ impl<'f> ::std::fmt::Debug for AttributeValue<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct VerbatimDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for VerbatimDef<'f> {
@@ -461,7 +461,7 @@ impl<'f> ::std::fmt::Debug for VerbatimDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstDef<'f> {
@@ -489,7 +489,7 @@ impl<'f> ::std::fmt::Debug for AstDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstNodeDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstNodeDef<'f> {
@@ -520,7 +520,7 @@ impl<'f> ::std::fmt::Debug for AstNodeDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstClassDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstClassDef<'f> {
@@ -545,7 +545,7 @@ impl<'f> ::std::fmt::Debug for AstClassDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MethodDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for MethodDef<'f> {
@@ -573,7 +573,7 @@ impl<'f> ::std::fmt::Debug for MethodDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstSelector<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for AstSelector<'f> {
@@ -607,7 +607,7 @@ impl<'f> ::std::fmt::Debug for AstSelector<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TestDef<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for TestDef<'f> {
@@ -683,7 +683,7 @@ impl<'f> ::std::fmt::Debug for CallExpr<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BlockExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for BlockExpr<'f> {
@@ -708,7 +708,7 @@ impl<'f> ::std::fmt::Debug for BlockExpr<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OptExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for OptExpr<'f> {
@@ -733,7 +733,7 @@ impl<'f> ::std::fmt::Debug for OptExpr<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RepExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for RepExpr<'f> {
@@ -758,7 +758,7 @@ impl<'f> ::std::fmt::Debug for RepExpr<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SeqExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for SeqExpr<'f> {

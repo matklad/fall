@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::collections::hash_map::{self, HashMap};
+use std::collections::btree_map::{self, BTreeMap};
 
 use fall_tree::{Text, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
@@ -9,14 +9,14 @@ use ::CallExpr;
 
 impl<'f> db::OnceQExecutor<'f> for super::AllContexts<'f> {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<Vec<Text<'f>>> {
-        let result = Visitor(HashMap::<Text<'f>, Option<CallExpr<'f>>>::new())
+        let result = Visitor(BTreeMap::<Text<'f>, Option<CallExpr<'f>>>::new())
             .visit::<CallExpr, _>(|contexts, call| {
                 if let Some(ctx) = call.context_name() {
                     match contexts.entry(ctx) {
-                        hash_map::Entry::Occupied(mut occupied) => {
+                        btree_map::Entry::Occupied(mut occupied) => {
                             occupied.insert(None);
                         },
-                        hash_map::Entry::Vacant(vacant) => {
+                        btree_map::Entry::Vacant(vacant) => {
                             vacant.insert(Some(call));
                         },
                     }

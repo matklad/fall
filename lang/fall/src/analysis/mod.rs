@@ -78,7 +78,9 @@ impl<'f> Analysis<'f> {
     }
 
     fn diagnostics(&self) -> Vec<Diagnostic> {
-        self.diagnostics.lock().unwrap().clone()
+        let mut result = self.diagnostics.lock().unwrap().clone();
+        result.extend(self.db.diagnostics.lock().unwrap().clone());
+        result
     }
 
     fn used_rules(&self) -> &HashSet<Node<'f>> {
@@ -166,7 +168,7 @@ fn check_diagnostics(code: &str, expected_diagnostics: &str) {
             format!("{}: {} {}", a.file().node().text().slice(d.range), s, d.message)
         }).collect::<Vec<_>>().join("\n");
 
-        report_diff(&actual, expected_diagnostics);
+        report_diff(expected_diagnostics, &actual);
     })
 }
 
@@ -195,7 +197,9 @@ x: E Unresolved reference
 abracadabra: E Unresolved reference
 baz: W Unused rule
 <prev_is bar>: E <prev_is> arguments must be public rules
-<prev_is {foo}>: E <prev_is> arguments must be public rules");
+<prev_is {foo}>: E <prev_is> arguments must be public rules
+dupe: W Unused rule
+dupe: E Duplicate rule");
     }
 
     #[test]
@@ -214,14 +218,14 @@ baz: W Unused rule
 
     #[test]
     fn test_resolve_layer() {
-        check_resolved("rule foo { <^enter 'ctx' a> }", "Enter(0, RefExpr@[24; 25))");
-        check_resolved("rule foo { <^exit  'ctx' a> }", "Exit(0, RefExpr@[24; 25))");
+        check_resolved("rule foo { <^enter 'ctx' a> <is_in 'ctx' >}", "Enter(0, RefExpr@[24; 25))");
+        check_resolved("rule foo { <^exit  'ctx' a> <is_in 'ctx' >}", "Exit(0, RefExpr@[24; 25))");
 
-        check_resolved("rule foo { <is_in 'ctx1'> <^enter 'ctx2' a> }", "Enter(1, RefExpr@[40; 41))");
-        check_resolved("rule foo { <is_in 'ctx1'> <^exit  'ctx2' a> }", "Exit(1, RefExpr@[40; 41))");
+        check_resolved("rule foo { <is_in 'ctx1'> <^enter 'ctx2' a> <is_in 'ctx1'> <enter 'ctx2' a> }", "Enter(1, RefExpr@[40; 41))");
+        check_resolved("rule foo { <is_in 'ctx1'> <^exit  'ctx2' a> <is_in 'ctx1'> <exit  'ctx2' a> }", "Exit(1, RefExpr@[40; 41))");
 
         check_resolved(
-            "rule foo { <enter 'ctx1' a> <enter 'ctx2' b> <^is_in 'ctx2'> }",
+            "rule foo { <enter 'ctx1' a> <enter 'ctx2' b> <^is_in 'ctx2'> <is_in 'ctx1'> }",
             "IsIn(1)"
         );
 

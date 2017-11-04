@@ -121,6 +121,28 @@ impl<'f, 's> PartialEq<&'s str> for Text<'f> {
     }
 }
 
+
+impl<'a, 'b> PartialOrd<Text<'b>> for Text<'a> {
+    fn partial_cmp(&self, other: &Text<'b>) -> Option<::std::cmp::Ordering> {
+        self.as_str().partial_cmp(other.as_str())
+    }
+}
+
+
+impl<'f, 's> PartialOrd<&'s str> for Text<'f> {
+    fn partial_cmp(&self, other: &&str) -> Option<::std::cmp::Ordering> {
+        self.owned[self.range].partial_cmp(*other)
+    }
+}
+
+
+impl<'a, 'b> Ord for Text<'a> {
+    fn cmp(&self, other: &Text<'a>) -> ::std::cmp::Ordering {
+        self.as_str().cmp(other.as_str())
+    }
+}
+
+
 impl<'f> ::std::hash::Hash for Text<'f> {
     fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state)
