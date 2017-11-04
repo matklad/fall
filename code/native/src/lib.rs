@@ -104,6 +104,16 @@ fn a_fn0<S: Serialize, F: Fn(&Analysis) -> S>(mut call: Call, f: F) -> JsResult<
     a_fn(&mut call, |_, file| Ok(f(file)))
 }
 
+fn a_fn1<'c, S: Serialize, D: Deserialize<'c>>(
+    mut call: Call<'c>,
+    f: fn(&Analysis, D) -> S
+) -> JsResult<'c, JsValue> {
+    a_fn(&mut call, |call, file| {
+        let arg: D = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
+        Ok(f(file, arg))
+    })
+}
+
 fn file_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
     where S: Serialize,
           F: Fn(&mut Call<'a>, &File) -> VmResult<S> {
@@ -144,15 +154,15 @@ fn file_fn2<'c, S: Serialize, D1: Deserialize<'c>, D2: Deserialize<'c>>(
 register_module!(m, {
     m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
     m.export("performance_counters", |call| file_fn0(call, performance_counters))?;
-    m.export("highlight", |call| file_fn0(call, editor_api::highlight))?;
+    m.export("highlight", |call| a_fn0(call, editor_api::highlight))?;
     m.export("structure", |call| file_fn0(call, editor_api::structure))?;
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
     m.export("apply_context_action", |call| file_fn2(call, |file, range: TextRange, aid: String| {
         editor_api::apply_context_action(file, range, &aid)
     }))?;
-    m.export("resolve_reference", |call| file_fn1(call, editor_api::resolve_reference))?;
-    m.export("find_usages", |call| file_fn1(call, editor_api::find_usages))?;
+    m.export("resolve_reference", |call| a_fn1(call, editor_api::resolve_reference))?;
+    m.export("find_usages", |call| a_fn1(call, editor_api::find_usages))?;
     m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics))?;
     m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
     m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
