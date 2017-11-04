@@ -108,7 +108,7 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         }
     }
 
-    if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
+    if let Some(rule) = a.rule_by_name(call.fn_name()) {
         if let Some(parameters) = rule.parameters() {
             let n_expected = parameters.parameters().count();
             if n_expected != n_args {

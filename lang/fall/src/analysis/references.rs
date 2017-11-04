@@ -20,7 +20,7 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, ref_: RefEx
         return Some(RefKind::Param(param));
     }
 
-    if let Some(syn_rule) = a.file().syn_rules().find(|r| r.name() == Some(reference_name)) {
+    if let Some(syn_rule) = a.rule_by_name(reference_name) {
         return Some(RefKind::RuleReference(syn_rule));
     }
 

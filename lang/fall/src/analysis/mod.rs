@@ -122,6 +122,10 @@ impl<'f> Analysis<'f> {
         self.contexts.get(|| calls::contexts(self)).as_ref()
     }
 
+    fn rule_by_name(&self, reference_name: Text<'f>) -> Option<SynRule<'f>> {
+        self.file().syn_rules().find(|r| r.name() == Some(reference_name))
+    }
+
     fn used_rules(&self) -> &HashSet<Node<'f>> {
         self.used_rules.get(|| self.calculate_used_rules())
     }

@@ -29,11 +29,6 @@ impl<'f> FallFile<'f> {
         self.node_types().iter().position(|&it| it.0 == name)
             .map(|idx| idx + 1)
     }
-
-    pub ( crate ) fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
-        self.syn_rules()
-            .find(|r| r.name().is_some() && r.name().unwrap() == name)
-    }
 }
 
 impl<'f> LexRule<'f> {
@@ -274,41 +269,11 @@ pub enum MethodDescription<'f> {
     TextAccessor(LexRule<'f>, Arity),
 }
 
-pub enum RefKind<'f> {
-    Token(LexRule<'f>),
-    RuleReference(SynRule<'f>),
-    Param(Parameter<'f>),
-}
-
 impl<'f> RefExpr<'f> {
     pub fn reference_name(&self) -> Text<'f> {
         child_of_type(self.node(), IDENT)
             .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
             .text()
-    }
-
-    pub fn resolve(&self) -> Option<RefKind<'f>> {
-        let file = ast::ancestor_exn::<FallFile>(self.node());
-
-        if let Some(ident) = child_of_type(self.node(), IDENT) {
-            let rule: SynRule = ast::ancestor_exn(self.node());
-            if let Some(parameters) = rule.parameters() {
-                if let Some(p) = parameters.parameters().find(|p| p.name() == ident.text()) {
-                    return Some(RefKind::Param(p));
-                }
-            }
-
-            if let Some(rule) = file.resolve_rule(ident.text()) {
-                return Some(RefKind::RuleReference(rule));
-            }
-        }
-        let token_name = child_of_type(self.node(), IDENT)
-            .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
-            .text();
-
-        file.tokenizer_def()
-            .and_then(|td| td.lex_rules().find(|r| r.token_name() == token_name))
-            .map(|rule| RefKind::Token(rule))
     }
 }
 
@@ -321,7 +286,6 @@ impl<'f> CallExpr<'f> {
             .and_then(|arg| child_of_type(arg.node(), SIMPLE_STRING))
             .map(|ctx| lit_body(ctx.text()));
     }
-
 }
 
 impl<'f> Parameter<'f> {

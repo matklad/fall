@@ -179,10 +179,10 @@ fn compile_rule<'f>(analysis: &Analysis<'f>, ast: SynRule<'f>) -> Result<Option<
 }
 
 fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall_parse::PrattTable> {
-    fn alt_to_rule<'f>(alt: Expr<'f>) -> Result<SynRule<'f>> {
+    fn alt_to_rule<'f>(analysis: &Analysis<'f>, alt: Expr<'f>) -> Result<SynRule<'f>> {
         match alt {
             Expr::SeqExpr(expr) => match expr.parts().next() {
-                Some(Expr::RefExpr(r)) => match r.resolve() {
+                Some(Expr::RefExpr(ref_)) => match analysis.resolve_reference(ref_) {
                     Some(RefKind::RuleReference(rule)) => Ok(rule),
                     _ => return Err(error!("Bad pratt spec")),
                 },
@@ -198,7 +198,7 @@ fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall
         infixes: Vec::new(),
     };
     for alt in ast.alts() {
-        let rule = alt_to_rule(alt)?;
+        let rule = alt_to_rule(analysis, alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
         let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
         match prat_kind {
@@ -276,7 +276,7 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
                 .map(|e| compile_expr(analysis, e));
             fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
-        Expr::RefExpr(ref_) => match ref_.resolve().ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
+        Expr::RefExpr(ref_) => match  analysis.resolve_reference(ref_).ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
             RefKind::Token(rule) => {
                 if rule.is_contextual() {
                     let text = rule.token_text().ok_or(error!("Missing contextual token text"))?;
