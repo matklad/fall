@@ -5,6 +5,7 @@ use analysis::CallKind;
 
 mod refdec;
 
+use analysis::RefKind;
 use self::refdec::{Reference, Declaration};
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {
@@ -27,9 +28,9 @@ pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
 fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference<'f>> {
     Visitor(None)
         .visit::<RefExpr, _>(|result, ref_expr| {
-            *result = Some(Reference::new(ref_expr.node(), |_, node| {
+            *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
                 let ref_expr = RefExpr::new(node);
-                let target = match ref_expr.resolve() {
+                let target = match analysis.resolve_reference(ref_expr) {
                     None => return None,
                     Some(t) => t
                 };

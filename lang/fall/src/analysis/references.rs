@@ -2,14 +2,13 @@ use fall_tree::search::ast;
 use fall_tree::{AstNode, AstClass};
 
 use ::{SynRule, LexRule, Parameter, RefExpr, CallExpr};
-use super::{Analysis, DiagnosticSink};
+use super::{Analysis, DiagnosticSink, CallKind};
 
 #[derive(Copy, Clone)]
 pub enum RefKind<'f> {
     Token(LexRule<'f>),
     RuleReference(SynRule<'f>),
     Param(Parameter<'f>),
-    Context(u32),
 }
 
 pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
@@ -33,11 +32,12 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, ref_: RefEx
     let parent = ref_.node().parent().unwrap();
     if parent.ty() == CallExpr::NODE_TYPE {
         let call = CallExpr::new(parent);
-        if call.args().next().map(|a| a.node()) == Some(ref_.node())  {
-            if let Some(ctx_name) = call.context_name() {
-                let idx = a.contexts().iter().position(|&ctx| ctx == ctx_name).unwrap();
-                return Some(RefKind::Context(idx as u32));
-            }
+        match a.resolve_call(call) {
+            Some(CallKind::Enter(..)) | Some(CallKind::Exit(..)) | Some(CallKind::IsIn(..))
+            => if call.args().next().map(|a| a.node()) == Some(ref_.node()) {
+                return None;
+            },
+            _ => ()
         }
     }
 
