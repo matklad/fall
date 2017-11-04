@@ -56,7 +56,7 @@ pub struct Diagnostic {
 }
 
 pub fn diagnostics(analysis: &Analysis) -> Vec<Diagnostic> {
-    api_impl::diagnostics::diagnostics(analysis)
+    analysis.collect_all_diagnostics()
 }
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {

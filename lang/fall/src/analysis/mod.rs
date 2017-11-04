@@ -2,11 +2,12 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 
 use fall_tree::{File, Node, AstNode, Text};
+use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
 
 use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
-use editor_api::Diagnostic;
+use editor_api::{Diagnostic, Severity};
 
 mod calls;
 mod diagnostics;
@@ -61,13 +62,60 @@ impl<'f> Analysis<'f> {
         value
     }
 
-    pub fn diagnostics(&self) -> Vec<Diagnostic> {
-        self.diagnostics.lock().unwrap().clone()
+    pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
+        impl Diagnostic {
+            fn error(node: Node, message: String) -> Diagnostic {
+                Diagnostic {
+                    range: node.range(),
+                    severity: Severity::Error,
+                    message,
+                }
+            }
+
+            fn warning(node: Node, message: String) -> Diagnostic {
+                Diagnostic {
+                    range: node.range(),
+                    severity: Severity::Warning,
+                    message,
+                }
+            }
+        }
+
+
+        let mut result = Visitor(Vec::new())
+            .visit::<RefExpr, _>(|acc, ref_| {
+                if ref_.resolve().is_none() {
+                    if let Some(call) = ast::ancestor::<CallExpr>(ref_.node()) {
+                        if call.resolve_context().is_some() {
+                            return;
+                        }
+                    }
+
+                    acc.push(Diagnostic::error(ref_.node(), "Unresolved reference".to_string()))
+                }
+            })
+            .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
+            .visit::<SynRule, _>(|acc, rule| {
+                if self.is_unused(rule) {
+                    if let Some(rule_name) = rule.name_ident() {
+                        acc.push(Diagnostic::warning(rule_name, "Unused rule".to_string()))
+                    }
+                }
+            })
+            .walk_recursively_children_first(self.file().node());
+
+        result.extend(self.diagnostics());
+        result.sort_by_key(|d| (d.range.start(), d.range.end()));
+        result
     }
 
     #[allow(unused)] // for debugging
     pub fn debug_diagnostics(&self) -> String {
         diagnostics::debug_diagnostics(&self.diagnostics(), self.file().node().text())
+    }
+
+    fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.diagnostics.lock().unwrap().clone()
     }
 
     fn contexts(&self) -> &[Text<'f>] {
@@ -99,7 +147,6 @@ impl<'f> Analysis<'f> {
             .collect()
     }
 }
-
 
 pub struct FileWithAnalysis {
     rent: rent::R
@@ -137,4 +184,38 @@ rental! {
             analysis: Analysis<'file>
         }
     }
+}
+
+#[cfg(test)]
+fn check_diagnostics(code: &str, expected_diagnostics: &str) {
+    use fall_tree::test_util::report_diff;
+    let file = ::editor_api::analyse(code.to_string());
+
+    file.analyse(|a| {
+        let d = a.collect_all_diagnostics();
+        let actual = d.into_iter().map(|d| {
+            let s = match d.severity {
+                Severity::Error => 'E',
+                Severity::Warning => 'W',
+            };
+            format!("{}: {} {}", a.file().node().text().slice(d.range), s, d.message)
+        }).collect::<Vec<_>>().join("\n");
+
+        report_diff(&actual, expected_diagnostics);
+    })
+}
+
+#[test]
+fn test_diagnostics() {
+    check_diagnostics(r"
+       pub rule foo { <eof x> }
+       rule bar { foo <abracadabra>}
+       rule baz { <prev_is foo> <prev_is bar> <prev_is {foo}>}
+    ", "\
+<eof x>: E Wrong number of arguments, expected 0, got 1
+x: E Unresolved reference
+abracadabra: E Unresolved reference
+baz: W Unused rule
+<prev_is bar>: E <prev_is> arguments must be public rules
+<prev_is {foo}>: E <prev_is> arguments must be public rules");
 }

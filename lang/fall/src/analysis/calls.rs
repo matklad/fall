@@ -111,6 +111,14 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
 
     if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
         if let Some(parameters) = rule.parameters() {
+            let n_expected = parameters.parameters().count();
+            if n_expected != n_args {
+                d.error(
+                    call.node(),
+                    format!("Expected {} arguments, got {}", n_expected, n_args)
+                )
+            }
+
             let params = parameters.parameters()
                 .map(|p| p.idx())
                 .zip(call.args())
@@ -251,11 +259,13 @@ mod tests {
 
     #[test]
     fn call_custom_rule() {
-        //TODO: check number of arguments
-        //TODO: analysis based resolve of SynRule
         check_resolved(
             "rule foo { <^bar a b>} rule bar(x, y) { }",
             "RuleCall(SynRule@[22; 40), [(0, RefExpr@[16; 17)), (1, RefExpr@[18; 19))])"
+        );
+        ::analysis::check_diagnostics(
+            "rule foo { <bar <eof>>} rule bar(x, y) { }",
+            "<bar <eof>>: E Expected 2 arguments, got 1"
         )
     }
 
