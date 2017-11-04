@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
@@ -17,8 +15,6 @@ pub use self::query::{CallKind, RefKind};
 pub struct Analysis<'f> {
     db: db::DB<'f>,
     file: FallFile<'f>,
-
-    diagnostics: Mutex<Vec<Diagnostic>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -26,7 +22,6 @@ impl<'f> Analysis<'f> {
         Analysis {
             db: db::DB::new(file),
             file,
-            diagnostics: Default::default(),
         }
     }
 
@@ -43,27 +38,17 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
-        let mut result = Visitor(Vec::new())
+        Visitor(())
             .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .walk_recursively_children_first(self.file().node());
-
         self.db.get(query::UnusedRules);
-
-        result.extend(self.diagnostics());
-        result.sort_by_key(|d| (d.range.start(), d.range.end()));
-        result
+        self.db.diagnostics.lock().unwrap().clone()
     }
 
     #[allow(unused)] // for debugging
     pub fn debug_diagnostics(&self) -> String {
-        diagnostics::debug_diagnostics(&self.diagnostics(), self.file().node().text())
-    }
-
-    fn diagnostics(&self) -> Vec<Diagnostic> {
-        let mut result = self.diagnostics.lock().unwrap().clone();
-        result.extend(self.db.diagnostics.lock().unwrap().clone());
-        result
+        diagnostics::debug_diagnostics(&self.db.diagnostics.lock().unwrap(), self.file().node().text())
     }
 }
 
