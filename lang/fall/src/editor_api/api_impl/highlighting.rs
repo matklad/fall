@@ -50,8 +50,7 @@ pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
         })
         .visit::<CallExpr, _>(|spans, call| {
             let color = match analysis.resolve_call(call) {
-                None => "unresolved",
-                Some(CallKind::RuleCall(..)) => "rule",
+                None | Some(CallKind::RuleCall(..)) => "rule",
                 Some(_) => "builtin"
             };
 
@@ -99,9 +98,9 @@ bar: rule
 eof: builtin
 <: builtin
 >: builtin
-abracadabra: unresolved
-<: unresolved
->: unresolved
+abracadabra: rule
+<: rule
+>: rule
 foo: rule
 rule: keyword
 number: token

@@ -73,7 +73,7 @@ pub rule foo { bar ^| baz }
         let actions = context_actions(&file, position);
         assert_eq!(
             format!("{:?}", actions),
-            r#"["Swap Alternatives", "Extract Rule"]"#
+            r#"["Swap Alternatives"]"#
         );
         let edit = apply_context_action(&file, position, "Swap Alternatives");
         assert_eq!(

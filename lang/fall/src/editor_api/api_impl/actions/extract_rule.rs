@@ -1,7 +1,7 @@
 use fall_tree::{AstNode, AstClass, File, Node, TextRange, FileEdit};
 use fall_tree::search::{find_covering_node, ancestors};
 use fall_tree::search::ast;
-use ::{Expr, SynRule, SeqExpr};
+use ::{Expr, SynRule, SeqExpr, RefExpr};
 use super::ContextAction;
 
 
@@ -13,12 +13,18 @@ impl ContextAction for ExtractRule {
     }
 
     fn apply<'f>(&self, file: &'f File, range: TextRange) -> Option<FileEdit<'f>> {
+        if range.is_empty() {
+            return None;
+        }
         let expr = ancestors(find_covering_node(file.root(), range))
             .find(|&n| is_expression(n));
         let expr = match expr {
             None => return None,
             Some(expr) => expr,
         };
+        if expr.ty() == RefExpr::NODE_TYPE {
+            return None;
+        }
         let rule = ast::ancestor_exn::<SynRule>(expr).node();
         let range = range_to_extract(expr, range);
 

@@ -19,7 +19,7 @@ neon = "0.1.20"
 
 serde = "1.0"
 serde_derive = "1.0"
-neon-serde = "0.0.1"
+neon-serde = { git = "https://github.com/matklad/neon-serde", branch = "once-in-a-lifetime" }
 
 lazy_static = "0.2.8"
 

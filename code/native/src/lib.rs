@@ -11,15 +11,17 @@ extern crate neon_serde;
 extern crate serde_derive;
 extern crate serde;
 
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+
 
 use std::sync::{Arc, Mutex};
 
 use neon::vm::{Call, VmResult, JsResult};
-use neon::scope::{Scope, RootScope};
-use neon::mem::Handle;
+use neon::scope::Scope;
 use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::task::Task;
+use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
 use fall_tree::{TextRange, File};
@@ -96,7 +98,7 @@ fn a_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
     };
     file.analyse(|a| {
         let result = f(call, a)?;
-        Ok(to_value(&result, call.scope)?)
+        Ok(to_value(call.scope, &result)?)
     })
 }
 
@@ -104,12 +106,13 @@ fn a_fn0<S: Serialize, F: Fn(&Analysis) -> S>(mut call: Call, f: F) -> JsResult<
     a_fn(&mut call, |_, file| Ok(f(file)))
 }
 
-fn a_fn1<'c, S: Serialize, D: Deserialize<'c>>(
+fn a_fn1<'c, S: Serialize, D: DeserializeOwned>(
     mut call: Call<'c>,
     f: fn(&Analysis, D) -> S
 ) -> JsResult<'c, JsValue> {
     a_fn(&mut call, |call, file| {
-        let arg: D = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
+        let arg0 = call.arguments.require(call.scope, 0)?;
+        let arg: D = from_value(call.scope, arg0)?;
         Ok(f(file, arg))
     })
 }
@@ -123,30 +126,33 @@ fn file_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
         Some(ref file) => file.file(),
     };
     let result = f(call, file)?;
-    Ok(to_value(&result, call.scope)?)
+    Ok(to_value(call.scope, &result)?)
 }
 
 fn file_fn0<S: Serialize, F: Fn(&File) -> S>(mut call: Call, f: F) -> JsResult<JsValue> {
     file_fn(&mut call, |_, file| Ok(f(file)))
 }
 
-fn file_fn1<'c, S: Serialize, D: Deserialize<'c>>(
+fn file_fn1<'c, S: Serialize, D: DeserializeOwned>(
     mut call: Call<'c>,
     f: fn(&File, D) -> S
 ) -> JsResult<'c, JsValue> {
     file_fn(&mut call, |call, file| {
-        let arg: D = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
+        let arg0 = call.arguments.require(call.scope, 0)?;
+        let arg: D = from_value(call.scope, arg0)?;
         Ok(f(file, arg))
     })
 }
 
-fn file_fn2<'c, S: Serialize, D1: Deserialize<'c>, D2: Deserialize<'c>>(
+fn file_fn2<'c, S: Serialize, D1: DeserializeOwned, D2: DeserializeOwned>(
     mut call: Call<'c>,
     f: fn(&File, D1, D2) -> S
 ) -> JsResult<'c, JsValue> {
     file_fn(&mut call, |call, file| {
-        let arg1: D1 = from_handle(call.arguments.require(call.scope, 0)?, call.scope)?;
-        let arg2: D2 = from_handle(call.arguments.require(call.scope, 1)?, call.scope)?;
+        let arg1 = call.arguments.require(call.scope, 0)?;
+        let arg2 = call.arguments.require(call.scope, 1)?;
+        let arg1: D1 = from_value(call.scope, arg1)?;
+        let arg2: D2 = from_value(call.scope, arg2)?;
         Ok(f(file, arg1, arg2))
     })
 }
@@ -170,20 +176,3 @@ register_module!(m, {
     m.export("file_create", file_create)?;
     Ok(())
 });
-
-fn from_handle<'a, T: serde::Deserialize<'a> + ? Sized>(
-    input: Handle<'a, JsValue>,
-    scope: &mut RootScope<'a>,
-) -> neon_serde::errors::Result<T> {
-    let scope: &'a mut RootScope<'a> = unsafe { ::std::mem::transmute(scope) };
-    neon_serde::from_handle(input, scope)
-}
-
-fn to_value<'value, 'scope, V: Serialize + ?Sized>(
-    value: &'value V,
-    scope: &mut RootScope<'scope>,
-) -> neon_serde::errors::Result<Handle<'scope, JsValue>> {
-    let scope: &'scope mut RootScope<'scope> = unsafe { ::std::mem::transmute(scope) };
-    neon_serde::to_value(value, scope)
-}
-
