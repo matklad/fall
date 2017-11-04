@@ -82,14 +82,6 @@ impl<'f> Analysis<'f> {
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
         impl Diagnostic {
-            fn error(node: Node, message: String) -> Diagnostic {
-                Diagnostic {
-                    range: node.range(),
-                    severity: Severity::Error,
-                    message,
-                }
-            }
-
             fn warning(node: Node, message: String) -> Diagnostic {
                 Diagnostic {
                     range: node.range(),
@@ -101,17 +93,7 @@ impl<'f> Analysis<'f> {
 
 
         let mut result = Visitor(Vec::new())
-            .visit::<RefExpr, _>(|acc, ref_| {
-                if ref_.resolve().is_none() {
-                    if let Some(call) = ast::ancestor::<CallExpr>(ref_.node()) {
-                        if call.resolve_context().is_some() {
-                            return;
-                        }
-                    }
-
-                    acc.push(Diagnostic::error(ref_.node(), "Unresolved reference".to_string()))
-                }
-            })
+            .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .visit::<SynRule, _>(|acc, rule| {
                 if self.is_unused(rule) {

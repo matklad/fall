@@ -1,11 +1,10 @@
-use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::{Text, TextRange, AstNode};
+use fall_tree::{Text, TextRange, AstNode, AstClass};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type};
 use fall_tree::search::ast;
 
 use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstNodeDef, AstClassDef, AstDef, Expr, Attributes, Attribute, TestDef,
+       RefExpr, AstNodeDef, AstClassDef, AstDef, Attributes, Attribute, TestDef,
        CallExpr, Parameter, AstSelector};
 
 impl<'f> FallFile<'f> {
@@ -26,24 +25,12 @@ impl<'f> FallFile<'f> {
         result
     }
 
-    pub fn contexts(&self) -> Vec<Text<'f>> {
-        Visitor(Vec::new())
-            .visit::<CallExpr, _>(|contexts, call| {
-                if call.fn_name() == "is_in" || call.fn_name() == "enter" || call.fn_name() == "exit" {
-                    if let Some(ctx) = call.context() {
-                        contexts.push(ctx);
-                    }
-                }
-            })
-            .walk_recursively_children_first(self.node())
-    }
-
     fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
         self.node_types().iter().position(|&it| it.0 == name)
             .map(|idx| idx + 1)
     }
 
-    pub(crate) fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
+    pub ( crate ) fn resolve_rule(&self, name: Text<'f>) -> Option<SynRule<'f>> {
         self.syn_rules()
             .find(|r| r.name().is_some() && r.name().unwrap() == name)
     }
@@ -326,25 +313,15 @@ impl<'f> RefExpr<'f> {
 }
 
 impl<'f> CallExpr<'f> {
-    pub fn context(&self) -> Option<Text<'f>> {
-        if let Some(Expr::RefExpr(e)) = self.args().next() {
-            if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
-                return Some(lit_body(context.text()));
-            }
+    pub fn context_name(&self) -> Option<Text<'f>> {
+        if !(self.fn_name() == "is_in" || self.fn_name() == "enter" || self.fn_name() == "exit") {
+            return None;
         }
-        None
+        return self.args().next()
+            .and_then(|arg| child_of_type(arg.node(), SIMPLE_STRING))
+            .map(|ctx| lit_body(ctx.text()));
     }
 
-    pub fn resolve_context(&self) -> Option<u32> {
-        if let Some(Expr::RefExpr(e)) = self.args().next() {
-            if let Some(context) = child_of_type(e.node(), SIMPLE_STRING) {
-                let ctx_name = lit_body(context.text());
-                let file: FallFile = ast::ancestor_exn(self.node());
-                return file.contexts().into_iter().position(|c| c == ctx_name).map(|i| i as u32);
-            }
-        }
-        None
-    }
 }
 
 impl<'f> Parameter<'f> {
@@ -381,7 +358,7 @@ impl<'f> Attribute<'f> {
     }
 }
 
-pub(crate) fn lit_body(lit: Text) -> Text {
+pub ( crate ) fn lit_body(lit: Text) -> Text {
     let q = if lit.starts_with("'") { "'" } else { "\"" };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();

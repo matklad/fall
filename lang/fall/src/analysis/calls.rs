@@ -2,11 +2,11 @@ use std::sync::Arc;
 use itertools::Itertools;
 
 use fall_tree::{AstNode, AstClass, Text};
-use fall_tree::search::{child_of_type, child_of_type_exn};
+use fall_tree::search::child_of_type_exn;
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
-use super::{Analysis, DiagnosticSink};
-use ::{Expr, CallExpr, SynRule, IDENT, SIMPLE_STRING, RefKind};
+use super::{Analysis, DiagnosticSink, RefKind};
+use ::{Expr, CallExpr, SynRule, IDENT};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum CallKind<'f> {
@@ -51,7 +51,7 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         call.args().next().and_then(|arg| kind(d, arg))
     };
     let mut not = |d: &mut DiagnosticSink| one(d, &mut |_, arg| Some(CallKind::Not(arg)));
-    let mut is_in = |d: &mut DiagnosticSink| one(d, &mut |d, arg| resolve_context(a, d, arg).map(CallKind::IsIn));
+    let mut is_in = |d: &mut DiagnosticSink| one(d, &mut |d, _| resolve_context(a, d, call).map(CallKind::IsIn));
 
     let two = |d: &mut DiagnosticSink, kind: &mut FnMut(&mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>| {
         expect_args(d, 2);
@@ -63,11 +63,11 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
     let mut with_skip = |d: &mut DiagnosticSink| two(d, &mut |_, arg1, arg2| {
         Some(CallKind::WithSkip(arg1, arg2))
     });
-    let mut enter = |d: &mut DiagnosticSink| two(d, &mut |d, arg1, arg2| {
-        resolve_context(a, d, arg1).map(|ctx| CallKind::Enter(ctx, arg2))
+    let mut enter = |d: &mut DiagnosticSink| two(d, &mut |d, _, arg2| {
+        resolve_context(a, d, call).map(|ctx| CallKind::Enter(ctx, arg2))
     });
-    let mut exit = |d: &mut DiagnosticSink| two(d, &mut |d, arg1, arg2| {
-        resolve_context(a, d, arg1).map(|ctx| CallKind::Exit(ctx, arg2))
+    let mut exit = |d: &mut DiagnosticSink| two(d, &mut |d, _, arg2| {
+        resolve_context(a, d, call).map(|ctx| CallKind::Exit(ctx, arg2))
     });
 
     let mut prev_is = |d: &mut DiagnosticSink| {
@@ -75,7 +75,7 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         for arg in call.args() {
             let mut ok = false;
             if let Expr::RefExpr(expr) = arg {
-                if let Some(RefKind::RuleReference(rule)) = expr.resolve() {
+                if let Some(RefKind::RuleReference(rule)) = a.resolve_reference(expr) {
                     if let Some(ty) = rule.resolve_ty() {
                         args.push(ty);
                         ok = true;
@@ -136,27 +136,20 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
 pub fn contexts<'f>(a: &Analysis<'f>) -> Vec<Text<'f>> {
     Visitor(Vec::new())
         .visit::<CallExpr, _>(|contexts, call| {
-            if call.fn_name() == "is_in" || call.fn_name() == "enter" || call.fn_name() == "exit" {
-                if let Some(ctx) = call.args().next().and_then(context_name) {
-                    contexts.push(ctx);
-                }
+            if let Some(ctx)  = call.context_name() {
+                contexts.push(ctx)
             }
         })
         .walk_recursively_children_first(a.file().node())
 }
 
-fn context_name<'f>(ctx: Expr<'f>) -> Option<Text<'f>> {
-    child_of_type(ctx.node(), SIMPLE_STRING)
-        .map(|n| ::ast_ext::lit_body(n.text()))
-}
-
-fn resolve_context(a: &Analysis, d: &mut DiagnosticSink, ctx: Expr) -> Option<u32> {
-    if let Some(name) = context_name(ctx) {
+fn resolve_context(a: &Analysis, d: &mut DiagnosticSink, call: CallExpr) -> Option<u32> {
+    if let Some(name) = call.context_name() {
         a.contexts().iter()
             .position(|&c| c == name)
             .map(|usize_| usize_ as u32)
     } else {
-        d.error(ctx.node(), "Context should be a single quoted string");
+        d.error(call.args().next().unwrap().node(), "Context should be a single quoted string");
         None
     }
 }
