@@ -23,7 +23,6 @@ pub enum CallKind<'f> {
     IsIn(u32),
 
     RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>),
-    // TODO: u32 is unclear
     PrevIs(Arc<Vec<usize>>)
 }
 
