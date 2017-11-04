@@ -81,24 +81,17 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
-        impl Diagnostic {
-            fn warning(node: Node, message: String) -> Diagnostic {
-                Diagnostic {
-                    range: node.range(),
-                    severity: Severity::Warning,
-                    message,
-                }
-            }
-        }
-
-
         let mut result = Visitor(Vec::new())
             .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .visit::<SynRule, _>(|acc, rule| {
                 if self.is_unused(rule) {
                     if let Some(rule_name) = rule.name_ident() {
-                        acc.push(Diagnostic::warning(rule_name, "Unused rule".to_string()))
+                        acc.push(Diagnostic {
+                            range: rule_name.range(),
+                            severity: Severity::Warning,
+                            message: "Unused rule".to_string(),
+                        })
                     }
                 }
             })
