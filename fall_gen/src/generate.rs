@@ -392,7 +392,7 @@ use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, No
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {

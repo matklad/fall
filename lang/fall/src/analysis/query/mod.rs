@@ -5,7 +5,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 
 use super::db::{Query};
-use ::{SynRule, LexRule, FallFile};
+use ::{SynRule, LexRule, FallFile, RefExpr, Parameter, Expr, CallExpr};
 
 
 pub(crate) struct FindLexRule<'f>(pub Text<'f>);
@@ -45,3 +45,44 @@ mod all_context_ids;
 
 
 
+#[derive(Copy, Clone)]
+pub enum RefKind<'f> {
+    Token(LexRule<'f>),
+    RuleReference(SynRule<'f>),
+    Param(Parameter<'f>),
+}
+
+#[derive(Eq, PartialEq, Hash, Clone)]
+pub ( crate ) struct ResolveRefExpr<'f>(pub RefExpr<'f>);
+
+impl<'f> Query<'f> for ResolveRefExpr<'f> {
+    type Result = Option<RefKind<'f>>;
+}
+mod resolve_ref_expr;
+
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum CallKind<'f> {
+    Eof,
+    Any,
+    Commit,
+
+    Not(Expr<'f>),
+    Layer(Expr<'f>, Expr<'f>),
+    WithSkip(Expr<'f>, Expr<'f>),
+
+    Enter(u32, Expr<'f>),
+    Exit(u32, Expr<'f>),
+    IsIn(u32),
+
+    RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>),
+    PrevIs(Arc<Vec<usize>>)
+}
+
+#[derive(Eq, PartialEq, Hash, Clone)]
+pub(crate) struct ResolveCall<'f>(pub CallExpr<'f>);
+
+impl<'f> Query<'f> for ResolveCall<'f> {
+    type Result = Option<CallKind<'f>>;
+}
+mod resolve_call;

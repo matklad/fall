@@ -10,16 +10,14 @@ use {FallFile, SynRule, RefExpr, CallExpr, SYN_RULE};
 use editor_api::{Diagnostic, Severity};
 
 mod calls;
-mod references;
 mod diagnostics;
 mod cache;
 mod db;
 mod query;
 
 use self::diagnostics::DiagnosticSink;
-use self::cache::{FileCache, NodeCache};
-pub use self::calls::CallKind;
-pub use self::references::RefKind;
+use self::cache::FileCache;
+pub use self::query::{CallKind, RefKind};
 
 
 pub struct Analysis<'f> {
@@ -29,9 +27,6 @@ pub struct Analysis<'f> {
     diagnostics: Mutex<Vec<Diagnostic>>,
 
     used_rules: FileCache<HashSet<Node<'f>>>,
-
-    calls: NodeCache<'f, Option<CallKind<'f>>>,
-    refs: NodeCache<'f, Option<RefKind<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -41,8 +36,6 @@ impl<'f> Analysis<'f> {
             file,
             diagnostics: Default::default(),
             used_rules: Default::default(),
-            calls: Default::default(),
-            refs: Default::default(),
         }
     }
 
@@ -51,31 +44,11 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
-        let mut diagnostics = Vec::new();
-        let (value, committed) = {
-            let mut sink = DiagnosticSink::new(&mut diagnostics);
-            self.calls.get(call.node(), || {
-                calls::resolve(self, &mut sink, call)
-            })
-        };
-        if committed {
-            self.diagnostics.lock().unwrap().extend(diagnostics)
-        }
-        value
+        self.db.get(query::ResolveCall(call))
     }
 
     pub fn resolve_reference(&self, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
-        let mut diagnostics = Vec::new();
-        let (value, committed) = {
-            let mut sink = DiagnosticSink::new(&mut diagnostics);
-            self.refs.get(ref_.node(), || {
-                references::resolve(self, &mut sink, ref_)
-            })
-        };
-        if committed {
-            self.diagnostics.lock().unwrap().extend(diagnostics)
-        }
-        value
+        self.db.get(query::ResolveRefExpr(ref_))
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {

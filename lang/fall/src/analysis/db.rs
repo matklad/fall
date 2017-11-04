@@ -13,6 +13,8 @@ pub ( crate ) struct DB<'f> {
     file: FallFile<'f>,
     all_rules: QMap<'f, query::AllRules<'f>>,
     all_contexts: QMap<'f, query::AllContexts<'f>>,
+    resolve_ref_expr: QMap<'f, query::ResolveRefExpr<'f>>,
+    resolve_call: QMap<'f, query::ResolveCall<'f>>,
 }
 
 impl<'f> DB<'f> {
@@ -21,6 +23,8 @@ impl<'f> DB<'f> {
             file,
             all_rules: Default::default(),
             all_contexts: Default::default(),
+            resolve_ref_expr: Default::default(),
+            resolve_call: Default::default(),
         }
     }
 }
@@ -95,5 +99,17 @@ impl<'f> QueryCache<'f, query::AllRules<'f>> for DB<'f> {
 impl<'f> QueryCache<'f, query::AllContexts<'f>> for DB<'f> {
     fn get_cache(&self) -> &QMap<'f, query::AllContexts<'f>> {
         &self.all_contexts
+    }
+}
+
+impl<'f> QueryCache<'f, query::ResolveRefExpr<'f>> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::ResolveRefExpr<'f>> {
+        &self.resolve_ref_expr
+    }
+}
+
+impl<'f> QueryCache<'f, query::ResolveCall<'f>> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::ResolveCall<'f>> {
+        &self.resolve_call
     }
 }

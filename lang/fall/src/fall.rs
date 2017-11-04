@@ -632,7 +632,7 @@ impl<'f> ::std::fmt::Debug for TestDef<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RefExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for RefExpr<'f> {
@@ -655,7 +655,7 @@ impl<'f> ::std::fmt::Debug for RefExpr<'f> {
         Ok(())
     }
 }
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CallExpr<'f> { node: Node<'f> }
 
 impl<'f> AstNode<'f> for CallExpr<'f> {
