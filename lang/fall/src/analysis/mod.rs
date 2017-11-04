@@ -48,10 +48,6 @@ impl<'f> Analysis<'f> {
         self.file
     }
 
-    pub fn is_unused(&self, rule: SynRule<'f>) -> bool {
-        !self.used_rules().contains(&rule.node())
-    }
-
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
         let mut diagnostics = Vec::new();
         let (value, committed) = {
@@ -85,7 +81,7 @@ impl<'f> Analysis<'f> {
             .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .visit::<SynRule, _>(|acc, rule| {
-                if self.is_unused(rule) {
+                if !self.used_rules().contains(&rule.node()) {
                     if let Some(rule_name) = rule.name_ident() {
                         acc.push(Diagnostic {
                             range: rule_name.range(),
