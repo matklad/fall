@@ -3,7 +3,7 @@ use fall_tree::search::child_of_type;
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use ::*;
-use analysis::CallKind;
+use analysis::{CallKind, RefKind};
 
 type Spans = Vec<(TextRange, &'static str)>;
 
@@ -32,7 +32,7 @@ pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
         .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
         .visit::<RefExpr, _>(|spans, ref_| {
-            let color = match ref_.resolve() {
+            let color = match analysis.resolve_reference(ref_) {
                 Some(RefKind::Token(_)) => "token",
                 Some(RefKind::RuleReference { .. }) => "rule",
                 Some(RefKind::Param(..)) => "value_parameter",

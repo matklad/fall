@@ -29,8 +29,8 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
     Visitor(None)
         .visit::<RefExpr, _>(|result, ref_expr| {
             *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
-                let ref_expr = RefExpr::new(node);
-                let target = match analysis.resolve_reference(ref_expr) {
+                let ref_ = RefExpr::new(node);
+                let target = match analysis.resolve_reference(ref_) {
                     None => return None,
                     Some(t) => t
                 };
