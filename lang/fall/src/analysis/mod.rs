@@ -19,10 +19,7 @@ pub struct Analysis<'f> {
 
 impl<'f> Analysis<'f> {
     pub fn new(file: FallFile) -> Analysis {
-        Analysis {
-            db: db::DB::new(file),
-            file,
-        }
+        Analysis { db: db::DB::new(file), file }
     }
 
     pub fn file(&self) -> FallFile<'f> {
@@ -43,12 +40,18 @@ impl<'f> Analysis<'f> {
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .walk_recursively_children_first(self.file().node());
         self.db.get(query::UnusedRules);
-        self.db.diagnostics.lock().unwrap().clone()
+        self.diagnostics()
     }
 
     #[allow(unused)] // for debugging
     pub fn debug_diagnostics(&self) -> String {
-        diagnostics::debug_diagnostics(&self.db.diagnostics.lock().unwrap(), self.file().node().text())
+        diagnostics::debug_diagnostics(&self.diagnostics(), self.file().node().text())
+    }
+
+    fn diagnostics(&self) -> Vec<Diagnostic> {
+        let mut result = self.db.diagnostics.lock().unwrap().clone();
+        result.sort_by_key(|d| (d.range.start(), d.range.end()));
+        result
     }
 }
 
@@ -98,6 +101,7 @@ fn analysis_is_sync() {
 
 #[cfg(test)]
 fn check_diagnostics(code: &str, expected_diagnostics: &str) {
+    use editor_api::Severity;
     use fall_tree::test_util::report_diff;
     let file = ::editor_api::analyse(code.to_string());
 
@@ -141,8 +145,8 @@ abracadabra: E Unresolved reference
 baz: W Unused rule
 <prev_is bar>: E <prev_is> arguments must be public rules
 <prev_is {foo}>: E <prev_is> arguments must be public rules
-dupe: W Unused rule
-dupe: E Duplicate rule");
+dupe: E Duplicate rule
+dupe: W Unused rule");
     }
 
     #[test]
