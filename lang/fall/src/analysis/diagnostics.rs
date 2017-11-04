@@ -1,4 +1,4 @@
-use fall_tree::{Text, Node};
+use fall_tree::Node;
 
 use editor_api::{Diagnostic, Severity};
 
@@ -26,13 +26,4 @@ impl<'d> DiagnosticSink<'d> {
             message: message.into(),
         })
     }
-}
-
-pub(super) fn debug_diagnostics(diagnostics: &[Diagnostic], text: Text) -> String {
-    let contents = diagnostics
-        .iter()
-        .map(|d| format!("({}, {:?})", text.slice(d.range), d.message))
-        .collect::<Vec<String>>()
-        .join(", ");
-    format!("[{}]", contents)
 }

@@ -40,17 +40,8 @@ impl<'f> Analysis<'f> {
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
             .walk_recursively_children_first(self.file().node());
         self.db.get(query::UnusedRules);
-        self.diagnostics()
-    }
 
-    #[allow(unused)] // for debugging
-    pub fn debug_diagnostics(&self) -> String {
-        diagnostics::debug_diagnostics(&self.diagnostics(), self.file().node().text())
-    }
-
-    fn diagnostics(&self) -> Vec<Diagnostic> {
         let mut result = self.db.diagnostics.lock().unwrap().clone();
-
         result.sort_by_key(|d| {
             let priority = match d.severity {
                 Severity::Error => 0,
