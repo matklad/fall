@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use std::sync::Arc;
 
 use itertools::Itertools;
@@ -124,7 +123,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
 
 fn resolve_context(db: &DB, d: &mut DiagnosticSink, call: CallExpr) -> Option<u32> {
     if let Some(name) = call.context_name() {
-        db.get(query::AllContexts(PhantomData))
+        db.get(query::AllContexts)
             .iter()
             .position(|&c| c == name)
             .map(|usize_| usize_ as u32)

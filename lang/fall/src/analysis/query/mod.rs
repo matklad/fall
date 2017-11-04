@@ -1,11 +1,10 @@
-use std::marker::PhantomData;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use fall_tree::Text;
 
 use super::db::{Query};
-use ::{SynRule, LexRule, FallFile, RefExpr, Parameter, Expr, CallExpr};
+use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr};
 
 
 pub(crate) struct FindLexRule<'f>(pub Text<'f>);
@@ -26,18 +25,18 @@ mod find_syn_rule;
 
 
 #[derive(Eq, PartialEq, Hash, Clone)]
-pub(crate) struct AllRules<'f>(pub PhantomData<FallFile<'f>>);
+pub(crate) struct AllRules;
 
-impl<'f> Query<'f> for AllRules<'f> {
+impl<'f> Query<'f> for AllRules {
     type Result = Arc<HashMap<Text<'f>, SynRule<'f>>>;
 }
 mod all_rules;
 
 
 #[derive(Eq, PartialEq, Hash, Clone)]
-pub(crate) struct AllContexts<'f>(pub PhantomData<FallFile<'f>>);
+pub(crate) struct AllContexts;
 
-impl<'f> Query<'f> for AllContexts<'f> {
+impl<'f> Query<'f> for AllContexts {
     type Result = Arc<Vec<Text<'f>>>;
 }
 

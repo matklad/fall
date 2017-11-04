@@ -7,7 +7,7 @@ use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
 use ::CallExpr;
 
-impl<'f> db::OnceQExecutor<'f> for super::AllContexts<'f> {
+impl<'f> db::OnceQExecutor<'f> for super::AllContexts {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<Vec<Text<'f>>> {
         let result = Visitor(BTreeMap::<Text<'f>, Option<CallExpr<'f>>>::new())
             .visit::<CallExpr, _>(|contexts, call| {

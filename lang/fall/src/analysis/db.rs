@@ -12,8 +12,8 @@ type QMap<'f, Q> = Mutex<HashMap<Q, <Q as Query<'f>>::Result>>;
 pub ( crate ) struct DB<'f> {
     file: FallFile<'f>,
     pub(super) diagnostics: Mutex<Vec<Diagnostic>>,
-    all_rules: QMap<'f, query::AllRules<'f>>,
-    all_contexts: QMap<'f, query::AllContexts<'f>>,
+    all_rules: QMap<'f, query::AllRules>,
+    all_contexts: QMap<'f, query::AllContexts>,
     resolve_ref_expr: QMap<'f, query::ResolveRefExpr<'f>>,
     resolve_call: QMap<'f, query::ResolveCall<'f>>,
 }
@@ -94,14 +94,14 @@ impl<'f, Q> QExecutor<'f> for Q
 }
 
 
-impl<'f> QueryCache<'f, query::AllRules<'f>> for DB<'f> {
-    fn get_cache(&self) -> &QMap<'f, query::AllRules<'f>> {
+impl<'f> QueryCache<'f, query::AllRules> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::AllRules> {
         &self.all_rules
     }
 }
 
-impl<'f> QueryCache<'f, query::AllContexts<'f>> for DB<'f> {
-    fn get_cache(&self) -> &QMap<'f, query::AllContexts<'f>> {
+impl<'f> QueryCache<'f, query::AllContexts> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::AllContexts> {
         &self.all_contexts
     }
 }
