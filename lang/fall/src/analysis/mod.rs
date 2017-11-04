@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Mutex;
 
-use fall_tree::{File, Node, AstNode, Text};
+use fall_tree::{File, Node, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
@@ -13,6 +13,8 @@ mod calls;
 mod references;
 mod diagnostics;
 mod cache;
+mod db;
+mod query;
 
 use self::diagnostics::DiagnosticSink;
 use self::cache::{FileCache, NodeCache};
@@ -21,12 +23,12 @@ pub use self::references::RefKind;
 
 
 pub struct Analysis<'f> {
+    db: db::DB<'f>,
     file: FallFile<'f>,
 
     diagnostics: Mutex<Vec<Diagnostic>>,
 
     used_rules: FileCache<HashSet<Node<'f>>>,
-    contexts: FileCache<Vec<Text<'f>>>,
 
     calls: NodeCache<'f, Option<CallKind<'f>>>,
     refs: NodeCache<'f, Option<RefKind<'f>>>,
@@ -35,10 +37,10 @@ pub struct Analysis<'f> {
 impl<'f> Analysis<'f> {
     pub fn new(file: FallFile) -> Analysis {
         Analysis {
+            db: db::DB::new(file),
             file,
             diagnostics: Default::default(),
             used_rules: Default::default(),
-            contexts: Default::default(),
             calls: Default::default(),
             refs: Default::default(),
         }
@@ -105,14 +107,6 @@ impl<'f> Analysis<'f> {
 
     fn diagnostics(&self) -> Vec<Diagnostic> {
         self.diagnostics.lock().unwrap().clone()
-    }
-
-    fn contexts(&self) -> &[Text<'f>] {
-        self.contexts.get(|| calls::contexts(self)).as_ref()
-    }
-
-    fn rule_by_name(&self, reference_name: Text<'f>) -> Option<SynRule<'f>> {
-        self.file().syn_rules().find(|r| r.name() == Some(reference_name))
     }
 
     fn used_rules(&self) -> &HashSet<Node<'f>> {
@@ -210,6 +204,8 @@ fn test_diagnostics() {
        pub rule foo { <eof x> }
        rule bar { foo <abracadabra>}
        rule baz { <prev_is foo> <prev_is bar> <prev_is {foo}>}
+       rule dupe { dupe }
+       rule dupe { dupe }
     ", "\
 <eof x>: E Wrong number of arguments, expected 0, got 1
 x: E Unresolved reference

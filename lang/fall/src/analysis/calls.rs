@@ -1,11 +1,12 @@
 use std::sync::Arc;
+use std::marker::PhantomData;
 use itertools::Itertools;
 
-use fall_tree::{AstNode, AstClass, Text};
+use fall_tree::{AstNode, AstClass};
 use fall_tree::search::child_of_type_exn;
-use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use super::{Analysis, DiagnosticSink, RefKind};
+use analysis::query;
 use ::{Expr, CallExpr, SynRule, IDENT};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -108,7 +109,7 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         }
     }
 
-    if let Some(rule) = a.rule_by_name(call.fn_name()) {
+    if let Some(rule) = a.db.get(query::FindSynRule(call.fn_name())) {
         if let Some(parameters) = rule.parameters() {
             let n_expected = parameters.parameters().count();
             if n_expected != n_args {
@@ -133,19 +134,10 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
     return None;
 }
 
-pub fn contexts<'f>(a: &Analysis<'f>) -> Vec<Text<'f>> {
-    Visitor(Vec::new())
-        .visit::<CallExpr, _>(|contexts, call| {
-            if let Some(ctx)  = call.context_name() {
-                contexts.push(ctx)
-            }
-        })
-        .walk_recursively_children_first(a.file().node())
-}
-
 fn resolve_context(a: &Analysis, d: &mut DiagnosticSink, call: CallExpr) -> Option<u32> {
     if let Some(name) = call.context_name() {
-        a.contexts().iter()
+        a.db.get(query::AllContexts(PhantomData))
+            .iter()
             .position(|&c| c == name)
             .map(|usize_| usize_ as u32)
     } else {

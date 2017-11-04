@@ -2,7 +2,7 @@ use fall_tree::{Text, Node};
 
 use editor_api::{Diagnostic, Severity};
 
-pub (super) struct DiagnosticSink<'d> {
+pub (crate) struct DiagnosticSink<'d> {
     diagnostics: &'d mut Vec<Diagnostic>
 }
 
@@ -15,6 +15,14 @@ impl<'d> DiagnosticSink<'d> {
         self.diagnostics.push(Diagnostic {
             range: node.range(),
             severity: Severity::Error,
+            message: message.into(),
+        })
+    }
+
+    pub fn warning<T: Into<String>>(&mut self, node: Node, message: T) {
+        self.diagnostics.push(Diagnostic {
+            range: node.range(),
+            severity: Severity::Warning,
             message: message.into(),
         })
     }

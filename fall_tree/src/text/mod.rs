@@ -8,7 +8,7 @@ mod text_range;
 pub use self::text_unit::{TextUnit, tu};
 pub use self::text_range::TextRange;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {
     owned: &'f String,
     range: TextRange
@@ -118,5 +118,11 @@ impl<'a, 'b> PartialEq<Text<'b>> for Text<'a> {
 impl<'f, 's> PartialEq<&'s str> for Text<'f> {
     fn eq(&self, other: &&str) -> bool {
         &self.owned[self.range] == *other
+    }
+}
+
+impl<'f> ::std::hash::Hash for Text<'f> {
+    fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+        self.as_str().hash(state)
     }
 }

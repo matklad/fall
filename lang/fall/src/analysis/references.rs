@@ -1,6 +1,7 @@
 use fall_tree::search::ast;
 use fall_tree::{AstNode, AstClass};
 
+use analysis::query;
 use ::{SynRule, LexRule, Parameter, RefExpr, CallExpr};
 use super::{Analysis, DiagnosticSink, CallKind};
 
@@ -20,12 +21,11 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, ref_: RefEx
         return Some(RefKind::Param(param));
     }
 
-    if let Some(syn_rule) = a.rule_by_name(reference_name) {
+    if let Some(syn_rule) = a.db.get(query::FindSynRule(reference_name)) {
         return Some(RefKind::RuleReference(syn_rule));
     }
 
-    if let Some(lex_rule) = a.file().tokenizer_def()
-        .and_then(|td| td.lex_rules().find(|r| r.token_name() == reference_name)) {
+    if let Some(lex_rule) = a.db.get(query::FindLexRule(reference_name)) {
         return Some(RefKind::Token(lex_rule));
     }
 
