@@ -289,7 +289,7 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
             RefKind::Param(p) => fall_parse::Expr::Var(p.idx()),
         },
         Expr::CallExpr(call) => {
-            let r = match call.kind().map_err(|e| error!("Failed to compile {}: {}", call.node().text(), e))? {
+            let r = match analysis.resolve_call(call).ok_or(error!("Failed to compile {}", call.node().text()))? {
                 CallKind::Eof => fall_parse::Expr::Eof,
                 CallKind::Any => fall_parse::Expr::Any,
                 CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(analysis, expr)?)),
@@ -306,11 +306,11 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
                 ),
                 CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
                     Box::new(fall_parse::Expr::Rule(rule.index())),
-                    args.into_iter()
-                        .map(|(i, e)| Ok((i, compile_expr(analysis, e)?)))
+                    args.iter()
+                        .map(|&(i, e)| Ok((i, compile_expr(analysis, e)?)))
                         .collect::<Result<Vec<_>>>()?
                 ),
-                CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(tokens),
+                CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs((*tokens).clone()),
                 CallKind::Commit => panic!("Should be handled specially"),
             };
             return Ok(r);

@@ -319,20 +319,6 @@ impl<'f> RefExpr<'f> {
     }
 }
 
-pub enum CallKind<'f> {
-    Eof,
-    Any,
-    Commit,
-    Enter(u32, Expr<'f>),
-    Exit(u32, Expr<'f>),
-    IsIn(u32),
-    Not(Expr<'f>),
-    Layer(Expr<'f>, Expr<'f>),
-    WithSkip(Expr<'f>, Expr<'f>),
-    RuleCall(SynRule<'f>, Vec<(u32, Expr<'f>)>),
-    PrevIs(Vec<usize>)
-}
-
 impl<'f> CallExpr<'f> {
     pub fn context(&self) -> Option<Text<'f>> {
         if let Some(Expr::RefExpr(e)) = self.args().next() {
@@ -352,94 +338,6 @@ impl<'f> CallExpr<'f> {
             }
         }
         None
-    }
-
-    pub fn kind(&self) -> Result<CallKind<'f>, &'static str> {
-        let file: FallFile = ast::ancestor_exn(self.node());
-        macro_rules! check_args {
-            ($n:expr) => {
-                if self.args().count() != $n {
-                    return Err(concat!("expected ", $n, " arguments"))
-                }
-            }
-        };
-
-        let kind = match self.fn_name().to_cow().as_ref() {
-            "eof" => {
-                check_args!(0);
-                CallKind::Eof
-            }
-            "any" => {
-                check_args!(0);
-                CallKind::Any
-            }
-            "commit" => {
-                check_args!(0);
-                CallKind::Commit
-            }
-            "enter" => {
-                check_args!(2);
-                let ctx = self.resolve_context().ok_or("enter without context")?;
-                let arg = self.args().nth(1).unwrap();
-                CallKind::Enter(ctx, arg)
-            }
-            "exit" => {
-                check_args!(2);
-                let ctx = self.resolve_context().ok_or("exit without context")?;
-                let arg = self.args().nth(1).unwrap();
-                CallKind::Exit(ctx, arg)
-            }
-            "is_in" => {
-                check_args!(1);
-                let ctx = self.resolve_context().ok_or("is_in without context")?;
-                CallKind::IsIn(ctx)
-            }
-            "not" => {
-                check_args!(1);
-                CallKind::Not(self.args().next().unwrap())
-            }
-            "layer" => {
-                check_args!(2);
-                CallKind::Layer(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
-            }
-            "with_skip" => {
-                check_args!(2);
-                CallKind::WithSkip(self.args().nth(0).unwrap(), self.args().nth(1).unwrap())
-            }
-            "prev_is" => {
-                let mut args = Vec::new();
-                for arg in self.args() {
-                    if let Expr::RefExpr(expr) = arg {
-                        if let Some(RefKind::RuleReference(rule)) = expr.resolve() {
-                            if let Some(ty) = rule.resolve_ty() {
-                                args.push(ty)
-                            } else {
-                                return Err("Bad prev_is");
-                            }
-                        } else {
-                            return Err("Bad prev_is");
-                        }
-                    } else {
-                        return Err("Bad prev_is");
-                    }
-                }
-                CallKind::PrevIs(args)
-            }
-            _ => {
-                if let Some(rule) = file.resolve_rule(self.fn_name()) {
-                    if let Some(parameters) = rule.parameters() {
-                        let params = parameters.parameters()
-                            .map(|p| p.idx())
-                            .zip(self.args())
-                            .collect();
-                        return Ok(CallKind::RuleCall(rule, params));
-                    }
-                }
-                return Err("unknown rule");
-            }
-        };
-
-        Ok(kind)
     }
 }
 
