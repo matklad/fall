@@ -152,7 +152,7 @@ pub fn report_diff(expected: &str, actual: &str) {
     if let Some(diff) = compute_diff(expected, actual) {
         println!("Actual\n{}\n\nExpected:\n{}\n\nDiff:\n{}\n",
                  actual, expected, diff);
-        panic!("Mismatched trees!")
+        panic!("Mismatch")
     }
 }
 

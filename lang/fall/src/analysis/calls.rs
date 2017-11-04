@@ -243,7 +243,6 @@ mod tests {
 
     #[test]
     fn check_prev_is() {
-        //TODO: check for errors
         check_resolved(
             "pub rule foo {} pub rule bar {} rule baz { <^prev_is foo bar> }",
             "PrevIs([1, 2])"

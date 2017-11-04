@@ -54,9 +54,11 @@ impl Diagnostic {
 
 #[test]
 fn test_diagnostics() {
+    use fall_tree::test_util::report_diff;
     let file = ::editor_api::analyse(r"
-       rule foo { <eof x> }
-       rule bar { foo <abracadabra> <prev_is {foo}>}
+       pub rule foo { <eof x> }
+       rule bar { foo <abracadabra>}
+       rule baz { <prev_is foo> <prev_is bar> <prev_is {foo}>}
     ".to_string());
 
     file.analyse(|a| {
@@ -69,12 +71,12 @@ fn test_diagnostics() {
             format!("{}: {} {}", a.file().node().text().slice(d.range), s, d.message)
         }).collect::<Vec<_>>().join("\n");
 
-        assert_eq!(
-            expected, "\
+        report_diff(&expected, "\
 <eof x>: E Wrong number of arguments, expected 0, got 1
 x: E Unresolved reference
-bar: W Unused rule
 abracadabra: E Unresolved reference
+baz: W Unused rule
+<prev_is bar>: E <prev_is> arguments must be public rules
 <prev_is {foo}>: E <prev_is> arguments must be public rules"
         );
     })
