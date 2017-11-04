@@ -119,7 +119,7 @@ fn check_diagnostics(code: &str, expected_diagnostics: &str) {
                 Severity::Error => 'E',
                 Severity::Warning => 'W',
             };
-            format!("{}: {} {}", a.file().node().text().slice(d.range), s, d.message)
+            format!("{} {}: {}", s, a.file().node().text().slice(d.range), d.message)
         }).collect::<Vec<_>>().join("\n");
 
         report_diff(expected_diagnostics, &actual);
@@ -146,14 +146,14 @@ mod tests {
        rule dupe { dupe }
        rule dupe { dupe }
     ", "\
-<eof x>: E Wrong number of arguments, expected 0, got 1
-x: E Unresolved reference
-abracadabra: E Unresolved reference
-<prev_is bar>: E <prev_is> arguments must be public rules
-<prev_is {foo}>: E <prev_is> arguments must be public rules
-dupe: E Duplicate rule
-baz: W Unused rule
-dupe: W Unused rule");
+E <eof x>: Wrong number of arguments, expected 0, got 1
+E x: Unresolved reference
+E abracadabra: Unresolved reference
+E <prev_is bar>: <prev_is> arguments must be public rules
+E <prev_is {foo}>: <prev_is> arguments must be public rules
+E dupe: Duplicate rule
+W baz: Unused rule
+W dupe: Unused rule");
     }
 
     #[test]
@@ -250,7 +250,7 @@ dupe: W Unused rule");
         );
         ::analysis::check_diagnostics(
             "rule foo { <bar <eof>>} rule bar(x, y) { }",
-            "<bar <eof>>: E Expected 2 arguments, got 1"
+            "E <bar <eof>>: Expected 2 arguments, got 1"
         )
     }
 
