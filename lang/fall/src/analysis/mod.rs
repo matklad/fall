@@ -36,8 +36,8 @@ impl<'f> Analysis<'f> {
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
         Visitor(())
-            .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
-            .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
+            .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
+            .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
             .walk_recursively_children_first(self.file().node());
         self.db.get(query::UnusedRules);
 
