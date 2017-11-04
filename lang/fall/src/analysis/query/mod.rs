@@ -34,6 +34,15 @@ mod all_rules;
 
 
 #[derive(Eq, PartialEq, Hash, Clone)]
+pub(crate) struct UnusedRules;
+
+impl<'f> Query<'f> for UnusedRules {
+    type Result = ();
+}
+mod unused_rules;
+
+
+#[derive(Eq, PartialEq, Hash, Clone)]
 pub(crate) struct AllContexts;
 
 impl<'f> Query<'f> for AllContexts {

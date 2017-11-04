@@ -11,11 +11,12 @@ type QMap<'f, Q> = Mutex<HashMap<Q, <Q as Query<'f>>::Result>>;
 
 pub ( crate ) struct DB<'f> {
     file: FallFile<'f>,
-    pub(super) diagnostics: Mutex<Vec<Diagnostic>>,
+    pub (super) diagnostics: Mutex<Vec<Diagnostic>>,
     all_rules: QMap<'f, query::AllRules>,
     all_contexts: QMap<'f, query::AllContexts>,
     resolve_ref_expr: QMap<'f, query::ResolveRefExpr<'f>>,
     resolve_call: QMap<'f, query::ResolveCall<'f>>,
+    unused_rules: QMap<'f, query::UnusedRules>,
 }
 
 impl<'f> DB<'f> {
@@ -27,6 +28,7 @@ impl<'f> DB<'f> {
             all_contexts: Default::default(),
             resolve_ref_expr: Default::default(),
             resolve_call: Default::default(),
+            unused_rules: Default::default(),
         }
     }
 }
@@ -115,5 +117,11 @@ impl<'f> QueryCache<'f, query::ResolveRefExpr<'f>> for DB<'f> {
 impl<'f> QueryCache<'f, query::ResolveCall<'f>> for DB<'f> {
     fn get_cache(&self) -> &QMap<'f, query::ResolveCall<'f>> {
         &self.resolve_call
+    }
+}
+
+impl<'f> QueryCache<'f, query::UnusedRules> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::UnusedRules> {
+        &self.unused_rules
     }
 }

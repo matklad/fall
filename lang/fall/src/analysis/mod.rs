@@ -1,21 +1,16 @@
-use std::collections::HashSet;
 use std::sync::Mutex;
 
-use fall_tree::{File, Node, AstNode};
+use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
-use fall_tree::search::child_of_type;
-use fall_tree::search::ast;
 
-use {FallFile, SynRule, RefExpr, CallExpr, SYN_RULE};
-use editor_api::{Diagnostic, Severity};
+use {FallFile, RefExpr, CallExpr};
+use editor_api::Diagnostic;
 
 mod diagnostics;
-mod cache;
 mod db;
 mod query;
 
 use self::diagnostics::DiagnosticSink;
-use self::cache::FileCache;
 pub use self::query::{CallKind, RefKind};
 
 
@@ -24,8 +19,6 @@ pub struct Analysis<'f> {
     file: FallFile<'f>,
 
     diagnostics: Mutex<Vec<Diagnostic>>,
-
-    used_rules: FileCache<HashSet<Node<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -34,7 +27,6 @@ impl<'f> Analysis<'f> {
             db: db::DB::new(file),
             file,
             diagnostics: Default::default(),
-            used_rules: Default::default(),
         }
     }
 
@@ -54,18 +46,9 @@ impl<'f> Analysis<'f> {
         let mut result = Visitor(Vec::new())
             .visit::<RefExpr, _>(|_, ref_| { self.resolve_reference(ref_); })
             .visit::<CallExpr, _>(|_, call| { self.resolve_call(call); })
-            .visit::<SynRule, _>(|acc, rule| {
-                if !self.used_rules().contains(&rule.node()) {
-                    if let Some(rule_name) = rule.name_ident() {
-                        acc.push(Diagnostic {
-                            range: rule_name.range(),
-                            severity: Severity::Warning,
-                            message: "Unused rule".to_string(),
-                        })
-                    }
-                }
-            })
             .walk_recursively_children_first(self.file().node());
+
+        self.db.get(query::UnusedRules);
 
         result.extend(self.diagnostics());
         result.sort_by_key(|d| (d.range.start(), d.range.end()));
@@ -81,31 +64,6 @@ impl<'f> Analysis<'f> {
         let mut result = self.diagnostics.lock().unwrap().clone();
         result.extend(self.db.diagnostics.lock().unwrap().clone());
         result
-    }
-
-    fn used_rules(&self) -> &HashSet<Node<'f>> {
-        self.used_rules.get(|| self.calculate_used_rules())
-    }
-
-    fn calculate_used_rules(&self) -> HashSet<Node<'f>> {
-        ast::descendants_of_type::<RefExpr>(self.file.node())
-            .into_iter()
-            .filter_map(|ref_| self.resolve_reference(ref_))
-            .filter_map(|r| match r {
-                RefKind::RuleReference(rule) => Some(rule.node()),
-                _ => None
-            })
-            .chain(
-                ast::descendants_of_type::<CallExpr>(self.file.node())
-                    .into_iter()
-                    .filter_map(|call| self.resolve_call(call))
-                    .filter_map(|kind| match kind {
-                        CallKind::RuleCall(rule, ..) => Some(rule.node()),
-                        _ => None,
-                    })
-            )
-            .chain(child_of_type(self.file.node(), SYN_RULE).into_iter())
-            .collect()
     }
 }
 
