@@ -183,6 +183,12 @@ rental! {
     }
 }
 
+#[test]
+fn analysis_is_sync() {
+    fn assert_is_sync<T: Sync>() {}
+    assert_is_sync::<Analysis>();
+}
+
 #[cfg(test)]
 fn check_diagnostics(code: &str, expected_diagnostics: &str) {
     use fall_tree::test_util::report_diff;
