@@ -294,6 +294,12 @@ pub enum RefKind<'f> {
 }
 
 impl<'f> RefExpr<'f> {
+    pub fn reference_name(&self) -> Text<'f> {
+        child_of_type(self.node(), IDENT)
+            .unwrap_or_else(|| child_of_type_exn(self.node(), SIMPLE_STRING))
+            .text()
+    }
+
     pub fn resolve(&self) -> Option<RefKind<'f>> {
         let file = ast::ancestor_exn::<FallFile>(self.node());
 

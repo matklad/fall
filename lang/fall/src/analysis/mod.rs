@@ -6,16 +6,18 @@ use fall_tree::visitor::{Visitor, NodeVisitor};
 use fall_tree::search::child_of_type;
 use fall_tree::search::ast;
 
-use {FallFile, SynRule, RefExpr, RefKind, CallExpr, SYN_RULE};
+use {FallFile, SynRule, RefExpr, CallExpr, SYN_RULE};
 use editor_api::{Diagnostic, Severity};
 
 mod calls;
+mod references;
 mod diagnostics;
 mod cache;
 
 use self::diagnostics::DiagnosticSink;
 use self::cache::{FileCache, NodeCache};
 pub use self::calls::CallKind;
+pub use self::references::RefKind;
 
 
 pub struct Analysis<'f> {
@@ -27,6 +29,7 @@ pub struct Analysis<'f> {
     contexts: FileCache<Vec<Text<'f>>>,
 
     calls: NodeCache<'f, Option<CallKind<'f>>>,
+    refs: NodeCache<'f, Option<RefKind<'f>>>,
 }
 
 impl<'f> Analysis<'f> {
@@ -37,6 +40,7 @@ impl<'f> Analysis<'f> {
             used_rules: Default::default(),
             contexts: Default::default(),
             calls: Default::default(),
+            refs: Default::default(),
         }
     }
 
@@ -54,6 +58,20 @@ impl<'f> Analysis<'f> {
             let mut sink = DiagnosticSink::new(&mut diagnostics);
             self.calls.get(call.node(), || {
                 calls::resolve(self, &mut sink, call)
+            })
+        };
+        if committed {
+            self.diagnostics.lock().unwrap().extend(diagnostics)
+        }
+        value
+    }
+
+    pub fn resolve_reference(&self, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
+        let mut diagnostics = Vec::new();
+        let (value, committed) = {
+            let mut sink = DiagnosticSink::new(&mut diagnostics);
+            self.refs.get(ref_.node(), || {
+                references::resolve(self, &mut sink, ref_)
             })
         };
         if committed {
@@ -129,7 +147,7 @@ impl<'f> Analysis<'f> {
     fn calculate_used_rules(&self) -> HashSet<Node<'f>> {
         ast::descendants_of_type::<RefExpr>(self.file.node())
             .into_iter()
-            .filter_map(|node| node.resolve())
+            .filter_map(|ref_| self.resolve_reference(ref_))
             .filter_map(|r| match r {
                 RefKind::RuleReference(rule) => Some(rule.node()),
                 _ => None
