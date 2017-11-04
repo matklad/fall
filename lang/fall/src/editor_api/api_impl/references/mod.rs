@@ -1,6 +1,7 @@
 use fall_tree::{Node, TextUnit, TextRange};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use ::*;
+use analysis::CallKind;
 
 mod refdec;
 
@@ -26,7 +27,7 @@ pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
 fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference<'f>> {
     Visitor(None)
         .visit::<RefExpr, _>(|result, ref_expr| {
-            *result = Some(Reference::new(ref_expr.node(), |node| {
+            *result = Some(Reference::new(ref_expr.node(), |_, node| {
                 let ref_expr = RefExpr::new(node);
                 let target = match ref_expr.resolve() {
                     None => return None,
@@ -41,7 +42,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
             }))
         })
         .visit::<AstSelector, _>(|result, selector| {
-            *result = Some(Reference::new(selector.node(), |node| {
+            *result = Some(Reference::new(selector.node(), |_, node| {
                 let selector = AstSelector::new(node);
                 let target = match selector.child_kind() {
                     None => return None,
@@ -58,10 +59,10 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
             match ident.parent() {
                 Some(parent) if parent.ty() == CALL_EXPR => {
                     let call = CallExpr::new(parent);
-                    if let Ok(CallKind::RuleCall(..)) = call.kind() {
-                        *result = Some(Reference::new(ident, |node| {
+                    if let Some(CallKind::RuleCall(..)) = analysis.resolve_call(call) {
+                        *result = Some(Reference::new(ident, |analysis, node| {
                             let call = CallExpr::new(node.parent().unwrap());
-                            match call.kind().unwrap() {
+                            match analysis.resolve_call(call).unwrap() {
                                 CallKind::RuleCall(rule, ..) => Some(rule.into()),
                                 _ => unimplemented!()
                             }

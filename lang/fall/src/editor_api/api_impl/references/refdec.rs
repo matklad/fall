@@ -24,40 +24,40 @@ impl<'f> Declaration<'f> {
 
 pub struct Reference<'f> {
     node: Node<'f>,
-    resolve: fn(Node<'f>) -> Option<Declaration<'f>>
+    resolve: fn(&Analysis<'f>, Node<'f>) -> Option<Declaration<'f>>
 }
 
 impl<'f> Reference<'f> {
-    pub fn new(node: Node<'f>, resolve: fn(Node<'f>) -> Option<Declaration<'f>>) -> Reference<'f> {
+    pub fn new(node: Node<'f>, resolve: fn(&Analysis<'f>, Node<'f>) -> Option<Declaration<'f>>) -> Reference<'f> {
         Reference { node, resolve }
     }
 
-    fn resolve(&self) -> Option<Declaration<'f>> {
-        (self.resolve)(self.node)
+    fn resolve(&self, analysis: &Analysis<'f>) -> Option<Declaration<'f>> {
+        (self.resolve)(analysis, self.node)
     }
 }
 
 pub type DeclarationProvider<'f> = fn(Node<'f>) -> Option<Declaration<'f>>;
 
-pub type ReferenceProvider<'r, 'f> = &'r Fn(Node<'f>) -> Option<Reference<'f>>;
+pub type ReferenceProvider<'p, 'f> = &'p Fn(Node<'f>) -> Option<Reference<'f>>;
 
-pub fn resolve_reference<'f, 'r>(
+pub fn resolve_reference<'p, 'f>(
     analysis: &Analysis<'f>,
     offset: TextUnit,
-    provider: ReferenceProvider<'r, 'f>
+    provider: ReferenceProvider<'p, 'f>
 ) -> Option<TextRange> {
     let reference = match try_find_at_offset(analysis.file().node().file(), offset, |node| provider(node)) {
         Some(ref_) => ref_,
         None => return None,
     };
 
-    reference.resolve().map(|d| d.navigation_range())
+    reference.resolve(analysis).map(|d| d.navigation_range())
 }
 
-pub fn find_usages<'a, 'f>(
+pub fn find_usages<'p, 'f>(
     analysis: &Analysis<'f>,
     offset: TextUnit,
-    reference_provider: ReferenceProvider<'a, 'f>,
+    reference_provider: ReferenceProvider<'p, 'f>,
     declaration_provider: DeclarationProvider<'f>
 ) -> Vec<TextRange> {
     let file = analysis.file();
@@ -66,7 +66,7 @@ pub fn find_usages<'a, 'f>(
             .and_then(|d| {
                 if d.navigation_range().contains_offset_nonstrict(offset) { Some(d) } else { None }
             })
-            .or_else(|| reference_provider(node).and_then(|ref_| ref_.resolve()))
+            .or_else(|| reference_provider(node).and_then(|ref_| ref_.resolve(analysis)))
     });
     let declaration = match declaration {
         Some(decl) => decl,
@@ -75,7 +75,7 @@ pub fn find_usages<'a, 'f>(
 
     subtree(file.node())
         .filter_map(|node| reference_provider(node))
-        .filter(|ref_| ref_.resolve().as_ref() == Some(&declaration))
+        .filter(|ref_| ref_.resolve(analysis).as_ref() == Some(&declaration))
         .map(|ref_| ref_.node.range())
         .collect()
 }
