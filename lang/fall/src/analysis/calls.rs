@@ -39,52 +39,39 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
         }
     };
 
-    let zero_arg = vec![
-        ("any", CallKind::Any),
-        ("commit", CallKind::Commit),
-        ("eof", CallKind::Eof)
-    ];
-    for (name, kind) in zero_arg.into_iter() {
-        if call.fn_name() == name {
-            expect_args(d, 0);
-            return Some(kind);
-        }
-    }
+    let zero = |d: &mut DiagnosticSink, kind: CallKind<'f>| {
+        expect_args(d, 0);
+        Some(kind)
+    };
+    let mut any = |d: &mut DiagnosticSink| zero(d, CallKind::Any);
+    let mut commit = |d: &mut DiagnosticSink| zero(d, CallKind::Commit);
+    let mut eof = |d: &mut DiagnosticSink| zero(d, CallKind::Eof);
 
-    let one_arg: Vec<(_, fn(&Analysis<'f>, &mut DiagnosticSink, Expr<'f>) -> Option<CallKind<'f>>)> = vec![
-        ("not", |_, _, arg| Some(CallKind::Not(arg))),
-        ("is_in", |a, d, arg| resolve_context(a, d, arg).map(CallKind::IsIn))
-    ];
-    for (name, kind) in one_arg.into_iter() {
-        if call.fn_name() == name {
-            expect_args(d, 1);
-            return call.args().next().and_then(|arg| kind(a,d, arg))
-        }
-    }
+    let one = |d: &mut DiagnosticSink, kind: &mut FnMut(&mut DiagnosticSink, Expr<'f>) -> Option<CallKind<'f>>| {
+        expect_args(d, 1);
+        call.args().next().and_then(|arg| kind(d, arg))
+    };
+    let mut not = |d: &mut DiagnosticSink| one(d, &mut |_, arg| Some(CallKind::Not(arg)));
+    let mut is_in = |d: &mut DiagnosticSink| one(d, &mut |d, arg| resolve_context(a, d, arg).map(CallKind::IsIn));
 
-    let two_arg: Vec<(_, fn(&Analysis<'f>, &mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>)> = vec![
-        ("layer", |_, _, arg1, arg2 | {
-            Some(CallKind::Layer(arg1, arg2))
-        }),
-        ("with_skip", |_, _, arg1, arg2 | {
-            Some(CallKind::WithSkip(arg1, arg2))
-        }),
-        ("enter", |a, d, arg1, arg2| {
-            resolve_context(a, d, arg1).map(|ctx| CallKind::Enter(ctx, arg2))
-        }),
-        ("exit", |a, d, arg1, arg2| {
-            resolve_context(a, d, arg1).map(|ctx| CallKind::Exit(ctx, arg2))
-        }),
-    ];
-    for (name, kind) in two_arg.into_iter() {
-        if call.fn_name() == name {
-            expect_args(d, 2);
-            return call.args().next_tuple()
-                .and_then(|(arg1, arg2)| kind(a, d,arg1, arg2));
-        }
-    }
+    let two = |d: &mut DiagnosticSink, kind: &mut FnMut(&mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>| {
+        expect_args(d, 2);
+        call.args().next_tuple().and_then(|(arg1, arg2)| kind(d, arg1, arg2))
+    };
+    let mut layer = |d: &mut DiagnosticSink| two(d, &mut |_, arg1, arg2| {
+        Some(CallKind::Layer(arg1, arg2))
+    });
+    let mut with_skip = |d: &mut DiagnosticSink| two(d, &mut |_, arg1, arg2| {
+        Some(CallKind::WithSkip(arg1, arg2))
+    });
+    let mut enter = |d: &mut DiagnosticSink| two(d, &mut |d, arg1, arg2| {
+        resolve_context(a, d, arg1).map(|ctx| CallKind::Enter(ctx, arg2))
+    });
+    let mut exit = |d: &mut DiagnosticSink| two(d, &mut |d, arg1, arg2| {
+        resolve_context(a, d, arg1).map(|ctx| CallKind::Exit(ctx, arg2))
+    });
 
-    if call.fn_name() == "prev_is" {
+    let mut prev_is = |d: &mut DiagnosticSink| {
         let mut args = Vec::new();
         for arg in call.args() {
             let mut ok = false;
@@ -100,7 +87,26 @@ pub (super) fn resolve<'f>(a: &Analysis<'f>, d: &mut DiagnosticSink, call: CallE
                 d.error(call.node(), "<prev_is> arguments must be public rules")
             }
         }
-        return Some(CallKind::PrevIs(Arc::new(args)));
+        Some(CallKind::PrevIs(Arc::new(args)))
+    };
+
+    let build_in: Vec<(&str, &mut FnMut(&mut DiagnosticSink) -> Option<CallKind<'f>>)> = vec![
+        ("any", &mut any),
+        ("commit", &mut commit),
+        ("eof", &mut eof),
+        ("not", &mut not),
+        ("is_in", &mut is_in),
+        ("layer", &mut layer),
+        ("with_skip", &mut with_skip),
+        ("enter", &mut enter),
+        ("exit", &mut exit),
+        ("prev_is", &mut prev_is)
+    ];
+
+    for (name, kind) in build_in.into_iter() {
+        if call.fn_name() == name {
+            return kind(d);
+        }
     }
 
     if let Some(rule) = a.file.resolve_rule(call.fn_name()) {
