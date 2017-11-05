@@ -550,7 +550,7 @@ pub rule expr {
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
 
-| method_call_expr | call_expr | field_expr | index_expr | try_expr
+| method_call_expr | call_expr | field_expr | index_expr | try_expr | cast_expr
 
 | reference_expr | dereference_expr | negation_expr | not_expr
 
@@ -889,6 +889,14 @@ pub rule try_expr {
 }
 test r"
 fn main() { -x??; }
+"
+
+#[postfix]
+pub rule cast_expr {
+  expr {'as' type_reference}
+}
+test r"
+fn main() { 1 as u128; }
 "
 
 #[prefix]
