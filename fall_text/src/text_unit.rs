@@ -22,6 +22,7 @@ impl Serialize for TextUnit {
         self.0.serialize(serializer)
     }
 }
+
 impl<'de> Deserialize<'de> for TextUnit {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let value = Deserialize::deserialize(deserializer)?;
@@ -41,10 +42,6 @@ impl TextUnit {
 
     pub fn from_usize(n: usize) -> TextUnit {
         TextUnit(n as u32)
-    }
-
-    pub fn as_u32(&self) -> u32 {
-        self.0
     }
 
     pub fn measure(text: &str) -> TextUnit {
@@ -95,5 +92,17 @@ impl ops::Sub<TextUnit> for TextUnit {
 impl ops::SubAssign<TextUnit> for TextUnit {
     fn sub_assign(&mut self, rhs: TextUnit) {
         self.0 -= rhs.0
+    }
+}
+
+impl From<TextUnit> for u32 {
+    fn from(tu: TextUnit) -> u32 {
+        tu.0
+    }
+}
+
+impl From<TextUnit> for usize {
+    fn from(tu: TextUnit) -> usize {
+        tu.0 as usize
     }
 }
