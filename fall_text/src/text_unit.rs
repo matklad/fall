@@ -10,10 +10,6 @@ pub fn tu(value: u32) -> TextUnit {
 }
 
 impl TextUnit {
-    pub fn zero() -> TextUnit {
-        TextUnit(0)
-    }
-
     pub fn from_usize(n: usize) -> TextUnit {
         TextUnit(n as u32)
     }

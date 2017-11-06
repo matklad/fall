@@ -28,14 +28,15 @@ fn try_find_non_ws_node_at_offset(file: &File, offset: TextUnit) -> Option<Node>
 
 #[test]
 fn test_extend_selection() {
+    use fall_tree::tu;
+
     let file = ::parse(r####"
 tokenizer { number r"\d+"}
 pub rule foo { bar }
 rule bar { number }
 "####);
-    let offset = TextUnit::from_usize(44);
     let s1 =
-        extend_selection(&file, TextRange::from_len(offset, TextUnit::zero()))
+        extend_selection(&file, TextRange::from_len(tu(44), tu(0)))
             .unwrap();
     let s2 = extend_selection(&file, s1).unwrap();
     let s3 = extend_selection(&file, s2).unwrap();

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ::{NodeType, TextUnit};
+use ::{NodeType, TextUnit, tu};
 
 #[derive(Clone, Debug)]
 pub struct INode {
@@ -20,7 +20,7 @@ impl INode {
             inner: Arc::new(Inner {
                 ty,
                 children: Vec::new(),
-                len: TextUnit::zero(),
+                len: tu(0),
             })
         }
     }
@@ -37,7 +37,7 @@ impl INode {
 
     pub fn push_child(&mut self, child: INode) {
         if self.children().is_empty() {
-            assert!(self.len() == TextUnit::zero());
+            assert_eq!(self.len(), tu(0));
         }
         let inner = Arc::make_mut(&mut self.inner);
         inner.len += child.len();

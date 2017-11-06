@@ -1,5 +1,5 @@
 use std::cmp::{min, max, Ordering, PartialOrd};
-use {Text, TextRange, TextUnit};
+use {Text, TextRange, TextUnit, tu};
 
 #[derive(Serialize, Clone, Debug)]
 pub struct TextEdit {
@@ -9,7 +9,7 @@ pub struct TextEdit {
 
 impl TextEdit {
     pub fn insert(offset: TextUnit, text: String) -> TextEdit {
-        TextEdit { delete: TextRange::from_len(offset, TextUnit::zero()), insert: text }
+        TextEdit { delete: TextRange::from_len(offset, tu(0)), insert: text }
     }
 
     pub fn delete_range(range: TextRange) -> TextEdit {
@@ -25,7 +25,7 @@ impl TextEdit {
     }
 
     pub fn apply(&self, text: Text) -> String {
-        let before = text.slice(TextRange::from_to(TextUnit::zero(), self.delete.start()));
+        let before = text.slice(TextRange::from_to(tu(0), self.delete.start()));
         let after = text.slice(TextRange::from_to(self.delete.end(), text.len()));
         before.to_string() + &self.insert + &after.to_string()
     }

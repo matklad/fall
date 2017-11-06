@@ -4,7 +4,7 @@ use std::ops;
 
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
-use super::TextUnit;
+use super::{TextUnit, tu};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct TextRange {
@@ -40,7 +40,7 @@ impl<'de> Deserialize<'de> for TextRange {
 
 impl TextRange {
     pub fn empty() -> TextRange {
-        TextRange::from_to(TextUnit::zero(), TextUnit::zero())
+        TextRange::from_to(tu(0), tu(0))
     }
 
     pub fn from_to(from: TextUnit, to: TextUnit) -> TextRange {

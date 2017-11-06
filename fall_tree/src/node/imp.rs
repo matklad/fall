@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use {Text, TextRange, NodeType, TextUnit, Language};
+use {Text, TextRange, NodeType, TextUnit, Language, tu};
 use super::{Node, FileStats};
 use super::immutable::INode;
 
@@ -116,7 +116,7 @@ pub struct NodeData {
 
 pub fn new_file(lang: Language, text: String, stats: FileStats, node: &INode) -> FileImpl {
     let mut nodes = Vec::new();
-    go(TextUnit::zero(), node, &mut nodes);
+    go(tu(0), node, &mut nodes);
 
     return FileImpl {
         lang,

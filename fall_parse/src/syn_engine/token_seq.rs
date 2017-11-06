@@ -1,4 +1,4 @@
-use fall_tree::{Language, NodeType, TextUnit};
+use fall_tree::{Language, NodeType, TextUnit, tu};
 
 use ::lex_engine::Token;
 
@@ -96,7 +96,7 @@ impl<'a> TokenSeq<'a> {
         let mut rest = *self;
         let mut n_tokens = 0;
 
-        while leftover > TextUnit::zero() {
+        while leftover > tu(0) {
             let cur_len = rest.current().unwrap().len;
             if leftover < cur_len {
                 panic!("Textual match split token in half")

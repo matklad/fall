@@ -9,7 +9,7 @@ pub extern crate serde_json;
 use regex::Regex;
 use elapsed::measure_time;
 use syn_engine::BlackTokens;
-use fall_tree::{Language, NodeType, FileStats, INode, TextUnit, TextRange};
+use fall_tree::{Language, NodeType, FileStats, INode, TextRange, tu};
 
 mod lex_engine;
 
@@ -55,16 +55,15 @@ impl ParserDefinition {
             syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())
         });
 
+        let white_node = syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder);
+
+        let inode = white_node.into_inode(&tokens);
         let stats = FileStats {
             lexing_time: lex_time.duration(),
             parsing_time: parse_time.duration(),
             parsing_ticks: ticks,
-            reparsed_region: TextRange::from_to(TextUnit::zero(), TextUnit::from_usize(text.len())),
+            reparsed_region: TextRange::from_to(tu(0), inode.len()),
         };
-
-        let white_node = syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder);
-
-        let inode = white_node.into_inode(&tokens);
         (stats, inode)
     }
 }
