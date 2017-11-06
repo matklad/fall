@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use file;
-use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit};
+use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
 use text_edit::TextEdit;
 use difference::Changeset;
 
@@ -11,7 +11,7 @@ pub fn parse_with_caret(lang: &Language, input: &str, caret: &str) -> (File, Tex
         &format!("No caret ({}) in\n{}\n", caret, input)
     );
     let input = input[..offset].to_string() + &input[offset + caret.len()..];
-    (lang.parse(input), TextUnit::from_usize(offset))
+    (lang.parse(input), tu(offset as u32))
 }
 
 pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, TextRange) {
@@ -28,8 +28,8 @@ pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, Tex
 
     let file = lang.parse(input);
     let range = TextRange::from_to(
-        TextUnit::from_usize(left_offset),
-        TextUnit::from_usize(right_offset - caret.len()),
+        tu(left_offset as u32),
+        tu((right_offset - caret.len()) as u32),
     );
     (file, range)
 }
@@ -140,8 +140,8 @@ fn make_edit(before: &str, after: &str) -> TextEdit {
             .unwrap()
     };
     let delete = TextRange::from_to(
-        TextUnit::from_usize(prefix),
-        TextUnit::from_usize(before.len() - suffix)
+        tu(prefix as u32),
+        tu((before.len() - suffix) as u32)
     );
     let insert = after[prefix..after.len() - suffix].to_string();
     TextEdit { delete, insert }

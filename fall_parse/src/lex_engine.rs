@@ -1,4 +1,4 @@
-use fall_tree::{NodeType, ERROR, TextUnit};
+use fall_tree::{NodeType, ERROR, TextUnit, tu};
 
 use LexRule;
 
@@ -66,7 +66,7 @@ impl<'t, 'r> TokenIter<'t, 'r> {
     fn token(&mut self, ty: NodeType, len: usize) -> Token {
         self.rest = &self.rest[len..];
         self.offset += len;
-        Token { ty, len: TextUnit::from_usize(len) }
+        Token { ty, len: tu(len as u32) }
     }
 }
 

@@ -9,12 +9,6 @@ pub fn tu(value: u32) -> TextUnit {
     TextUnit(value)
 }
 
-impl TextUnit {
-    pub fn from_usize(n: usize) -> TextUnit {
-        TextUnit(n as u32)
-    }
-}
-
 impl From<TextUnit> for u32 {
     fn from(tu: TextUnit) -> u32 {
         tu.0

@@ -1,4 +1,4 @@
-use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit, tu};
+use fall_tree::{Node, NodeType, File, TextEdit, FileEdit, tu};
 use fall_tree::search::{next_sibling, prev_sibling};
 use ::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 

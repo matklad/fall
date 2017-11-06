@@ -1,4 +1,4 @@
-use fall_tree::{Language, NodeType, TextUnit, tu};
+use fall_tree::{Language, NodeType, tu};
 
 use ::lex_engine::Token;
 
@@ -92,7 +92,7 @@ impl<'a> TokenSeq<'a> {
             return None;
         }
 
-        let mut leftover = TextUnit::from_usize(text.len());
+        let mut leftover = tu(text.len() as u32);
         let mut rest = *self;
         let mut n_tokens = 0;
 
