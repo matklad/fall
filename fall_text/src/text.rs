@@ -1,12 +1,9 @@
-use serde::{Serialize, Serializer};
 use std::fmt;
 use std::borrow::Cow;
 
-mod text_unit;
-mod text_range;
+use serde::{Serialize, Serializer};
 
-pub use self::text_unit::{TextUnit, tu};
-pub use self::text_range::TextRange;
+use ::{TextRange, TextUnit};
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {

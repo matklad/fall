@@ -183,11 +183,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "fall_text"
+version = "0.1.0"
+dependencies = [
+ "serde 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "fall_tree"
 version = "0.1.0"
 dependencies = [
  "difference 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fall_text 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
