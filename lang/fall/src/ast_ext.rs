@@ -97,13 +97,6 @@ impl<'f> LexRule<'f> {
     }
 }
 
-pub enum PratKind {
-    Atom,
-    Bin(u32),
-    Postfix(u32),
-    Prefix(u32),
-}
-
 impl<'f> SynRule<'f> {
     pub fn resolve_ty(&self) -> Option<usize> {
         if !self.is_pub() || self.is_pratt() {
@@ -125,27 +118,6 @@ impl<'f> SynRule<'f> {
     pub fn index(&self) -> usize {
         let file = ast::ancestor_exn::<FallFile>(self.node());
         file.syn_rules().position(|r| r.node() == self.node()).unwrap()
-    }
-
-    pub fn pratt_kind(&self) -> Option<PratKind> {
-        let attrs = match self.attributes() {
-            Some(attrs) => attrs,
-            None => return None,
-        };
-
-        if attrs.has_attribute("atom") {
-            Some(PratKind::Atom)
-        } else if attrs.has_attribute("postfix") {
-            let priority = attrs.find("postfix").and_then(|attr| attr.u32_value()).unwrap_or(999);
-            Some(PratKind::Postfix(priority))
-        } else if attrs.has_attribute("prefix") {
-            let priority = attrs.find("prefix").and_then(|attr| attr.u32_value()).unwrap_or(999);
-            Some(PratKind::Prefix(priority))
-        } else if let Some(priority) = attrs.find("bin").and_then(|attr| attr.u32_value()) {
-            Some(PratKind::Bin(priority))
-        } else {
-            None
-        }
     }
 
     pub fn is_pratt(&self) -> bool {

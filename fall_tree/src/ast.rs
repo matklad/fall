@@ -10,6 +10,7 @@ pub trait AstNode<'f>: Copy {
     fn node(&self) -> Node<'f>;
 }
 
+#[derive(Clone)]
 pub struct AstChildren<'f, A: AstNode<'f>> {
     inner: NodeChildren<'f>,
     phantom: PhantomData<*const A>,

@@ -18,9 +18,9 @@ pub mod editor_api;
 
 
 pub use self::fall::*;
-pub use self::ast_ext::{PratKind, MethodDescription, Arity, ChildKind};
+pub use self::ast_ext::{MethodDescription, Arity, ChildKind};
 pub use self::fall::language as lang_fall;
-pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind};
+pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVariant, PrattOp};
 
 pub fn parse<S: Into<String>>(text: S) -> File {
     language().parse(text.into())

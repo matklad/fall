@@ -82,6 +82,7 @@ impl<'f> NodeImpl<'f> {
     }
 }
 
+#[derive(Clone)]
 pub struct NodeChildren<'f> {
     file: &'f super::File,
     inner: ::std::slice::Iter<'f, NodeId>,

@@ -1,8 +1,10 @@
 use serde_json;
 use fall_parse;
 use fall_tree::{Text, AstNode, AstClass};
-use lang_fall::{RefKind, SynRule, Expr, BlockExpr, PratKind, CallKind,
-                MethodDef, MethodDescription, Arity, ChildKind, Analysis};
+use lang_fall::{RefKind, SynRule, Expr, BlockExpr, PratVariant, PrattOp,
+                CallKind, MethodDef, MethodDescription, Arity, ChildKind,
+                Analysis};
+use lang_fall::editor_api::Severity;
 use util::{scream, camel};
 use tera::{Tera, Context};
 
@@ -30,6 +32,16 @@ macro_rules! error {
 }
 
 pub fn generate(analysis: &Analysis) -> Result<String> {
+    for d in analysis.collect_all_diagnostics() {
+        match d.severity {
+            Severity::Error => {
+                let span = analysis.file().node().text().slice(d.range);
+                return Err(error!("E: {}\n{}", d.message, span));
+            }
+            Severity::Warning => ()
+        }
+    }
+
     #[derive(Serialize)]
     struct CtxLexRule<'f> { ty: Text<'f>, re: String, f: Option<Text<'f>> };
 
@@ -45,7 +57,7 @@ pub fn generate(analysis: &Analysis) -> Result<String> {
 
     let mut parser = Vec::new();
     for r in file.syn_rules() {
-        if let Some(r) = compile_rule(analysis,r)? {
+        if let Some(r) = compile_rule(analysis, r)? {
             parser.push(r)
         }
     }
@@ -200,62 +212,32 @@ fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall
     for alt in ast.alts() {
         let rule = alt_to_rule(analysis, alt)?;
         let ty = rule.resolve_ty().ok_or(error!("non public pratt rule"))?;
-        let prat_kind = rule.pratt_kind().ok_or(error!("pratt rule without attributes"))?;
+        let prat_kind = analysis.resolve_pratt_variant(rule).ok_or(error!("pratt rule without attributes"))?;
         match prat_kind {
-            PratKind::Atom =>
-                result.atoms.push(compile_rule(analysis,rule)?.unwrap().body),
-            PratKind::Postfix(priority) => {
-                let alt = match rule.body() {
-                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                        "bad pratt rule"
-                    ))?,
-                    _ => return Err(error!("bad pratt rule"))
-                };
-                let op = match alt {
-                    Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
-                    _ => return Err(error!("bad pratt rule"))
-                };
+            PratVariant::Atom(_) =>
+                result.atoms.push(compile_rule(analysis, rule)?.unwrap().body),
+            PratVariant::Postfix(PrattOp { op, priority }) => {
                 result.infixes.push(fall_parse::Infix {
                     ty,
                     op: compile_expr(analysis, op)?,
                     priority,
-                    has_rhs: false
+                    has_rhs: false,
                 });
             }
-            PratKind::Prefix(priority) => {
-                let alt = match rule.body() {
-                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                        "bad pratt rule"
-                    ))?,
-                    _ => return Err(error!("bad pratt rule"))
-                };
-                let op = match alt {
-                    Expr::SeqExpr(seq) => seq.parts().nth(0).unwrap(),
-                    _ => return Err(error!("bad pratt rule"))
-                };
+            PratVariant::Prefix(PrattOp { op, priority }) => {
                 result.prefixes.push(fall_parse::Prefix {
                     ty,
                     op: compile_expr(analysis, op)?,
-                    priority
+                    priority,
                 })
             }
-            PratKind::Bin(priority) => {
-                let alt = match rule.body() {
-                    Expr::BlockExpr(block) => block.alts().next().ok_or(error!(
-                        "bad pratt rule"
-                    ))?,
-                    _ => return Err(error!("bad pratt rule"))
-                };
-                let op = match alt {
-                    Expr::SeqExpr(seq) => seq.parts().nth(1).unwrap(),
-                    _ => return Err(error!("bad pratt rule"))
-                };
+            PratVariant::Bin(PrattOp { op, priority }) => {
                 result.infixes.push(fall_parse::Infix {
                     ty,
-                    op: (compile_expr(analysis, op)?),
+                    op: compile_expr(analysis, op)?,
                     priority,
                     has_rhs: true,
-                })
+                });
             }
         };
     }
@@ -276,7 +258,7 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
                 .map(|e| compile_expr(analysis, e));
             fall_parse::Expr::And(parts.collect::<Result<Vec<_>>>()?, commit)
         }
-        Expr::RefExpr(ref_) => match  analysis.resolve_reference(ref_).ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
+        Expr::RefExpr(ref_) => match analysis.resolve_reference(ref_).ok_or(error!("Unresolved references: {}", ref_.node().text()))? {
             RefKind::Token(rule) => {
                 if rule.is_contextual() {
                     let text = rule.token_text().ok_or(error!("Missing contextual token text"))?;

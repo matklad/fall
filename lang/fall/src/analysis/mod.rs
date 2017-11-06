@@ -1,7 +1,7 @@
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
-use {FallFile, RefExpr, CallExpr};
+use {FallFile, RefExpr, CallExpr, SynRule};
 use editor_api::{Diagnostic, Severity};
 
 mod diagnostics;
@@ -9,7 +9,7 @@ mod db;
 mod query;
 
 use self::diagnostics::DiagnosticSink;
-pub use self::query::{CallKind, RefKind};
+pub use self::query::{CallKind, RefKind, PratVariant, PrattOp};
 
 
 pub struct Analysis<'f> {
@@ -26,18 +26,23 @@ impl<'f> Analysis<'f> {
         self.file
     }
 
+    pub fn resolve_reference(&self, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
+        self.db.get(query::ResolveRefExpr(ref_))
+    }
+
     pub fn resolve_call(&self, call: CallExpr<'f>) -> Option<CallKind<'f>> {
         self.db.get(query::ResolveCall(call))
     }
 
-    pub fn resolve_reference(&self, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
-        self.db.get(query::ResolveRefExpr(ref_))
+    pub fn resolve_pratt_variant(&self, rule: SynRule<'f>) -> Option<PratVariant<'f>> {
+        self.db.get(query::ResolvePrattVariant(rule))
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
         Visitor(())
             .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
             .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
+            .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
             .walk_recursively_children_first(self.file().node());
         self.db.get(query::UnusedRules);
 
