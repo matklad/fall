@@ -1,4 +1,4 @@
-use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit};
+use fall_tree::{Node, NodeType, TextUnit, File, TextEdit, FileEdit, tu};
 use fall_tree::search::{next_sibling, prev_sibling};
 use ::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 
@@ -61,7 +61,7 @@ impl<'r> Spacer<'r> {
             match (spaces, ws_node.ty() == self.ws_type) {
                 (Spaces::None, true) => edit.delete(ws_node),
                 (Spaces::Single, false) => edit.insert_text_after(before_ws_node, " ".to_owned()),
-                (Spaces::Single, true) if ws_node.text().len() != TextUnit::from_usize(1) => {
+                (Spaces::Single, true) if ws_node.text().len() != tu(1) => {
                     edit.replace_with_text(ws_node, " ".to_owned())
                 }
                 _ => continue

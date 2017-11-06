@@ -1,4 +1,4 @@
-use fall_tree::{TextUnit, TextRange, Node, NodeType};
+use fall_tree::{TextUnit, TextRange, Node, NodeType, tu};
 use fall_tree::search::child_of_type;
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
@@ -21,7 +21,7 @@ pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
         })
         .visit_nodes(&[ERROR], |spans, node| {
             let range = if node.range().is_empty() {
-                TextRange::from_len(node.range().start(), TextUnit::from_usize(1))
+                TextRange::from_len(node.range().start(), tu(1))
             } else {
                 node.range()
             };
