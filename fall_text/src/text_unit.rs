@@ -5,35 +5,9 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TextUnit(pub (super) u32);
 
-impl fmt::Debug for TextUnit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <Self as fmt::Display>::fmt(self, f)
-    }
-}
-
-impl fmt::Display for TextUnit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl Serialize for TextUnit {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.0.serialize(serializer)
-    }
-}
-
-impl<'de> Deserialize<'de> for TextUnit {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let value = Deserialize::deserialize(deserializer)?;
-        Ok(TextUnit(value))
-    }
-}
-
 pub fn tu(value: u32) -> TextUnit {
     TextUnit(value)
 }
-
 
 impl TextUnit {
     pub fn zero() -> TextUnit {
@@ -43,11 +17,20 @@ impl TextUnit {
     pub fn from_usize(n: usize) -> TextUnit {
         TextUnit(n as u32)
     }
+}
 
-    pub fn measure(text: &str) -> TextUnit {
-        TextUnit(text.len() as u32)
+impl From<TextUnit> for u32 {
+    fn from(tu: TextUnit) -> u32 {
+        tu.0
     }
 }
+
+impl From<TextUnit> for usize {
+    fn from(tu: TextUnit) -> usize {
+        tu.0 as usize
+    }
+}
+
 
 impl ops::Add<u32> for TextUnit {
     type Output = TextUnit;
@@ -95,14 +78,28 @@ impl ops::SubAssign<TextUnit> for TextUnit {
     }
 }
 
-impl From<TextUnit> for u32 {
-    fn from(tu: TextUnit) -> u32 {
-        tu.0
+impl fmt::Debug for TextUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        <Self as fmt::Display>::fmt(self, f)
     }
 }
 
-impl From<TextUnit> for usize {
-    fn from(tu: TextUnit) -> usize {
-        tu.0 as usize
+impl fmt::Display for TextUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
     }
 }
+
+impl Serialize for TextUnit {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for TextUnit {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Deserialize::deserialize(deserializer)?;
+        Ok(TextUnit(value))
+    }
+}
+

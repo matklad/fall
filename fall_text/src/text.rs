@@ -3,7 +3,7 @@ use std::borrow::Cow;
 
 use serde::{Serialize, Serializer};
 
-use ::{TextRange, TextUnit};
+use ::{TextRange, TextUnit, tu};
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {
@@ -15,7 +15,7 @@ impl<'f> Text<'f> {
     pub fn from_owned(owned: &String) -> Text {
         Text {
             owned,
-            range: TextRange::from_to(TextUnit::zero(), TextUnit::measure(owned))
+            range: TextRange::from_to(tu(0), tu(owned.len() as u32))
         }
     }
 
