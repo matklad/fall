@@ -271,10 +271,10 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
             LexRule::new(NUMBER, "\\d+", None),
             LexRule::new(STRING, "\"([^\"]|\\\\\")*\"", None),
             LexRule::new(RAW_STRING, "r#*\"", Some(parse_raw_string)),
-            LexRule::new(IDENT, "\\p{XID_Start}\\w*", None),
+            LexRule::new(IDENT, "(\\p{XID_Start}|_)\\p{XID_Continue}*", None),
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-        whitespace_binder: whitespace_binder,
+        whitespace_binder,
         .. Default::default()
     }
 }

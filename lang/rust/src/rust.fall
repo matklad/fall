@@ -81,7 +81,7 @@ tokenizer {
   number r"\d+"
   string r#""([^"]|\\")*""#
   raw_string r#"r#*""# 'parse_raw_string'
-  ident r"\p{XID_Start}\w*"
+  ident r"(\p{XID_Start}|_)\p{XID_Continue}*"
 }
 
 pub rule file { mod_contents }

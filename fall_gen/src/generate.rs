@@ -330,7 +330,7 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),
         {% if has_whitespace_binder %}
-            whitespace_binder: whitespace_binder,
+            whitespace_binder,
         {% endif %}
         .. Default::default()
     }
