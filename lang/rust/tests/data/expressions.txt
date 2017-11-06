@@ -114,14 +114,26 @@ FILE
               NUMBER "3"
         SEMI ";"
       EXPR_STMT
-        BIT_OR
+        BIT_XOR
           LITERAL
             NUMBER "1"
-          PIPE "|"
+          CARET "^"
           BIT_AND
             LITERAL
               NUMBER "2"
             AMPERSAND "&"
+            LITERAL
+              NUMBER "3"
+        SEMI ";"
+      EXPR_STMT
+        BIT_OR
+          LITERAL
+            NUMBER "1"
+          PIPE "|"
+          BIT_XOR
+            LITERAL
+              NUMBER "2"
+            CARET "^"
             LITERAL
               NUMBER "3"
         SEMI ";"

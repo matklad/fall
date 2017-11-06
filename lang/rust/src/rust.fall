@@ -44,7 +44,9 @@ tokenizer {
   l_brack '['
   r_brack ']'
   #[contextual] shl '<<'
+  #[contextual] shl_eq '<<='
   #[contextual] shr '>>'
+  #[contextual] shr_eq '>>='
   #[contextual] and '&&'
   #[contextual] or  '||'
   thin_arrow '->'
@@ -65,15 +67,24 @@ tokenizer {
   dollar '$'
 
   star '*'
+  star_eq '*='
   slash '/'
+  slash_eq '/='
   percent '%'
-  plus '+'
-  minus '-'
+  percent_eq '%='
+  plus '+' 
+  plus_eq '+='
+  minus '-' 
+  minus_eq '-='
   ampersand '&'
+  ampersand_eq '&='
   pipe '|'
+  pipe_eq '|='
   underscore '_'
   bang '!'
   question '?'
+  caret '^'
+  caret_eq '^='
 
   char r"'(\s*|\S*)'"
   lifetime r"'\p{XID_Continue}*"
@@ -556,7 +567,7 @@ pub rule expr {
 
 | product_expr | sum_expr 
 | bit_shift
-| bit_and | bit_or
+| bit_and | bit_xor | bit_or
 | comparison 	
 | logical_and | logical_or
 | range_expr | prefix_range_expr | postfix_range_expr
@@ -817,6 +828,7 @@ fn main() {
 }
 "
 
+
 #[atom]
 pub rule block_macro_expr {
   block_macro
@@ -911,17 +923,17 @@ pub rule negation_expr { '-' expr }
 #[prefix]
 pub rule not_expr { '!' expr }
 
-#[bin(10)]
+#[bin(11)]
 pub rule product_expr {
   expr <binop {'*' | '/' | '%'}> expr
 }
 
-#[bin(9)]
+#[bin(10)]
 pub rule sum_expr {
   expr <binop {'+' | '-'}> expr
 }
 
-#[bin(8)]
+#[bin(9)]
 pub rule bit_shift {
   expr <binop {'<<' | '>>'}> expr
 }
@@ -931,9 +943,14 @@ rule binop(op) {
 | <not <is_in 'stmt'>> op
 }
 
-#[bin(7)]
+#[bin(8)]
 pub rule bit_and {
   expr <binop {'&' <not '&'>}> expr
+}
+
+#[bin(7)]
+pub rule bit_xor {
+  expr <binop '^'> expr
 }
 
 #[bin(6)]
@@ -995,7 +1012,7 @@ fn main() {
 
 #[bin(1)]
 pub rule assignment_expr {
-  expr <binop '='> expr
+  expr <binop {'=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' | '>>=' | '<<=' }> expr
 }
 
 // END EXPRESSIONS
