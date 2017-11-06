@@ -4,7 +4,7 @@ use analysis::query;
 use fall_tree::search::ast;
 use fall_tree::{AstNode, AstClass};
 
-use ::{SynRule, CallExpr, RefKind, CallKind};
+use ::{SynRule, CallExpr, RefKind};
 
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolveRefExpr<'f> {
@@ -28,12 +28,8 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveRefExpr<'f> {
         let parent = ref_.node().parent().unwrap();
         if parent.ty() == CallExpr::NODE_TYPE {
             let call = CallExpr::new(parent);
-            match db.get(query::ResolveCall(call)) {
-                Some(CallKind::Enter(..)) | Some(CallKind::Exit(..)) | Some(CallKind::IsIn(..))
-                => if call.args().next().map(|a| a.node()) == Some(ref_.node()) {
-                    return None;
-                },
-                _ => ()
+            if call.context_name().is_some() && call.args().next().map(|a| a.node()) == Some(ref_.node()) {
+                return None;
             }
         }
 

@@ -7,6 +7,7 @@ use super::db::Query;
 use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr};
 
 
+#[derive(Debug)]
 pub ( crate ) struct FindLexRule<'f>(pub Text<'f>);
 
 impl<'f> Query<'f> for FindLexRule<'f> {
@@ -16,6 +17,7 @@ impl<'f> Query<'f> for FindLexRule<'f> {
 mod find_lex_rule;
 
 
+#[derive(Debug)]
 pub ( crate ) struct FindSynRule<'f>(pub Text<'f>);
 
 impl<'f> Query<'f> for FindSynRule<'f> {
@@ -25,7 +27,7 @@ impl<'f> Query<'f> for FindSynRule<'f> {
 mod find_syn_rule;
 
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub ( crate ) struct AllRules;
 
 impl<'f> Query<'f> for AllRules {
@@ -35,7 +37,7 @@ impl<'f> Query<'f> for AllRules {
 mod all_rules;
 
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub ( crate ) struct UnusedRules;
 
 impl<'f> Query<'f> for UnusedRules {
@@ -45,7 +47,7 @@ impl<'f> Query<'f> for UnusedRules {
 mod unused_rules;
 
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub ( crate ) struct AllContexts;
 
 impl<'f> Query<'f> for AllContexts {
@@ -62,7 +64,7 @@ pub enum RefKind<'f> {
     Param(Parameter<'f>),
 }
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub ( crate ) struct ResolveRefExpr<'f>(pub RefExpr<'f>);
 
 impl<'f> Query<'f> for ResolveRefExpr<'f> {
@@ -90,7 +92,7 @@ pub enum CallKind<'f> {
     PrevIs(Arc<Vec<usize>>)
 }
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub (crate) struct ResolveCall<'f>(pub CallExpr<'f>);
 
 impl<'f> Query<'f> for ResolveCall<'f> {
@@ -115,7 +117,7 @@ pub struct PrattOp<'f> {
 }
 
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub (crate) struct ResolvePrattVariant<'f>(pub SynRule<'f>);
 
 impl<'f> Query<'f> for ResolvePrattVariant<'f> {

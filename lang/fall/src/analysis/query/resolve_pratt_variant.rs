@@ -32,14 +32,14 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
             if priority.is_some() {
                 d.error(name_ident, "Atom rules don't have priority")
             }
-            return Some(PratVariant::Atom(rule.body()))
+            return Some(PratVariant::Atom(rule.body()));
         }
 
         let args = match rule.body() {
             Expr::BlockExpr(block) => match single(block.alts()) {
                 Some(alt) => match alt {
                     Expr::SeqExpr(args) => args.parts(),
-                    _ => unreachable!()
+                    _ => return None,
                 },
                 None => {
                     d.error(
@@ -49,7 +49,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
                     return None;
                 }
             },
-            _ => unreachable!()
+            _ => return None,
         };
 
         let result = match kind {
