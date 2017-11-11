@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
     class TextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
-        public provideTextDocumentContent(uri: vscode.Uri) {
+        public provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
             if (uri.authority == 'syntaxTree') {
                 return currentFile.syntaxTree()
             } else if (uri.authority == 'parsedTest') {
