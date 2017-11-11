@@ -111,6 +111,12 @@ impl<'f, 's> PartialEq<&'s str> for Text<'f> {
     }
 }
 
+impl<'f, 's> PartialEq<Text<'f>> for &'s str {
+    fn eq(&self, other: &Text<'f>) -> bool {
+        *other == *self
+    }
+}
+
 
 impl<'a, 'b> PartialOrd<Text<'b>> for Text<'a> {
     fn partial_cmp(&self, other: &Text<'b>) -> Option<::std::cmp::Ordering> {
