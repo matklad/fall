@@ -12,9 +12,9 @@ serde_derive = "1.*"
 serde_json = "1.*"
 file = "*"
 
-fall_tree = { path = "../fall_tree" }
-fall_parse = { path = "../fall_parse" }
-lang_fall = { path = "../lang/fall" }
+fall_tree = { path = "../tree" }
+fall_parse = { path = "../parse" }
+lang_fall = { path = "../../lang/fall" }
 
 [dev-dependencies]
 tempdir = "0.3"

@@ -23,6 +23,6 @@ neon-serde = { git = "https://github.com/matklad/neon-serde", branch = "once-in-
 
 lazy_static = "0.2.8"
 
-fall_tree = { path = "../../fall_tree" }
-fall_gen = { path = "../../fall_gen" }
+fall_tree = { path = "../../fall/tree" }
+fall_gen = { path = "../../fall/gen" }
 lang_fall = { path = "../../lang/fall" }

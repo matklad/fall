@@ -3,5 +3,5 @@ name = "lang_json"
 version = "0.1.0"
 
 [dependencies]
-fall_tree = { path = "../../fall_tree" }
-fall_parse = { path = "../../fall_parse" }
+fall_tree = { path = "../../fall/tree" }
+fall_parse = { path = "../../fall/parse" }

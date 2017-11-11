@@ -61,8 +61,8 @@ impl TestRenderer {
             [workspace]
 
             [dependencies]
-            fall_tree = {{ path = "{fall_dir}/fall_tree" }}
-            fall_parse = {{ path = "{fall_dir}/fall_parse" }}
+            fall_tree = {{ path = "{fall_dir}/fall/tree" }}
+            fall_parse = {{ path = "{fall_dir}/fall/parse" }}
         "##, fall_dir = fall_dir().display()))?;
 
         put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"

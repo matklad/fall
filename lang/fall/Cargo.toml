@@ -9,6 +9,6 @@ serde = "1.*"
 serde_derive = "1.*"
 regex = "0.2"
 
-fall_tree = { path = "../../fall_tree" }
-fall_parse = { path = "../../fall_parse" }
+fall_tree = { path = "../../fall/tree" }
+fall_parse = { path = "../../fall/parse" }
 
