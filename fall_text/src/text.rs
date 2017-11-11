@@ -3,22 +3,15 @@ use std::borrow::Cow;
 
 use serde::{Serialize, Serializer};
 
-use ::{TextRange, TextUnit, tu};
+use ::{TextRange, TextUnit};
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {
-    owned: &'f String,
-    range: TextRange
+    pub (crate) owned: &'f String,
+    pub (crate) range: TextRange
 }
 
 impl<'f> Text<'f> {
-    pub fn from_owned(owned: &String) -> Text {
-        Text {
-            owned,
-            range: TextRange::from_to(tu(0), tu(owned.len() as u32))
-        }
-    }
-
     pub fn len(&self) -> TextUnit {
         self.range.end() - self.range.start()
     }

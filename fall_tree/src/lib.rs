@@ -20,7 +20,7 @@ pub mod visitor;
 pub mod search;
 pub mod test_util;
 
-pub use fall_text::{Text, TextRange, TextUnit, tu};
+pub use fall_text::*;
 pub use text_edit::TextEdit;
 pub use node_type::{NodeType, NodeTypeInfo, ERROR};
 pub use node::{File, Node, FileStats, INode};

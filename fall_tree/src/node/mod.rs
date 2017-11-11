@@ -1,6 +1,6 @@
 use std::time::Duration;
 use std::fmt;
-use {Text, TextRange, NodeType, Language};
+use {TextBuf, Text, TextRange, NodeType, Language};
 use text_edit::TextEdit;
 
 mod imp;
@@ -16,9 +16,9 @@ pub struct File {
 }
 
 impl File {
-    pub fn new(lang: Language, text: String, stats: FileStats, node: INode) -> File {
+    pub fn new<T: Into<TextBuf>>(lang: Language, text: T, stats: FileStats, node: INode) -> File {
         File {
-            imp: imp::new_file(lang, text, stats, &node),
+            imp: imp::new_file(lang, text.into(), stats, &node),
             inode: node,
         }
     }
