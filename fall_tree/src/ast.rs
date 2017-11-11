@@ -3,6 +3,12 @@ use std::marker::PhantomData;
 use {Node, NodeType};
 use node::NodeChildren;
 
+pub trait AstElement<'f>: Copy {
+    fn wrap(node: Node<'f>) -> Option<Self>;
+
+    fn node(self) -> Node<'f>;
+}
+
 pub trait AstNode<'f>: Copy {
     const NODE_TYPE: NodeType = ::ERROR;
 

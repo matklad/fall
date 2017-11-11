@@ -180,11 +180,22 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use self::fall_tree::{Text, AstElement, AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FallFile<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for FallFile<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(FallFile { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for FallFile<'f> {
     const NODE_TYPE: NodeType  = FALL_FILE;
@@ -223,6 +234,17 @@ impl<'f> ::std::fmt::Debug for FallFile<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TokenizerDef<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for TokenizerDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(TokenizerDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for TokenizerDef<'f> {
     const NODE_TYPE: NodeType  = TOKENIZER_DEF;
     fn new(node: Node<'f>) -> Self {
@@ -247,6 +269,17 @@ impl<'f> ::std::fmt::Debug for TokenizerDef<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LexRule<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for LexRule<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(LexRule { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for LexRule<'f> {
     const NODE_TYPE: NodeType  = LEX_RULE;
@@ -275,6 +308,17 @@ impl<'f> ::std::fmt::Debug for LexRule<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SynRule<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for SynRule<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(SynRule { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for SynRule<'f> {
     const NODE_TYPE: NodeType  = SYN_RULE;
@@ -313,6 +357,17 @@ impl<'f> ::std::fmt::Debug for SynRule<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Parameters<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for Parameters<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(Parameters { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for Parameters<'f> {
     const NODE_TYPE: NodeType  = PARAMETERS;
     fn new(node: Node<'f>) -> Self {
@@ -337,6 +392,17 @@ impl<'f> ::std::fmt::Debug for Parameters<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Parameter<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for Parameter<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(Parameter { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for Parameter<'f> {
     const NODE_TYPE: NodeType  = PARAMETER;
@@ -363,6 +429,17 @@ impl<'f> ::std::fmt::Debug for Parameter<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Attributes<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for Attributes<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(Attributes { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for Attributes<'f> {
     const NODE_TYPE: NodeType  = ATTRIBUTES;
     fn new(node: Node<'f>) -> Self {
@@ -387,6 +464,17 @@ impl<'f> ::std::fmt::Debug for Attributes<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Attribute<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for Attribute<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(Attribute { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for Attribute<'f> {
     const NODE_TYPE: NodeType  = ATTRIBUTE;
@@ -416,6 +504,17 @@ impl<'f> ::std::fmt::Debug for Attribute<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AttributeValue<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for AttributeValue<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(AttributeValue { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for AttributeValue<'f> {
     const NODE_TYPE: NodeType  = ATTRIBUTE_VALUE;
     fn new(node: Node<'f>) -> Self {
@@ -438,6 +537,17 @@ impl<'f> ::std::fmt::Debug for AttributeValue<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct VerbatimDef<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for VerbatimDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(VerbatimDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for VerbatimDef<'f> {
     const NODE_TYPE: NodeType  = VERBATIM_DEF;
@@ -463,6 +573,17 @@ impl<'f> ::std::fmt::Debug for VerbatimDef<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstDef<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for AstDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(AstDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for AstDef<'f> {
     const NODE_TYPE: NodeType  = AST_DEF;
@@ -491,6 +612,17 @@ impl<'f> ::std::fmt::Debug for AstDef<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstNodeDef<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for AstNodeDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(AstNodeDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for AstNodeDef<'f> {
     const NODE_TYPE: NodeType  = AST_NODE_DEF;
@@ -523,6 +655,17 @@ impl<'f> ::std::fmt::Debug for AstNodeDef<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstClassDef<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for AstClassDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(AstClassDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for AstClassDef<'f> {
     const NODE_TYPE: NodeType  = AST_CLASS_DEF;
     fn new(node: Node<'f>) -> Self {
@@ -547,6 +690,17 @@ impl<'f> ::std::fmt::Debug for AstClassDef<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MethodDef<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for MethodDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(MethodDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for MethodDef<'f> {
     const NODE_TYPE: NodeType  = METHOD_DEF;
@@ -575,6 +729,17 @@ impl<'f> ::std::fmt::Debug for MethodDef<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AstSelector<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for AstSelector<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(AstSelector { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for AstSelector<'f> {
     const NODE_TYPE: NodeType  = AST_SELECTOR;
@@ -610,6 +775,17 @@ impl<'f> ::std::fmt::Debug for AstSelector<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TestDef<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for TestDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(TestDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for TestDef<'f> {
     const NODE_TYPE: NodeType  = TEST_DEF;
     fn new(node: Node<'f>) -> Self {
@@ -635,6 +811,17 @@ impl<'f> ::std::fmt::Debug for TestDef<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RefExpr<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for RefExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(RefExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for RefExpr<'f> {
     const NODE_TYPE: NodeType  = REF_EXPR;
     fn new(node: Node<'f>) -> Self {
@@ -657,6 +844,17 @@ impl<'f> ::std::fmt::Debug for RefExpr<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CallExpr<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for CallExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(CallExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for CallExpr<'f> {
     const NODE_TYPE: NodeType  = CALL_EXPR;
@@ -686,6 +884,17 @@ impl<'f> ::std::fmt::Debug for CallExpr<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BlockExpr<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for BlockExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(BlockExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for BlockExpr<'f> {
     const NODE_TYPE: NodeType  = BLOCK_EXPR;
     fn new(node: Node<'f>) -> Self {
@@ -710,6 +919,17 @@ impl<'f> ::std::fmt::Debug for BlockExpr<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OptExpr<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for OptExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(OptExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for OptExpr<'f> {
     const NODE_TYPE: NodeType  = OPT_EXPR;
@@ -736,6 +956,17 @@ impl<'f> ::std::fmt::Debug for OptExpr<'f> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RepExpr<'f> { node: Node<'f> }
 
+impl<'f> AstElement<'f> for RepExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(RepExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
 impl<'f> AstNode<'f> for RepExpr<'f> {
     const NODE_TYPE: NodeType  = REP_EXPR;
     fn new(node: Node<'f>) -> Self {
@@ -760,6 +991,17 @@ impl<'f> ::std::fmt::Debug for RepExpr<'f> {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SeqExpr<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for SeqExpr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some(SeqExpr { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for SeqExpr<'f> {
     const NODE_TYPE: NodeType  = SEQ_EXPR;
@@ -794,6 +1036,31 @@ pub enum Expr<'f> {
     SeqExpr(SeqExpr<'f>),
 }
 
+impl<'f> AstElement<'f> for Expr<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        match node.ty() {
+            REF_EXPR => Some(Expr::RefExpr(RefExpr::new(node))),
+            CALL_EXPR => Some(Expr::CallExpr(CallExpr::new(node))),
+            BLOCK_EXPR => Some(Expr::BlockExpr(BlockExpr::new(node))),
+            OPT_EXPR => Some(Expr::OptExpr(OptExpr::new(node))),
+            REP_EXPR => Some(Expr::RepExpr(RepExpr::new(node))),
+            SEQ_EXPR => Some(Expr::SeqExpr(SeqExpr::new(node))),
+            _ => None
+        }
+    }
+
+    fn node(self) -> Node<'f> {
+        match self {
+            Expr::RefExpr(n) => AstElement::node(n),
+            Expr::CallExpr(n) => AstElement::node(n),
+            Expr::BlockExpr(n) => AstElement::node(n),
+            Expr::OptExpr(n) => AstElement::node(n),
+            Expr::RepExpr(n) => AstElement::node(n),
+            Expr::SeqExpr(n) => AstElement::node(n),
+        }
+    }
+}
+
 impl<'f> AstClass<'f> for Expr<'f> {
     const NODE_TYPES: &'static [NodeType] = &[
         REF_EXPR,
@@ -818,12 +1085,12 @@ impl<'f> AstClass<'f> for Expr<'f> {
 
     fn node(&self) -> Node<'f> {
         match *self {
-            Expr::RefExpr(n) => n.node(),
-            Expr::CallExpr(n) => n.node(),
-            Expr::BlockExpr(n) => n.node(),
-            Expr::OptExpr(n) => n.node(),
-            Expr::RepExpr(n) => n.node(),
-            Expr::SeqExpr(n) => n.node(),
+            Expr::RefExpr(n) => AstElement::node(n),
+            Expr::CallExpr(n) => AstElement::node(n),
+            Expr::BlockExpr(n) => AstElement::node(n),
+            Expr::OptExpr(n) => AstElement::node(n),
+            Expr::RepExpr(n) => AstElement::node(n),
+            Expr::SeqExpr(n) => AstElement::node(n),
         }
     }
 }
@@ -838,7 +1105,7 @@ impl<'f> ::std::fmt::Debug for Expr<'f> {
             Expr::RepExpr(..) => "RepExpr@",
             Expr::SeqExpr(..) => "SeqExpr@",
         })?;
-        self.node().range().fmt(f)?;
+        AstElement::node(*self).range().fmt(f)?;
         Ok(())
     }
 }

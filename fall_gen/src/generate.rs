@@ -370,12 +370,23 @@ pub fn language() -> &'static Language {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use self::fall_tree::{Text, AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use self::fall_tree::{Text, AstElement, AstNode, AstChildren, AstClass, AstClassChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
+
+impl<'f> AstElement<'f> for {{ node.struct_name }}<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == Self::NODE_TYPE {
+            Some({{ node.struct_name }} { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
 
 impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
     const NODE_TYPE: NodeType  = {{ node.node_type_name }};
@@ -411,6 +422,25 @@ pub enum {{ class.enum_name }}<'f> {
     {% endfor %}
 }
 
+impl<'f> AstElement<'f> for {{ class.enum_name }}<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        match node.ty() {
+            {% for v in class.variants %}
+                {{ v.0 }} => Some({{ class.enum_name }}::{{ v.1 }}({{ v.1 }}::new(node))),
+            {% endfor %}
+            _ => None
+        }
+    }
+
+    fn node(self) -> Node<'f> {
+        match self {
+            {% for v in class.variants %}
+                {{ class.enum_name }}::{{ v.1 }}(n) => AstElement::node(n),
+            {% endfor %}
+        }
+    }
+}
+
 impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
     const NODE_TYPES: &'static [NodeType] = &[
         {% for v in class.variants %}
@@ -430,7 +460,7 @@ impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
     fn node(&self) -> Node<'f> {
         match *self {
             {% for v in class.variants %}
-                {{ class.enum_name }}::{{ v.1 }}(n) => n.node(),
+                {{ class.enum_name }}::{{ v.1 }}(n) => AstElement::node(n),
             {% endfor %}
         }
     }
@@ -443,7 +473,7 @@ impl<'f> ::std::fmt::Debug for {{ class.enum_name }}<'f> {
                 {{ class.enum_name }}::{{ v.1 }}(..) => "{{ v.1 }}@",
             {% endfor %}
         })?;
-        self.node().range().fmt(f)?;
+        AstElement::node(*self).range().fmt(f)?;
         Ok(())
     }
 }

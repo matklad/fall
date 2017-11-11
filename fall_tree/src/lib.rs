@@ -21,5 +21,5 @@ pub use node_type::{NodeType, NodeTypeInfo, ERROR};
 pub use node::{File, Node, FileStats, INode};
 pub use edit::FileEdit;
 pub use lang::{Language, LanguageImpl};
-pub use ast::{AstNode, AstChildren, AstClass, AstClassChildren};
+pub use ast::{AstElement, AstNode, AstChildren, AstClass, AstClassChildren};
 pub use util::{dump_file, dump_file_ws, walk_tree};
