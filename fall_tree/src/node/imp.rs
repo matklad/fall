@@ -1,12 +1,11 @@
 use std::ops::Index;
 
-use {TextBuf, Text, TextRange, NodeType, TextUnit, Language, tu};
-use super::{Node, FileStats};
-use super::immutable::INode;
+use {TextBuf, Text, TextRange, NodeType, TextUnit, Language, tu, Metrics, INode};
+use super::Node;
 
 pub struct FileImpl {
     pub lang: Language,
-    stats: FileStats,
+    metrics: Metrics,
     text: TextBuf,
     root: NodeId,
     nodes: Vec<NodeData>,
@@ -21,8 +20,8 @@ impl FileImpl {
         self.text.as_slice()
     }
 
-    pub fn stats(&self) -> FileStats {
-        self.stats
+    pub fn metrics(&self) -> &Metrics {
+        &self.metrics
     }
 }
 
@@ -114,13 +113,16 @@ pub struct NodeData {
 }
 
 
-pub fn new_file(lang: Language, text: TextBuf, stats: FileStats, node: &INode) -> FileImpl {
+pub fn new_file(lang: Language, text: TextBuf, metrics: Metrics, node: &INode) -> FileImpl {
     let mut nodes = Vec::new();
-    go(tu(0), node, &mut nodes);
+
+    metrics.measure_time("parent links", || {
+        go(tu(0), node, &mut nodes);
+    });
 
     return FileImpl {
         lang,
-        stats,
+        metrics,
         text,
         root: NodeId(0),
         nodes,

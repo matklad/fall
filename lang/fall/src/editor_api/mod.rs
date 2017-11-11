@@ -15,7 +15,9 @@ pub fn tree_as_text(analysis: &Analysis) -> String {
 }
 
 pub fn highlight(analysis: &Analysis) -> Vec<(TextRange, &'static str)> {
-    api_impl::highlighting::highlight(analysis)
+    analysis.file().metrics().measure_time("highlight", || {
+        api_impl::highlighting::highlight(analysis)
+    })
 }
 
 pub fn extend_selection(analysis: &Analysis, range: TextRange) -> Option<TextRange> {
@@ -52,7 +54,9 @@ pub struct Diagnostic {
 }
 
 pub fn diagnostics(analysis: &Analysis) -> Vec<Diagnostic> {
-    analysis.collect_all_diagnostics()
+    analysis.file().metrics().measure_time("diagnostics", || {
+        analysis.collect_all_diagnostics()
+    })
 }
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {

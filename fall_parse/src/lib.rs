@@ -1,15 +1,13 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
-extern crate elapsed;
 pub extern crate regex;
 pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use elapsed::measure_time;
 use syn_engine::BlackTokens;
-use fall_tree::{Language, NodeType, FileStats, INode, TextRange, tu};
+use fall_tree::{Language, NodeType, INode, Metrics};
 
 mod lex_engine;
 
@@ -45,26 +43,25 @@ impl Default for ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn parse(&self, text: &str, lang: &Language) -> (FileStats, INode) {
-        let (lex_time, tokens) = measure_time(|| {
+    pub fn parse(&self, text: &str, lang: &Language, metrics: &Metrics) -> INode {
+        let tokens = metrics.measure_time("lexing", || {
             lex_engine::tokenize(&text, &self.lexical_rules).collect::<Vec<_>>()
         });
 
         let black_tokens = BlackTokens::new(lang, text, &tokens);
-        let (parse_time, (black_node, ticks)) = measure_time(|| {
+        let (black_node, ticks) = metrics.measure_time("parsing", || {
             syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())
         });
+        metrics.record("parsing ticks", ticks, "");
 
-        let white_node = syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder);
+        let white_node = metrics.measure_time("whitespace binding", || {
+            syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder)
+        });
 
-        let inode = white_node.into_inode(&tokens);
-        let stats = FileStats {
-            lexing_time: lex_time.duration(),
-            parsing_time: parse_time.duration(),
-            parsing_ticks: ticks,
-            reparsed_region: TextRange::from_to(tu(0), inode.len()),
-        };
-        (stats, inode)
+        let inode = metrics.measure_time("inode construction", || {
+            white_node.into_inode(&tokens)
+        });
+        inode
     }
 }
 

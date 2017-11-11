@@ -39,7 +39,7 @@ declare_types! {
     method syntaxTree(call) { m(call, editor_api::tree_as_text) }
     method structure(call) { m(call, editor_api::structure) }
     method reformat(call) {  m(call, |a| convert_edit(editor_api::reformat(a))) }
-    method performanceCounters(call) { m(call, performance_counters) }
+    method metrics(call) { m(call, |a| format!("{}", a.file().metrics())) }
     method diagnostics(call) { m(call, editor_api::diagnostics) }
 
     method extendSelection (call) { m1(call, editor_api::extend_selection) }
@@ -69,22 +69,6 @@ register_module!(m, {
     m.export("newFile", new_file)?;
     Ok(())
 });
-
-#[derive(Serialize)]
-struct PerformanceCounters {
-    lexing_time: u32,
-    parsing_time: u32,
-    reparsed_region: TextRange,
-}
-
-fn performance_counters(a: &Analysis) -> PerformanceCounters {
-    let stats = a.file().stats();
-    PerformanceCounters {
-        lexing_time: stats.lexing_time.subsec_nanos(),
-        parsing_time: stats.parsing_time.subsec_nanos(),
-        reparsed_region: stats.reparsed_region,
-    }
-}
 
 struct RenderTask(Arc<FileWithAnalysis>, usize);
 

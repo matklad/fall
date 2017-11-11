@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use file;
-use {TextBuf, TextEdit, TextEditBuilder, Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
+use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
 use difference::Changeset;
 
 
@@ -48,25 +48,6 @@ pub fn check_syntax_ws(lang: &Language, input: &str, expected_tree: &str) {
 pub fn compare_trees(expected: &str, actual: &str) -> Changeset {
     Changeset::new(&expected, &actual, "\n")
 }
-
-pub fn check_reparse(
-    lang: &Language,
-    before_input: &str,
-    after_input: &str,
-    after_edit: &str,
-    reparsed: &str
-) {
-    let before_file = lang.parse(before_input.to_owned());
-
-    let edit = make_edit(before_input, after_input);
-    let after_file = before_file.edit(edit);
-    let after_tree = dump_file(&after_file);
-    report_diff(after_edit, &after_tree);
-
-    let actual_reparsed = after_file.text().slice(after_file.stats().reparsed_region).to_string();
-    report_diff(reparsed, &actual_reparsed);
-}
-
 
 pub fn check_directory(lang: &Language, directory: &Path) {
     let rewrite = ::std::env::var("rewrite_test_data").is_ok();
@@ -122,31 +103,6 @@ fn render_tests(lang: &Language, tests: &[String]) -> String {
         result += "\n----------------------------------------\n"
     }
     result
-}
-
-
-fn make_edit(before: &str, after: &str) -> TextEdit {
-    let prefix = {
-        before.as_bytes().iter()
-            .zip(after.as_bytes())
-            .position(|(a, b)| a != b)
-            .unwrap()
-    };
-    let suffix = {
-        before.as_bytes().iter().rev()
-            .zip(after.as_bytes().iter().rev())
-            .position(|(a, b)| a != b)
-            .unwrap()
-    };
-    let delete = TextRange::from_to(
-        tu(prefix as u32),
-        tu((before.len() - suffix) as u32)
-    );
-    let insert = after[prefix..after.len() - suffix].to_string();
-    let text: TextBuf = before.into();
-    let mut edit_builder = TextEditBuilder::new(text.as_slice());
-    edit_builder.replace(delete, insert);
-    edit_builder.build()
 }
 
 

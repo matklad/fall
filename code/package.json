@@ -29,6 +29,10 @@
                 "title": "Syntax Tree"
             },
             {
+              "command": "extension.showMetrics",
+              "title": "Internal Metrics"
+            },
+          {
                 "command": "extension.semanticSelection",
                 "title": "Semantic Selection"
             }

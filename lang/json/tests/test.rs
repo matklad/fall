@@ -185,7 +185,7 @@ fn accidentally_quadratic() {
     let n = 10;
     let input = "[".repeat(n) + &"]".repeat(n);
     let file = lang_json().parse(input);
-    let ticks = file.stats().parsing_ticks;
+    let ticks = file.metrics().get("parsing ticks").unwrap();
     assert!(1000 < ticks && ticks < 2000, "spend {} ticks", ticks);
 }
 

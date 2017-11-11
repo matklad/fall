@@ -139,7 +139,7 @@ fn performance_test() {
                           error_text);
             }
             assert!(ast_len > 10000);
-            println!("{}\ntotal: {}", file.stats(), total);
+            println!("{}\ntotal: {}", file.metrics(), total);
         })
         .unwrap();
     thread.join().unwrap()

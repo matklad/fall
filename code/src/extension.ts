@@ -22,7 +22,7 @@ var currentFile: {
     syntaxTree: () => string;
     structure: () => [FileStructureNode];
     reformat: () => any;
-    performanceCounters: () => { lexing_time: number, parsing_time: number, reparsed_region: TextRange };
+    metrics: () => string;
     diagnostics: () => [{ range: TextRange, severity: string, message: string }];
 
     extendSelection: (TextRange) => TextRange;
@@ -36,10 +36,10 @@ var currentFile: {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    var status = window.createStatusBarItem(StatusBarAlignment.Left)
     var activeEditor = window.activeTextEditor;
-    let syntaxTreeUri = vscode.Uri.parse('fall-tree://syntaxTree')
-    let parsedTestUri = vscode.Uri.parse('fall-test://parsedTest')
+    let syntaxTreeUri = vscode.Uri.parse('fall://syntaxTree')
+    let parsedTestUri = vscode.Uri.parse('fall://parsedTest')
+    let metricsUri = vscode.Uri.parse('fall://metrics')
 
     const decor = (obj) => vscode.window.createTextEditorDecorationType({ color: obj })
     const decorations = {
@@ -61,37 +61,33 @@ export function activate(context: vscode.ExtensionContext) {
 
     let fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
 
-    class TreeTextDocumentProvider implements vscode.TextDocumentContentProvider {
+    class TextDocumentProvider implements vscode.TextDocumentContentProvider {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
-        public provideTextDocumentContent(uri: vscode.Uri): string {
-            return currentFile.syntaxTree()
+        public provideTextDocumentContent(uri: vscode.Uri) {
+            if (uri.authority == 'syntaxTree') {
+                return currentFile.syntaxTree()
+            } else if (uri.authority == 'parsedTest') {
+                return new Promise((resolve, reject) => {
+                    currentFile.parseTest(activeTest, (err, value) => {
+                        if (err) return reject(err)
+                        resolve(value)
+                    })
+                })
+            } else if (uri.authority == "metrics") {
+                return currentFile.metrics()
+            } else {
+                console.log(uri);
+            }
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
             return this.eventEmitter.event
         }
     }
-    let treeTextDocumentProvider = new TreeTextDocumentProvider();
+    let textDocumentProvider = new TextDocumentProvider();
 
     var activeTest = null
-    class TestTextDocumentProvider implements vscode.TextDocumentContentProvider {
-        public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
-
-        public provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-            return new Promise((resolve, reject) => {
-                currentFile.parseTest(activeTest, (err, value) => {
-                    if (err) return reject(err)
-                    resolve(value)
-                })
-            })
-        }
-
-        get onDidChange(): vscode.Event<vscode.Uri> {
-            return this.eventEmitter.event
-        }
-    }
-    let testTextDocumentProvider = new TestTextDocumentProvider();
 
     class CodeActionProvider implements vscode.CodeActionProvider {
         provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
@@ -167,7 +163,6 @@ export function activate(context: vscode.ExtensionContext) {
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
             let edit = currentFile.reformat()
-            console.log(edit);
             
             return edit.ops.map((op) => {
                 if (op.Insert != null) {
@@ -181,7 +176,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     function highlight() {
-        status.hide()
         if (!activeEditor) return
         if (activeEditor.document.languageId != "fall") return
         currentFile = newFile(activeEditor.document.getText())
@@ -191,13 +185,7 @@ export function activate(context: vscode.ExtensionContext) {
             decorationSets[key] = []
         }
         let text = activeEditor.document.getText()
-        treeTextDocumentProvider.eventEmitter.fire(syntaxTreeUri)
-        let stats = currentFile.performanceCounters()
-        const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
-        status.text = `lexing: ${to_ms(stats.lexing_time)}`
-            + ` parsing: ${to_ms(stats.parsing_time)}`
-            + ` reparse: ${stats.reparsed_region[1] - stats.reparsed_region[0]}`
-        status.show()
+        textDocumentProvider.eventEmitter.fire(syntaxTreeUri)
 
         for (let [[x, y], type] of currentFile.highlight()) {
             if (!decorationSets[type]) {
@@ -232,6 +220,8 @@ export function activate(context: vscode.ExtensionContext) {
                 return new vscode.Diagnostic(range, d.message, severity)
             })
         )
+        textDocumentProvider.eventEmitter.fire(metricsUri)
+        
     }
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
@@ -248,12 +238,11 @@ export function activate(context: vscode.ExtensionContext) {
     }, null, context.subscriptions)
 
     vscode.workspace.onDidSaveTextDocument(event => {
-        testTextDocumentProvider.eventEmitter.fire(parsedTestUri)
+        textDocumentProvider.eventEmitter.fire(parsedTestUri)
     })
 
     let providers = [
-        vscode.workspace.registerTextDocumentContentProvider('fall-tree', treeTextDocumentProvider),
-        vscode.workspace.registerTextDocumentContentProvider('fall-test', testTextDocumentProvider),
+        vscode.workspace.registerTextDocumentContentProvider('fall', textDocumentProvider),
         vscode.languages.registerCodeActionsProvider('fall', new CodeActionProvider()),
         vscode.languages.registerDocumentSymbolProvider('fall', new DocumentSymbolProvider()),
         vscode.languages.registerDefinitionProvider('fall', new DefinitionProvider()),
@@ -264,6 +253,10 @@ export function activate(context: vscode.ExtensionContext) {
     let commands = [
         vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
             let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
+            vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
+        }),
+        vscode.commands.registerCommand('extension.showMetrics', async () => {
+            let document = await vscode.workspace.openTextDocument(metricsUri)
             vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         }),
         vscode.commands.registerCommand('extension.semanticSelection', () => {
@@ -284,7 +277,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (activeEditor.document.languageId != "fall") return
             if (offset == -1) {
                 activeTest = id
-                testTextDocumentProvider.eventEmitter.fire(parsedTestUri)
+                textDocumentProvider.eventEmitter.fire(parsedTestUri)
                 let document = await vscode.workspace.openTextDocument(parsedTestUri)
                 vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
                 return

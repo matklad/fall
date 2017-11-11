@@ -1,6 +1,4 @@
-use std::time::Duration;
-use std::fmt;
-use {TextEdit, TextBuf, Text, TextRange, NodeType, Language};
+use {TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
 
 mod imp;
 mod immutable;
@@ -15,9 +13,9 @@ pub struct File {
 }
 
 impl File {
-    pub fn new<T: Into<TextBuf>>(lang: Language, text: T, stats: FileStats, node: INode) -> File {
+    pub fn new<T: Into<TextBuf>>(lang: Language, text: T, metrics: Metrics, node: INode) -> File {
         File {
-            imp: imp::new_file(lang, text.into(), stats, &node),
+            imp: imp::new_file(lang, text.into(), metrics, &node),
             inode: node,
         }
     }
@@ -34,8 +32,8 @@ impl File {
         self.imp.text()
     }
 
-    pub fn stats(&self) -> FileStats {
-        self.imp.stats()
+    pub fn metrics(&self) -> &Metrics {
+        self.imp.metrics()
     }
 
     pub fn inode(&self) -> INode {
@@ -77,32 +75,5 @@ impl<'f> Node<'f> {
 
     pub fn children(&self) -> NodeChildren<'f> {
         self.0.children()
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct FileStats {
-    pub lexing_time: Duration,
-    pub parsing_time: Duration,
-    pub parsing_ticks: u64,
-    pub reparsed_region: TextRange,
-}
-
-impl FileStats {
-    pub fn new() -> FileStats {
-        FileStats {
-            lexing_time: Default::default(),
-            parsing_time: Default::default(),
-            parsing_ticks: Default::default(),
-            reparsed_region: TextRange::empty()
-        }
-    }
-}
-
-impl fmt::Display for FileStats {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "lexing: {}; parsing: {}",
-               ::elapsed::ElapsedDuration::new(self.lexing_time),
-               ::elapsed::ElapsedDuration::new(self.parsing_time))
     }
 }

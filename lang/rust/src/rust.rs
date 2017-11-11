@@ -1,5 +1,5 @@
 use fall_parse::runtime::*;
-use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, FileStats, INode};
+use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, INode};
 pub use self::fall_tree::ERROR;
 
 pub const WHITESPACE: NodeType = NodeType(100);
@@ -307,8 +307,8 @@ pub fn language() -> &'static Language {
 
             struct Impl { parser_definition: ParserDefinition };
             impl LanguageImpl for Impl {
-                fn parse(&self, text: &str) -> (FileStats, INode) {
-                    self.parser_definition.parse(text, &LANG)
+                fn parse(&self, text: &str, metrics: &Metrics) -> INode {
+                    self.parser_definition.parse(text, &LANG, metrics)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

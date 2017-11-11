@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use {TextEdit, File, NodeType, NodeTypeInfo, FileStats, INode};
+use {TextEdit, File, NodeType, NodeTypeInfo, INode, Metrics};
 
 #[derive(Clone)]
 pub struct Language {
@@ -12,14 +12,16 @@ impl Language {
     }
 
     pub fn parse(&self, text: String) -> File {
-        let (stats, inode) = self.imp.parse(&text);
-        File::new(self.clone(), text, stats, inode)
+        let metrics = Metrics::new();
+        let inode = self.imp.parse(&text, &metrics);
+        File::new(self.clone(), text, metrics, inode)
     }
 
     pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
         let new_text = edit.apply(file.text());
-        let (stats, inode) = self.imp.parse(&new_text.as_slice().to_cow());
-        let result = File::new(self.clone(), new_text, stats, inode);
+        let metrics = Metrics::new();
+        let inode = self.imp.parse(&new_text.as_slice().to_cow(), &metrics);
+        let result = File::new(self.clone(), new_text, metrics, inode);
         return result;
     }
 
@@ -29,6 +31,6 @@ impl Language {
 }
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn parse(&self, text: &str) -> (FileStats, INode);
+    fn parse(&self, text: &str, metrics: &Metrics) -> INode;
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }

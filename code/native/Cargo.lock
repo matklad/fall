@@ -173,7 +173,6 @@ dependencies = [
 name = "fall_parse"
 version = "0.1.0"
 dependencies = [
- "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_tree 0.1.0",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
