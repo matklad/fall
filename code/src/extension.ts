@@ -14,27 +14,22 @@ interface FileStructureNode {
 
 type TextRange = [number, number]
 
-var backend = (() => {
-    var native = require('../../native')
-    return {
-        treeAsText: (): string => native.tree_as_text(),
-        performanceCounters: (): { lexing_time: number, parsing_time: number, reparsed_region: TextRange } => {
-            return native.performance_counters()
-        },
-        highlight: (): [TextRange, string][] => native.highlight(),
-        structure: (): [FileStructureNode] => native.structure(),
-        extendSelection: (range: TextRange) => native.extend_selection(range),
-        contextActions: (range: TextRange): string[] => native.context_actions(range),
-        applyContextAction: (range: TextRange, id: string) => native.apply_context_action(range, id),
-        resolveReference: (offset: number): TextRange => native.resolve_reference(offset),
-        findUsages: (offset: number): TextRange[] => native.find_usages(offset),
-        diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
-        create: (text) => native.file_create(text),
-        reformat: () => native.reformat(),
-        testAtOffset: (offset: number): number => native.test_at_offset(offset),
-        parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
-    }
-})()
+var backend: {
+    create: (string) => any;
+    treeAsText: () => string;
+    performanceCounters: () => { lexing_time: number, parsing_time: number, reparsed_region: TextRange };
+    highlight: () => [TextRange, string][];
+    structure: () => [FileStructureNode];
+    extendSelection: (TextRange) => TextRange;
+    contextActions: (TextRange) => string[];
+    applyContextAction: (TextRange, string) => any;
+    resolveReference: (number) => TextRange;
+    findUsages: (number) => TextRange[];
+    diagnostics: () => [{ range: TextRange, severity: string, message: string }];
+    reformat: () => any;
+    testAtOffset: (number) => number;
+    parseTest: (number, callback) => string;
+} =  require('../../native') 
 
 export function activate(context: vscode.ExtensionContext) {
     var status = window.createStatusBarItem(StatusBarAlignment.Left)
@@ -81,7 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         public provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
             return new Promise((resolve, reject) => {
-                backend.parse_test(activeTest, (err, value) => {
+                backend.parseTest(activeTest, (err, value) => {
                     if (err) return reject(err)
                     resolve(value)
                 })

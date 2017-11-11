@@ -190,21 +190,21 @@ fn convert_edit(edit: TextEdit) -> VsEdit {
 
 
 register_module!(m, {
-    m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
-    m.export("performance_counters", |call| file_fn0(call, performance_counters))?;
+    m.export("create", file_create)?;
+    m.export("treeAsText", |call| file_fn0(call, editor_api::tree_as_text))?;
+    m.export("performanceCounters", |call| file_fn0(call, performance_counters))?;
     m.export("highlight", |call| a_fn0(call, editor_api::highlight))?;
     m.export("structure", |call| file_fn0(call, editor_api::structure))?;
-    m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
-    m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
-    m.export("apply_context_action", |call| file_fn2(call, |file, range: TextRange, aid: String| {
+    m.export("extendSelection", |call| file_fn1(call, editor_api::extend_selection))?;
+    m.export("contextActions", |call| file_fn1(call, editor_api::context_actions))?;
+    m.export("applyContextAction", |call| file_fn2(call, |file, range: TextRange, aid: String| {
         convert_edit(editor_api::apply_context_action(file, range, &aid))
     }))?;
-    m.export("resolve_reference", |call| a_fn1(call, editor_api::resolve_reference))?;
-    m.export("find_usages", |call| a_fn1(call, editor_api::find_usages))?;
+    m.export("resolveReference", |call| a_fn1(call, editor_api::resolve_reference))?;
+    m.export("findUsages", |call| a_fn1(call, editor_api::find_usages))?;
     m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics))?;
     m.export("reformat", |call| file_fn0(call, |file| convert_edit(editor_api::reformat(file))))?;
-    m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
-    m.export("parse_test", parse_test)?;
-    m.export("file_create", file_create)?;
+    m.export("testAtOffset", |call| file_fn1(call, editor_api::test_at_offset))?;
+    m.export("parseTest", parse_test)?;
     Ok(())
 });
