@@ -2,7 +2,7 @@ use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
 use analysis::query;
 use fall_tree::search::ast;
-use fall_tree::{AstNode, AstClass};
+use fall_tree::AstNode;
 
 use ::{SynRule, CallExpr, RefKind};
 
@@ -26,8 +26,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveRefExpr<'f> {
             return Some(RefKind::Token(lex_rule));
         }
         let parent = ref_.node().parent().unwrap();
-        if parent.ty() == CallExpr::NODE_TYPE {
-            let call = CallExpr::new(parent);
+        if let Some(call) = CallExpr::wrap(parent) {
             if call.context_name().is_some() && call.args().next().map(|a| a.node()) == Some(ref_.node()) {
                 return None;
             }

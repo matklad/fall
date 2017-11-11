@@ -137,8 +137,8 @@ pub mod ast {
 
     pub fn ancestor<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
         ancestors(node)
-            .find(|node| node.ty() == T::NODE_TYPE)
-            .map(T::new)
+            .filter_map(T::wrap)
+            .next()
     }
 
     pub fn ancestor_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use itertools::Itertools;
 
 use fall_tree::search::child_of_type_exn;
-use fall_tree::{AstNode, AstClass};
+use fall_tree::AstNode;
 
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};

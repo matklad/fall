@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use super::{PratVariant, PrattOp};
-use fall_tree::{AstNode, AstClass};
+use fall_tree::AstNode;
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
 use ::Expr;

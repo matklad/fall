@@ -1,4 +1,4 @@
-use fall_tree::{AstNode, AstClass, File, Node, TextUnit, TextRange, FileEdit};
+use fall_tree::{AstNode, File, Node, TextUnit, TextRange, FileEdit};
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
 use ::{PIPE, BlockExpr};
 use super::ContextAction;
@@ -33,13 +33,9 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
         },
     };
 
-    let parent = match pipe.parent() {
+    let parent = match pipe.parent().and_then(BlockExpr::wrap) {
         None => return None,
-        Some(n) => if n.ty() == BlockExpr::NODE_TYPE {
-            BlockExpr::new(n)
-        } else {
-            return None;
-        }
+        Some(block) => block,
     };
 
     for (alt1, alt2) in parent.alts().zip(parent.alts().skip(1)) {

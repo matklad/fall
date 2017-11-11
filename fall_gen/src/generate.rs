@@ -1,6 +1,6 @@
 use serde_json;
 use fall_parse;
-use fall_tree::{Text, AstNode, AstClass};
+use fall_tree::{Text, AstNode};
 use lang_fall::{RefKind, SynRule, Expr, BlockExpr, PratVariant, PrattOp,
                 CallKind, MethodDef, MethodDescription, Arity, ChildKind,
                 Analysis};
@@ -136,13 +136,13 @@ fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
 
                 (ChildKind::AstClass(n), Arity::Single) =>
                     (format!("{}<'f>", camel(n.name())),
-                     "AstClassChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                     "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
                 (ChildKind::AstClass(n), Arity::Optional) =>
                     (format!("Option<{}<'f>>", camel(n.name())),
-                     "AstClassChildren::new(self.node.children()).next()".to_owned()),
+                     "AstChildren::new(self.node.children()).next()".to_owned()),
                 (ChildKind::AstClass(n), Arity::Many) =>
-                    (format!("AstClassChildren<'f, {}<'f>>", camel(n.name())),
-                     "AstClassChildren::new(self.node.children())".to_owned()),
+                    (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
+                     "AstChildren::new(self.node.children())".to_owned()),
 
                 (ChildKind::Token(lex_rule), arity) => {
                     let node_type = scream(lex_rule.node_type());
@@ -370,31 +370,22 @@ pub fn language() -> &'static Language {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use self::fall_tree::{Text, AstElement, AstNode, AstChildren, AstClass, AstClassChildren, Node};
+use self::fall_tree::{Text, AstNode, AstChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
 
-impl<'f> AstElement<'f> for {{ node.struct_name }}<'f> {
+impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
     fn wrap(node: Node<'f>) -> Option<Self> {
-        if node.ty() == Self::NODE_TYPE {
+        if node.ty() == {{ node.node_type_name }} {
             Some({{ node.struct_name }} { node })
         } else {
             None
         }
     }
     fn node(self) -> Node<'f> { self.node }
-}
-
-impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
-    const NODE_TYPE: NodeType  = {{ node.node_type_name }};
-    fn new(node: Node<'f>) -> Self {
-        assert_eq!(node.ty(), Self::NODE_TYPE);
-        {{ node.struct_name }} { node }
-    }
-    fn node(&self) -> Node<'f> { self.node }
 }
 
 impl<'f> {{ node.struct_name }}<'f> {
@@ -422,45 +413,20 @@ pub enum {{ class.enum_name }}<'f> {
     {% endfor %}
 }
 
-impl<'f> AstElement<'f> for {{ class.enum_name }}<'f> {
+impl<'f> AstNode<'f> for {{ class.enum_name }}<'f> {
     fn wrap(node: Node<'f>) -> Option<Self> {
-        match node.ty() {
-            {% for v in class.variants %}
-                {{ v.0 }} => Some({{ class.enum_name }}::{{ v.1 }}({{ v.1 }}::new(node))),
-            {% endfor %}
-            _ => None
+        {% for v in class.variants %}
+        if let Some(n) = {{ v.1 }}::wrap(node) {
+            return Some({{ class.enum_name }}::{{ v.1 }}(n))
         }
+        {% endfor %}
+        None
     }
 
     fn node(self) -> Node<'f> {
         match self {
             {% for v in class.variants %}
-                {{ class.enum_name }}::{{ v.1 }}(n) => AstElement::node(n),
-            {% endfor %}
-        }
-    }
-}
-
-impl<'f> AstClass<'f> for {{ class.enum_name }}<'f> {
-    const NODE_TYPES: &'static [NodeType] = &[
-        {% for v in class.variants %}
-            {{ v.0 }},
-        {% endfor %}
-    ];
-
-    fn new(node: Node<'f>) -> Self {
-        match node.ty() {
-            {% for v in class.variants %}
-                {{ v.0 }} => {{ class.enum_name }}::{{ v.1 }}({{ v.1 }}::new(node)),
-            {% endfor %}
-            _ => panic!("Bad ast class")
-        }
-    }
-
-    fn node(&self) -> Node<'f> {
-        match *self {
-            {% for v in class.variants %}
-                {{ class.enum_name }}::{{ v.1 }}(n) => AstElement::node(n),
+                {{ class.enum_name }}::{{ v.1 }}(n) => n.node(),
             {% endfor %}
         }
     }
@@ -473,7 +439,7 @@ impl<'f> ::std::fmt::Debug for {{ class.enum_name }}<'f> {
                 {{ class.enum_name }}::{{ v.1 }}(..) => "{{ v.1 }}@",
             {% endfor %}
         })?;
-        AstElement::node(*self).range().fmt(f)?;
+        AstNode::node(*self).range().fmt(f)?;
         Ok(())
     }
 }

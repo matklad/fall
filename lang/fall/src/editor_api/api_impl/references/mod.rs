@@ -1,4 +1,4 @@
-use fall_tree::{Node, TextUnit, TextRange};
+use fall_tree::{Node, TextUnit, TextRange, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 use ::*;
 use analysis::CallKind;
@@ -29,7 +29,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
     Visitor(None)
         .visit::<RefExpr, _>(|result, ref_expr| {
             *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
-                let ref_ = RefExpr::new(node);
+                let ref_ = RefExpr::wrap(node).unwrap();
                 let target = match analysis.resolve_reference(ref_) {
                     None => return None,
                     Some(t) => t
@@ -44,7 +44,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
         })
         .visit::<AstSelector, _>(|result, selector| {
             *result = Some(Reference::new(selector.node(), |_, node| {
-                let selector = AstSelector::new(node);
+                let selector = AstSelector::wrap(node).unwrap();
                 let target = match selector.child_kind() {
                     None => return None,
                     Some(t) => t
@@ -57,12 +57,11 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
             }))
         })
         .visit_nodes(&[IDENT], |result, ident| {
-            match ident.parent() {
-                Some(parent) if parent.ty() == CALL_EXPR => {
-                    let call = CallExpr::new(parent);
+            match ident.parent().and_then(CallExpr::wrap) {
+                Some(call) => {
                     if let Some(CallKind::RuleCall(..)) = analysis.resolve_call(call) {
                         *result = Some(Reference::new(ident, |analysis, node| {
-                            let call = CallExpr::new(node.parent().unwrap());
+                            let call = CallExpr::wrap(node.parent().unwrap()).unwrap();
                             match analysis.resolve_call(call).unwrap() {
                                 CallKind::RuleCall(rule, ..) => Some(rule.into()),
                                 _ => unimplemented!()

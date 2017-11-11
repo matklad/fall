@@ -1,4 +1,4 @@
-use fall_tree::File;
+use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
 use ::*;

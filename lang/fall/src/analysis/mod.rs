@@ -74,7 +74,7 @@ impl FileWithAnalysis {
     fn from_file(file: File) -> FileWithAnalysis {
         FileWithAnalysis {
             rent: rent::R::new(Box::new(file), |file| {
-                Analysis::new(FallFile::new(file.root()))
+                Analysis::new(FallFile::wrap(file.root()).unwrap())
             })
         }
     }

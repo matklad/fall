@@ -1,4 +1,4 @@
-use fall_tree::{TextRange, Node, NodeType, tu};
+use fall_tree::{TextRange, Node, NodeType, tu, AstNode};
 use fall_tree::search::child_of_type;
 use fall_tree::visitor::{Visitor, NodeVisitor};
 

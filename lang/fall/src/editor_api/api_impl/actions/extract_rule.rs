@@ -1,4 +1,4 @@
-use fall_tree::{AstNode, AstClass, File, Node, TextRange, FileEdit};
+use fall_tree::{AstNode, File, Node, TextRange, FileEdit};
 use fall_tree::search::{find_covering_node, ancestors};
 use fall_tree::search::ast;
 use ::{Expr, SynRule, SeqExpr, RefExpr};
@@ -22,7 +22,7 @@ impl ContextAction for ExtractRule {
             None => return None,
             Some(expr) => expr,
         };
-        if expr.ty() == RefExpr::NODE_TYPE {
+        if RefExpr::wrap(expr).is_some() {
             return None;
         }
         let rule = ast::ancestor_exn::<SynRule>(expr).node();
@@ -39,11 +39,11 @@ impl ContextAction for ExtractRule {
 }
 
 fn is_expression(node: Node) -> bool {
-    Expr::NODE_TYPES.iter().any(|&ty| ty == node.ty())
+    Expr::wrap(node).is_some()
 }
 
 fn range_to_extract(parent: Node, range: TextRange) -> TextRange {
-    if parent.ty() == SeqExpr::NODE_TYPE {
+    if SeqExpr::wrap(parent).is_some() {
         let mut children =
             parent.children().filter(|n| n.range().intersects(range));
         let first = children.next();

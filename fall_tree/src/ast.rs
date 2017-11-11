@@ -1,19 +1,12 @@
 use std::marker::PhantomData;
 
-use {Node, NodeType};
+use {Node};
 use node::NodeChildren;
 
-pub trait AstElement<'f>: Copy {
+pub trait AstNode<'f>: Copy {
     fn wrap(node: Node<'f>) -> Option<Self>;
 
     fn node(self) -> Node<'f>;
-}
-
-pub trait AstNode<'f>: Copy {
-    const NODE_TYPE: NodeType = ::ERROR;
-
-    fn new(node: Node<'f>) -> Self;
-    fn node(&self) -> Node<'f>;
 }
 
 #[derive(Clone)]
@@ -36,42 +29,8 @@ impl<'f, A: AstNode<'f>> Iterator for AstChildren<'f, A> {
 
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(node) = self.inner.next() {
-            if node.ty() == A::NODE_TYPE {
-                return Some(A::new(node));
-            }
-        }
-        return None;
-    }
-}
-
-pub trait AstClass<'f>: Copy {
-    const NODE_TYPES: &'static [NodeType] = &[];
-
-    fn new(node: Node<'f>) -> Self;
-    fn node(&self) -> Node<'f>;
-}
-
-pub struct AstClassChildren<'f, A: AstClass<'f>> {
-    inner: NodeChildren<'f>,
-    phantom: PhantomData<*const A>,
-}
-
-impl<'f, A: AstClass<'f>> AstClassChildren<'f, A> {
-    pub fn new(children: NodeChildren<'f>) -> Self {
-        AstClassChildren {
-            inner: children,
-            phantom: PhantomData,
-        }
-    }
-}
-
-impl<'f, A: AstClass<'f>> Iterator for AstClassChildren<'f, A> {
-    type Item = A;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        while let Some(node) = self.inner.next() {
-            if A::NODE_TYPES.contains(&node.ty()) {
-                return Some(A::new(node));
+            if let Some(a) = A::wrap(node) {
+                return Some(a);
             }
         }
         return None;

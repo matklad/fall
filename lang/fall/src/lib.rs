@@ -26,7 +26,7 @@ pub fn parse<S: Into<String>>(text: S) -> File {
     language().parse(text.into())
 }
 pub fn ast(file: &File) -> FallFile {
-    FallFile::new(file.root())
+    FallFile::wrap(file.root()).unwrap()
 }
 
 #[cfg(test)]
