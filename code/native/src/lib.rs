@@ -17,27 +17,17 @@ use serde::de::DeserializeOwned;
 
 use std::sync::{Arc, Mutex};
 
-use neon::vm::{Call, VmResult, JsResult};
+use neon::vm::{Call, VmResult, JsResult, Lock, FunctionCall};
+use neon::mem::Handle;
 use neon::scope::Scope;
-use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
+use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction, JsUndefined};
+use neon::js::class::{Class, JsClass};
 use neon::task::Task;
 use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
-use fall_tree::{TextUnit, TextRange, File, TextEdit, TextEditOp, tu};
+use fall_tree::{TextUnit, TextRange, File, TextEdit, TextEditOp, tu, AstNode};
 use fall_gen::TestRenderer;
-
-lazy_static! {
-    static ref FILE: Mutex<Option<Arc<FileWithAnalysis>>> = Mutex::new(None);
-}
-
-fn file_create(call: Call) -> JsResult<JsNull> {
-    let scope = call.scope;
-    let text = call.arguments.require(scope, 0)?.check::<JsString>()?;
-    let text = text.value();
-    *FILE.lock().unwrap() = Some(Arc::new(editor_api::analyse(text)));
-    Ok(JsNull::new())
-}
 
 #[derive(Serialize)]
 struct PerformanceCounters {
@@ -56,6 +46,7 @@ fn performance_counters(file: &File) -> PerformanceCounters {
 }
 
 struct RenderTask(Arc<FileWithAnalysis>, usize);
+
 impl Task for RenderTask {
     type Output = String;
     type Error = ();
@@ -74,87 +65,6 @@ impl Task for RenderTask {
     fn complete<'a, T: Scope<'a>>(self, scope: &'a mut T, result: Result<String, ()>) -> JsResult<JsString> {
         Ok(JsString::new(scope, &result.unwrap()).unwrap())
     }
-}
-
-fn parse_test(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
-    let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
-    let file = FILE.lock().unwrap();
-
-    if let Some(ref file) = *file {
-        RenderTask(file.clone(), test).schedule(callback);
-    }
-    Ok(JsNull::new().upcast())
-}
-
-fn a_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
-    where S: Serialize,
-          F: Fn(&mut Call<'a>, &Analysis) -> VmResult<S> {
-    let file = FILE.lock().unwrap();
-    let file: &FileWithAnalysis = match *file {
-        None => return Ok(JsNull::new().upcast()),
-        Some(ref file) => &*file,
-    };
-    file.analyse(|a| {
-        let result = f(call, a)?;
-        Ok(to_value(call.scope, &result)?)
-    })
-}
-
-fn a_fn0<S: Serialize, F: Fn(&Analysis) -> S>(mut call: Call, f: F) -> JsResult<JsValue> {
-    a_fn(&mut call, |_, file| Ok(f(file)))
-}
-
-fn a_fn1<'c, S: Serialize, D: DeserializeOwned>(
-    mut call: Call<'c>,
-    f: fn(&Analysis, D) -> S
-) -> JsResult<'c, JsValue> {
-    a_fn(&mut call, |call, file| {
-        let arg0 = call.arguments.require(call.scope, 0)?;
-        let arg: D = from_value(call.scope, arg0)?;
-        Ok(f(file, arg))
-    })
-}
-
-fn file_fn<'a, S, F>(call: &mut Call<'a>, f: F) -> JsResult<'a, JsValue>
-    where S: Serialize,
-          F: Fn(&mut Call<'a>, &File) -> VmResult<S> {
-    let file = FILE.lock().unwrap();
-    let file = match *file {
-        None => return Ok(JsNull::new().upcast()),
-        Some(ref file) => file.file(),
-    };
-    let result = f(call, file)?;
-    Ok(to_value(call.scope, &result)?)
-}
-
-fn file_fn0<S: Serialize, F: Fn(&File) -> S>(mut call: Call, f: F) -> JsResult<JsValue> {
-    file_fn(&mut call, |_, file| Ok(f(file)))
-}
-
-fn file_fn1<'c, S: Serialize, D: DeserializeOwned>(
-    mut call: Call<'c>,
-    f: fn(&File, D) -> S
-) -> JsResult<'c, JsValue> {
-    file_fn(&mut call, |call, file| {
-        let arg0 = call.arguments.require(call.scope, 0)?;
-        let arg: D = from_value(call.scope, arg0)?;
-        Ok(f(file, arg))
-    })
-}
-
-fn file_fn2<'c, S: Serialize, D1: DeserializeOwned, D2: DeserializeOwned>(
-    mut call: Call<'c>,
-    f: fn(&File, D1, D2) -> S
-) -> JsResult<'c, JsValue> {
-    file_fn(&mut call, |call, file| {
-        let arg1 = call.arguments.require(call.scope, 0)?;
-        let arg2 = call.arguments.require(call.scope, 1)?;
-        let arg1: D1 = from_value(call.scope, arg1)?;
-        let arg2: D2 = from_value(call.scope, arg2)?;
-        Ok(f(file, arg1, arg2))
-    })
 }
 
 #[derive(Serialize)]
@@ -178,33 +88,107 @@ fn convert_edit(edit: TextEdit) -> VsEdit {
                     result.ops.push(VsOp::Delete(TextRange::from_to(offset, range.start())))
                 }
                 offset = range.end();
-            },
+            }
             TextEditOp::Insert(text) => {
                 result.ops.push(VsOp::Insert(offset, text.to_string()))
-            },
+            }
         }
     }
     return result;
 }
 
+pub struct FileObj {
+    inner: Arc<FileWithAnalysis>
+}
 
+impl FileObj {
+    fn init(call: FunctionCall<JsUndefined>) -> VmResult<FileObj> {
+        let scope = call.scope;
+        let text: Handle<JsString> = call.arguments.require(scope, 0)?.check::<JsString>()?;
+        Ok(FileObj { inner: Arc::new(editor_api::analyse(text.value())) })
+    }
+}
+
+fn m<'j, R, F>(call: FunctionCall<'j, JsFile>, f: F) -> JsResult<'j, JsValue>
+    where R: Serialize,
+          F: Fn(&Analysis) -> R + Send
+{
+    let scope = call.scope;
+    let result = call.arguments.this(scope).grab(move |file| file.inner.analyse(|a| f(a)));
+    Ok(to_value(scope, &result)?)
+}
+
+fn m1<'j, A, R, F>(call: FunctionCall<'j, JsFile>, f: F) -> JsResult<'j, JsValue>
+    where R: Serialize,
+          A: DeserializeOwned + Send,
+          F: Fn(&Analysis, A) -> R + Send
+{
+    let scope = call.scope;
+    let arg0 = call.arguments.require(scope, 0)?;
+    let arg: A = from_value(scope, arg0)?;
+    let result = call.arguments.this(scope).grab(move |file| file.inner.analyse(|a| f(a, arg)));
+    Ok(to_value(scope, &result)?)
+}
+
+fn m2<'j, A1, A2, R, F>(call: FunctionCall<'j, JsFile>, f: F) -> JsResult<'j, JsValue>
+    where R: Serialize,
+          A1: DeserializeOwned + Send,
+          A2: DeserializeOwned + Send,
+          F: Fn(&Analysis, A1, A2) -> R + Send
+{
+    let scope = call.scope;
+    let arg1 = call.arguments.require(scope, 0)?;
+    let arg1: A1 = from_value(scope, arg1)?;
+    let arg2 = call.arguments.require(scope, 1)?;
+    let arg2: A2 = from_value(scope, arg2)?;
+    let result = call.arguments.this(scope).grab(move |file| file.inner.analyse(|a| f(a, arg1, arg2)));
+    Ok(to_value(scope, &result)?)
+}
+
+declare_types! {
+  pub class JsFile for FileObj {
+    init(call) { FileObj::init(call) }
+    method highlight(call) { m(call, editor_api::highlight) }
+
+    method syntaxTree(call) { m(call, |a| editor_api::tree_as_text(a.file().node().file())) }
+    method structure(call) { m(call, |a| editor_api::structure(a.file().node().file())) }
+    method reformat(call) {  m(call, |a| convert_edit(editor_api::reformat(a.file().node().file()))) }
+    method performanceCounters(call) { m(call, |a| performance_counters(a.file().node().file())) }
+    method diagnostics(call) { m(call, editor_api::diagnostics) }
+
+    method extendSelection (call) { m1(call, |a, arg| editor_api::extend_selection(a.file().node().file(), arg)) }
+    method contextActions (call) { m1(call, |a, arg| editor_api::context_actions(a.file().node().file(), arg)) }
+    method testAtOffset (call) { m1(call, |a, arg| editor_api::test_at_offset(a.file().node().file(), arg)) }
+    method resolveReference(call) { m1(call, editor_api::resolve_reference) }
+    method findUsages(call) { m1(call, editor_api::find_usages) }
+
+    method applyContextAction(call) {
+      m2(call, |a, arg1, arg2: String| {
+        convert_edit(editor_api::apply_context_action(a.file().node().file(), arg1, &arg2))
+      })
+    }
+
+    method parseTest(call) {
+      let scope = call.scope;
+      let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
+      let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
+      let file = call.arguments.this(scope).grab(move |file| file.inner.clone());
+      RenderTask(file, test).schedule(callback);
+      Ok(JsNull::new().upcast())
+    }
+  }
+}
+
+fn new_file(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let arg: Handle<JsValue> = call.arguments.require(scope, 0)?;
+    let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
+    let constructor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
+    let file = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(arg))?;
+    Ok(file.upcast())
+}
 
 register_module!(m, {
-    m.export("create", file_create)?;
-    m.export("treeAsText", |call| file_fn0(call, editor_api::tree_as_text))?;
-    m.export("performanceCounters", |call| file_fn0(call, performance_counters))?;
-    m.export("highlight", |call| a_fn0(call, editor_api::highlight))?;
-    m.export("structure", |call| file_fn0(call, editor_api::structure))?;
-    m.export("extendSelection", |call| file_fn1(call, editor_api::extend_selection))?;
-    m.export("contextActions", |call| file_fn1(call, editor_api::context_actions))?;
-    m.export("applyContextAction", |call| file_fn2(call, |file, range: TextRange, aid: String| {
-        convert_edit(editor_api::apply_context_action(file, range, &aid))
-    }))?;
-    m.export("resolveReference", |call| a_fn1(call, editor_api::resolve_reference))?;
-    m.export("findUsages", |call| a_fn1(call, editor_api::find_usages))?;
-    m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics))?;
-    m.export("reformat", |call| file_fn0(call, |file| convert_edit(editor_api::reformat(file))))?;
-    m.export("testAtOffset", |call| file_fn1(call, editor_api::test_at_offset))?;
-    m.export("parseTest", parse_test)?;
+    m.export("newFile", new_file)?;
     Ok(())
 });

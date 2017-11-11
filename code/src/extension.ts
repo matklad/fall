@@ -14,22 +14,26 @@ interface FileStructureNode {
 
 type TextRange = [number, number]
 
-var backend: {
-    create: (string) => any;
-    treeAsText: () => string;
-    performanceCounters: () => { lexing_time: number, parsing_time: number, reparsed_region: TextRange };
+let newFile: (string) => any = require('../../native').newFile
+
+var currentFile: {
     highlight: () => [TextRange, string][];
+
+    syntaxTree: () => string;
     structure: () => [FileStructureNode];
+    reformat: () => any;
+    performanceCounters: () => { lexing_time: number, parsing_time: number, reparsed_region: TextRange };
+    diagnostics: () => [{ range: TextRange, severity: string, message: string }];
+
     extendSelection: (TextRange) => TextRange;
     contextActions: (TextRange) => string[];
-    applyContextAction: (TextRange, string) => any;
+    testAtOffset: (number) => number;
     resolveReference: (number) => TextRange;
     findUsages: (number) => TextRange[];
-    diagnostics: () => [{ range: TextRange, severity: string, message: string }];
-    reformat: () => any;
-    testAtOffset: (number) => number;
+
+    applyContextAction: (TextRange, string) => any;
     parseTest: (number, callback) => string;
-} =  require('../../native') 
+}
 
 export function activate(context: vscode.ExtensionContext) {
     var status = window.createStatusBarItem(StatusBarAlignment.Left)
@@ -61,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
         public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
-            return backend.treeAsText()
+            return currentFile.syntaxTree()
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -76,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         public provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
             return new Promise((resolve, reject) => {
-                backend.parseTest(activeTest, (err, value) => {
+                currentFile.parseTest(activeTest, (err, value) => {
                     if (err) return reject(err)
                     resolve(value)
                 })
@@ -95,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
                 document.offsetAt(_range.start),
                 document.offsetAt(_range.end)
             ];
-            let test = backend.testAtOffset(range[0]);
+            let test = currentFile.testAtOffset(range[0]);
             if (test != null) {
                 return [{
                     title: "Parse test",
@@ -104,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }]
             }
 
-            let actions = backend.contextActions(range);
+            let actions = currentFile.contextActions(range);
             return actions.map((id) => {
                 return {
                     title: id,
@@ -124,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            return backend.structure().map((node) => {
+            return currentFile.structure().map((node) => {
                 return new SymbolInformation(
                     node.name,
                     vscode.SymbolKind.Function,
@@ -141,7 +145,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let range = backend.resolveReference(document.offsetAt(position))
+            let range = currentFile.resolveReference(document.offsetAt(position))
             if (range == null) return null
             return new vscode.Location(document.uri, convertRange(document, range))
         }
@@ -152,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let usages = backend.findUsages(document.offsetAt(position))
+            let usages = currentFile.findUsages(document.offsetAt(position))
             return usages.map((range) => new vscode.Location(document.uri, convertRange(document, range)))
         }
     }
@@ -162,7 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let edit = backend.reformat()
+            let edit = currentFile.reformat()
             console.log(edit);
             
             return edit.ops.map((op) => {
@@ -180,22 +184,22 @@ export function activate(context: vscode.ExtensionContext) {
         status.hide()
         if (!activeEditor) return
         if (activeEditor.document.languageId != "fall") return
+        currentFile = newFile(activeEditor.document.getText())
 
         let decorationSets = {}
         for (let key in decorations) {
             decorationSets[key] = []
         }
         let text = activeEditor.document.getText()
-        backend.create(text)
         treeTextDocumentProvider.eventEmitter.fire(syntaxTreeUri)
-        let stats = backend.performanceCounters()
+        let stats = currentFile.performanceCounters()
         const to_ms = (nanos) => `${(nanos / 1000000).toFixed(2)} ms`
         status.text = `lexing: ${to_ms(stats.lexing_time)}`
             + ` parsing: ${to_ms(stats.parsing_time)}`
             + ` reparse: ${stats.reparsed_region[1] - stats.reparsed_region[0]}`
         status.show()
 
-        for (let [[x, y], type] of backend.highlight()) {
+        for (let [[x, y], type] of currentFile.highlight()) {
             if (!decorationSets[type]) {
                 console.log(x, y, type)
                 continue
@@ -215,7 +219,7 @@ export function activate(context: vscode.ExtensionContext) {
         fallDiagnostics.clear()
         fallDiagnostics.set(
             activeEditor.document.uri,
-            backend.diagnostics().map((d) => {
+            currentFile.diagnostics().map((d) => {
                 let range = new Range(
                     activeEditor.document.positionAt(d.range[0]),
                     activeEditor.document.positionAt(d.range[1]),
@@ -269,7 +273,7 @@ export function activate(context: vscode.ExtensionContext) {
             let doc = activeEditor.document;
             let start = doc.offsetAt(activeEditor.selection.start)
             let end = doc.offsetAt(activeEditor.selection.end)
-            let range = backend.extendSelection([start, end])
+            let range = currentFile.extendSelection([start, end])
             if (range == null) return
             let [newStart, newEnd] = range
             let newSelection = new vscode.Selection(doc.positionAt(newStart), doc.positionAt(newEnd))
@@ -286,7 +290,7 @@ export function activate(context: vscode.ExtensionContext) {
                 return
             }
 
-            let edit = backend.applyContextAction(offset, id);
+            let edit = currentFile.applyContextAction(offset, id);
             return activeEditor.edit((builder) => {
                 for (let op of edit.ops) {
                     if (op.Insert != null) {
