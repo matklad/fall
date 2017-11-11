@@ -6,7 +6,6 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [dependencies]
 fall_text = { path = "../fall_text" }
 serde = "1.*"
-serde_derive = "1.*"
 difference = "1.0.0"
 elapsed = "0.1"
 file = "*"

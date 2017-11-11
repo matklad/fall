@@ -25,6 +25,10 @@ impl TextBuf {
         }
     }
 
+    pub fn to_string(&self) -> String {
+        self.data.clone()
+    }
+
     pub fn slice(&self, range: TextRange) -> Text {
         self.as_slice().slice(range)
     }

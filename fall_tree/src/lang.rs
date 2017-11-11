@@ -1,6 +1,5 @@
 use std::sync::Arc;
-use text_edit::TextEdit;
-use {File, NodeType, NodeTypeInfo, FileStats, INode};
+use {TextEdit, File, NodeType, NodeTypeInfo, FileStats, INode};
 
 #[derive(Clone)]
 pub struct Language {
@@ -17,9 +16,9 @@ impl Language {
         File::new(self.clone(), text, stats, inode)
     }
 
-    pub fn reparse(&self, file: &File, edit: &TextEdit) -> File {
+    pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
         let new_text = edit.apply(file.text());
-        let (stats, inode) = self.imp.parse(&new_text);
+        let (stats, inode) = self.imp.parse(&new_text.as_slice().to_cow());
         let result = File::new(self.clone(), new_text, stats, inode);
         return result;
     }

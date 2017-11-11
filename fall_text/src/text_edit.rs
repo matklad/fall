@@ -2,16 +2,16 @@ use ::{TextUnit, TextRange, TextBuf, Text, tu};
 use std::cmp::Ordering;
 
 pub struct TextEdit {
-    segments: Vec<Segment>,
+    pub ops: Vec<TextEditOp>,
 }
 
 impl TextEdit {
     pub fn apply(self, text: Text) -> TextBuf {
         let mut result = String::new();
-        for s in self.segments {
+        for s in self.ops {
             match s {
-                Segment::Copy(range) => result += &text.slice(range).to_cow(),
-                Segment::Insert(i) => result += &i.as_slice().to_cow(),
+                TextEditOp::Copy(range) => result += &text.slice(range).to_cow(),
+                TextEditOp::Insert(i) => result += &i.as_slice().to_cow(),
             }
         }
 
@@ -20,7 +20,7 @@ impl TextEdit {
 }
 
 pub struct TextEditBuilder {
-    segments: Vec<Segment>,
+    segments: Vec<TextEditOp>,
     last_offset: TextUnit,
     text_len: TextUnit,
 
@@ -38,7 +38,7 @@ impl TextEditBuilder {
     pub fn build(mut self) -> TextEdit {
         let len = self.text_len;
         self.advance_to(len);
-        TextEdit { segments: self.segments }
+        TextEdit { ops: self.segments }
     }
 
     pub fn insert<T: Into<TextBuf>>(&mut self, offset: TextUnit, text: T) {
@@ -72,12 +72,12 @@ impl TextEditBuilder {
 
     fn copy_len(&mut self, len: TextUnit) {
         let range = TextRange::from_len(self.last_offset, len);
-        self.segments.push(Segment::Copy(range));
+        self.segments.push(TextEditOp::Copy(range));
         self.last_offset += len
     }
 
     fn insert_(&mut self, text: TextBuf) {
-        self.segments.push(Segment::Insert(text))
+        self.segments.push(TextEditOp::Insert(text))
     }
 
     fn delete_len(&mut self, len: TextUnit) {
@@ -85,7 +85,7 @@ impl TextEditBuilder {
     }
 }
 
-enum Segment {
+pub enum TextEditOp {
     Copy(TextRange),
     Insert(TextBuf),
 }

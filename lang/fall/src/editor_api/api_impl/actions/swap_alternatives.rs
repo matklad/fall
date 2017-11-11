@@ -55,31 +55,17 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use fall_tree::tu;
-    use ::editor_api::{context_actions, apply_context_action};
-    use ::test_util::parse_with_caret;
+    use super::super::check_context_action;
 
     #[test]
     fn test_swap_alternatives() {
-        let (file, offset) = parse_with_caret(r####"
+        check_context_action(r#"["Swap Alternatives"]"#, "Swap Alternatives", r##"
 tokenizer { number r"\d+"}
-pub rule foo { bar ^| baz }
-"####);
-
-        let position = TextRange::from_len(offset, tu(0));
-        eprintln!("position = {:?}", position);
-        eprintln!("file.text() = \n{}\n", file.text());
-        let actions = context_actions(&file, position);
-        assert_eq!(
-            format!("{:?}", actions),
-            r#"["Swap Alternatives"]"#
-        );
-        let edit = apply_context_action(&file, position, "Swap Alternatives");
-        assert_eq!(
-            format!("{:?}", edit),
-            r#"TextEdit { delete: [43; 52), insert: "baz | bar" }"#
-        )
+pub rule foo { bar ^^| baz }
+"##, r##"
+tokenizer { number r"\d+"}
+pub rule foo { baz | bar }
+"##);
     }
 }
 

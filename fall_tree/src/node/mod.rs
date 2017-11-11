@@ -1,7 +1,6 @@
 use std::time::Duration;
 use std::fmt;
-use {TextBuf, Text, TextRange, NodeType, Language};
-use text_edit::TextEdit;
+use {TextEdit, TextBuf, Text, TextRange, NodeType, Language};
 
 mod imp;
 mod immutable;
@@ -43,7 +42,7 @@ impl File {
         self.inode.clone()
     }
 
-    pub fn edit(&self, edit: &TextEdit) -> File {
+    pub fn edit(&self, edit: TextEdit) -> File {
         self.language().reparse(self, edit)
     }
 }

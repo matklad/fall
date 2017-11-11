@@ -13,7 +13,6 @@ interface FileStructureNode {
 }
 
 type TextRange = [number, number]
-type FallTextEdit = { delete: TextRange, insert: string }
 
 var backend = (() => {
     var native = require('../../native')
@@ -26,14 +25,13 @@ var backend = (() => {
         structure: (): [FileStructureNode] => native.structure(),
         extendSelection: (range: TextRange) => native.extend_selection(range),
         contextActions: (range: TextRange): string[] => native.context_actions(range),
-        applyContextAction: (range: TextRange, id: string): FallTextEdit => native.apply_context_action(range, id),
+        applyContextAction: (range: TextRange, id: string) => native.apply_context_action(range, id),
         resolveReference: (offset: number): TextRange => native.resolve_reference(offset),
         findUsages: (offset: number): TextRange[] => native.find_usages(offset),
         diagnostics: (): [{ range: TextRange, severity: string, message: string }] => native.diagnostics(),
         create: (text) => native.file_create(text),
-        reformat: (): FallTextEdit => native.reformat(),
+        reformat: () => native.reformat(),
         testAtOffset: (offset: number): number => native.test_at_offset(offset),
-        //parse_test: (testId: number): string => native.file_parse_test(testId),
         parse_test: (testId: number, callback): string => native.parse_test(testId, callback),
     }
 })()
@@ -169,8 +167,17 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (document != activeEditor.document) return null
-            let { delete: del, insert } = backend.reformat()
-            return [new TextEdit(convertRange(document, del), insert)]
+            let edit = backend.reformat()
+            console.log(edit);
+            
+            return edit.ops.map((op) => {
+                if (op.Insert != null) {
+                    let [pos, text] = op.Insert
+                    return TextEdit.insert(activeEditor.document.positionAt(pos), text)
+                } else if (op.Delete != null) {
+                    return TextEdit.delete(convertRange(activeEditor.document, op.Delete))
+                }
+            })
         }
     }
 
@@ -284,10 +291,16 @@ export function activate(context: vscode.ExtensionContext) {
                 return
             }
 
-            let { delete: del, insert } = backend.applyContextAction(offset, id);
-            let range = convertRange(activeEditor.document, del)
-            activeEditor.edit((bulder) => {
-                bulder.replace(range, insert)
+            let edit = backend.applyContextAction(offset, id);
+            return activeEditor.edit((builder) => {
+                for (let op of edit.ops) {
+                    if (op.Insert != null) {
+                        let [pos, text] = op.Insert
+                        builder.insert(activeEditor.document.positionAt(pos), text)
+                    } else if (op.Delete != null) {
+                        builder.delete(convertRange(activeEditor.document, op.Delete))
+                    }
+                }
             })
         })
     ]

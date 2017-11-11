@@ -24,7 +24,7 @@ use neon::task::Task;
 use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
-use fall_tree::{TextRange, File};
+use fall_tree::{TextUnit, TextRange, File, TextEdit, TextEditOp, tu};
 use fall_gen::TestRenderer;
 
 lazy_static! {
@@ -157,6 +157,38 @@ fn file_fn2<'c, S: Serialize, D1: DeserializeOwned, D2: DeserializeOwned>(
     })
 }
 
+#[derive(Serialize)]
+struct VsEdit {
+    ops: Vec<VsOp>
+}
+
+#[derive(Serialize)]
+enum VsOp {
+    Delete(TextRange),
+    Insert(TextUnit, String),
+}
+
+fn convert_edit(edit: TextEdit) -> VsEdit {
+    let mut result = VsEdit { ops: Vec::new() };
+    let mut offset = tu(0);
+    for op in edit.ops {
+        match op {
+            TextEditOp::Copy(range) => {
+                if range.start() != offset {
+                    result.ops.push(VsOp::Delete(TextRange::from_to(offset, range.start())))
+                }
+                offset = range.end();
+            },
+            TextEditOp::Insert(text) => {
+                result.ops.push(VsOp::Insert(offset, text.to_string()))
+            },
+        }
+    }
+    return result;
+}
+
+
+
 register_module!(m, {
     m.export("tree_as_text", |call| file_fn0(call, editor_api::tree_as_text))?;
     m.export("performance_counters", |call| file_fn0(call, performance_counters))?;
@@ -165,12 +197,12 @@ register_module!(m, {
     m.export("extend_selection", |call| file_fn1(call, editor_api::extend_selection))?;
     m.export("context_actions", |call| file_fn1(call, editor_api::context_actions))?;
     m.export("apply_context_action", |call| file_fn2(call, |file, range: TextRange, aid: String| {
-        editor_api::apply_context_action(file, range, &aid)
+        convert_edit(editor_api::apply_context_action(file, range, &aid))
     }))?;
     m.export("resolve_reference", |call| a_fn1(call, editor_api::resolve_reference))?;
     m.export("find_usages", |call| a_fn1(call, editor_api::find_usages))?;
     m.export("diagnostics", |call| a_fn0(call, editor_api::diagnostics))?;
-    m.export("reformat", |call| file_fn0(call, editor_api::reformat))?;
+    m.export("reformat", |call| file_fn0(call, |file| convert_edit(editor_api::reformat(file))))?;
     m.export("test_at_offset", |call| file_fn1(call, editor_api::test_at_offset))?;
     m.export("parse_test", parse_test)?;
     m.export("file_create", file_create)?;

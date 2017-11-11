@@ -1,8 +1,7 @@
 use std::path::Path;
 
 use file;
-use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
-use text_edit::TextEdit;
+use {TextBuf, TextEdit, TextEditBuilder, Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
 use difference::Changeset;
 
 
@@ -60,7 +59,7 @@ pub fn check_reparse(
     let before_file = lang.parse(before_input.to_owned());
 
     let edit = make_edit(before_input, after_input);
-    let after_file = before_file.edit(&edit);
+    let after_file = before_file.edit(edit);
     let after_tree = dump_file(&after_file);
     report_diff(after_edit, &after_tree);
 
@@ -144,7 +143,10 @@ fn make_edit(before: &str, after: &str) -> TextEdit {
         tu((before.len() - suffix) as u32)
     );
     let insert = after[prefix..after.len() - suffix].to_string();
-    TextEdit { delete, insert }
+    let text: TextBuf = before.into();
+    let mut edit_builder = TextEditBuilder::new(text.as_slice());
+    edit_builder.replace(delete, insert);
+    edit_builder.build()
 }
 
 

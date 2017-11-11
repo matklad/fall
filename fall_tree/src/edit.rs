@@ -1,5 +1,4 @@
-use text_edit::{TextEdit, combine_edits};
-use {Node, File, TextRange};
+use {TextEdit, TextEditBuilder, Node, File, TextRange};
 
 pub struct FileEdit<'f> {
     file: &'f File,
@@ -46,35 +45,28 @@ impl<'f> FileEdit<'f> {
     }
 
     pub fn into_text_edit(self) -> TextEdit {
-        self.text_edit_for_node(self.file.root())
+        let mut edit_builder = TextEditBuilder::new(self.file.text());
+        self.text_edit_for_node(self.file.root(), &mut edit_builder);
+        edit_builder.build()
     }
 
-    fn text_edit_for_node(&self, node: Node<'f>) -> TextEdit {
+    fn text_edit_for_node(&self, node: Node<'f>, edit_builder: &mut TextEditBuilder) {
         if self.deleted.iter().find(|&&n| n == node).is_some() {
-            return TextEdit::delete_range(node.range());
+            edit_builder.delete(node.range());
+            return;
         }
 
         if let Some(&(_, ref replacement)) = self.replaced.iter().find(|&&(n, _)| n == node) {
-            return TextEdit::replace_range(node.range(), replacement.clone());
+            edit_builder.replace(node.range(), replacement.as_ref());
+            return;
         }
 
-        let mut result = TextEdit::empty();
-
         for child in node.children() {
-            let new_edit = combine_edits(
-                self.file.text(),
-                &result,
-                &self.text_edit_for_node(child)
-            ).expect("conflicting edits");
-            result = new_edit;
+            self.text_edit_for_node(child, edit_builder);
         }
 
         if let Some(&(_, ref replacement)) = self.inserted.iter().find(|&&(n, _)| n == node) {
-            let insert = TextEdit::insert(node.range().end(), replacement.clone());
-            let new_edit = combine_edits(self.file.text(), &result, &insert)
-                .expect("conflicting edits");
-            result = new_edit;
+            edit_builder.insert(node.range().end(), replacement.as_ref());
         }
-        result
     }
 }

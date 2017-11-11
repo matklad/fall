@@ -60,57 +60,37 @@ fn range_to_extract(parent: Node, range: TextRange) -> TextRange {
 
 #[cfg(test)]
 mod tests {
-    use fall_tree::test_util::report_diff;
-    use ::test_util::parse_with_range;
-    use ::editor_api::{context_actions, apply_context_action};
+    use super::super::check_context_action;
 
 
     #[test]
     fn test_extract_whole_seq() {
-        let (file, range) = parse_with_range(r####"
+        check_context_action(r#"["Extract Rule"]"#, "Extract Rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { ^bar baz^ }
-"####);
-        let actions = context_actions(&file, range);
-        assert_eq!(
-            format!("{:?}", actions),
-            r#"["Extract Rule"]"#
-        );
-        let edit = apply_context_action(&file, range, "Extract Rule");
-        let expected = r##"
+"##, r##"
 tokenizer { number r"\d+"}
 pub rule foo { new_rule }
 
 rule new_rule {
   bar baz
 }
-"##;
-        let actual = edit.apply(file.text());
-        report_diff(expected.trim(), actual.trim())
+"##);
     }
 
     #[test]
     fn test_extract_sub_seq() {
-        let (file, range) = parse_with_range(r####"
+        check_context_action(r#"["Extract Rule"]"#, "Extract Rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { foo ^bar baz^ quux }
-"####);
-        let actions = context_actions(&file, range);
-        assert_eq!(
-            format!("{:?}", actions),
-            r#"["Extract Rule"]"#
-        );
-        let edit = apply_context_action(&file, range, "Extract Rule");
-        let expected = r##"
+"##, r##"
 tokenizer { number r"\d+"}
 pub rule foo { foo new_rule quux }
 
 rule new_rule {
   bar baz
 }
-"##;
-        let actual = edit.apply(file.text());
-        report_diff(expected.trim(), actual.trim())
+"##);
     }
 }
 
