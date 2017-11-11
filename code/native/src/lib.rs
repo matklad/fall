@@ -26,8 +26,49 @@ use neon::task::Task;
 use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
-use fall_tree::{TextUnit, TextRange, File, TextEdit, TextEditOp, tu, AstNode};
+use fall_tree::{TextUnit, TextRange, TextEdit, TextEditOp, tu};
 use fall_gen::TestRenderer;
+
+
+
+declare_types! {
+  pub class JsFile for FileObj {
+    init(call) { FileObj::init(call) }
+    method highlight(call) { m(call, editor_api::highlight) }
+
+    method syntaxTree(call) { m(call, editor_api::tree_as_text) }
+    method structure(call) { m(call, editor_api::structure) }
+    method reformat(call) {  m(call, |a| convert_edit(editor_api::reformat(a))) }
+    method performanceCounters(call) { m(call, performance_counters) }
+    method diagnostics(call) { m(call, editor_api::diagnostics) }
+
+    method extendSelection (call) { m1(call, editor_api::extend_selection) }
+    method contextActions (call) { m1(call, editor_api::context_actions) }
+    method testAtOffset (call) { m1(call, editor_api::test_at_offset) }
+    method resolveReference(call) { m1(call, editor_api::resolve_reference) }
+    method findUsages(call) { m1(call, editor_api::find_usages) }
+
+    method applyContextAction(call) {
+      m2(call, |a, arg1, arg2: String| {
+        convert_edit(editor_api::apply_context_action(a, arg1, &arg2))
+      })
+    }
+
+    method parseTest(call) {
+      let scope = call.scope;
+      let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
+      let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
+      let file = call.arguments.this(scope).grab(move |file| file.inner.clone());
+      RenderTask(file, test).schedule(callback);
+      Ok(JsNull::new().upcast())
+    }
+  }
+}
+
+register_module!(m, {
+    m.export("newFile", new_file)?;
+    Ok(())
+});
 
 #[derive(Serialize)]
 struct PerformanceCounters {
@@ -36,8 +77,8 @@ struct PerformanceCounters {
     reparsed_region: TextRange,
 }
 
-fn performance_counters(file: &File) -> PerformanceCounters {
-    let stats = file.stats();
+fn performance_counters(a: &Analysis) -> PerformanceCounters {
+    let stats = a.file().stats();
     PerformanceCounters {
         lexing_time: stats.lexing_time.subsec_nanos(),
         parsing_time: stats.parsing_time.subsec_nanos(),
@@ -109,6 +150,15 @@ impl FileObj {
     }
 }
 
+fn new_file(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let arg: Handle<JsValue> = call.arguments.require(scope, 0)?;
+    let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
+    let constructor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
+    let file = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(arg))?;
+    Ok(file.upcast())
+}
+
 fn m<'j, R, F>(call: FunctionCall<'j, JsFile>, f: F) -> JsResult<'j, JsValue>
     where R: Serialize,
           F: Fn(&Analysis) -> R + Send
@@ -144,51 +194,3 @@ fn m2<'j, A1, A2, R, F>(call: FunctionCall<'j, JsFile>, f: F) -> JsResult<'j, Js
     let result = call.arguments.this(scope).grab(move |file| file.inner.analyse(|a| f(a, arg1, arg2)));
     Ok(to_value(scope, &result)?)
 }
-
-declare_types! {
-  pub class JsFile for FileObj {
-    init(call) { FileObj::init(call) }
-    method highlight(call) { m(call, editor_api::highlight) }
-
-    method syntaxTree(call) { m(call, |a| editor_api::tree_as_text(a.file().node().file())) }
-    method structure(call) { m(call, |a| editor_api::structure(a.file().node().file())) }
-    method reformat(call) {  m(call, |a| convert_edit(editor_api::reformat(a.file().node().file()))) }
-    method performanceCounters(call) { m(call, |a| performance_counters(a.file().node().file())) }
-    method diagnostics(call) { m(call, editor_api::diagnostics) }
-
-    method extendSelection (call) { m1(call, |a, arg| editor_api::extend_selection(a.file().node().file(), arg)) }
-    method contextActions (call) { m1(call, |a, arg| editor_api::context_actions(a.file().node().file(), arg)) }
-    method testAtOffset (call) { m1(call, |a, arg| editor_api::test_at_offset(a.file().node().file(), arg)) }
-    method resolveReference(call) { m1(call, editor_api::resolve_reference) }
-    method findUsages(call) { m1(call, editor_api::find_usages) }
-
-    method applyContextAction(call) {
-      m2(call, |a, arg1, arg2: String| {
-        convert_edit(editor_api::apply_context_action(a.file().node().file(), arg1, &arg2))
-      })
-    }
-
-    method parseTest(call) {
-      let scope = call.scope;
-      let test = call.arguments.require(scope, 0)?.check::<JsInteger>()?.value() as usize;
-      let callback = call.arguments.require(scope, 1)?.check::<JsFunction>()?;
-      let file = call.arguments.this(scope).grab(move |file| file.inner.clone());
-      RenderTask(file, test).schedule(callback);
-      Ok(JsNull::new().upcast())
-    }
-  }
-}
-
-fn new_file(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    let arg: Handle<JsValue> = call.arguments.require(scope, 0)?;
-    let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
-    let constructor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
-    let file = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(arg))?;
-    Ok(file.upcast())
-}
-
-register_module!(m, {
-    m.export("newFile", new_file)?;
-    Ok(())
-});

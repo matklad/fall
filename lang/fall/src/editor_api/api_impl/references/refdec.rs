@@ -46,7 +46,7 @@ pub fn resolve_reference<'p, 'f>(
     offset: TextUnit,
     provider: ReferenceProvider<'p, 'f>
 ) -> Option<TextRange> {
-    let reference = match try_find_at_offset(analysis.file().node().file(), offset, |node| provider(node)) {
+    let reference = match try_find_at_offset(analysis.ast().node().file(), offset, |node| provider(node)) {
         Some(ref_) => ref_,
         None => return None,
     };
@@ -60,7 +60,7 @@ pub fn find_usages<'p, 'f>(
     reference_provider: ReferenceProvider<'p, 'f>,
     declaration_provider: DeclarationProvider<'f>
 ) -> Vec<TextRange> {
-    let file = analysis.file();
+    let file = analysis.ast();
     let declaration = try_find_at_offset(file.node().file(), offset, |node| {
         declaration_provider(node)
             .and_then(|d| {

@@ -35,7 +35,7 @@ pub fn generate(analysis: &Analysis) -> Result<String> {
     for d in analysis.collect_all_diagnostics() {
         match d.severity {
             Severity::Error => {
-                let span = analysis.file().node().text().slice(d.range);
+                let span = analysis.ast().node().text().slice(d.range);
                 return Err(error!("E: {}\n{}", d.message, span));
             }
             Severity::Warning => ()
@@ -51,7 +51,7 @@ pub fn generate(analysis: &Analysis) -> Result<String> {
     #[derive(Serialize)]
     struct CtxAstClass { enum_name: String, variants: Vec<(String, String)> }
 
-    let file = analysis.file();
+    let file = analysis.ast();
     let mut context = Context::new();
     context.add("node_types", &file.node_types());
 

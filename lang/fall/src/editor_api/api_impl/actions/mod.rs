@@ -1,18 +1,20 @@
 use fall_tree::{File, TextRange, FileEdit, TextEdit};
 
+use analysis::Analysis;
+
 mod swap_alternatives;
 mod extract_rule;
 
-pub fn context_actions(file: &File, range: TextRange) -> Vec<&'static str> {
+pub fn context_actions(analysis: &Analysis, range: TextRange) -> Vec<&'static str> {
     ACTIONS.iter()
-        .filter(|action| action.apply(file, range).is_some())
+        .filter(|action| action.apply(analysis.file(), range).is_some())
         .map(|action| action.id())
         .collect()
 }
 
-pub fn apply_context_action(file: &File, range: TextRange, action_id: &str) -> TextEdit {
+pub fn apply_context_action(analysis: &Analysis, range: TextRange, action_id: &str) -> TextEdit {
     let action = ACTIONS.iter().find(|action| action.id() == action_id).unwrap();
-    action.apply(file, range).unwrap().into_text_edit()
+    action.apply(analysis.file(), range).unwrap().into_text_edit()
 }
 
 const ACTIONS: &[&ContextAction] = &[
@@ -33,12 +35,13 @@ fn check_context_action(
     after: &str
 ) {
     let (file, range) = ::test_util::parse_with_range(before);
-    let actions = context_actions(&file, range);
+    let analysis = Analysis::new(::ast(&file));
+    let actions = context_actions(&analysis, range);
     assert_eq!(
         format!("{:?}", actions),
         available
     );
-    let edit = apply_context_action(&file, range, execute);
+    let edit = apply_context_action(&analysis, range, execute);
     let actual = edit.apply(file.text());
     ::fall_tree::test_util::report_diff(after.trim(), actual.as_slice().to_cow().trim())
 }

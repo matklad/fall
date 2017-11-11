@@ -22,8 +22,12 @@ impl<'f> Analysis<'f> {
         Analysis { db: db::DB::new(file), file }
     }
 
-    pub fn file(&self) -> FallFile<'f> {
+    pub fn ast(&self) -> FallFile<'f> {
         self.file
+    }
+
+    pub fn file(&self) -> &'f File {
+        self.file.node().file()
     }
 
     pub fn resolve_reference(&self, ref_: RefExpr<'f>) -> Option<RefKind<'f>> {
@@ -43,7 +47,7 @@ impl<'f> Analysis<'f> {
             .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
             .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
             .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
-            .walk_recursively_children_first(self.file().node());
+            .walk_recursively_children_first(self.ast().node());
         self.db.get(query::UnusedRules);
 
         let mut result = self.db.diagnostics.lock().unwrap().clone();
@@ -123,7 +127,7 @@ fn check_diagnostics(code: &str, expected_diagnostics: &str) {
                 Severity::Error => 'E',
                 Severity::Warning => 'W',
             };
-            format!("{} {}: {}", s, a.file().node().text().slice(d.range), d.message)
+            format!("{} {}: {}", s, a.ast().node().text().slice(d.range), d.message)
         }).collect::<Vec<_>>().join("\n");
 
         report_diff(expected_diagnostics, &actual);

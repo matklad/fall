@@ -108,7 +108,7 @@ impl TestRenderer {
         let tests: String = match test {
             Some(test) => test,
 
-            None => file.analyse(|a| a.file().tests()
+            None => file.analyse(|a| a.ast().tests()
                 .filter_map(|t| t.contents())
                 .map(|t| t.to_string())
                 .collect::<Vec<_>>()

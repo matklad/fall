@@ -7,8 +7,7 @@ use analysis::{CallKind, RefKind};
 
 type Spans = Vec<(TextRange, &'static str)>;
 
-pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
-    let file = analysis.file();
+pub(crate) fn highlight(analysis: &Analysis) -> Spans {
     return Visitor(Vec::new())
         .visit_nodes(&[EOL_COMMENT], |spans, node| {
             colorize_node(node, "comment", spans)
@@ -61,7 +60,7 @@ pub ( crate ) fn highlight(analysis: &Analysis) -> Spans {
         .visit::<Attributes, _>(|spans, attrs| {
             colorize_node(attrs.node(), "meta", spans)
         })
-        .walk_recursively_children_first(file.node());
+        .walk_recursively_children_first(analysis.ast().node());
 }
 
 fn colorize_node(node: Node, color: &'static str, spans: &mut Spans) {
@@ -87,7 +86,7 @@ rule m(f) {}
     file.analyse(|a| {
         let spans = highlight(a);
         let result = spans.into_iter().map(|(range, d)| {
-            format!("{}: {}", a.file().node().text().slice(range), d)
+            format!("{}: {}", a.ast().node().text().slice(range), d)
         }).collect::<Vec<_>>().join("\n");
         assert_eq!(result, r##"tokenizer: keyword
 r"\d+": string
