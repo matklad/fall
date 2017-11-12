@@ -6,17 +6,25 @@ import {
     TextEdit
 } from 'vscode';
 
+
+type TextRange = [number, number]
+function TextRange2Range(document: TextDocument, [start, end]: TextRange): Range {
+    return new Range(document.positionAt(start), document.positionAt(end))
+}
+function TextRange2Location(document: TextDocument, range: TextRange): vscode.Location {
+    return new vscode.Location(document.uri, TextRange2Range(document, range))
+}
+function Range2TextRange(document: TextDocument, range: Range): TextRange {
+    return [document.offsetAt(range.start), document.offsetAt(range.end)]
+}
+
+
 interface FileStructureNode {
     name: string,
     range: TextRange,
     children: [FileStructureNode]
 }
-
-type TextRange = [number, number]
-
-let newFile: (string) => any = require('../../native').newFile
-
-var currentFile: {
+type File = {
     highlight: () => [TextRange, string][];
 
     syntaxTree: () => string;
@@ -35,14 +43,15 @@ var currentFile: {
     parseTest: (number, callback) => string;
 }
 
-export function activate(context: vscode.ExtensionContext) {
-    var activeEditor = window.activeTextEditor;
-    let syntaxTreeUri = vscode.Uri.parse('fall://syntaxTree')
-    let parsedTestUri = vscode.Uri.parse('fall://parsedTest')
-    let metricsUri = vscode.Uri.parse('fall://metrics')
+const uris = {
+    syntaxTree: vscode.Uri.parse('fall://syntaxTree'),
+    parsedTest: vscode.Uri.parse('fall://parsedTest'),
+    metrics: vscode.Uri.parse('fall://metrics')
+}
 
+const decorations = (() => {
     const decor = (obj) => vscode.window.createTextEditorDecorationType({ color: obj })
-    const decorations = {
+    return {
         background: decor("#3F3F3F"),
         meta: decor("#BFEBBF"),
         text: decor("#DCDCCC"),
@@ -58,182 +67,182 @@ export function activate(context: vscode.ExtensionContext) {
             borderStyle: "none none dashed none",
         })
     }
+})()
 
-    let fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
+const fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
 
-    class TextDocumentProvider implements vscode.TextDocumentContentProvider {
-        public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
 
-        public provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
-            if (uri.authority == 'syntaxTree') {
-                return currentFile.syntaxTree()
-            } else if (uri.authority == 'parsedTest') {
-                return new Promise((resolve, reject) => {
-                    currentFile.parseTest(activeTest, (err, value) => {
-                        if (err) return reject(err)
-                        resolve(value)
-                    })
+
+var activeEditor: vscode.TextEditor = null
+var currentFile: File = null
+var currentTest = null
+
+function isFallDocument(doc: TextDocument) {
+    return (activeEditor != null && activeEditor.document == doc)
+}
+
+
+let newFile: (string) => File = require('../../native').newFile
+function switchEditor(editor) {
+    if (editor != null && editor.document.languageId == "fall") {
+        activeEditor = editor
+        currentFile = newFile(editor.document.getText())
+    } else {
+        activeEditor = null
+        currentFile = null
+    }
+}
+
+class TextDocumentProvider implements vscode.TextDocumentContentProvider {
+    public eventEmitter = new vscode.EventEmitter<vscode.Uri>()
+
+    public provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
+        if (uri.authority == 'syntaxTree') {
+            return currentFile.syntaxTree()
+        } else if (uri.authority == 'parsedTest') {
+            return new Promise((resolve, reject) => {
+                currentFile.parseTest(currentTest, (err, value) => {
+                    if (err) return reject(err)
+                    resolve(value)
                 })
-            } else if (uri.authority == "metrics") {
-                return currentFile.metrics()
-            } else {
-                console.log(uri);
+            })
+        } else if (uri.authority == "metrics") {
+            return currentFile.metrics()
+        } else {
+            console.log(uri);
+        }
+    }
+
+    get onDidChange(): vscode.Event<vscode.Uri> {
+        return this.eventEmitter.event
+    }
+}
+const textDocumentProvider = new TextDocumentProvider()
+
+class CodeActionProvider implements vscode.CodeActionProvider {
+    provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
+        if (!isFallDocument(document)) return
+        let range = Range2TextRange(document, _range);
+        let test = currentFile.testAtOffset(range[0]);
+        if (test != null) {
+            return [{
+                title: "Parse test",
+                command: 'extension.applyContextAction',
+                arguments: [-1, test]
+            }]
+        }
+
+        let actions = currentFile.contextActions(range);
+        return actions.map((id) => {
+            return {
+                title: id,
+                command: 'extension.applyContextAction',
+                arguments: [range, id]
             }
-        }
-
-        get onDidChange(): vscode.Event<vscode.Uri> {
-            return this.eventEmitter.event
-        }
+        })
     }
-    let textDocumentProvider = new TextDocumentProvider();
+}
 
-    var activeTest = null
-
-    class CodeActionProvider implements vscode.CodeActionProvider {
-        provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, token: CancellationToken): Command[] {
-            let range: TextRange = [
-                document.offsetAt(_range.start),
-                document.offsetAt(_range.end)
-            ];
-            let test = currentFile.testAtOffset(range[0]);
-            if (test != null) {
-                return [{
-                    title: "Parse test",
-                    command: 'extension.applyContextAction',
-                    arguments: [-1, test]
-                }]
-            }
-
-            let actions = currentFile.contextActions(range);
-            return actions.map((id) => {
-                return {
-                    title: id,
-                    command: 'extension.applyContextAction',
-                    arguments: [range, id]
-                }
-            })
-        }
+class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+    provideDocumentSymbols(document: TextDocument, token: CancellationToken) {
+        if (!isFallDocument(document)) return
+        return currentFile.structure().map((node) => {
+            return new SymbolInformation(
+                node.name,
+                vscode.SymbolKind.Function,
+                TextRange2Range(document, node.range),
+                null,
+                null
+            )
+        })
     }
+}
 
-    function convertRange(document: TextDocument, [start, end]: TextRange): Range {
-        return new Range(document.positionAt(start), document.positionAt(end))
+class DefinitionProvider implements vscode.DefinitionProvider {
+    provideDefinition(document: TextDocument, position: Position, token: CancellationToken): vscode.Location {
+        if (!isFallDocument(document)) return
+        let range = currentFile.resolveReference(document.offsetAt(position))
+        if (range == null) return null
+        return TextRange2Location(document, range)
     }
+}
 
-    class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
-        provideDocumentSymbols(document: TextDocument, token: CancellationToken) {
-            if (!activeEditor) return
-            if (activeEditor.document.languageId != "fall") return
-            if (document != activeEditor.document) return null
-            return currentFile.structure().map((node) => {
-                return new SymbolInformation(
-                    node.name,
-                    vscode.SymbolKind.Function,
-                    convertRange(document, node.range),
-                    null,
-                    null
-                )
-            })
-        }
+class ReferenceProvider implements vscode.ReferenceProvider {
+    provideReferences(document: TextDocument, position: Position, context: vscode.ReferenceContext, token: CancellationToken): vscode.Location[] {
+        if (!isFallDocument(document)) return
+        return currentFile.findUsages(document.offsetAt(position))
+            .map((range) => TextRange2Location(document, range))
     }
+}
 
-    class DefinitionProvider implements vscode.DefinitionProvider {
-        provideDefinition(document: TextDocument, position: Position, token: CancellationToken): vscode.Location {
-            if (!activeEditor) return
-            if (activeEditor.document.languageId != "fall") return
-            if (document != activeEditor.document) return null
-            let range = currentFile.resolveReference(document.offsetAt(position))
-            if (range == null) return null
-            return new vscode.Location(document.uri, convertRange(document, range))
+class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
+    provideDocumentFormattingEdits(document: TextDocument, options: vscode.FormattingOptions, token: CancellationToken): TextEdit[] {
+        if (!isFallDocument(document)) return
+        return currentFile.reformat().map((op) => {
+            return TextEdit.replace(TextRange2Range(activeEditor.document, op.delete), op.insert)
+        })
+    }
+}
+
+function highlight() {
+    if (!activeEditor) return
+    
+
+    let decorationSets = {}
+    for (let key in decorations) {
+        decorationSets[key] = []
+    }
+    textDocumentProvider.eventEmitter.fire(uris.syntaxTree)
+
+    for (let [_range, type] of currentFile.highlight()) {
+        let range = TextRange2Range(activeEditor.document, _range)
+        if (!decorationSets[type]) {
+            console.log(type)
+            continue
         }
+        decorationSets[type].push(range)
     }
 
-    class ReferenceProvider implements vscode.ReferenceProvider {
-        provideReferences(document: TextDocument, position: Position, context: vscode.ReferenceContext, token: CancellationToken): vscode.Location[] {
-            if (!activeEditor) return
-            if (activeEditor.document.languageId != "fall") return
-            if (document != activeEditor.document) return null
-            let usages = currentFile.findUsages(document.offsetAt(position))
-            return usages.map((range) => new vscode.Location(document.uri, convertRange(document, range)))
-        }
+    for (let type in decorationSets) {
+        let deco = decorations[type]
+        let ranges = decorationSets[type]
+        activeEditor.setDecorations(deco, ranges)
     }
 
-    class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
-        provideDocumentFormattingEdits(document: TextDocument, options: vscode.FormattingOptions, token: CancellationToken): TextEdit[] {
-            if (!activeEditor) return
-            if (activeEditor.document.languageId != "fall") return
-            if (document != activeEditor.document) return null
-            let edit = currentFile.reformat()
-            
-            return edit.ops.map((op) => {
-                return TextEdit.replace(convertRange(activeEditor.document, op.delete), op.insert)
-            })
-        }
-    }
+    fallDiagnostics.clear()
+    fallDiagnostics.set(
+        activeEditor.document.uri,
+        currentFile.diagnostics().map((d) => {
+            let range = TextRange2Range(activeEditor.document, d.range)
 
-    function highlight() {
-        if (!activeEditor) return
-        if (activeEditor.document.languageId != "fall") return
-        currentFile = newFile(activeEditor.document.getText())
+            let severity = d.severity == "Error"
+                ? vscode.DiagnosticSeverity.Error
+                : vscode.DiagnosticSeverity.Warning
 
-        let decorationSets = {}
-        for (let key in decorations) {
-            decorationSets[key] = []
-        }
-        let text = activeEditor.document.getText()
-        textDocumentProvider.eventEmitter.fire(syntaxTreeUri)
+            return new vscode.Diagnostic(range, d.message, severity)
+        })
+    )
+    textDocumentProvider.eventEmitter.fire(uris.metrics)
+}
 
-        for (let [[x, y], type] of currentFile.highlight()) {
-            if (!decorationSets[type]) {
-                console.log(x, y, type)
-                continue
-            }
 
-            let px = activeEditor.document.positionAt(x)
-            let py = activeEditor.document.positionAt(y)
-            decorationSets[type].push(new vscode.Range(px, py))
-        }
-
-        for (let type in decorationSets) {
-            let deco = decorations[type]
-            let ranges = decorationSets[type]
-            activeEditor.setDecorations(deco, ranges)
-        }
-
-        fallDiagnostics.clear()
-        fallDiagnostics.set(
-            activeEditor.document.uri,
-            currentFile.diagnostics().map((d) => {
-                let range = new Range(
-                    activeEditor.document.positionAt(d.range[0]),
-                    activeEditor.document.positionAt(d.range[1]),
-                )
-                
-                let severity = d.severity == "Error"
-                    ? vscode.DiagnosticSeverity.Error
-                    : vscode.DiagnosticSeverity.Warning
-
-                return new vscode.Diagnostic(range, d.message, severity)
-            })
-        )
-        textDocumentProvider.eventEmitter.fire(metricsUri)
-        
-    }
+export function activate(context: vscode.ExtensionContext) {
+    switchEditor(window.activeTextEditor)
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
-        activeEditor = editor
+        switchEditor(editor)
         highlight()
     }, null, context.subscriptions)
-    highlight()
 
-
-    vscode.workspace.onDidChangeTextDocument(event => {
-        if (activeEditor && event.document === activeEditor.document) {
+    vscode.workspace.onDidChangeTextDocument(event => {        
+        if (isFallDocument(event.document)) {
+            currentFile = newFile(event.document.getText())
             highlight()
         }
     }, null, context.subscriptions)
 
     vscode.workspace.onDidSaveTextDocument(event => {
-        textDocumentProvider.eventEmitter.fire(parsedTestUri)
+        textDocumentProvider.eventEmitter.fire(uris.parsedTest)
     })
 
     let providers = [
@@ -247,11 +256,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     let commands = [
         vscode.commands.registerCommand('extension.showSyntaxTree', async () => {
-            let document = await vscode.workspace.openTextDocument(syntaxTreeUri)
+            let document = await vscode.workspace.openTextDocument(uris.syntaxTree)
             vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         }),
         vscode.commands.registerCommand('extension.showMetrics', async () => {
-            let document = await vscode.workspace.openTextDocument(metricsUri)
+            let document = await vscode.workspace.openTextDocument(uris.metrics)
             vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         }),
         vscode.commands.registerCommand('extension.semanticSelection', () => {
@@ -271,9 +280,9 @@ export function activate(context: vscode.ExtensionContext) {
             if (!activeEditor) return
             if (activeEditor.document.languageId != "fall") return
             if (offset == -1) {
-                activeTest = id
-                textDocumentProvider.eventEmitter.fire(parsedTestUri)
-                let document = await vscode.workspace.openTextDocument(parsedTestUri)
+                currentTest = id
+                textDocumentProvider.eventEmitter.fire(uris.parsedTest)
+                let document = await vscode.workspace.openTextDocument(uris.parsedTest)
                 vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
                 return
             }
@@ -281,7 +290,7 @@ export function activate(context: vscode.ExtensionContext) {
             let edit = currentFile.applyContextAction(offset, id);
             return activeEditor.edit((builder) => {
                 for (let op of edit.ops) {
-                    builder.replace(convertRange(activeEditor.document, op.delete), op.insert)
+                    builder.replace(TextRange2Range(activeEditor.document, op.delete), op.insert)
                 }
             })
         })
