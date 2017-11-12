@@ -94,30 +94,25 @@ impl Task for RenderTask {
 
 #[derive(Serialize)]
 struct VsEdit {
-    ops: Vec<VsOp>
-}
-
-#[derive(Serialize)]
-struct VsOp {
     delete: TextRange,
     insert: String,
 }
 
-fn convert_edit(edit: TextEdit) -> VsEdit {
-    let mut result = VsEdit { ops: Vec::new() };
+fn convert_edit(edit: TextEdit) -> Vec<VsEdit> {
+    let mut result = Vec::new();
     let mut offset = tu(0);
     for op in edit.ops {
         match op {
             TextEditOp::Copy(range) => {
                 if range.start() != offset {
                     let range = TextRange::from_to(offset, range.start());
-                    result.ops.push(VsOp { delete: range, insert: String::new() })
+                    result.push(VsEdit { delete: range, insert: String::new() })
                 }
                 offset = range.end();
             }
             TextEditOp::Insert(text) => {
                 let range = TextRange::from_len(offset, tu(0));
-                result.ops.push(VsOp { delete: range, insert: text.to_string() })
+                result.push(VsEdit { delete: range, insert: text.to_string() })
             }
         }
     }

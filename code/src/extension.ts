@@ -287,9 +287,8 @@ export function activate(context: vscode.ExtensionContext) {
                 return
             }
 
-            let edit = currentFile.applyContextAction(offset, id);
             return activeEditor.edit((builder) => {
-                for (let op of edit.ops) {
+                for (let op of currentFile.applyContextAction(offset, id)) {
                     builder.replace(TextRange2Range(activeEditor.document, op.delete), op.insert)
                 }
             })
