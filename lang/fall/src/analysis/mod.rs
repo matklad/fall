@@ -67,11 +67,7 @@ pub struct FileWithAnalysis {
 }
 
 impl FileWithAnalysis {
-    pub fn new(text: String) -> FileWithAnalysis {
-        FileWithAnalysis::from_file(::parse(text))
-    }
-
-    fn from_file(file: File) -> FileWithAnalysis {
+    pub fn new(file: File) -> FileWithAnalysis {
         FileWithAnalysis {
             rent: rent::R::new(Box::new(file), |file| {
                 Analysis::new(FallFile::wrap(file.root()).unwrap())

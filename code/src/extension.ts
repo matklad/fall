@@ -25,6 +25,8 @@ interface FileStructureNode {
     children: [FileStructureNode]
 }
 type File = {
+    change: (any) => File;
+
     highlight: () => [TextRange, string][];
 
     syntaxTree: () => string;
@@ -76,13 +78,21 @@ const fallDiagnostics = vscode.languages.createDiagnosticCollection("fall")
 var activeEditor: vscode.TextEditor = null
 var currentFile: File = null
 var currentTest = null
+var localMetrics = ""
 
 function isFallDocument(doc: TextDocument) {
     return (activeEditor != null && activeEditor.document == doc)
 }
 
-
-let newFile: (string) => File = require('../../native').newFile
+const native = require('../../native')
+function newFile(text): File {
+    console.log("newFile");
+    let start = new Date().getTime()
+    let result = native.newFile(text)
+    let end = new Date().getTime()
+    localMetrics = "full reparse " + (end - start) + " ms"
+    return result
+}
 function switchEditor(editor) {
     if (editor != null && editor.document.languageId == "fall") {
         activeEditor = editor
@@ -107,7 +117,7 @@ class TextDocumentProvider implements vscode.TextDocumentContentProvider {
                 })
             })
         } else if (uri.authority == "metrics") {
-            return currentFile.metrics()
+            return localMetrics + "\n\n" + currentFile.metrics()
         } else {
             console.log(uri);
         }
@@ -236,7 +246,22 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeTextDocument(event => {        
         if (isFallDocument(event.document)) {
-            currentFile = newFile(event.document.getText())
+            if (event.contentChanges.length == 1) {
+                let edits = event.contentChanges.map((change) => {
+                    let start = event.document.offsetAt(change.range.start)
+                    return {
+                        "delete": [start, start + change.rangeLength],
+                        "insert": change.text
+                    }
+                })
+                let start = new Date().getTime()
+                currentFile = currentFile.change(edits)
+                let end = new Date().getTime()
+                localMetrics = "Partial reparse " + (end - start) + " ms"
+            } else {
+                currentFile = newFile(event.document.getText())
+            }
+            
             highlight()
         }
     }, null, context.subscriptions)

@@ -7,7 +7,12 @@ use ::*;
 mod api_impl;
 
 pub fn analyse(text: String) -> FileWithAnalysis {
-    FileWithAnalysis::new(text)
+    FileWithAnalysis::new(::parse(text))
+}
+
+pub fn edit(analysis: &Analysis, edit: TextEdit) -> FileWithAnalysis {
+    let new_file = analysis.file().edit(edit);
+    FileWithAnalysis::new(new_file)
 }
 
 pub fn tree_as_text(analysis: &Analysis) -> String {

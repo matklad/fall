@@ -26,7 +26,7 @@ use neon::task::Task;
 use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
-use fall_tree::{TextRange, TextEdit, TextEditOp, tu};
+use fall_tree::{Text, TextRange, TextEdit, TextEditBuilder, TextEditOp, tu};
 use fall_gen::TestRenderer;
 
 
@@ -34,11 +34,24 @@ use fall_gen::TestRenderer;
 declare_types! {
   pub class JsFile for FileObj {
     init(call) { FileObj::init(call) }
+
+    method change(call) {
+        let scope = call.scope;
+
+        let this = call.arguments.this(scope);
+        let edits = call.arguments.require(scope, 0)?;
+
+        let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
+        let constructor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
+        let file = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(this.upcast()).chain(::std::iter::once(edits)))?;
+        Ok(file.upcast())
+    }
+
     method highlight(call) { m(call, editor_api::highlight) }
 
     method syntaxTree(call) { m(call, editor_api::tree_as_text) }
     method structure(call) { m(call, editor_api::structure) }
-    method reformat(call) {  m(call, |a| convert_edit(editor_api::reformat(a))) }
+    method reformat(call) {  m(call, |a| to_vs_edits(editor_api::reformat(a))) }
     method metrics(call) { m(call, |a| format!("{}", a.file().metrics())) }
     method diagnostics(call) { m(call, editor_api::diagnostics) }
 
@@ -50,7 +63,7 @@ declare_types! {
 
     method applyContextAction(call) {
       m2(call, |a, arg1, arg2: String| {
-        convert_edit(editor_api::apply_context_action(a, arg1, &arg2))
+        to_vs_edits(editor_api::apply_context_action(a, arg1, &arg2))
       })
     }
 
@@ -92,13 +105,13 @@ impl Task for RenderTask {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct VsEdit {
     delete: TextRange,
     insert: String,
 }
 
-fn convert_edit(edit: TextEdit) -> Vec<VsEdit> {
+fn to_vs_edits(edit: TextEdit) -> Vec<VsEdit> {
     let mut result = Vec::new();
     let mut offset = tu(0);
     for op in edit.ops {
@@ -119,6 +132,14 @@ fn convert_edit(edit: TextEdit) -> Vec<VsEdit> {
     return result;
 }
 
+fn from_vs_edits(text: Text, edits: Vec<VsEdit>) -> TextEdit {
+    let mut edit = TextEditBuilder::new(text);
+    for e in edits {
+        edit.replace(e.delete, e.insert)
+    }
+    edit.build()
+}
+
 pub struct FileObj {
     inner: Arc<FileWithAnalysis>
 }
@@ -126,8 +147,22 @@ pub struct FileObj {
 impl FileObj {
     fn init(call: FunctionCall<JsUndefined>) -> VmResult<FileObj> {
         let scope = call.scope;
-        let text: Handle<JsString> = call.arguments.require(scope, 0)?.check::<JsString>()?;
-        Ok(FileObj { inner: Arc::new(editor_api::analyse(text.value())) })
+        let file_with_analysis = match call.arguments.len() {
+            1 => {
+                let text: Handle<JsString> = call.arguments.require(scope, 0)?.check::<JsString>()?;
+                editor_api::analyse(text.value())
+            }
+            2 => {
+                let mut file: Handle<JsFile> = call.arguments.require(scope, 0)?.check::<JsFile>()?;
+                let edits = call.arguments.require(scope, 1)?;
+                let edits: Vec<VsEdit> = from_value(scope, edits)?;
+                let inner = file.grab(|file| file.inner.clone());
+                let edits = from_vs_edits(inner.file().text(), edits);
+                inner.analyse(|a| editor_api::edit(a, edits))
+            }
+            _ => panic!("Expected 1-2 arguments")
+        };
+        Ok(FileObj { inner: Arc::new(file_with_analysis) })
     }
 }
 
