@@ -96,7 +96,7 @@ impl<'a> Whitespacer<'a> {
         let mut current = 0;
         token_lens.push(current);
         for t in tokens {
-            current += t.len.into();
+            current += t.len.utf8_len();
             token_lens.push(current);
         }
 
@@ -181,7 +181,7 @@ impl<'a> Whitespacer<'a> {
     fn external_token(&self, token_idx: usize) -> (NodeType, &'a str) {
         let t = self.tokens[token_idx];
         let start = self.token_lens[token_idx];
-        (t.ty, &self.text[start .. start + usize::from(t.len)])
+        (t.ty, &self.text[start .. start + t.len.utf8_len()])
     }
 
     fn leaf(&self, token_idx: usize) -> WhiteNode {

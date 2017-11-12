@@ -5,6 +5,12 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TextUnit(pub (super) u32);
 
+impl TextUnit {
+    pub fn utf8_len(self) -> usize {
+        self.0 as usize
+    }
+}
+
 pub fn tu(value: u32) -> TextUnit {
     TextUnit(value)
 }
@@ -14,13 +20,6 @@ impl From<TextUnit> for u32 {
         tu.0
     }
 }
-
-impl From<TextUnit> for usize {
-    fn from(tu: TextUnit) -> usize {
-        tu.0 as usize
-    }
-}
-
 
 impl ops::Add<u32> for TextUnit {
     type Output = TextUnit;

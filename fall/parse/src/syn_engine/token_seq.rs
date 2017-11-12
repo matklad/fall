@@ -21,7 +21,7 @@ impl<'a> BlackTokens<'a> {
 
         let ws_len = tokens.iter()
             .take_while(|&&t| is_ws(t))
-            .map(|t| usize::from(t.len))
+            .map(|t| t.len.utf8_len())
             .sum::<usize>();
 
         BlackTokens {
@@ -75,7 +75,7 @@ impl<'a> TokenSeq<'a> {
             let next_idx = self.non_ws_indexes.get(1).map(|&BlackIdx(i)| i).unwrap_or(self.original_tokens.len());
             self.original_tokens[self.non_ws_indexes[0].0 .. next_idx]
                 .iter()
-                .map(|t| usize::from(t.len))
+                .map(|t| t.len.utf8_len())
                 .sum::<usize>()
         };
 
