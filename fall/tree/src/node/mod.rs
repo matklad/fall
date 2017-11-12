@@ -9,13 +9,21 @@ pub use self::immutable::{IToken, INode};
 
 pub struct File {
     imp: imp::FileImpl,
+    tokens: Vec<IToken>,
     inode: INode,
 }
 
 impl File {
-    pub fn new<T: Into<TextBuf>>(lang: Language, text: T, metrics: Metrics, node: INode) -> File {
+    pub fn new<T: Into<TextBuf>>(
+        lang: Language,
+        text: T,
+        metrics: Metrics,
+        tokens: Vec<IToken>,
+        node: INode
+    ) -> File {
         File {
             imp: imp::new_file(lang, text.into(), metrics, &node),
+            tokens,
             inode: node,
         }
     }
@@ -34,6 +42,10 @@ impl File {
 
     pub fn metrics(&self) -> &Metrics {
         self.imp.metrics()
+    }
+
+    pub fn tokens(&self) -> &[IToken] {
+        &self.tokens
     }
 
     pub fn inode(&self) -> INode {

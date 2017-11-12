@@ -6,16 +6,25 @@ pub struct TextEdit {
 }
 
 impl TextEdit {
-    pub fn apply(self, text: Text) -> TextBuf {
+    pub fn apply(&self, text: Text) -> TextBuf {
         let mut result = String::new();
-        for s in self.ops {
-            match s {
+        for s in self.ops.iter() {
+            match *s {
                 TextEditOp::Copy(range) => result += &text.slice(range).to_cow(),
-                TextEditOp::Insert(i) => result += &i.as_slice().to_cow(),
+                TextEditOp::Insert(ref i) => result += &i.as_slice().to_cow(),
             }
         }
 
         result.into()
+    }
+
+    pub fn damage(&self) -> Option<TextUnit> {
+        if let Some(&TextEditOp::Copy(range)) = self.ops.first() {
+            if range.start() == tu(0) {
+                return Some(range.end());
+            }
+        }
+        None
     }
 }
 
