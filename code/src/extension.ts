@@ -165,12 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
             let edit = currentFile.reformat()
             
             return edit.ops.map((op) => {
-                if (op.Insert != null) {
-                    let [pos, text] = op.Insert
-                    return TextEdit.insert(activeEditor.document.positionAt(pos), text)
-                } else if (op.Delete != null) {
-                    return TextEdit.delete(convertRange(activeEditor.document, op.Delete))
-                }
+                return TextEdit.replace(convertRange(activeEditor.document, op.delete), op.insert)
             })
         }
     }
@@ -286,12 +281,7 @@ export function activate(context: vscode.ExtensionContext) {
             let edit = currentFile.applyContextAction(offset, id);
             return activeEditor.edit((builder) => {
                 for (let op of edit.ops) {
-                    if (op.Insert != null) {
-                        let [pos, text] = op.Insert
-                        builder.insert(activeEditor.document.positionAt(pos), text)
-                    } else if (op.Delete != null) {
-                        builder.delete(convertRange(activeEditor.document, op.Delete))
-                    }
+                    builder.replace(convertRange(activeEditor.document, op.delete), op.insert)
                 }
             })
         })

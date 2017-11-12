@@ -26,7 +26,7 @@ use neon::task::Task;
 use neon_serde::{from_value, to_value};
 
 use lang_fall::{editor_api, FileWithAnalysis, Analysis};
-use fall_tree::{TextUnit, TextRange, TextEdit, TextEditOp, tu};
+use fall_tree::{TextRange, TextEdit, TextEditOp, tu};
 use fall_gen::TestRenderer;
 
 
@@ -98,9 +98,9 @@ struct VsEdit {
 }
 
 #[derive(Serialize)]
-enum VsOp {
-    Delete(TextRange),
-    Insert(TextUnit, String),
+struct VsOp {
+    delete: TextRange,
+    insert: String,
 }
 
 fn convert_edit(edit: TextEdit) -> VsEdit {
@@ -110,12 +110,14 @@ fn convert_edit(edit: TextEdit) -> VsEdit {
         match op {
             TextEditOp::Copy(range) => {
                 if range.start() != offset {
-                    result.ops.push(VsOp::Delete(TextRange::from_to(offset, range.start())))
+                    let range = TextRange::from_to(offset, range.start());
+                    result.ops.push(VsOp { delete: range, insert: String::new() })
                 }
                 offset = range.end();
             }
             TextEditOp::Insert(text) => {
-                result.ops.push(VsOp::Insert(offset, text.to_string()))
+                let range = TextRange::from_len(offset, tu(0));
+                result.ops.push(VsOp { delete: range, insert: text.to_string() })
             }
         }
     }
