@@ -2,24 +2,22 @@ use fall_tree::{Text, NodeType, ERROR, TextUnit, tu, IToken, TextRange};
 
 use LexRule;
 
-pub type Token = IToken;
-
-pub fn tokenize2<'f, 'r>(text: Text<'f>, tokenizer: &'r [LexRule]) -> TokenIter2<'f, 'r> {
-    TokenIter2 {
+pub fn tokenize<'f, 'r>(text: Text<'f>, tokenizer: &'r [LexRule]) -> TokenIter<'f, 'r> {
+    TokenIter {
         rest: text,
         offset: tu(0),
         rules: tokenizer,
     }
 }
 
-pub struct TokenIter2<'t, 'r> {
+pub struct TokenIter<'t, 'r> {
     rest: Text<'t>,
     offset: TextUnit,
     rules: &'r [LexRule],
 }
 
 
-impl<'t, 'r> Iterator for TokenIter2<'t, 'r> {
+impl<'t, 'r> Iterator for TokenIter<'t, 'r> {
     type Item = IToken;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -54,7 +52,7 @@ impl<'t, 'r> Iterator for TokenIter2<'t, 'r> {
     }
 }
 
-impl<'t, 'r> TokenIter2<'t, 'r> {
+impl<'t, 'r> TokenIter<'t, 'r> {
     fn bad_char(&mut self) -> IToken {
         let char_len = self.rest.to_cow().chars().next().unwrap().len_utf8();
         self.token(ERROR, char_len)
@@ -79,7 +77,7 @@ fn tokenize_longest_first_wins() {
     ];
 
     let text: ::fall_tree::TextBuf = "foo foob foobar".into();
-    let tokens: Vec<_> = tokenize2(text.as_slice(), rules)
+    let tokens: Vec<_> = tokenize(text.as_slice(), rules)
         .map(|t| t.ty.0)
         .collect();
     assert_eq!(tokens, vec![10, 1, 11, 1, 11]);

@@ -1,6 +1,4 @@
-use fall_tree::{Language, NodeType, tu};
-
-use ::lex_engine::Token;
+use fall_tree::{Language, NodeType, tu, IToken};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BlackIdx(pub usize);
@@ -8,12 +6,12 @@ pub struct BlackIdx(pub usize);
 pub struct BlackTokens<'a> {
     text: &'a str,
     non_ws_indexes: Vec<BlackIdx>,
-    original_tokens: &'a [Token],
+    original_tokens: &'a [IToken],
 }
 
 impl<'a> BlackTokens<'a> {
-    pub fn new(lang: &Language, text: &'a str, tokens: &'a [Token]) -> BlackTokens<'a> {
-        let is_ws = |t: Token| lang.node_type_info(t.ty).whitespace_like;
+    pub fn new(lang: &Language, text: &'a str, tokens: &'a [IToken]) -> BlackTokens<'a> {
+        let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
 
         let non_ws_indexes = tokens.iter().enumerate()
             .filter_map(|(i, &t)| if is_ws(t) { None } else { Some(BlackIdx(i)) })
@@ -47,12 +45,12 @@ impl<'a> BlackTokens<'a> {
 pub struct TokenSeq<'a> {
     pub text: &'a str,
     pub non_ws_indexes: &'a [BlackIdx],
-    pub original_tokens: &'a [Token],
+    pub original_tokens: &'a [IToken],
 }
 
 
 impl<'a> TokenSeq<'a> {
-    pub fn current(&self) -> Option<Token> {
+    pub fn current(&self) -> Option<IToken> {
         self.non_ws_indexes.first().map(|&BlackIdx(idx)| {
             self.original_tokens[idx]
         })

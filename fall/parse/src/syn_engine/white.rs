@@ -1,11 +1,10 @@
-use fall_tree::{NodeType, INode};
-use lex_engine::Token;
+use fall_tree::{NodeType, INode, IToken};
 use super::{BlackNode, BlackIdx};
 
 pub fn into_white(
     text: &str,
     node: BlackNode,
-    tokens: &[Token],
+    tokens: &[IToken],
     whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize
 ) -> WhiteNode {
     let file_ty = match node {
@@ -49,7 +48,7 @@ impl WhiteNode {
         WhiteNode { ty, token_range, children }
     }
 
-    pub fn into_inode(self, tokens: &[Token]) -> INode {
+    pub fn into_inode(self, tokens: &[IToken]) -> INode {
         let ty = self.ty.unwrap();
         assert_eq!(self.token_range, (0, tokens.len()));
         let mut result = INode::new(ty);
@@ -57,7 +56,7 @@ impl WhiteNode {
         result
     }
 
-    fn inject_into(self, parent: &mut INode, tokens: &[Token]) {
+    fn inject_into(self, parent: &mut INode, tokens: &[IToken]) {
         if self.children.is_empty() {
             let len = tokens[self.token_range.0..self.token_range.1]
                 .iter()
@@ -81,7 +80,7 @@ impl WhiteNode {
 
 struct Whitespacer<'a> {
     text: &'a str,
-    tokens: &'a [Token],
+    tokens: &'a [IToken],
     token_lens: Vec<usize>,
     whitespace_binder: &'a Fn(Option<NodeType>, Vec<(NodeType, &str)>, bool) -> usize,
 }
@@ -89,7 +88,7 @@ struct Whitespacer<'a> {
 impl<'a> Whitespacer<'a> {
     fn new(
         text: &'a str,
-        tokens: &'a [Token],
+        tokens: &'a [IToken],
         whitespace_binder: &'a Fn(Option<NodeType>, Vec<(NodeType, &str)>, bool) -> usize
     ) -> Whitespacer<'a> {
         let mut token_lens = Vec::with_capacity(tokens.len() + 1);

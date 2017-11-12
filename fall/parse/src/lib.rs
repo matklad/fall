@@ -11,8 +11,6 @@ use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics};
 
 mod lex_engine;
 
-pub use lex_engine::Token;
-
 mod syn_engine;
 
 /// Describes both lexical and syntactical grammar
@@ -44,7 +42,7 @@ impl Default for ParserDefinition {
 
 impl ParserDefinition {
     pub fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-        Box::new(lex_engine::tokenize2(text, &self.lexical_rules))
+        Box::new(lex_engine::tokenize(text, &self.lexical_rules))
     }
 
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
