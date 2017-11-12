@@ -85,7 +85,7 @@ fn create_parser_definition() -> ::fall_parse::ParserDefinition {
             LexRule::new(R_PAREN, "\\)", None),
             LexRule::new(NUMBER, "\\d+", None),
             LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
-            LexRule::new(HASH_STRING, "r#*", Some(parse_raw_string)),
+            LexRule::new(HASH_STRING, "r#*\"", Some(parse_raw_string)),
             LexRule::new(IDENT, "\\w+", None),
         ],
         syntactical_rules: serde_json::from_str(parser_json).unwrap(),

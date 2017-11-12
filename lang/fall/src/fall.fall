@@ -60,7 +60,7 @@ tokenizer {
   // Besides the name and the pattern, you can optionally provide
   // a name of a Rust function which will be used to parse the token.
   // See `verbatim` block below.
-  hash_string r"r#*" 'parse_raw_string'
+  hash_string r#"r#*""# 'parse_raw_string'
   ident r"\w+"
 }
 
