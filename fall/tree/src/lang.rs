@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use {TextEdit, File, NodeType, NodeTypeInfo, INode, Metrics};
+use {Text, TextBuf, TextEdit, File, NodeType, NodeTypeInfo, IToken, INode, Metrics};
 
 #[derive(Clone)]
 pub struct Language {
@@ -11,18 +11,19 @@ impl Language {
         Language { imp: Arc::new(imp) }
     }
 
-    pub fn parse(&self, text: String) -> File {
+    pub fn parse<T: Into<TextBuf>>(&self, text: T) -> File {
+        let text: TextBuf = text.into();
         let metrics = Metrics::new();
-        let inode = self.imp.parse(&text, &metrics);
+        let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
+            self.imp.tokenize(text.as_slice()).collect()
+        });
+        let inode = self.imp.parse(text.as_slice(), &tokens, &metrics);
         File::new(self.clone(), text, metrics, inode)
     }
 
     pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
         let new_text = edit.apply(file.text());
-        let metrics = Metrics::new();
-        let inode = self.imp.parse(&new_text.as_slice().to_cow(), &metrics);
-        let result = File::new(self.clone(), new_text, metrics, inode);
-        return result;
+        self.parse(new_text)
     }
 
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -31,6 +32,7 @@ impl Language {
 }
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn parse(&self, text: &str, metrics: &Metrics) -> INode;
+    fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't>;
+    fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode;
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }

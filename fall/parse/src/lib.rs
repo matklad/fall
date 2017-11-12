@@ -7,7 +7,7 @@ pub extern crate serde_json;
 
 use regex::Regex;
 use syn_engine::BlackTokens;
-use fall_tree::{Language, NodeType, INode, Metrics};
+use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics};
 
 mod lex_engine;
 
@@ -43,11 +43,13 @@ impl Default for ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn parse(&self, text: &str, lang: &Language, metrics: &Metrics) -> INode {
-        let tokens = metrics.measure_time("lexing", || {
-            lex_engine::tokenize(&text, &self.lexical_rules).collect::<Vec<_>>()
-        });
+    pub fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
+        Box::new(lex_engine::tokenize2(text, &self.lexical_rules))
+    }
 
+    pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
+        let text = text.to_cow();
+        let text = text.as_ref();
         let black_tokens = BlackTokens::new(lang, text, &tokens);
         let (black_node, ticks) = metrics.measure_time("parsing", || {
             syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())

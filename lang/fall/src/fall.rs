@@ -1,5 +1,5 @@
 use fall_parse::runtime::*;
-use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, INode};
+use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, IToken, INode};
 pub use self::fall_tree::ERROR;
 
 pub const WHITESPACE: NodeType = NodeType(100);
@@ -101,8 +101,12 @@ pub fn language() -> &'static Language {
 
             struct Impl { parser_definition: ParserDefinition };
             impl LanguageImpl for Impl {
-                fn parse(&self, text: &str, metrics: &Metrics) -> INode {
-                    self.parser_definition.parse(text, &LANG, metrics)
+                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
+                    self.parser_definition.tokenize(text)
+                }
+
+                fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
+                    self.parser_definition.parse(text, tokens, &LANG, metrics)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -180,7 +184,7 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use self::fall_tree::{Text, AstNode, AstChildren, Node};
+use self::fall_tree::{AstNode, AstChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

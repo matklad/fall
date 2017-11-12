@@ -16,6 +16,8 @@ impl<'f> Text<'f> {
         self.range.end() - self.range.start()
     }
 
+    pub fn is_empty(self) -> bool { self.range.is_empty() }
+
     pub fn slice(&self, r: TextRange) -> Text<'f> {
         assert!(r.end() <= self.len());
         let start = self.range.start() + r.start();

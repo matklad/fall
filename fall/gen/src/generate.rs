@@ -306,7 +306,7 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
 
 const TEMPLATE: &'static str = r#####"
 use fall_parse::runtime::*;
-use self::fall_tree::{NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, INode};
+use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, IToken, INode};
 pub use self::fall_tree::ERROR;
 
 {% for node_type in node_types %}
@@ -343,8 +343,12 @@ pub fn language() -> &'static Language {
 
             struct Impl { parser_definition: ParserDefinition };
             impl LanguageImpl for Impl {
-                fn parse(&self, text: &str, metrics: &Metrics) -> INode {
-                    self.parser_definition.parse(text, &LANG, metrics)
+                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
+                    self.parser_definition.tokenize(text)
+                }
+
+                fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
+                    self.parser_definition.parse(text, tokens, &LANG, metrics)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
@@ -370,7 +374,7 @@ pub fn language() -> &'static Language {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use self::fall_tree::{Text, AstNode, AstChildren, Node};
+use self::fall_tree::{AstNode, AstChildren, Node};
 use self::fall_tree::search::{child_of_type_exn, child_of_type};
 
 {% for node in ast_nodes %}
