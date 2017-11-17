@@ -36,8 +36,8 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
         }
 
         let args = match rule.body() {
-            Expr::BlockExpr(block) => match single(block.alts()) {
-                Some(alt) => match alt {
+            Expr::BlockExpr(block) => match block.alts().collect_tuple() {
+                Some((alt, )) => match alt {
                     Expr::SeqExpr(args) => args.parts(),
                     _ => return None,
                 },
@@ -54,7 +54,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
 
         let result = match kind {
             "postfix" => {
-                if let Some((_expr, op)) = pair(args) {
+                if let Some((_expr, op)) = args.collect_tuple() {
                     PratVariant::Postfix(PrattOp {
                         op,
                         priority: priority.unwrap_or(999)
@@ -68,7 +68,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
                 }
             }
             "prefix" => {
-                if let Some((op, _expr)) = pair(args) {
+                if let Some((op, _expr)) = args.collect_tuple() {
                     PratVariant::Prefix(PrattOp {
                         op,
                         priority: priority.unwrap_or(999)
@@ -82,7 +82,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
                 }
             }
             "bin" => {
-                match (triple(args), priority) {
+                match (args.collect_tuple(), priority) {
                     (Some((_lhs, op, _rhs)), Some(priority)) => PratVariant::Bin(
                         PrattOp { op, priority }
                     ),
@@ -112,20 +112,6 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
 fn single<I: Iterator>(mut i: I) -> Option<I::Item> {
     match (i.next(), i.next()) {
         (Some(a), None) => Some(a),
-        _ => None,
-    }
-}
-
-fn pair<I: Iterator>(mut i: I) -> Option<(I::Item, I::Item)> {
-    match (i.next_tuple(), i.next()) {
-        (Some((a, b)), None) => Some((a, b)),
-        _ => None,
-    }
-}
-
-fn triple<I: Iterator>(mut i: I) -> Option<(I::Item, I::Item, I::Item)> {
-    match (i.next_tuple(), i.next()) {
-        (Some((a, b, c)), None) => Some((a, b, c)),
         _ => None,
     }
 }

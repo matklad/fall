@@ -1,3 +1,6 @@
 [workspace]
 members = ["fall/gen", "fall/tree", "fall/parse", "fall/test", "fall/text",
            "lang/fall", "lang/json", "lang/rust" ]
+
+[patch.crates-io]
+itertools = { git = "https://github.com/bluss/rust-itertools.git" }
