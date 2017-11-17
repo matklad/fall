@@ -1,6 +1,12 @@
 use std::sync::Arc;
 use {Text, TextBuf, TextRange, TextEdit, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
 
+pub trait LanguageImpl: 'static + Send + Sync {
+    fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't>;
+    fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode;
+    fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
+}
+
 #[derive(Clone)]
 pub struct Language {
     imp: Arc<LanguageImpl>
@@ -59,10 +65,4 @@ impl Language {
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
         self.imp.node_type_info(ty)
     }
-}
-
-pub trait LanguageImpl: 'static + Send + Sync {
-    fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't>;
-    fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode;
-    fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }

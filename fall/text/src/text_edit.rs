@@ -5,6 +5,12 @@ pub struct TextEdit {
     pub ops: Vec<TextEditOp>,
 }
 
+pub enum TextEditOp {
+    Copy(TextRange),
+    Insert(TextBuf),
+}
+
+
 impl TextEdit {
     pub fn apply(&self, text: Text) -> TextBuf {
         let mut result = String::new();
@@ -93,12 +99,6 @@ impl TextEditBuilder {
         self.last_offset += len
     }
 }
-
-pub enum TextEditOp {
-    Copy(TextRange),
-    Insert(TextBuf),
-}
-
 
 #[cfg(test)]
 mod tests {
