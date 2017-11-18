@@ -1,5 +1,5 @@
 use {SynRule, Expr};
-use fall_tree::{TextUnit, TextRange, NodeType, ERROR};
+use fall_tree::{NodeType, ERROR};
 
 use super::{TokenSeq, BlackIdx};
 mod pratt;
@@ -14,44 +14,29 @@ pub enum BlackNode {
     Composite {
         ty: Option<NodeType>,
         children: Vec<BlackNode>,
+        token_range: Option<(BlackIdx, BlackIdx)>,
     }
 }
 
 impl BlackNode {
     pub fn push_child(&mut self, child: BlackNode) {
         match *self {
-            BlackNode::Composite { ref mut children, .. } => children.push(child),
+            BlackNode::Composite { ref mut children, ref mut token_range, .. } => {
+                let new_token_range = match (*token_range, child.token_range()) {
+                    (Some((l, _), ), Some((_, r))) => Some((l, r)),
+                    (range, None) | (None, range) => range,
+                };
+                *token_range = new_token_range;
+                children.push(child)
+            },
             BlackNode::Leaf { .. } => panic!("Can't add children to a leaf node"),
         }
-    }
-
-    #[allow(unused)]
-    pub fn debug(&self, tokens: &TokenSeq) -> String {
-        let (BlackIdx(l), BlackIdx(r)) = match self.token_range() {
-            Some(range) => range,
-            _ => return "EMPTY-NODE".to_owned()
-        };
-        let mut result = String::new();
-        let mut start = tokens.original_tokens[..l].iter().map(|t| t.len).sum::<TextUnit>();
-        for t in tokens.original_tokens[l..r].iter() {
-            result += &tokens.text[TextRange::from_len(start, t.len)];
-            start += t.len;
-        }
-        result
     }
 
     pub fn token_range(&self) -> Option<(BlackIdx, BlackIdx)> {
         match *self {
             BlackNode::Leaf { token_idx, .. } => Some((token_idx, BlackIdx(token_idx.0 + 1))),
-            BlackNode::Composite { ref children, .. } => {
-                let mut non_empty_children = children.iter().filter_map(|n| n.token_range());
-                if let Some(first) = non_empty_children.next() {
-                    let last = non_empty_children.last().unwrap_or(first);
-                    Some((first.0, last.1))
-                } else {
-                    None
-                }
-            }
+            BlackNode::Composite { token_range, .. } => token_range
         }
     }
 }
@@ -98,11 +83,11 @@ impl<'p> Ctx<'p> {
     }
 
     fn create_composite_node(&mut self, ty: Option<NodeType>) -> BlackNode {
-        BlackNode::Composite { ty, children: Vec::new() }
+        BlackNode::Composite { ty, children: Vec::new(), token_range: None }
     }
 
     fn create_error_node(&mut self) -> BlackNode {
-        BlackNode::Composite { ty: Some(ERROR), children: Vec::new() }
+        BlackNode::Composite { ty: Some(ERROR), children: Vec::new(), token_range: None }
     }
 
     fn create_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
@@ -112,21 +97,22 @@ impl<'p> Ctx<'p> {
 
     fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>, ty: NodeType, text: &str)
                                        -> Option<(BlackNode, TokenSeq<'t>)> {
-        let (token_idxs, tokens) = match tokens.bump_by_text(text) {
+        let n_tokens = match tokens.bump_by_text(text) {
             Some(x) => x,
             None => return None,
         };
-        let node = BlackNode::Composite {
-            ty: Some(ty),
-            children: token_idxs.iter()
-                .map(|&token_idx| BlackNode::Leaf { ty: None, token_idx })
-                .collect(),
-        };
+        let mut node = self.create_composite_node(Some(ty));
+        let mut tokens = tokens;
+        for _ in 0..n_tokens {
+            let ((_, token_idx), rest) = tokens.bump();
+            tokens = rest;
+            node.push_child(BlackNode::Leaf {ty: None, token_idx})
+        }
         Some((node, tokens))
     }
 
     fn create_success_node<'t>(&mut self, tokens: TokenSeq<'t>) -> (BlackNode, TokenSeq<'t>) {
-        (BlackNode::Composite { ty: None, children: Vec::new() }, tokens)
+        (BlackNode::Composite { ty: None, children: Vec::new(), token_range: None }, tokens)
     }
 
     fn push_child(&self, parent: &mut BlackNode, child: BlackNode) {

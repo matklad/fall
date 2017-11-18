@@ -3,9 +3,7 @@ name = "lang_rust"
 version = "0.1.0"
 
 [dependencies]
-fall_tree = { path = "../../fall/tree" }
-fall_parse = { path = "../../fall/parse" }
-
-[dev-dependencies]
 file = "*"
 elapsed = "*"
+fall_tree = { path = "../../fall/tree" }
+fall_parse = { path = "../../fall/parse" }

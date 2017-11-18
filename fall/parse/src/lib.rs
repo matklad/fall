@@ -46,9 +46,9 @@ impl ParserDefinition {
     }
 
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
+        let black_tokens = BlackTokens::new(lang, text, &tokens);
         let text = text.to_cow();
         let text = text.as_ref();
-        let black_tokens = BlackTokens::new(lang, text, &tokens);
         let (black_node, ticks) = metrics.measure_time("parsing", || {
             syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())
         });

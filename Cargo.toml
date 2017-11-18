@@ -4,3 +4,6 @@ members = ["fall/gen", "fall/tree", "fall/parse", "fall/test", "fall/text",
 
 [patch.crates-io]
 itertools = { git = "https://github.com/bluss/rust-itertools.git" }
+
+[profile.release]
+debug = true

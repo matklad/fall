@@ -119,7 +119,7 @@ impl<'a> Whitespacer<'a> {
                     token_range: (token_idx, token_idx + 1),
                     children: Vec::new(),
                 },
-            BlackNode::Composite { ty, mut children } => {
+            BlackNode::Composite { ty, mut children, .. } => {
                 let mut internal_children = Vec::new();
                 children.reverse();
 

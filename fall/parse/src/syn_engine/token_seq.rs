@@ -1,29 +1,32 @@
-use fall_tree::{Language, NodeType, tu, IToken};
+use fall_tree::{Language, NodeType, tu, IToken, Text, TextUnit, TextRange};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BlackIdx(pub usize);
 
 pub struct BlackTokens<'a> {
-    text: &'a str,
-    non_ws_indexes: Vec<BlackIdx>,
+    text: Text<'a>,
+    non_ws_indexes: Vec<(TextUnit, BlackIdx)>,
     original_tokens: &'a [IToken],
 }
 
 impl<'a> BlackTokens<'a> {
-    pub fn new(lang: &Language, text: &'a str, tokens: &'a [IToken]) -> BlackTokens<'a> {
+    pub fn new(lang: &Language, text: Text<'a>, tokens: &'a [IToken]) -> BlackTokens<'a> {
         let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
 
-        let non_ws_indexes = tokens.iter().enumerate()
-            .filter_map(|(i, &t)| if is_ws(t) { None } else { Some(BlackIdx(i)) })
-            .collect();
-
-        let ws_len = tokens.iter()
-            .take_while(|&&t| is_ws(t))
-            .map(|t| t.len.utf8_len())
-            .sum::<usize>();
+        let non_ws_indexes = {
+            let mut indexes = Vec::new();
+            let mut len = tu(0);
+            for (i, &t) in tokens.iter().enumerate() {
+                if !is_ws(t) {
+                    indexes.push((len, BlackIdx(i)))
+                }
+                len += t.len
+            }
+            indexes
+        };
 
         BlackTokens {
-            text: &text[ws_len..],
+            text,
             non_ws_indexes,
             original_tokens: tokens,
         }
@@ -43,15 +46,15 @@ impl<'a> BlackTokens<'a> {
 /// like whitespace or comments.
 #[derive(Clone, Copy, Debug)]
 pub struct TokenSeq<'a> {
-    pub text: &'a str,
-    pub non_ws_indexes: &'a [BlackIdx],
-    pub original_tokens: &'a [IToken],
+    text: Text<'a>,
+    non_ws_indexes: &'a [(TextUnit, BlackIdx)],
+    original_tokens: &'a [IToken],
 }
 
 
 impl<'a> TokenSeq<'a> {
     pub fn current(&self) -> Option<IToken> {
-        self.non_ws_indexes.first().map(|&BlackIdx(idx)| {
+        self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
             self.original_tokens[idx]
         })
     }
@@ -67,26 +70,23 @@ impl<'a> TokenSeq<'a> {
 
     pub fn bump(&self) -> ((NodeType, BlackIdx), TokenSeq<'a>) {
         let token = self.current().expect("Can't bump an empty token sequence");
-        let (ty, idx) = (token.ty, self.non_ws_indexes[0]);
-
-        let text_len = {
-            let next_idx = self.non_ws_indexes.get(1).map(|&BlackIdx(i)| i).unwrap_or(self.original_tokens.len());
-            self.original_tokens[self.non_ws_indexes[0].0 .. next_idx]
-                .iter()
-                .map(|t| t.len.utf8_len())
-                .sum::<usize>()
-        };
+        let (ty, (_, idx)) = (token.ty, self.non_ws_indexes[0]);
 
         let rest = TokenSeq {
-            text: &self.text[text_len..],
+            text: self.text,
             non_ws_indexes: &self.non_ws_indexes[1..],
             original_tokens: self.original_tokens,
         };
         ((ty, idx), rest)
     }
 
-    pub fn bump_by_text(&self, text: &str) -> Option<(&'a [BlackIdx], TokenSeq<'a>)> {
-        if !self.text.starts_with(text) {
+    pub fn bump_by_text(&self, text: &str) -> Option<usize> {
+        let current_text = match self.non_ws_indexes.first() {
+            None => return None,
+            Some(&(start, _)) => self.text.slice(TextRange::from_to(start, self.text.len()))
+        };
+
+        if !current_text.starts_with(text) {
             return None;
         }
 
@@ -105,6 +105,6 @@ impl<'a> TokenSeq<'a> {
             n_tokens += 1;
         }
 
-        Some((&self.non_ws_indexes[..n_tokens], rest))
+        Some(n_tokens)
     }
 }
