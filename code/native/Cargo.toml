@@ -12,10 +12,10 @@ name = "backend"
 crate-type = ["dylib"]
 
 [build-dependencies]
-neon-build = "0.1.20"
+neon-build = "=0.1.20"
 
 [dependencies]
-neon = "0.1.20"
+neon = "=0.1.20"
 
 serde = "1.0"
 serde_derive = "1.0"
@@ -26,3 +26,6 @@ lazy_static = "0.2.8"
 fall_tree = { path = "../../fall/tree" }
 fall_gen = { path = "../../fall/gen" }
 lang_fall = { path = "../../lang/fall" }
+
+[patch.crates-io]
+itertools = { git = "https://github.com/bluss/rust-itertools.git" }

@@ -4,7 +4,7 @@ use itertools::Itertools;
 
 use ::{TextEdit, TextEditOp, Text, TextUnit, TextRange, tu};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ArbitraryEdit {
     inner: TextEdit
 }
@@ -28,7 +28,7 @@ const LEN: u32 = 1000;
 
 impl Arbitrary for ArbitraryEdit {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let n_copies = (usize::rand(g)) as usize;
+        let n_copies = (usize::rand(g) % 5) as usize;
         let mut copy_ends = ::rand::sample(g, 0..(LEN + 1), 2 * n_copies);
         copy_ends.sort();
 

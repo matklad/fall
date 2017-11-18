@@ -1,12 +1,12 @@
 use ::{TextUnit, TextRange, TextBuf, Text, tu};
 use std::cmp::Ordering;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextEdit {
     pub ops: Vec<TextEditOp>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TextEditOp {
     Copy(TextRange), // TODO: check for disjoint ranges
     Insert(TextBuf),
@@ -24,15 +24,6 @@ impl TextEdit {
         }
 
         result.into()
-    }
-
-    pub fn damage(&self) -> Option<TextUnit> {
-        if let Some(&TextEditOp::Copy(range)) = self.ops.first() {
-            if range.start() == tu(0) {
-                return Some(range.end());
-            }
-        }
-        None
     }
 }
 

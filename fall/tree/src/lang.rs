@@ -1,5 +1,6 @@
+use std::cmp::Ordering;
 use std::sync::Arc;
-use {Text, TextBuf, TextRange, TextEdit, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
+use {Text, TextBuf, TextRange, TextEdit, TextEditOp, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
 
 pub trait LanguageImpl: 'static + Send + Sync {
     fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't>;
@@ -21,9 +22,9 @@ impl Language {
         let text: TextBuf = text.into();
         let metrics = Metrics::new();
         let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
+            metrics.record("relexed region", text.len().utf8_len() as u64, "");
             self.imp.tokenize(text.as_slice()).collect()
         });
-        metrics.record("relexed region", text.len().utf8_len() as u64, "");
         let inode = self.imp.parse(text.as_slice(), &tokens, &metrics);
         File::new(self.clone(), text, metrics, tokens, inode)
     }
@@ -31,38 +32,98 @@ impl Language {
     pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
         let new_text = edit.apply(file.text());
 
-        if let Some(damage) = edit.damage() {
-            let mut l = tu(0);
-            let mut last_reusable = None;
-            for (i, &t) in file.tokens().iter().enumerate() {
-                l += t.len;
-                if l + tu(1) >= damage {
-                    break
-                }
-                if file.language().node_type_info(t.ty).whitespace_like {
-                    last_reusable = Some((i, l))
-                }
-            }
+        let metrics = Metrics::new();
+        let tokens = metrics.measure_time("lexing", ||relex(
+            |text| self.imp.tokenize(text),
+            file.tokens(),
+            &edit,
+            new_text.as_slice(),
+            &metrics
+        ));
 
-            if let Some((i, l)) = last_reusable {
-                let metrics = Metrics::new();
-
-                let mut tokens: Vec<_> = file.tokens().iter().take(i + 1).cloned().collect();
-                {
-                    let text_tail = new_text.slice(TextRange::from_to(l, new_text.len()));
-                    metrics.measure_time("lexing", || {
-                        tokens.extend(self.imp.tokenize(text_tail))
-                    });
-                    metrics.record("relexed region", text_tail.len().utf8_len() as u64, "");
-                }
-                let inode = self.imp.parse(new_text.as_slice(), &tokens, &metrics);
-                return File::new(self.clone(), new_text, metrics, tokens, inode)
-            }
-        }
-        self.parse(new_text)
+        let inode = self.imp.parse(new_text.as_slice(), &tokens, &metrics);
+        File::new(self.clone(), new_text, metrics, tokens, inode)
     }
 
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
         self.imp.node_type_info(ty)
     }
+}
+
+fn relex<'t, T, I>(
+    tokenizer: T,
+    old_tokens: &[IToken],
+    edit: &TextEdit,
+    new_text: Text<'t>,
+    metrics: &Metrics
+) -> Vec<IToken>
+    where T: Fn(Text<'t>) -> I,
+          I: Iterator<Item=IToken>
+{
+    let mut old_tokens = old_tokens.iter().cloned();
+    let mut old_len = tu(0);
+
+    let mut new_tokens: Vec<IToken> = Vec::new();
+    let mut new_len = tu(0);
+
+    let mut edit_point = tu(0);
+    let mut reused = tu(0);
+
+    for op in edit.ops.iter() {
+        match *op {
+            TextEditOp::Insert(ref buf) => {
+                edit_point += buf.len()
+            }
+            TextEditOp::Copy(range) => {
+                let mut ts = tokenizer(new_text.slice(TextRange::from_to(new_len, new_text.len())));
+                while new_len < edit_point {
+                    let token = ts.next().unwrap();
+                    new_len += token.len;
+                    new_tokens.push(token)
+                }
+
+                while old_len < range.start() {
+                    old_len += old_tokens.next().unwrap().len;
+                }
+
+                loop {
+                    let new_consumed = new_len - edit_point;
+                    let old_consumed = old_len - range.start();
+                    if new_consumed >= range.len() || old_consumed >= range.len() {
+                        break
+                    }
+
+                    match new_consumed.cmp(&old_consumed) {
+                        Ordering::Less => {
+                            let token = ts.next().unwrap();
+                            new_len += token.len;
+                            new_tokens.push(token)
+                        }
+                        Ordering::Equal => {
+                            for token in &mut old_tokens {
+                                old_len += token.len;
+                                if old_len >= range.end() {
+                                    break;
+                                }
+                                reused += token.len;
+                                new_len += token.len;
+                                new_tokens.push(token);
+                            }
+                        }
+                        Ordering::Greater => {
+                            let token = old_tokens.next().unwrap();
+                            old_len += token.len;
+                        }
+                    }
+                }
+
+                edit_point += range.len()
+            }
+        }
+    }
+
+    let ts = tokenizer(new_text.slice(TextRange::from_to(new_len, new_text.len())));
+    new_tokens.extend(ts);
+    metrics.record("relexed region", (new_text.len() - reused).utf8_len() as u64, "");
+    new_tokens
 }

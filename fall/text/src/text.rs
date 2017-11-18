@@ -7,8 +7,8 @@ use ::{TextRange, TextUnit};
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {
-    pub (crate) owned: &'f String,
-    pub (crate) range: TextRange
+    pub(crate) owned: &'f String,
+    pub(crate) range: TextRange
 }
 
 impl<'f> Text<'f> {
@@ -73,6 +73,10 @@ impl<'f> Text<'f> {
 
     pub fn to_cow(&self) -> Cow<'f, str> {
         Cow::Borrowed(self.as_str())
+    }
+
+    pub fn chars(&self) -> ::std::str::Chars {
+        self.as_str().chars()
     }
 
     fn as_str(&self) -> &'f str {

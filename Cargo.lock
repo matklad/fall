@@ -208,6 +208,7 @@ dependencies = [
  "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_text 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quickcheck 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

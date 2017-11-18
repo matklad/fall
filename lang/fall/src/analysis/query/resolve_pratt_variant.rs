@@ -109,13 +109,6 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
     }
 }
 
-fn single<I: Iterator>(mut i: I) -> Option<I::Item> {
-    match (i.next(), i.next()) {
-        (Some(a), None) => Some(a),
-        _ => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use analysis::*;
