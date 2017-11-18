@@ -1,6 +1,7 @@
 use ::{Text, TextRange, TextUnit, tu};
 use std::fmt;
 
+#[derive(Clone)]
 pub struct TextBuf {
     data: String
 }

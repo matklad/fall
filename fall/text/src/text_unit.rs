@@ -92,3 +92,8 @@ impl<'de> Deserialize<'de> for TextUnit {
     }
 }
 
+impl ::rand::Rand for TextUnit {
+    fn rand<R: ::rand::Rng>(rng: &mut R) -> TextUnit {
+        TextUnit(u32::rand(rng))
+    }
+}
