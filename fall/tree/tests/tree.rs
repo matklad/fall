@@ -33,6 +33,32 @@ fn tokenize(edit: ArbitraryEdit) -> bool {
 
 struct TestLang;
 
+impl fall_tree::Lexer for TestLang {
+    fn next_token(&self, text: Text) -> IToken {
+        for &(p, ty) in &[("(", TEST_L_PAREN), (")", TEST_R_PAREN)] {
+            if text.starts_with(p) {
+                return IToken { ty, len: tu(1) };
+            }
+        }
+
+        for &(p, ty) in &[(char::is_numeric as fn(char) -> bool, TEST_NUMBER), (char::is_whitespace, TEST_WHITESPACE)] {
+            let len = text.chars().take_while(|&c| p(c)).count();
+            if len > 0 {
+                return IToken { ty, len: tu(len as u32) };
+            }
+        }
+        match text.chars().next().unwrap() {
+            '"' => {
+                let len = 1 + text.chars().skip(1).take_while(|&c| c != '"').count();
+                IToken { ty: TEST_STRING, len: tu(len as u32) }
+            }
+            c => {
+                IToken { ty: ERROR, len: tu(c.len_utf8() as u32) }
+            }
+        }
+    }
+}
+
 const TEST_WHITESPACE: NodeType = NodeType(9);
 const TEST_FILE: NodeType = NodeType(10);
 const TEST_NUMBER: NodeType = NodeType(11);
@@ -41,49 +67,8 @@ const TEST_R_PAREN: NodeType = NodeType(13);
 const TEST_STRING: NodeType = NodeType(14);
 
 impl LanguageImpl for TestLang {
-    fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-        struct Iter<'t> { text: Text<'t> }
-        impl<'t> Iter<'t> {
-            fn tok(&mut self, ty: NodeType, len: TextUnit) -> IToken {
-                let range = TextRange::from_to(len, self.text.len());
-                self.text = self.text.slice(range);
-                IToken { ty, len }
-            }
-        }
-
-        impl<'t> Iterator for Iter<'t> {
-            type Item = IToken;
-
-            fn next(&mut self) -> Option<Self::Item> {
-                if self.text.is_empty() {
-                    return None;
-                }
-
-                for &(p, ty) in &[("(", TEST_L_PAREN), (")", TEST_R_PAREN)] {
-                    if self.text.starts_with(p) {
-                        return Some(self.tok(ty, tu(1)));
-                    }
-                }
-
-                for &(p, ty) in &[(char::is_numeric as fn(char) -> bool, TEST_NUMBER), (char::is_whitespace, TEST_WHITESPACE)] {
-                    let len = self.text.chars().take_while(|&c| p(c)).count();
-                    if len > 0 {
-                        return Some(self.tok(ty, tu(len as u32)));
-                    }
-                }
-                match self.text.chars().next().unwrap() {
-                    '"' => {
-                        let len = 1 + self.text.chars().skip(1).take_while(|&c| c != '"').count();
-                        Some(self.tok(TEST_STRING, tu(len as u32)))
-                    }
-                    c => {
-                        Some(self.tok(ERROR, tu(c.len_utf8() as u32)))
-                    }
-                }
-            }
-        }
-
-        Box::new(Iter { text })
+    fn lexer(&self) -> &fall_tree::Lexer {
+        &TestLang
     }
 
     fn parse(&self, _: Text, tokens: &[IToken], _: &Metrics) -> INode {

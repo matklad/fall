@@ -10,36 +10,38 @@ pub const FILE: NodeType = NodeType(104);
 pub const LIST: NodeType = NodeType(105);
 
 
-fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-    use fall_parse::LexRule;
-    let parser_json = r##"[{"body":{"Pub":{"ty_idx":5,"body":{"Or":[{"And":[[{"Rep":{"Rule":1}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":{"ty_idx":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Rule":1}},{"Token":3}],null]}]},"replaceable":false}}}]"##;
-
-    ::fall_parse::ParserDefinition {
-        node_types: vec![
-            ERROR,
-            WHITESPACE, LPAREN, RPAREN, ATOM, FILE, LIST,
-        ],
-        lexical_rules: vec![
-            LexRule::new(WHITESPACE, "\\s+", None),
-            LexRule::new(LPAREN, "\\(", None),
-            LexRule::new(RPAREN, "\\)", None),
-            LexRule::new(ATOM, "\\w+", None),
-        ],
-        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-        
-        .. Default::default()
-    }
-}
-
 pub fn language() -> &'static Language {
+    fn create_lexer() -> ::fall_parse::RegexLexer {
+        ::fall_parse::RegexLexer::new(vec![
+            ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
+            ::fall_parse::LexRule::new(LPAREN, "\\(", None),
+            ::fall_parse::LexRule::new(RPAREN, "\\)", None),
+            ::fall_parse::LexRule::new(ATOM, "\\w+", None),
+        ])
+    }
+
+    fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+        let parser_json = r##"[{"body":{"Pub":{"ty_idx":5,"body":{"Or":[{"And":[[{"Rep":{"Rule":1}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":{"ty_idx":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Rule":1}},{"Token":3}],null]}]},"replaceable":false}}}]"##;
+
+        ::fall_parse::ParserDefinition {
+            node_types: vec![
+                ERROR,
+                WHITESPACE, LPAREN, RPAREN, ATOM, FILE, LIST,
+            ],
+            syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+
+            ..Default::default()
+        }
+    }
+
     lazy_static! {
         static ref LANG: Language = {
             use fall_parse::ParserDefinition;
 
-            struct Impl { parser_definition: ParserDefinition };
+            struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-                    self.parser_definition.tokenize(text)
+                fn lexer(&self) -> &self::fall_tree::Lexer {
+                    &self.lexer
                 }
 
                 fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
@@ -60,7 +62,10 @@ pub fn language() -> &'static Language {
                 }
             }
 
-            Language::new(Impl { parser_definition: create_parser_definition() })
+            Language::new(Impl {
+                parser_definition: create_parser_definition(),
+                lexer: create_lexer()
+            })
         };
     }
 

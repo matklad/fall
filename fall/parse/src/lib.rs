@@ -10,6 +10,7 @@ use syn_engine::BlackTokens;
 use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics};
 
 mod lex_engine;
+pub use lex_engine::RegexLexer;
 
 mod syn_engine;
 
@@ -20,9 +21,8 @@ mod syn_engine;
 /// and is used to create an instance of `Language`.
 pub struct ParserDefinition {
     pub node_types: Vec<NodeType>,
-    pub lexical_rules: Vec<LexRule>,
     pub syntactical_rules: Vec<SynRule>,
-    pub whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize
+    pub whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize,
 }
 
 impl Default for ParserDefinition {
@@ -33,7 +33,6 @@ impl Default for ParserDefinition {
 
         ParserDefinition {
             node_types: Vec::new(),
-            lexical_rules: Vec::new(),
             syntactical_rules: Vec::new(),
             whitespace_binder: no_binder,
         }
@@ -41,10 +40,6 @@ impl Default for ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-        Box::new(lex_engine::tokenize(text, &self.lexical_rules))
-    }
-
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
         let black_tokens = BlackTokens::new(lang, text, &tokens);
         let text = text.to_cow();

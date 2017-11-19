@@ -19,43 +19,45 @@ pub const EMPTY: NodeType = NodeType(113);
 pub const BLOCK: NodeType = NodeType(114);
 
 
-fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-    use fall_parse::LexRule;
-    let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Token":5},{"Token":2}],null]},{"And":[[{"Token":6},{"Rule":4},{"Token":11},{"Rule":4}],null]},{"And":[[{"Token":7},{"Rule":1}],null]},{"And":[[{"Token":8},{"Rule":6}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":3},{"Token":4}],null]}]}},{"body":{"Or":[{"And":[[{"Token":3},{"Token":3}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Opt":{"Rule":5}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[],null]}]}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":8}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":10}},"Any"],null]}]}],null]}]}}]"##;
-
-    ::fall_parse::ParserDefinition {
-        node_types: vec![
-            ERROR,
-            WHITESPACE, RAW_STRING, FOO, BAR, T1, T2, T3, T4, LBRACE, RBRACE, ATOM, FILE, PRIVATE_PARTIAL, EMPTY, BLOCK,
-        ],
-        lexical_rules: vec![
-            LexRule::new(WHITESPACE, "\\s+", None),
-            LexRule::new(RAW_STRING, "r#+\"", Some(parse_raw_string)),
-            LexRule::new(FOO, "foo", None),
-            LexRule::new(BAR, "bar", None),
-            LexRule::new(T1, "_1", None),
-            LexRule::new(T2, "_2", None),
-            LexRule::new(T3, "_3", None),
-            LexRule::new(T4, "_4", None),
-            LexRule::new(LBRACE, "\\{", None),
-            LexRule::new(RBRACE, "\\}", None),
-            LexRule::new(ATOM, "\\w+", None),
-        ],
-        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-        
-        .. Default::default()
-    }
-}
-
 pub fn language() -> &'static Language {
+    fn create_lexer() -> ::fall_parse::RegexLexer {
+        ::fall_parse::RegexLexer::new(vec![
+            ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
+            ::fall_parse::LexRule::new(RAW_STRING, "r#+\"", Some(parse_raw_string)),
+            ::fall_parse::LexRule::new(FOO, "foo", None),
+            ::fall_parse::LexRule::new(BAR, "bar", None),
+            ::fall_parse::LexRule::new(T1, "_1", None),
+            ::fall_parse::LexRule::new(T2, "_2", None),
+            ::fall_parse::LexRule::new(T3, "_3", None),
+            ::fall_parse::LexRule::new(T4, "_4", None),
+            ::fall_parse::LexRule::new(LBRACE, "\\{", None),
+            ::fall_parse::LexRule::new(RBRACE, "\\}", None),
+            ::fall_parse::LexRule::new(ATOM, "\\w+", None),
+        ])
+    }
+
+    fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+        let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Token":5},{"Token":2}],null]},{"And":[[{"Token":6},{"Rule":4},{"Token":11},{"Rule":4}],null]},{"And":[[{"Token":7},{"Rule":1}],null]},{"And":[[{"Token":8},{"Rule":6}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Rule":2}],null]},{"And":[[{"Rule":3}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":3},{"Token":4}],null]}]}},{"body":{"Or":[{"And":[[{"Token":3},{"Token":3}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Opt":{"Rule":5}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[],null]}]}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":8}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":9},{"Rule":7},{"Token":10}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":10}},"Any"],null]}]}],null]}]}}]"##;
+
+        ::fall_parse::ParserDefinition {
+            node_types: vec![
+                ERROR,
+                WHITESPACE, RAW_STRING, FOO, BAR, T1, T2, T3, T4, LBRACE, RBRACE, ATOM, FILE, PRIVATE_PARTIAL, EMPTY, BLOCK,
+            ],
+            syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+
+            ..Default::default()
+        }
+    }
+
     lazy_static! {
         static ref LANG: Language = {
             use fall_parse::ParserDefinition;
 
-            struct Impl { parser_definition: ParserDefinition };
+            struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-                    self.parser_definition.tokenize(text)
+                fn lexer(&self) -> &self::fall_tree::Lexer {
+                    &self.lexer
                 }
 
                 fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
@@ -85,7 +87,10 @@ pub fn language() -> &'static Language {
                 }
             }
 
-            Language::new(Impl { parser_definition: create_parser_definition() })
+            Language::new(Impl {
+                parser_definition: create_parser_definition(),
+                lexer: create_lexer()
+            })
         };
     }
 

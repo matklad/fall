@@ -314,37 +314,39 @@ pub const {{ node_type.0 | upper }}: NodeType = NodeType({{ 100 + loop.index0 }}
 {% endfor %}
 
 
-fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-    use fall_parse::LexRule;
-    let parser_json = r##"{{ parser_json }}"##;
-
-    ::fall_parse::ParserDefinition {
-        node_types: vec![
-            ERROR,
-            {% for node_type in node_types %}{{ node_type.0 | upper }}, {% endfor %}
-        ],
-        lexical_rules: vec![
-            {% for rule in lex_rules %}
-            LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
-            {% endfor %}
-        ],
-        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-        {% if has_whitespace_binder %}
-            whitespace_binder,
-        {% endif %}
-        .. Default::default()
-    }
-}
-
 pub fn language() -> &'static Language {
+    fn create_lexer() -> ::fall_parse::RegexLexer {
+        ::fall_parse::RegexLexer::new(vec![
+            {% for rule in lex_rules %}
+            ::fall_parse::LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
+            {% endfor %}
+        ])
+    }
+
+    fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+        let parser_json = r##"{{ parser_json }}"##;
+
+        ::fall_parse::ParserDefinition {
+            node_types: vec![
+                ERROR,
+                {% for node_type in node_types %}{{ node_type.0 | upper }}, {% endfor %}
+            ],
+            syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+            {% if has_whitespace_binder %}
+                whitespace_binder,
+            {% endif %}
+            .. Default::default()
+        }
+    }
+
     lazy_static! {
         static ref LANG: Language = {
             use fall_parse::ParserDefinition;
 
-            struct Impl { parser_definition: ParserDefinition };
+            struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-                    self.parser_definition.tokenize(text)
+                fn lexer(&self) -> &self::fall_tree::Lexer {
+                    &self.lexer
                 }
 
                 fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
@@ -362,7 +364,10 @@ pub fn language() -> &'static Language {
                 }
             }
 
-            Language::new(Impl { parser_definition: create_parser_definition() })
+            Language::new(Impl {
+                parser_definition: create_parser_definition(),
+                lexer: create_lexer()
+            })
         };
     }
 

@@ -20,43 +20,45 @@ pub const ARRAY: NodeType = NodeType(114);
 pub const PRIMITIVE: NodeType = NodeType(115);
 
 
-fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-    use fall_parse::LexRule;
-    let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Token":2},{"Layer":[{"Rule":8},{"Rule":2}]},{"Token":3}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Token":10},{"Or":[{"And":[[{"Rule":3},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Token":10},{"Token":6},{"Rule":6}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":10},{"Rule":5}]},{"Token":5}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":2}],null]},{"And":[[{"Token":4}],null]}]},{"Or":[{"And":[[{"Rule":6},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]}},{"body":{"Pub":{"ty_idx":16,"body":{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":9}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":2},{"Rule":8},{"Token":3}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":3}},"Any"],null]}]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":4},{"Rule":10},{"Token":5}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":5}},"Any"],null]}]}],null]}]}}]"##;
-
-    ::fall_parse::ParserDefinition {
-        node_types: vec![
-            ERROR,
-            WHITESPACE, LBRACE, RBRACE, LBRACK, RBRACK, COLON, COMMA, NULL, BOOL, STRING, NUMBER, FILE, OBJECT, FIELD, ARRAY, PRIMITIVE,
-        ],
-        lexical_rules: vec![
-            LexRule::new(WHITESPACE, "\\s+", None),
-            LexRule::new(LBRACE, "\\{", None),
-            LexRule::new(RBRACE, "\\}", None),
-            LexRule::new(LBRACK, "\\[", None),
-            LexRule::new(RBRACK, "\\]", None),
-            LexRule::new(COLON, ":", None),
-            LexRule::new(COMMA, ",", None),
-            LexRule::new(NULL, "null", None),
-            LexRule::new(BOOL, "true|false", None),
-            LexRule::new(STRING, "\"[^\"]*\"", None),
-            LexRule::new(NUMBER, "\\d+", None),
-        ],
-        syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-        
-        .. Default::default()
-    }
-}
-
 pub fn language() -> &'static Language {
+    fn create_lexer() -> ::fall_parse::RegexLexer {
+        ::fall_parse::RegexLexer::new(vec![
+            ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
+            ::fall_parse::LexRule::new(LBRACE, "\\{", None),
+            ::fall_parse::LexRule::new(RBRACE, "\\}", None),
+            ::fall_parse::LexRule::new(LBRACK, "\\[", None),
+            ::fall_parse::LexRule::new(RBRACK, "\\]", None),
+            ::fall_parse::LexRule::new(COLON, ":", None),
+            ::fall_parse::LexRule::new(COMMA, ",", None),
+            ::fall_parse::LexRule::new(NULL, "null", None),
+            ::fall_parse::LexRule::new(BOOL, "true|false", None),
+            ::fall_parse::LexRule::new(STRING, "\"[^\"]*\"", None),
+            ::fall_parse::LexRule::new(NUMBER, "\\d+", None),
+        ])
+    }
+
+    fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+        let parser_json = r##"[{"body":{"Pub":{"ty_idx":12,"body":{"Or":[{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":13,"body":{"Or":[{"And":[[{"Token":2},{"Layer":[{"Rule":8},{"Rule":2}]},{"Token":3}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Token":10},{"Or":[{"And":[[{"Rule":3},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Pub":{"ty_idx":14,"body":{"Or":[{"And":[[{"Token":10},{"Token":6},{"Rule":6}],1]}]},"replaceable":false}}},{"body":{"Pub":{"ty_idx":15,"body":{"Or":[{"And":[[{"Token":4},{"Layer":[{"Rule":10},{"Rule":5}]},{"Token":5}],1]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"WithSkip":[{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]},{"And":[[{"Token":2}],null]},{"And":[[{"Token":4}],null]}]},{"Or":[{"And":[[{"Rule":6},{"Or":[{"And":[[{"Token":7},{"Not":"Eof"}],null]},{"And":[["Eof"],null]}]}],1]}]}]}}],null]}]}},{"body":{"Or":[{"And":[[{"Rule":7}],null]},{"And":[[{"Rule":1}],null]},{"And":[[{"Rule":4}],null]}]}},{"body":{"Pub":{"ty_idx":16,"body":{"Or":[{"And":[[{"Token":8}],null]},{"And":[[{"Token":11}],null]},{"And":[[{"Token":10}],null]},{"And":[[{"Token":9}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":9}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":2},{"Rule":8},{"Token":3}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":3}},"Any"],null]}]}],null]}]}},{"body":{"Or":[{"And":[[{"Rep":{"Rule":11}}],null]}]}},{"body":{"Or":[{"And":[[{"Token":4},{"Rule":10},{"Token":5}],1]},{"And":[[{"Or":[{"And":[[{"Not":{"Token":5}},"Any"],null]}]}],null]}]}}]"##;
+
+        ::fall_parse::ParserDefinition {
+            node_types: vec![
+                ERROR,
+                WHITESPACE, LBRACE, RBRACE, LBRACK, RBRACK, COLON, COMMA, NULL, BOOL, STRING, NUMBER, FILE, OBJECT, FIELD, ARRAY, PRIMITIVE,
+            ],
+            syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+
+            ..Default::default()
+        }
+    }
+
     lazy_static! {
         static ref LANG: Language = {
             use fall_parse::ParserDefinition;
 
-            struct Impl { parser_definition: ParserDefinition };
+            struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-                    self.parser_definition.tokenize(text)
+                fn lexer(&self) -> &self::fall_tree::Lexer {
+                    &self.lexer
                 }
 
                 fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
@@ -87,7 +89,10 @@ pub fn language() -> &'static Language {
                 }
             }
 
-            Language::new(Impl { parser_definition: create_parser_definition() })
+            Language::new(Impl {
+                parser_definition: create_parser_definition(),
+                lexer: create_lexer()
+            })
         };
     }
 
