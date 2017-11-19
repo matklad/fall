@@ -1,4 +1,4 @@
-use fall_tree::{Text, NodeType, ERROR, TextUnit, tu, IToken, TextRange};
+use fall_tree::{Text, NodeType, ERROR, TextUnit, tu, IToken, TextSuffix};
 
 use LexRule;
 
@@ -60,7 +60,7 @@ impl<'t, 'r> TokenIter<'t, 'r> {
 
     fn token(&mut self, ty: NodeType, len: usize) -> IToken {
         let len = tu(len as u32);
-        self.rest = self.rest.slice(TextRange::from_to(len, self.rest.len()));
+        self.rest = self.rest.slice(TextSuffix::from(len));
         self.offset += len;
         IToken { ty, len }
     }

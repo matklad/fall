@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::sync::Arc;
-use {Text, TextBuf, TextRange, TextEdit, TextEditOp, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
+use {Text, TextBuf, TextSuffix, TextEdit, TextEditOp, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
 
 pub trait LanguageImpl: 'static + Send + Sync {
     fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't>;
@@ -75,7 +75,7 @@ fn relex<'t, T, I>(
                 edit_point += buf.len()
             }
             TextEditOp::Copy(range) => {
-                let mut ts = tokenizer(new_text.slice(TextRange::from_to(new_len, new_text.len())));
+                let mut ts = tokenizer(new_text.slice(TextSuffix::from(new_len)));
                 while new_len < edit_point {
                     let token = ts.next().unwrap();
                     new_len += token.len;
@@ -122,7 +122,7 @@ fn relex<'t, T, I>(
         }
     }
 
-    let ts = tokenizer(new_text.slice(TextRange::from_to(new_len, new_text.len())));
+    let ts = tokenizer(new_text.slice(TextSuffix::from(new_len)));
     new_tokens.extend(ts);
     metrics.record("relexed region", (new_text.len() - reused).utf8_len() as u64, "");
     new_tokens

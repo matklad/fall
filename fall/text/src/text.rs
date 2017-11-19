@@ -4,6 +4,7 @@ use std::borrow::Cow;
 use serde::{Serialize, Serializer};
 
 use ::{TextRange, TextUnit};
+use text_slice::TextSlice;
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {
@@ -18,7 +19,8 @@ impl<'f> Text<'f> {
 
     pub fn is_empty(self) -> bool { self.range.is_empty() }
 
-    pub fn slice(&self, r: TextRange) -> Text<'f> {
+    pub fn slice<S: TextSlice>(&self, slice: S) -> Text<'f> {
+        let r = slice.into_proper_range(*self);
         assert!(r.end() <= self.len());
         let start = self.range.start() + r.start();
         assert!(start <= self.range.end());

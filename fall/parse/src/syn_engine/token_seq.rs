@@ -1,4 +1,4 @@
-use fall_tree::{Language, NodeType, tu, IToken, Text, TextUnit, TextRange};
+use fall_tree::{Language, NodeType, tu, IToken, Text, TextUnit, TextSuffix};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BlackIdx(pub usize);
@@ -83,7 +83,7 @@ impl<'a> TokenSeq<'a> {
     pub fn bump_by_text(&self, text: &str) -> Option<usize> {
         let current_text = match self.non_ws_indexes.first() {
             None => return None,
-            Some(&(start, _)) => self.text.slice(TextRange::from_to(start, self.text.len()))
+            Some(&(start, _)) => self.text.slice(TextSuffix::from(start))
         };
 
         if !current_text.starts_with(text) {
