@@ -299,7 +299,7 @@ pub fn language() -> &'static Language {
             ],
             syntactical_rules: serde_json::from_str(parser_json).unwrap(),
             whitespace_binder,
-            ..Default::default()
+            .. Default::default()
         }
     }
 

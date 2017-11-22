@@ -44,8 +44,8 @@ pub fn language() -> &'static Language {
                 WHITESPACE, NUMBER, PLUS, MINUS, STAR, SLASH, BANG, LPAREN, RPAREN, FILE, PRODUCT_EXPR, SUM_EXPR, CONSTANT_EXPR, PAREN_EXPR, FACTORIAL_EXPR, NEGATE_EXPR,
             ],
             syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-
-            ..Default::default()
+            
+            .. Default::default()
         }
     }
 

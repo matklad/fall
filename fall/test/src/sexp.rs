@@ -29,8 +29,8 @@ pub fn language() -> &'static Language {
                 WHITESPACE, LPAREN, RPAREN, ATOM, FILE, LIST,
             ],
             syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-
-            ..Default::default()
+            
+            .. Default::default()
         }
     }
 

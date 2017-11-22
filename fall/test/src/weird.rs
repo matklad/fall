@@ -45,8 +45,8 @@ pub fn language() -> &'static Language {
                 WHITESPACE, RAW_STRING, FOO, BAR, T1, T2, T3, T4, LBRACE, RBRACE, ATOM, FILE, PRIVATE_PARTIAL, EMPTY, BLOCK,
             ],
             syntactical_rules: serde_json::from_str(parser_json).unwrap(),
-
-            ..Default::default()
+            
+            .. Default::default()
         }
     }
 

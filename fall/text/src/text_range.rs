@@ -44,6 +44,7 @@ impl TextRange {
     }
 
     pub fn from_to(from: TextUnit, to: TextUnit) -> TextRange {
+        assert!(from <= to, "Invalid text range [{}; {})", from, to);
         TextRange { start: from, end: to }
     }
 
