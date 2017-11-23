@@ -1,7 +1,7 @@
 extern crate fall_tree;
 extern crate quickcheck;
 
-use fall_tree::{TextUnit, TextRange, Text, TextBuf, tu, ArbitraryEdit};
+use fall_tree::{Text, TextBuf, tu, ArbitraryEdit};
 use fall_tree::{Language, LanguageImpl, IToken, INode, Metrics, NodeType, NodeTypeInfo, ERROR};
 
 

@@ -176,9 +176,7 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
                     ctx.prev = Some(node_type);
                     Some((result, ts))
                 }
-                _ => {
-                    None
-                }
+                _ => None,
             }
         }
         Expr::PubReplace { ty_idx, ref body } => {
@@ -188,9 +186,7 @@ fn parse_exp<'t, 'p>(ctx: &mut Ctx<'p>, expr: &'p Expr, tokens: TokenSeq<'t>)
                     ctx.replacement = Some(node_type);
                     Some((node, ts))
                 }
-                _ => {
-                    None
-                }
+                _ => None,
             }
         }
 
