@@ -41,22 +41,7 @@ impl Default for ParserDefinition {
 
 impl ParserDefinition {
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
-        let black_tokens = BlackTokens::new(lang, text, &tokens);
-        let text = text.to_cow();
-        let text = text.as_ref();
-        let (black_node, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::parse_black(&self.node_types, &self.syntactical_rules, black_tokens.seq())
-        });
-        metrics.record("parsing ticks", ticks, "");
-
-        let white_node = metrics.measure_time("whitespace binding", || {
-            syn_engine::into_white(text, black_node, &tokens, self.whitespace_binder)
-        });
-
-        let inode = metrics.measure_time("inode construction", || {
-            white_node.into_inode(&tokens)
-        });
-        inode
+        unimplemented!()
     }
 
     pub fn parse2(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {

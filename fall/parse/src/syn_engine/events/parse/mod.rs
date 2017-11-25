@@ -99,10 +99,7 @@ impl<'g> Parser<'g> {
     fn replace(&mut self, mark: Mark, ty_idx: usize) {
         let ty = self.node_type(ty_idx);
         match self.events[mark.0] {
-            Event::Start { ty: ref mut prev, .. } => {
-                println!("replacing {:?} with {:?}", prev, ty);
-                *prev = ty
-            },
+            Event::Start { ty: ref mut prev, .. } => *prev = ty,
             _ => unreachable!()
         }
     }
