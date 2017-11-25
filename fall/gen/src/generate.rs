@@ -165,7 +165,9 @@ fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
 
 fn compile_rule<'f>(analysis: &Analysis<'f>, ast: SynRule<'f>) -> Result<Option<fall_parse::SynRule>> {
     let expr = match (ast.is_pratt(), ast.body()) {
-        (true, Expr::BlockExpr(block)) => fall_parse::Expr::Pratt(compile_pratt(analysis, block)?),
+        (true, Expr::BlockExpr(block)) => fall_parse::Expr::Pratt(
+            Box::new(compile_pratt(analysis, block)?)
+        ),
         (true, _) => unreachable!(),
         (false, body) => compile_expr(analysis, body)?
     };

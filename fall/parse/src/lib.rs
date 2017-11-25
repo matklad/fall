@@ -127,7 +127,7 @@ pub enum Expr {
     Eof,
     Any,
     Layer(Box<Expr>, Box<Expr>),
-    Pratt(PrattTable),
+    Pratt(Box<PrattTable>),
     Enter(u32, Box<Expr>),
     Exit(u32, Box<Expr>),
     IsIn(u32),
