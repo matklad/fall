@@ -54,7 +54,12 @@ impl<'g> Parser<'g> {
     }
 
     fn rollback(&mut self, mark: Mark) {
-        self.events.truncate(mark.0)
+        fn truncate_fast<T>(xs: &mut Vec<T>, len: usize) {
+            assert!(len <= xs.len());
+            unsafe { xs.set_len(len) }
+        }
+
+        truncate_fast(&mut self.events, mark.0);
     }
 
     fn start(&mut self, ty_idx: usize) -> Mark {
@@ -141,198 +146,308 @@ fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<
     result
 }
 
-
 fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<'t>) -> Option<TokenSeq<'t>> {
     match *expr {
-        Expr::Pub { ty_idx, ref body, replaceable } => {
-            if replaceable {
-                p.replacement = None;
-            }
-            let mark = p.start(ty_idx);
-            let ts = parse_expr(p, body, tokens)?;
-            if let (true, Some(ty)) = (replaceable, p.replacement) {
-                p.replacement = None;
-                p.replace(mark, ty)
-            };
-            p.finish();
-            p.prev = Some(p.node_type(ty_idx));
-            Some(ts)
-        }
+        Expr::Pub { ty_idx, ref body, replaceable } =>
+            parse_pub(p, tokens, ty_idx, body, replaceable),
 
-        Expr::PubReplace { ty_idx, ref body } => {
-            let ts = parse_expr(p, body, tokens)?;
-            p.replacement = Some(ty_idx);
-            Some(ts)
-        }
+        Expr::PubReplace { ty_idx, ref body } =>
+            parse_pub_replace(p, tokens, ty_idx, body),
 
-        Expr::Or(ref parts) => parse_any(p, parts.iter(), tokens),
+        Expr::Or(ref parts) =>
+            parse_or(p, parts, tokens),
 
-        Expr::And(ref parts, commit) => {
-            let mut tokens = tokens;
-            let mut consumed = 0;
+        Expr::And(ref parts, commit) =>
+            parse_and(p, tokens, &*parts, commit),
 
-            for part in parts {
-                if let Some(ts) = parse_expr(p, part, tokens) {
-                    consumed += 1;
-                    tokens = ts;
-                } else {
-                    break;
-                }
-            }
-            if consumed < commit.unwrap_or(parts.len()) {
-                return None;
-            }
-            if consumed < parts.len() {
-                p.start_error();
-                p.finish()
-            }
-            Some(tokens)
-        }
+        Expr::Rule(id) =>
+            parse_expr(p, &p.grammar.rules[id].body, tokens),
 
-        Expr::Rule(id) => parse_expr(p, &p.grammar.rules[id].body, tokens),
+        Expr::Token(ty_idx) =>
+            parse_token(p, tokens, ty_idx),
 
-        Expr::Token(ty_idx) => {
-            let (ty, ts) = p.try_bump(tokens)?;
-            if p.node_type(ty_idx) != ty {
-                return None;
-            }
-            Some(ts)
-        }
+        Expr::ContextualToken(ty_idx, ref text) =>
+            parse_contextual_token(p, tokens, ty_idx, text),
 
-        Expr::ContextualToken(ty_idx, ref text) => {
-            let (n_raw_tokens, ts) = tokens.bump_by_text(text)?;
-            let ty = p.node_type(ty_idx);
-            p.token(ty, n_raw_tokens as u16);
-            Some(ts)
-        }
+        Expr::Opt(ref body) =>
+            parse_opt(p, tokens, body),
 
-        Expr::Opt(ref body) => Some(parse_expr(p, body, tokens).unwrap_or(tokens)),
+        Expr::Not(ref e) =>
+            parse_not(p, tokens, e),
 
-        Expr::Not(ref e) => match parse_expr_pred(p, e, tokens) {
-            None => Some(tokens),
-            Some(_) => None,
-        },
+        Expr::Eof =>
+            parse_eof(p, tokens),
 
-        Expr::Eof => match tokens.try_bump()
+        Expr::Any =>
+            p.try_bump(tokens).map(|(_ty, ts)| ts),
 
-            {
-                None => Some(tokens),
-                Some(_) => None,
-            },
+        Expr::Layer(ref l, ref e) =>
+            parse_layer(p, tokens, l, e),
 
-        Expr::Any => p.try_bump(tokens).map(|(_ty, ts)| ts),
+        Expr::Rep(ref body) =>
+            parse_rep(p, tokens, body),
 
-        Expr::Layer(ref l, ref e) => {
-            let rest = parse_expr_pred(p, l, tokens)?;
-            let layer = tokens.cut_suffix(rest);
-            let mut leftovers = parse_expr(p, e, layer).unwrap_or(layer);
+        Expr::WithSkip(ref first, ref body) =>
+            parse_with_skip(p, tokens, first, body),
 
-            if leftovers.try_bump().is_some() {
-                p.start_error();
-                while let Some((_, ts)) = p.try_bump(leftovers) {
-                    leftovers = ts;
-                }
-                p.finish();
-            }
+        Expr::Pratt(ref table) =>
+            pratt::parse_pratt(p, table, tokens),
 
-            Some(rest)
-        }
+        Expr::Enter(idx, ref e) =>
+            parse_enter(p, tokens, idx, e),
 
-        Expr::Rep(ref body) => {
-            let mut tokens = tokens;
-            while let Some(ts) = parse_expr(p, body, tokens) {
-                tokens = ts;
-            }
-            Some(tokens)
-        }
+        Expr::Exit(idx, ref e) =>
+            parse_exit(p, tokens, idx, e),
 
-        Expr::WithSkip(ref first, ref body) => {
-            let mut skipped = false;
-            let mut tokens = tokens;
-            loop {
-                if skipped {
-                    p.finish();
-                }
-                match parse_expr_pred(p, first, tokens) {
-                    Some(_) => if let Some(ts) = parse_expr(p, body, tokens) {
-                        return Some(ts);
-                    }
-                    None => {}
-                }
-                if skipped {
-                    p.reopen()
-                } else {
-                    p.start_error()
-                }
-                skipped = true;
-                match p.try_bump(tokens) {
-                    None => return None,
-                    Some((_, ts)) => tokens = ts,
-                }
-            }
-        }
+        Expr::IsIn(idx) =>
+            parse_is_in(p, tokens, idx),
 
-        Expr::Pratt(ref table) => pratt::parse_pratt(p, table, tokens),
+        Expr::Call(ref body, ref args) =>
+            parse_call(p, tokens, body, &*args),
 
-        Expr::Enter(idx, ref e) => {
-            let idx = idx as usize;
-            let old = p.contexts[idx];
-            p.contexts[idx] = true;
-            let result = parse_expr(p, &*e, tokens);
-            p.contexts[idx] = old;
-            result
-        }
+        Expr::Var(i) =>
+            parse_var(p, tokens, i),
 
-        Expr::Exit(idx, ref e) => {
-            let idx = idx as usize;
-            let old = p.contexts[idx];
-            p.contexts[idx] = false;
-            let result = parse_expr(p, &*e, tokens);
-            p.contexts[idx] = old;
-            result
-        }
-
-        Expr::IsIn(idx) => if p.contexts[idx as usize] { Some(tokens) } else { None },
-
-        Expr::Call(ref body, ref args) => {
-            let old = p.args;
-            for &(arg_pos, ref arg) in args.iter() {
-                let arg = match *arg {
-                    Expr::Var(i) => p.args[i as usize].unwrap(),
-                    _ => arg
-                };
-
-                p.args[arg_pos as usize] = Some(arg);
-            }
-            let result = parse_expr(p, body, tokens);
-            p.args = old;
-            result
-        }
-
-        Expr::Var(i) => {
-            let expr = p.args[i as usize].unwrap();
-            parse_expr(p, expr, tokens)
-        }
-
-        Expr::PrevIs(ref ts) => {
-            if let Some(prev) = p.prev {
-                for &ty_idx in ts {
-                    let t = p.node_type(ty_idx);
-                    if t == prev {
-                        return Some(tokens);
-                    }
-                }
-            }
-            None
-        }
+        Expr::PrevIs(ref ts) =>
+            parse_prev_is(p, tokens, ts),
     }
 }
 
 
-fn parse_any<'t, 'p, I: Iterator<Item=&'p Expr>>(
-    p: &mut Parser<'p>,
-    options: I,
+fn parse_pub<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    ty_idx: usize, body: &'g Expr, replaceable: bool,
+) -> Option<TokenSeq<'t>> {
+    if replaceable {
+        p.replacement = None;
+    }
+    let mark = p.start(ty_idx);
+    let ts = parse_expr(p, body, tokens)?;
+    if let (true, Some(ty)) = (replaceable, p.replacement) {
+        p.replacement = None;
+        p.replace(mark, ty)
+    };
+    p.finish();
+    p.prev = Some(p.node_type(ty_idx));
+    Some(ts)
+}
+
+fn parse_pub_replace<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    ty_idx: usize, body: &'g Expr
+) -> Option<TokenSeq<'t>> {
+    let ts = parse_expr(p, body, tokens)?;
+    p.replacement = Some(ty_idx);
+    Some(ts)
+}
+
+fn parse_or<'t, 'g>(
+    p: &mut Parser<'g>,
+    options: &'g [Expr],
     tokens: TokenSeq<'t>
 ) -> Option<(TokenSeq<'t>)> {
-    options.filter_map(|opt| parse_expr(p, opt, tokens)).next()
+    options.iter().filter_map(|opt| parse_expr(p, opt, tokens)).next()
+}
+
+fn parse_and<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    parts: &'g [Expr], commit: Option<usize>,
+) -> Option<TokenSeq<'t>> {
+    let mut tokens = tokens;
+    let mut consumed = 0;
+
+    for part in parts {
+        if let Some(ts) = parse_expr(p, part, tokens) {
+            consumed += 1;
+            tokens = ts;
+        } else {
+            break;
+        }
+    }
+    if consumed < commit.unwrap_or(parts.len()) {
+        return None;
+    }
+    if consumed < parts.len() {
+        p.start_error();
+        p.finish()
+    }
+    Some(tokens)
+}
+
+fn parse_token<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    ty_idx: usize,
+) -> Option<TokenSeq<'t>> {
+    let (ty, ts) = p.try_bump(tokens)?;
+    if p.node_type(ty_idx) != ty {
+        return None;
+    }
+    Some(ts)
+}
+
+fn parse_contextual_token<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    ty_idx: usize, text: &str,
+) -> Option<TokenSeq<'t>> {
+    let (n_raw_tokens, ts) = tokens.bump_by_text(text)?;
+    let ty = p.node_type(ty_idx);
+    p.token(ty, n_raw_tokens as u16);
+    Some(ts)
+}
+
+fn parse_opt<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    body: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    Some(parse_expr(p, body, tokens).unwrap_or(tokens))
+}
+
+fn parse_not<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    e: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    match parse_expr_pred(p, e, tokens) {
+        None => Some(tokens),
+        Some(_) => None,
+    }
+}
+
+fn parse_eof<'g, 't>(
+    _: &mut Parser<'g>, tokens: TokenSeq<'t>,
+) -> Option<TokenSeq<'t>> {
+    match tokens.try_bump() {
+        None => Some(tokens),
+        Some(_) => None,
+    }
+}
+
+fn parse_layer<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    l: &'g Expr, e: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    let rest = parse_expr_pred(p, l, tokens)?;
+    let layer = tokens.cut_suffix(rest);
+    let mut leftovers = parse_expr(p, e, layer).unwrap_or(layer);
+
+    if leftovers.try_bump().is_some() {
+        p.start_error();
+        while let Some((_, ts)) = p.try_bump(leftovers) {
+            leftovers = ts;
+        }
+        p.finish();
+    }
+
+    Some(rest)
+}
+
+fn parse_rep<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    body: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    let mut tokens = tokens;
+    while let Some(ts) = parse_expr(p, body, tokens) {
+        tokens = ts;
+    }
+    Some(tokens)
+}
+
+fn parse_with_skip<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    first: &'g Expr, body: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    let mut skipped = false;
+    let mut tokens = tokens;
+    loop {
+        if skipped {
+            p.finish();
+        }
+        match parse_expr_pred(p, first, tokens) {
+            Some(_) => if let Some(ts) = parse_expr(p, body, tokens) {
+                return Some(ts);
+            }
+            None => {}
+        }
+        if skipped {
+            p.reopen()
+        } else {
+            p.start_error()
+        }
+        skipped = true;
+        match p.try_bump(tokens) {
+            None => return None,
+            Some((_, ts)) => tokens = ts,
+        }
+    }
+}
+
+fn parse_enter<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    idx: u32, e: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    let idx = idx as usize;
+    let old = p.contexts[idx];
+    p.contexts[idx] = true;
+    let result = parse_expr(p, &*e, tokens);
+    p.contexts[idx] = old;
+    result
+}
+
+fn parse_exit<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    idx: u32, e: &'g Expr,
+) -> Option<TokenSeq<'t>> {
+    let idx = idx as usize;
+    let old = p.contexts[idx];
+    p.contexts[idx] = false;
+    let result = parse_expr(p, &*e, tokens);
+    p.contexts[idx] = old;
+    result
+}
+
+fn parse_is_in<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    idx: u32,
+) -> Option<TokenSeq<'t>> {
+    if p.contexts[idx as usize] { Some(tokens) } else { None }
+}
+
+fn parse_call<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    body: &'g Expr, args: &'g [(u32, Expr)],
+) -> Option<TokenSeq<'t>> {
+    let old = p.args;
+    for &(arg_pos, ref arg) in args {
+        let arg = match *arg {
+            Expr::Var(i) => p.args[i as usize].unwrap(),
+            _ => arg
+        };
+
+        p.args[arg_pos as usize] = Some(arg);
+    }
+    let result = parse_expr(p, body, tokens);
+    p.args = old;
+    result
+}
+
+fn parse_var<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    i: u32,
+) -> Option<TokenSeq<'t>> {
+    let expr = p.args[i as usize].unwrap();
+    parse_expr(p, expr, tokens)
+}
+
+fn parse_prev_is<'g, 't>(
+    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    ts: &[usize],
+) -> Option<TokenSeq<'t>> {
+    if let Some(prev) = p.prev {
+        for &ty_idx in ts {
+            let t = p.node_type(ty_idx);
+            if t == prev {
+                return Some(tokens);
+            }
+        }
+    }
+    None
 }
