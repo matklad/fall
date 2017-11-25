@@ -5,6 +5,16 @@ use fall_tree::test_util::check_syntax;
 use lang_json::lang_json;
 
 #[test]
+fn leading_trailing_space() {
+    check_syntax(&lang_json(), r##" {} "##, r#"
+FILE
+  OBJECT
+    LBRACE "{"
+    RBRACE "}"
+"#);
+}
+
+#[test]
 fn obj() {
     check_syntax(&lang_json(), r##"{ "foo": [1, 2, 3] }"##, r#"
 FILE

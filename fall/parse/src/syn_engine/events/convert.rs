@@ -34,6 +34,7 @@ struct Convertor<'a> {
     whitespace_binder: &'a Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
 }
 
+#[derive(Debug)]
 struct Conversion {
     token_range: (usize, usize),
     n_events: usize,
@@ -49,26 +50,28 @@ impl<'a> Convertor<'a> {
         events: &[Event],
     ) -> Conversion {
         let mut lhs: Option<INode> = None;
-        let leading_ws = self.collect_tokens_for_binder(tokens);
 
-        let leading_ws_tokens = &tokens[..leading_ws.len()];
-        let mut tokens = &tokens[leading_ws.len()..];
+        let mut tokens = tokens;
         let mut events = events;
         let mut n_events = 0;
-        let mut right_edge = leading_ws.len();
+        let mut global_left_edge = None;
+        let mut right_edge = 0;
         let mut ty = ty;
         let mut forward_parent = forward_parent;
         loop {
             match forward_parent {
                 None => {
                     let mut inode = INode::new(ty);
-                    let left_edge = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
-                    for &(t, _) in &leading_ws_tokens[left_edge..] {
-                        inode.push_child(INode::new_leaf(t.ty, t.len))
-                    }
-                    if let Some(lhs) = lhs {
+                    let left_edge = if let Some(lhs) = lhs {
                         inode.push_child(lhs);
-                    }
+                        global_left_edge.unwrap()
+                    } else {
+                        let leading_ws = self.collect_tokens_for_binder(tokens);
+                        let left_edge = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
+                        tokens = &tokens[left_edge..];
+                        right_edge += left_edge;
+                        left_edge
+                    };
 
                     let (right_n_tokens, right_n_events) = self.fill(&mut inode, tokens, events);
                     right_edge += right_n_tokens;
@@ -92,7 +95,12 @@ impl<'a> Convertor<'a> {
                     let mut inode = INode::new(ty);
                     if let Some(lhs) = lhs {
                         inode.push_child(lhs);
-                    }
+                    } else {
+                        let leading_ws = self.collect_tokens_for_binder(tokens);
+                        tokens = &tokens[leading_ws.len()..];
+                        right_edge += leading_ws.len();
+                        global_left_edge = Some(leading_ws.len());
+                    };
                     let (right_n_tokens, right_n_events) = self.fill(&mut inode, tokens, events);
                     right_edge += right_n_tokens;
                     n_events += right_n_events;
