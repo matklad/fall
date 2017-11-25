@@ -95,6 +95,37 @@ FILE
 }
 
 #[test]
+fn obj_recovery0() {
+    check_syntax(&lang_json(), r##"{92,}"##, r##"
+FILE
+  OBJECT
+    LBRACE "{"
+    ERROR
+      NUMBER "92"
+      COMMA ","
+    RBRACE "}"
+"##);
+}
+
+#[test]
+fn obj_recovery00() {
+    check_syntax(&lang_json(), r##"{92, "x": 0}"##, r##"
+FILE
+  OBJECT
+    LBRACE "{"
+    ERROR
+      NUMBER "92"
+      COMMA ","
+    FIELD
+      STRING "\"x\""
+      COLON ":"
+      PRIMITIVE
+        NUMBER "0"
+    RBRACE "}"
+"##);
+}
+
+#[test]
 fn obj_recovery1() {
     check_syntax(&lang_json(), r##"{"foo": 1, 92, "bar": 3}"##, r##"
 FILE

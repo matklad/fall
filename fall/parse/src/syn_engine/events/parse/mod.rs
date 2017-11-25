@@ -6,7 +6,7 @@ use ::Expr;
 
 use super::{Event, Grammar};
 
-pub fn parse(grammar: Grammar, ts: TokenSeq) -> Vec<Event> {
+pub fn parse(grammar: Grammar, ts: TokenSeq) -> (Vec<Event>, u64) {
     let start_rule = grammar.start_rule;
     let mut parser = Parser {
         grammar,
@@ -20,7 +20,7 @@ pub fn parse(grammar: Grammar, ts: TokenSeq) -> Vec<Event> {
     };
 
     parse_expr(&mut parser, start_rule, ts).unwrap();
-    parser.events
+    (parser.events, parser.ticks)
 }
 
 
@@ -220,6 +220,7 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
                 while let Some((_, ts)) = p.try_bump(leftovers) {
                     leftovers = ts;
                 }
+                p.finish();
             }
 
             Some(rest)
@@ -254,10 +255,7 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
                 skipped = true;
                 match p.try_bump(tokens) {
                     None => return None,
-                    Some((ty, ts)) => {
-                        p.token(ty, 1);
-                        tokens = ts
-                    }
+                    Some((_, ts)) => tokens = ts,
                 }
             }
         }
