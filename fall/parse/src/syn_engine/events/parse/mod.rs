@@ -1,6 +1,8 @@
+mod pratt;
+
 use fall_tree::NodeType;
 use syn_engine::TokenSeq;
-use ::{Expr};
+use ::Expr;
 
 use super::{Event, Grammar};
 
@@ -87,7 +89,7 @@ impl<'g> Parser<'g> {
     fn replace(&mut self, mark: Mark, ty_idx: usize) {
         let ty = self.node_type(ty_idx);
         match self.events[mark.0] {
-            Event::Start { ty: ref mut prev } => *prev = ty,
+            Event::Start { ty: ref mut prev, .. } => *prev = ty,
             _ => unreachable!()
         }
     }
@@ -253,8 +255,7 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
             }
         }
 
-        //pratt::parse_pratt2(ctx, g, tokens),
-        Expr::Pratt(_) => unimplemented!(),
+        Expr::Pratt(ref table) => pratt::parse_pratt(p, table, tokens),
 
         Expr::Enter(idx, ref e) => {
             let idx = idx as usize;
