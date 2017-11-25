@@ -570,8 +570,14 @@ pub rule expr {
 | bit_and | bit_xor | bit_or
 | comparison 	
 | logical_and | logical_or
-| range_expr | prefix_range_expr | postfix_range_expr
+| range_expr | prefix_range_expr | postfix_range_expr | full_range_expr
 | assignment_expr
+}
+
+rule expr_first {
+  literal | ident | 'self' | 'super' | '<' | '::' | '(' | '[' | '|' 
+| 'return' | '{'  | 'if' | 'while' | 'loop' | 'for' | 'match' 
+| '&' | '*' | '-' | '!' | '..' | '...'
 }
 
 rule prev_is_block {
@@ -990,6 +996,11 @@ pub rule prefix_range_expr {
 #[postfix(2), type(range_expr)]
 pub rule postfix_range_expr {
   expr range_op
+}
+
+#[atom, type(range_expr)]
+pub rule full_range_expr { 
+  '..' <not expr_first>
 }
 
 rule range_op {

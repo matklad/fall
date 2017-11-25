@@ -71,6 +71,37 @@ FILE
 }
 
 #[test]
+fn regression() {
+    check_syntax(&lang_rust(), r#"
+        fn main() {
+            &expected[..];
+        }
+"#, r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        REFERENCE_EXPR
+          AMPERSAND "&"
+          INDEX_EXPR
+            PATH_EXPR
+              PATH
+                IDENT "expected"
+            L_BRACK "["
+            RANGE_EXPR
+              DOTDOT ".."
+            R_BRACK "]"
+        SEMI ";"
+      R_CURLY "}"
+"#)
+}
+
+#[test]
 fn missing_token() {
     check_syntax(&lang_rust(), "fn foo foo", r#"
 FILE
