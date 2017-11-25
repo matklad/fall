@@ -25,11 +25,11 @@ fn empty_nodes() {
     match_ast(&ast("_2 hello "), r#"
 FILE
   T2 "_2"
-  EMPTY ""
   WHITESPACE " "
+  EMPTY ""
   ATOM "hello"
-  EMPTY ""
   WHITESPACE " "
+  EMPTY ""
 "#)
 }
 
