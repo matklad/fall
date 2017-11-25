@@ -47,7 +47,7 @@ pub fn parse(
     if !leftover.is_empty() {
         parser.reopen();
         parser.start_error();
-        while let Some((_, ts)) = parser.try_bump(leftover) {
+        while let Some((_, ts)) = parser.bump(leftover) {
             leftover = ts;
         }
         parser.finish();
@@ -134,7 +134,7 @@ impl<'g> Parser<'g> {
         }
     }
 
-    fn try_bump(&mut self, pos: Pos) -> Option<(NodeType, Pos)> {
+    fn bump(&mut self, pos: Pos) -> Option<(NodeType, Pos)> {
         if pos.is_empty() {
             return None;
         }
@@ -143,7 +143,7 @@ impl<'g> Parser<'g> {
         Some((ty, pos.next()))
     }
 
-    fn bump_by_text(&self, tokens: Pos, text: &str) -> Option<(usize, Pos)> {
+    fn bump_by_text(&mut self, tokens: Pos, text: &str, ty_idx: usize) -> Option<Pos> {
         if tokens.is_empty() {
             return None
         }
@@ -170,7 +170,10 @@ impl<'g> Parser<'g> {
             pos = pos.next();
         }
 
-        Some((n_tokens, pos))
+        let ty = self.node_type(ty_idx);
+        self.token(ty, n_tokens);
+
+        Some(pos)
     }
 
     fn cut_suffix(&self, tokens: Pos, suffix: Pos) -> Pos {
@@ -263,7 +266,7 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
             parse_eof(p, tokens),
 
         Expr::Any =>
-            p.try_bump(tokens).map(|(_ty, ts)| ts),
+            p.bump(tokens).map(|(_ty, ts)| ts),
 
         Expr::Layer(ref l, ref e) =>
             parse_layer(p, tokens, l, e),
@@ -362,7 +365,7 @@ fn parse_token<'g, 't>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize,
 ) -> Option<Pos> {
-    let (ty, ts) = p.try_bump(tokens)?;
+    let (ty, ts) = p.bump(tokens)?;
     if p.node_type(ty_idx) != ty {
         return None;
     }
@@ -373,10 +376,7 @@ fn parse_contextual_token<'g, 't>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, text: &str,
 ) -> Option<Pos> {
-    let (n_raw_tokens, ts) = p.bump_by_text(tokens, text)?;
-    let ty = p.node_type(ty_idx);
-    p.token(ty, n_raw_tokens as u16);
-    Some(ts)
+    p.bump_by_text(tokens, text, ty_idx)
 }
 
 fn parse_opt<'g, 't>(
@@ -412,7 +412,7 @@ fn parse_layer<'g, 't>(
 
     if !leftovers.is_empty() {
         p.start_error();
-        while let Some((_, ts)) = p.try_bump(leftovers) {
+        while let Some((_, ts)) = p.bump(leftovers) {
             leftovers = ts;
         }
         p.finish();
@@ -454,7 +454,7 @@ fn parse_with_skip<'g, 't>(
             p.start_error()
         }
         skipped = true;
-        match p.try_bump(tokens) {
+        match p.bump(tokens) {
             None => return None,
             Some((_, ts)) => tokens = ts,
         }
