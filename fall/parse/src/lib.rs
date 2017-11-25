@@ -6,7 +6,6 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use syn_engine::BlackTokens;
 use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics};
 
 mod lex_engine;
@@ -52,10 +51,9 @@ impl ParserDefinition {
             _ => unreachable!()
         };
 
-
-        let black_tokens = BlackTokens::new(lang, text, &tokens);
-        let ts = black_tokens.seq();
-        let (events, ticks) = metrics.measure_time("parsing", || syn_engine::events::parse(g, ts));
+        let (events, ticks) = metrics.measure_time("parsing", || {
+            syn_engine::events::parse(g, lang, text, &tokens)
+        });
         metrics.record("parsing ticks", ticks, "");
 
         metrics.measure_time("inode construction", || {

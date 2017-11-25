@@ -1,20 +1,20 @@
 use PrattTable;
-use super::{Parser, TokenSeq, parse_or, parse_expr};
+use super::{Parser, parse_or, parse_expr, Pos};
 
-pub(super) fn parse_pratt<'g, 't>(
+pub(super) fn parse_pratt<'g>(
     p: &mut Parser<'g>,
     table: &'g PrattTable,
-    tokens: TokenSeq<'t>,
-) -> Option<TokenSeq<'t>> {
+    tokens: Pos,
+) -> Option<Pos> {
     pratt_go(p, table, tokens, 0)
 }
 
-fn pratt_go<'g, 't>(
+fn pratt_go<'g>(
     p: &mut Parser<'g>,
     table: &'g PrattTable,
-    tokens: TokenSeq<'t>,
+    tokens: Pos,
     min_prior: u32
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let mut lhs = p.mark();
     let mut tokens = match pratt_prefix(p, table, tokens) {
         Some(ts) => ts,
@@ -50,11 +50,11 @@ fn pratt_go<'g, 't>(
     Some(tokens)
 }
 
-fn pratt_prefix<'t, 'p>(
+fn pratt_prefix<'p>(
     p: &mut Parser<'p>,
     table: &'p PrattTable,
-    tokens: TokenSeq<'t>,
-) -> Option<TokenSeq<'t>> {
+    tokens: Pos,
+) -> Option<Pos> {
     if let Some(result) = parse_or(p, &table.atoms, tokens) {
         return Some(result);
     }

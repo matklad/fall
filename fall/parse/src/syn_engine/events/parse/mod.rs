@@ -1,15 +1,38 @@
 mod pratt;
 
-use fall_tree::NodeType;
-use syn_engine::TokenSeq;
+use fall_tree::{NodeType, Language, Text, TextUnit, IToken, TextSuffix, tu};
 use ::Expr;
 
 use super::{Event, Grammar};
 
-pub fn parse(grammar: Grammar, ts: TokenSeq) -> (Vec<Event>, u64) {
+pub fn parse(
+    grammar: Grammar,
+    lang: &Language,
+    text: Text,
+    tokens: &[IToken],
+) -> (Vec<Event>, u64) {
     let start_rule = grammar.start_rule;
+
+    let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
+
+    let non_ws_indexes = {
+        let mut indexes = Vec::new();
+        let mut len = tu(0);
+        for (i, &t) in tokens.iter().enumerate() {
+            if !is_ws(t) {
+                indexes.push((len, i))
+            }
+            len += t.len
+        }
+        indexes
+    };
+
     let mut parser = Parser {
         grammar,
+        text,
+        tokens,
+        non_ws_indexes,
+
         ticks: 0,
         events: Vec::new(),
         replacement: None,
@@ -19,8 +42,9 @@ pub fn parse(grammar: Grammar, ts: TokenSeq) -> (Vec<Event>, u64) {
         prev: None,
     };
 
-    let mut leftover = parse_expr(&mut parser, start_rule, ts).unwrap();
-    if leftover.try_bump().is_some() {
+    let pos = Pos(0, parser.non_ws_indexes.len() as u32);
+    let mut leftover = parse_expr(&mut parser, start_rule, pos).unwrap();
+    if !leftover.is_empty() {
         parser.reopen();
         parser.start_error();
         while let Some((_, ts)) = parser.try_bump(leftover) {
@@ -36,6 +60,9 @@ pub fn parse(grammar: Grammar, ts: TokenSeq) -> (Vec<Event>, u64) {
 
 struct Parser<'g> {
     grammar: Grammar<'g>,
+    text: Text<'g>,
+    tokens: &'g [IToken],
+    non_ws_indexes: Vec<(TextUnit, usize)>,
 
     ticks: u64,
     events: Vec<Event>,
@@ -44,6 +71,19 @@ struct Parser<'g> {
     contexts: [bool; 16],
     args: [Option<&'g Expr>; 16],
     prev: Option<NodeType>,
+}
+
+#[derive(Copy, Clone, Debug)]
+struct Pos(u32, u32);
+
+impl Pos {
+    fn next(self) -> Pos {
+        Pos(self.0 + 1, self.1)
+    }
+
+    fn is_empty(self) -> bool {
+        self.0 == self.1
+    }
 }
 
 struct Mark(usize);
@@ -94,11 +134,47 @@ impl<'g> Parser<'g> {
         }
     }
 
-    fn try_bump<'t>(&mut self, tokens: TokenSeq<'t>) -> Option<(NodeType, TokenSeq<'t>)> {
-        tokens.try_bump().map(|(ty, ts)| {
-            self.token(ty, 1);
-            (ty, ts)
-        })
+    fn try_bump(&mut self, pos: Pos) -> Option<(NodeType, Pos)> {
+        if pos.is_empty() {
+            return None;
+        }
+        let ty = self[pos].ty;
+        self.token(ty, 1);
+        Some((ty, pos.next()))
+    }
+
+    fn bump_by_text(&self, tokens: Pos, text: &str) -> Option<(usize, Pos)> {
+        if tokens.is_empty() {
+            return None
+        }
+        let start = self.non_ws_indexes[tokens.0 as usize].0;
+        let current_text = self.text.slice(TextSuffix::from(start));
+
+        if !current_text.starts_with(text) {
+            return None;
+        }
+
+        let mut leftover = tu(text.len() as u32);
+        let mut n_tokens = 0;
+        let mut pos = tokens;
+        while leftover > tu(0) {
+            if pos.is_empty() {
+                return None;
+            }
+            let cur_len = self[pos].len;
+            if leftover < cur_len {
+                panic!("Textual match split token in half")
+            }
+            leftover -= cur_len;
+            n_tokens += 1;
+            pos = pos.next();
+        }
+
+        Some((n_tokens, pos))
+    }
+
+    fn cut_suffix(&self, tokens: Pos, suffix: Pos) -> Pos {
+        Pos(tokens.0, suffix.0)
     }
 
     fn replace(&mut self, mark: Mark, ty_idx: usize) {
@@ -128,7 +204,15 @@ impl<'g> Parser<'g> {
     }
 }
 
-fn parse_expr<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<'t>) -> Option<TokenSeq<'t>> {
+impl<'g> ::std::ops::Index<Pos> for Parser<'g> {
+    type Output = IToken;
+
+    fn index(&self, index: Pos) -> &Self::Output {
+        &self.tokens[self.non_ws_indexes[index.0 as usize].1]
+    }
+}
+
+fn parse_expr<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
     p.ticks += 1;
     let mark = p.mark();
     let result = parse_expr_inner(p, expr, tokens);
@@ -138,7 +222,7 @@ fn parse_expr<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<'t>) 
     result
 }
 
-fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<'t>) -> Option<TokenSeq<'t>> {
+fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
     let old_mode = p.predicate_mode;
     p.predicate_mode = true;
     let result = parse_expr(p, expr, tokens);
@@ -146,7 +230,7 @@ fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<
     result
 }
 
-fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq<'t>) -> Option<TokenSeq<'t>> {
+fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
     match *expr {
         Expr::Pub { ty_idx, ref body, replaceable } =>
             parse_pub(p, tokens, ty_idx, body, replaceable),
@@ -215,9 +299,9 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
 
 
 fn parse_pub<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, body: &'g Expr, replaceable: bool,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     if replaceable {
         p.replacement = None;
     }
@@ -233,9 +317,9 @@ fn parse_pub<'g, 't>(
 }
 
 fn parse_pub_replace<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, body: &'g Expr
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let ts = parse_expr(p, body, tokens)?;
     p.replacement = Some(ty_idx);
     Some(ts)
@@ -244,15 +328,15 @@ fn parse_pub_replace<'g, 't>(
 fn parse_or<'t, 'g>(
     p: &mut Parser<'g>,
     options: &'g [Expr],
-    tokens: TokenSeq<'t>
-) -> Option<(TokenSeq<'t>)> {
+    tokens: Pos
+) -> Option<(Pos)> {
     options.iter().filter_map(|opt| parse_expr(p, opt, tokens)).next()
 }
 
 fn parse_and<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     parts: &'g [Expr], commit: Option<usize>,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let mut tokens = tokens;
     let mut consumed = 0;
 
@@ -275,9 +359,9 @@ fn parse_and<'g, 't>(
 }
 
 fn parse_token<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let (ty, ts) = p.try_bump(tokens)?;
     if p.node_type(ty_idx) != ty {
         return None;
@@ -286,26 +370,26 @@ fn parse_token<'g, 't>(
 }
 
 fn parse_contextual_token<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, text: &str,
-) -> Option<TokenSeq<'t>> {
-    let (n_raw_tokens, ts) = tokens.bump_by_text(text)?;
+) -> Option<Pos> {
+    let (n_raw_tokens, ts) = p.bump_by_text(tokens, text)?;
     let ty = p.node_type(ty_idx);
     p.token(ty, n_raw_tokens as u16);
     Some(ts)
 }
 
 fn parse_opt<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     Some(parse_expr(p, body, tokens).unwrap_or(tokens))
 }
 
 fn parse_not<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     e: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     match parse_expr_pred(p, e, tokens) {
         None => Some(tokens),
         Some(_) => None,
@@ -313,23 +397,20 @@ fn parse_not<'g, 't>(
 }
 
 fn parse_eof<'g, 't>(
-    _: &mut Parser<'g>, tokens: TokenSeq<'t>,
-) -> Option<TokenSeq<'t>> {
-    match tokens.try_bump() {
-        None => Some(tokens),
-        Some(_) => None,
-    }
+    _: &mut Parser<'g>, tokens: Pos,
+) -> Option<Pos> {
+    if tokens.is_empty() { Some(tokens) } else { None }
 }
 
 fn parse_layer<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     l: &'g Expr, e: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let rest = parse_expr_pred(p, l, tokens)?;
-    let layer = tokens.cut_suffix(rest);
+    let layer = p.cut_suffix(tokens, rest);
     let mut leftovers = parse_expr(p, e, layer).unwrap_or(layer);
 
-    if leftovers.try_bump().is_some() {
+    if !leftovers.is_empty() {
         p.start_error();
         while let Some((_, ts)) = p.try_bump(leftovers) {
             leftovers = ts;
@@ -341,9 +422,9 @@ fn parse_layer<'g, 't>(
 }
 
 fn parse_rep<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let mut tokens = tokens;
     while let Some(ts) = parse_expr(p, body, tokens) {
         tokens = ts;
@@ -352,9 +433,9 @@ fn parse_rep<'g, 't>(
 }
 
 fn parse_with_skip<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     first: &'g Expr, body: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let mut skipped = false;
     let mut tokens = tokens;
     loop {
@@ -381,9 +462,9 @@ fn parse_with_skip<'g, 't>(
 }
 
 fn parse_enter<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     idx: u32, e: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let idx = idx as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = true;
@@ -393,9 +474,9 @@ fn parse_enter<'g, 't>(
 }
 
 fn parse_exit<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     idx: u32, e: &'g Expr,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let idx = idx as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = false;
@@ -405,16 +486,16 @@ fn parse_exit<'g, 't>(
 }
 
 fn parse_is_in<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     idx: u32,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     if p.contexts[idx as usize] { Some(tokens) } else { None }
 }
 
 fn parse_call<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr, args: &'g [(u32, Expr)],
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let old = p.args;
     for &(arg_pos, ref arg) in args {
         let arg = match *arg {
@@ -430,17 +511,17 @@ fn parse_call<'g, 't>(
 }
 
 fn parse_var<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     i: u32,
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     let expr = p.args[i as usize].unwrap();
     parse_expr(p, expr, tokens)
 }
 
 fn parse_prev_is<'g, 't>(
-    p: &mut Parser<'g>, tokens: TokenSeq<'t>,
+    p: &mut Parser<'g>, tokens: Pos,
     ts: &[usize],
-) -> Option<TokenSeq<'t>> {
+) -> Option<Pos> {
     if let Some(prev) = p.prev {
         for &ty_idx in ts {
             let t = p.node_type(ty_idx);

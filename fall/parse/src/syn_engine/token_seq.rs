@@ -1,45 +1,7 @@
-use fall_tree::{Language, NodeType, tu, IToken, Text, TextUnit, TextSuffix};
+use fall_tree::{IToken, Text, TextUnit};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BlackIdx(pub usize);
-
-pub struct BlackTokens<'a> {
-    text: Text<'a>,
-    non_ws_indexes: Vec<(TextUnit, BlackIdx)>,
-    original_tokens: &'a [IToken],
-}
-
-impl<'a> BlackTokens<'a> {
-    pub fn new(lang: &Language, text: Text<'a>, tokens: &'a [IToken]) -> BlackTokens<'a> {
-        let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
-
-        let non_ws_indexes = {
-            let mut indexes = Vec::new();
-            let mut len = tu(0);
-            for (i, &t) in tokens.iter().enumerate() {
-                if !is_ws(t) {
-                    indexes.push((len, BlackIdx(i)))
-                }
-                len += t.len
-            }
-            indexes
-        };
-
-        BlackTokens {
-            text,
-            non_ws_indexes,
-            original_tokens: tokens,
-        }
-    }
-
-    pub fn seq(&'a self) -> TokenSeq<'a> {
-        TokenSeq {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes,
-            original_tokens: self.original_tokens,
-        }
-    }
-}
 
 /// An iterator over slice of tokens,
 /// capable of skipping over insignificant trivia
@@ -53,72 +15,72 @@ pub struct TokenSeq<'a> {
 
 
 impl<'a> TokenSeq<'a> {
-    pub fn try_bump(&self) -> Option<(NodeType, TokenSeq<'a>)> {
-        if self.current().is_none() {
-            return None;
-        }
-        let (ty, ts) = self.bump();
-        return Some((ty, ts));
-    }
+//    pub fn try_bump(&self) -> Option<(NodeType, TokenSeq<'a>)> {
+//        if self.current().is_none() {
+//            return None;
+//        }
+//        let (ty, ts) = self.bump();
+//        return Some((ty, ts));
+//    }
 
 
-    pub fn cut_suffix(&self, suffix: TokenSeq<'a>) -> TokenSeq<'a> {
-        let end = self.non_ws_indexes.len() - suffix.non_ws_indexes.len();
-        TokenSeq {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[..end],
-            original_tokens: self.original_tokens
-        }
-    }
+//    pub fn cut_suffix(&self, suffix: TokenSeq<'a>) -> TokenSeq<'a> {
+//        let end = self.non_ws_indexes.len() - suffix.non_ws_indexes.len();
+//        TokenSeq {
+//            text: self.text,
+//            non_ws_indexes: &self.non_ws_indexes[..end],
+//            original_tokens: self.original_tokens
+//        }
+//    }
 
-    pub fn bump_by_text(&self, text: &str) -> Option<(usize, TokenSeq<'a>)> {
-        let current_text = match self.non_ws_indexes.first() {
-            None => return None,
-            Some(&(start, _)) => self.text.slice(TextSuffix::from(start))
-        };
+//    pub fn bump_by_text(&self, text: &str) -> Option<(usize, TokenSeq<'a>)> {
+//        let current_text = match self.non_ws_indexes.first() {
+//            None => return None,
+//            Some(&(start, _)) => self.text.slice(TextSuffix::from(start))
+//        };
+//
+//        if !current_text.starts_with(text) {
+//            return None;
+//        }
+//
+//        let mut leftover = tu(text.len() as u32);
+//        let mut rest = *self;
+//        let mut n_tokens = 0;
+//
+//        while leftover > tu(0) {
+//            let cur_len = rest.current().unwrap().len;
+//            if leftover < cur_len {
+//                panic!("Textual match split token in half")
+//            }
+//            leftover -= cur_len;
+//            let (_, rest_) = rest.bump();
+//            rest = rest_;
+//            n_tokens += 1;
+//        }
+//
+//        let rest = TokenSeq {
+//            text: self.text,
+//            non_ws_indexes: &self.non_ws_indexes[n_tokens..],
+//            original_tokens: self.original_tokens,
+//        };
+//
+//        Some((n_tokens, rest))
+//    }
 
-        if !current_text.starts_with(text) {
-            return None;
-        }
 
-        let mut leftover = tu(text.len() as u32);
-        let mut rest = *self;
-        let mut n_tokens = 0;
+//    fn bump(&self) -> (NodeType, TokenSeq<'a>) {
+//        let token = self.current().expect("Can't bump an empty token sequence");
+//        let rest = TokenSeq {
+//            text: self.text,
+//            non_ws_indexes: &self.non_ws_indexes[1..],
+//            original_tokens: self.original_tokens,
+//        };
+//        (token.ty, rest)
+//    }
 
-        while leftover > tu(0) {
-            let cur_len = rest.current().unwrap().len;
-            if leftover < cur_len {
-                panic!("Textual match split token in half")
-            }
-            leftover -= cur_len;
-            let (_, rest_) = rest.bump();
-            rest = rest_;
-            n_tokens += 1;
-        }
-
-        let rest = TokenSeq {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[n_tokens..],
-            original_tokens: self.original_tokens,
-        };
-
-        Some((n_tokens, rest))
-    }
-
-
-    fn bump(&self) -> (NodeType, TokenSeq<'a>) {
-        let token = self.current().expect("Can't bump an empty token sequence");
-        let rest = TokenSeq {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[1..],
-            original_tokens: self.original_tokens,
-        };
-        (token.ty, rest)
-    }
-
-    fn current(&self) -> Option<IToken> {
-        self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
-            self.original_tokens[idx]
-        })
-    }
+//    fn current(&self) -> Option<IToken> {
+//        self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
+//            self.original_tokens[idx]
+//        })
+//    }
 }
