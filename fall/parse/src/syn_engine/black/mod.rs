@@ -97,7 +97,7 @@ impl<'p> Ctx<'p> {
 
     fn create_contextual_leaf_node<'t>(&mut self, tokens: TokenSeq<'t>, ty: NodeType, text: &str)
                                        -> Option<(BlackNode, TokenSeq<'t>)> {
-        let n_tokens = match tokens.bump_by_text(text) {
+        let (n_tokens, _) = match tokens.bump_by_text(text) {
             Some(x) => x,
             None => return None,
         };

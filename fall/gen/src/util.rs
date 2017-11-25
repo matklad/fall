@@ -1,4 +1,5 @@
 use fall_tree::Text;
+use std::ascii::AsciiExt;
 
 pub fn scream(word: Text) -> String {
     word.to_cow().chars().map(|c| c.to_ascii_uppercase()).collect()

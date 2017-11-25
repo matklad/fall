@@ -53,6 +53,14 @@ pub struct TokenSeq<'a> {
 
 
 impl<'a> TokenSeq<'a> {
+    pub fn try_bump(&self) -> Option<(NodeType, TokenSeq<'a>)> {
+        if self.current().is_none() {
+            return None;
+        }
+        let ((ty, _), ts) = self.bump();
+        return Some((ty, ts));
+    }
+
     pub fn current(&self) -> Option<IToken> {
         self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
             self.original_tokens[idx]
@@ -80,7 +88,7 @@ impl<'a> TokenSeq<'a> {
         ((ty, idx), rest)
     }
 
-    pub fn bump_by_text(&self, text: &str) -> Option<usize> {
+    pub fn bump_by_text(&self, text: &str) -> Option<(usize, TokenSeq<'a>)> {
         let current_text = match self.non_ws_indexes.first() {
             None => return None,
             Some(&(start, _)) => self.text.slice(TextSuffix::from(start))
@@ -105,6 +113,12 @@ impl<'a> TokenSeq<'a> {
             n_tokens += 1;
         }
 
-        Some(n_tokens)
+        let rest = TokenSeq {
+            text: self.text,
+            non_ws_indexes: &self.non_ws_indexes[n_tokens..],
+            original_tokens: self.original_tokens,
+        };
+
+        Some((n_tokens, rest))
     }
 }
