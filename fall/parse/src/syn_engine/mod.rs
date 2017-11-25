@@ -1,5 +1,23 @@
-mod token_seq;
+use fall_tree::NodeType;
+use ::{Expr, SynRule};
 
-pub mod events;
+#[derive(Copy, Clone, Debug)]
+pub enum Event {
+    Start { ty: NodeType, forward_parent: Option<u32> },
+    Token { ty: NodeType, n_raw_tokens: u16 },
+    End,
+}
 
-pub use self::token_seq::{TokenSeq, BlackIdx};
+pub struct Grammar<'g> {
+    pub node_types: &'g [NodeType],
+    pub rules: &'g [SynRule],
+    pub start_rule: &'g Expr,
+}
+
+mod parse;
+pub use self::parse::parse;
+mod convert;
+pub use self::convert::convert;
+
+
+

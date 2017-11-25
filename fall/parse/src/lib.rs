@@ -41,7 +41,7 @@ impl Default for ParserDefinition {
 impl ParserDefinition {
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
         let start_rule = &self.syntactical_rules[0].body;
-        let g = syn_engine::events::Grammar {
+        let g = syn_engine::Grammar {
             node_types: &self.node_types,
             rules: &self.syntactical_rules,
             start_rule,
@@ -52,12 +52,12 @@ impl ParserDefinition {
         };
 
         let (events, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::events::parse(g, lang, text, &tokens)
+            syn_engine::parse(g, lang, text, &tokens)
         });
         metrics.record("parsing ticks", ticks, "");
 
         metrics.measure_time("inode construction", || {
-            syn_engine::events::convert(
+            syn_engine::convert(
                 text,
                 tokens,
                 &events,
