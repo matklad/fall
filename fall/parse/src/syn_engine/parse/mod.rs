@@ -86,11 +86,11 @@ impl Pos {
     }
 }
 
-struct Mark(usize);
+struct Mark(u32);
 
 impl<'g> Parser<'g> {
     fn mark(&self) -> Mark {
-        Mark(self.events.len())
+        Mark(self.events.len() as u32)
     }
 
     fn rollback(&mut self, mark: Mark) {
@@ -99,7 +99,7 @@ impl<'g> Parser<'g> {
             unsafe { xs.set_len(len) }
         }
 
-        truncate_fast(&mut self.events, mark.0);
+        truncate_fast(&mut self.events, mark.0 as usize);
     }
 
     fn start(&mut self, ty_idx: usize) -> Mark {
@@ -108,7 +108,7 @@ impl<'g> Parser<'g> {
     }
 
     fn start_ty(&mut self, ty: NodeType) -> Mark {
-        let mark = Mark(self.events.len());
+        let mark = Mark(self.events.len() as u32);
         self.event(Event::Start { ty, forward_parent: None });
         mark
     }
@@ -145,7 +145,7 @@ impl<'g> Parser<'g> {
 
     fn bump_by_text(&mut self, tokens: Pos, text: &str, ty_idx: usize) -> Option<Pos> {
         if tokens.is_empty() {
-            return None
+            return None;
         }
         let start = self.non_ws_indexes[tokens.0 as usize].0;
         let current_text = self.text.slice(TextSuffix::from(start));
@@ -182,16 +182,16 @@ impl<'g> Parser<'g> {
 
     fn replace(&mut self, mark: Mark, ty_idx: usize) {
         let ty = self.node_type(ty_idx);
-        match self.events[mark.0] {
+        match self.events[mark.0 as usize] {
             Event::Start { ty: ref mut prev, .. } => *prev = ty,
             _ => unreachable!()
         }
     }
 
     fn forward_parent(&mut self, child: Mark, parent: Mark) {
-        match self.events[child.0] {
+        match self.events[child.0 as usize] {
             Event::Start { ref mut forward_parent, .. } =>
-                *forward_parent = Some((parent.0 - child.0) as u32),
+                *forward_parent = Some(parent.0 - child.0),
             _ => unreachable!(),
         }
     }
