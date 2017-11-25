@@ -73,7 +73,7 @@ struct Parser<'g> {
     prev: Option<NodeType>,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 struct Pos(u32, u32);
 
 impl Pos {
@@ -297,11 +297,14 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
 
         Expr::PrevIs(ref ts) =>
             parse_prev_is(p, tokens, ts),
+
+        Expr::Inject(ref prefix, ref body) =>
+            parse_inject(p, tokens, prefix, body),
     }
 }
 
 
-fn parse_pub<'g, 't>(
+fn parse_pub<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, body: &'g Expr, replaceable: bool,
 ) -> Option<Pos> {
@@ -319,7 +322,7 @@ fn parse_pub<'g, 't>(
     Some(ts)
 }
 
-fn parse_pub_replace<'g, 't>(
+fn parse_pub_replace<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, body: &'g Expr
 ) -> Option<Pos> {
@@ -336,7 +339,7 @@ fn parse_or<'t, 'g>(
     options.iter().filter_map(|opt| parse_expr(p, opt, tokens)).next()
 }
 
-fn parse_and<'g, 't>(
+fn parse_and<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     parts: &'g [Expr], commit: Option<usize>,
 ) -> Option<Pos> {
@@ -361,7 +364,7 @@ fn parse_and<'g, 't>(
     Some(tokens)
 }
 
-fn parse_token<'g, 't>(
+fn parse_token<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize,
 ) -> Option<Pos> {
@@ -372,21 +375,21 @@ fn parse_token<'g, 't>(
     Some(ts)
 }
 
-fn parse_contextual_token<'g, 't>(
+fn parse_contextual_token<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     ty_idx: usize, text: &str,
 ) -> Option<Pos> {
     p.bump_by_text(tokens, text, ty_idx)
 }
 
-fn parse_opt<'g, 't>(
+fn parse_opt<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr,
 ) -> Option<Pos> {
     Some(parse_expr(p, body, tokens).unwrap_or(tokens))
 }
 
-fn parse_not<'g, 't>(
+fn parse_not<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     e: &'g Expr,
 ) -> Option<Pos> {
@@ -396,13 +399,13 @@ fn parse_not<'g, 't>(
     }
 }
 
-fn parse_eof<'g, 't>(
+fn parse_eof<'g>(
     _: &mut Parser<'g>, tokens: Pos,
 ) -> Option<Pos> {
     if tokens.is_empty() { Some(tokens) } else { None }
 }
 
-fn parse_layer<'g, 't>(
+fn parse_layer<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     l: &'g Expr, e: &'g Expr,
 ) -> Option<Pos> {
@@ -421,7 +424,7 @@ fn parse_layer<'g, 't>(
     Some(rest)
 }
 
-fn parse_rep<'g, 't>(
+fn parse_rep<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr,
 ) -> Option<Pos> {
@@ -432,7 +435,7 @@ fn parse_rep<'g, 't>(
     Some(tokens)
 }
 
-fn parse_with_skip<'g, 't>(
+fn parse_with_skip<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     first: &'g Expr, body: &'g Expr,
 ) -> Option<Pos> {
@@ -461,7 +464,7 @@ fn parse_with_skip<'g, 't>(
     }
 }
 
-fn parse_enter<'g, 't>(
+fn parse_enter<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     idx: u32, e: &'g Expr,
 ) -> Option<Pos> {
@@ -473,7 +476,7 @@ fn parse_enter<'g, 't>(
     result
 }
 
-fn parse_exit<'g, 't>(
+fn parse_exit<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     idx: u32, e: &'g Expr,
 ) -> Option<Pos> {
@@ -485,14 +488,14 @@ fn parse_exit<'g, 't>(
     result
 }
 
-fn parse_is_in<'g, 't>(
+fn parse_is_in<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     idx: u32,
 ) -> Option<Pos> {
     if p.contexts[idx as usize] { Some(tokens) } else { None }
 }
 
-fn parse_call<'g, 't>(
+fn parse_call<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     body: &'g Expr, args: &'g [(u32, Expr)],
 ) -> Option<Pos> {
@@ -510,7 +513,7 @@ fn parse_call<'g, 't>(
     result
 }
 
-fn parse_var<'g, 't>(
+fn parse_var<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     i: u32,
 ) -> Option<Pos> {
@@ -518,7 +521,7 @@ fn parse_var<'g, 't>(
     parse_expr(p, expr, tokens)
 }
 
-fn parse_prev_is<'g, 't>(
+fn parse_prev_is<'g>(
     p: &mut Parser<'g>, tokens: Pos,
     ts: &[usize],
 ) -> Option<Pos> {
@@ -531,4 +534,18 @@ fn parse_prev_is<'g, 't>(
         }
     }
     None
+}
+
+fn parse_inject<'g>(
+    p: &mut Parser<'g>, pos: Pos,
+    prefix: &'g Expr, body: &'g Expr,
+) -> Option<Pos> {
+    let prefix_mark = p.mark();
+    let after_prefix = parse_expr(p, prefix, pos)?;
+    let body_mark = p.mark();
+    let result = parse_expr(p, body, after_prefix)?;
+    if after_prefix != pos {
+        p.forward_parent(prefix_mark, body_mark);
+    }
+    Some(result)
 }

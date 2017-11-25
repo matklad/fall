@@ -131,7 +131,8 @@ pub enum Expr {
     IsIn(u32),
     Call(Box<Expr>, Vec<(u32, Expr)>),
     Var(u32),
-    PrevIs(Vec<usize>)
+    PrevIs(Vec<usize>),
+    Inject(Box<Expr>, Box<Expr>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -288,6 +288,10 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
                     Box::new(compile_expr(analysis, e1)?),
                     Box::new(compile_expr(analysis, e2)?)
                 ),
+                CallKind::Inject(e1, e2) => fall_parse::Expr::Inject(
+                    Box::new(compile_expr(analysis, e1)?),
+                    Box::new(compile_expr(analysis, e2)?)
+                ),
                 CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
                     Box::new(fall_parse::Expr::Rule(rule.index())),
                     args.iter()

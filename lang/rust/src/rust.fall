@@ -108,14 +108,16 @@ rule mod_form_first {
 }
 
 rule mod_form { 
-  impl_form
-| use_decl | extern_crate_decl | struct_def | enum_def | mod_def 
-| impl_def | trait_def
-| extern_block
+  <inject 
+    {outer_attributes visibility?} { 
+      impl_form | use_decl | extern_crate_decl | struct_def 
+    | enum_def | mod_def | impl_def | trait_def | extern_block 
+  }>  
+| macro_item
 }
 
 pub rule use_decl {
-  outer_attributes visibility? 'use' <commit> { 
+  'use' <commit> { 
     mod_path {alias | {'::' use_spec}?}
   | '::'? use_spec 
   } ';'
@@ -135,11 +137,11 @@ use abi::{self, Abi};
 "
 
 pub rule extern_crate_decl {
-  outer_attributes visibility? 'extern' 'crate' <commit> ident alias? ';'
+  'extern' 'crate' <commit> ident alias? ';'
 }
 
 pub rule fn_def {
-  outer_attributes visibility? linkage? 'fn' <commit> ident
+  linkage? 'fn' <commit> ident
   type_parameters?
   value_parameters
   ret_type?
@@ -178,7 +180,6 @@ pub rule self_parameter {
 }
 
 pub rule struct_def {
-  outer_attributes visibility?
   {'struct' | 'union'} <commit> 
   ident type_parameters? {
     <block <comma_list struct_field>>
@@ -196,7 +197,7 @@ pub rule tuple_field {
 }
 
 pub rule enum_def {
-  outer_attributes visibility? 'enum' <commit> ident
+  'enum' <commit> ident
   <block <comma_list enum_variant>>
 }
 
@@ -209,12 +210,12 @@ pub rule enum_variant {
 }
 
 pub rule mod_def {
-  outer_attributes visibility? 'mod' <commit> 
+  'mod' <commit> 
   ident { ';' | <block mod_contents> }
 }
 
 pub rule impl_def {
-  outer_attributes 'impl' <commit> 
+  'impl' <commit> 
   type_parameters?
   {type_reference {'for' type_reference}? }
   members
@@ -236,12 +237,15 @@ pub trait T<X> {}
 "
 
 pub rule members {
-  <block <with_skip impl_form_first impl_form>*>
+  <block <with_skip impl_form_first {
+    <inject {outer_attributes visibility?} impl_form>
+  | macro_item
+  }>*>
 }
 
 
 rule impl_form {
-  fn_def | type_def | const_def | macro_item
+  fn_def | type_def | const_def
 }
 
 rule impl_form_first {
@@ -250,14 +254,14 @@ rule impl_form_first {
 }
 
 pub rule type_def {
-  outer_attributes visibility? 'type' <commit> 
+  'type' <commit> 
   ident type_parameters?
   {'=' type_reference}?
   ';'
 }
 
 pub rule const_def {
-  outer_attributes visibility? {'const' | 'static'} <commit>
+  {'const' | 'static'} <commit>
   ident ':' type_reference
   {'=' expr}? ';'
 }
@@ -576,7 +580,7 @@ pub rule expr {
 
 rule expr_first {
   literal | ident | 'self' | 'super' | '<' | '::' | '(' | '[' | '|' 
-| 'return' | '{'  | 'if' | 'while' | 'loop' | 'for' | 'match' 
+| 'return' | '{' | 'if' | 'while' | 'loop' | 'for' | 'match' 
 | '&' | '*' | '-' | '!' | '..' | '...'
 }
 

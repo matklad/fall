@@ -50,6 +50,9 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
         let mut with_skip = |d: &mut DiagnosticSink| two(d, &mut |_, arg1, arg2| {
             Some(CallKind::WithSkip(arg1, arg2))
         });
+        let mut inject = |d: &mut DiagnosticSink| two(d, &mut |_, arg1, arg2| {
+            Some(CallKind::Inject(arg1, arg2))
+        });
         let mut enter = |d: &mut DiagnosticSink| two(d, &mut |d, _, arg2| {
             resolve_context(db, d, call).map(|ctx| CallKind::Enter(ctx, arg2))
         });
@@ -84,6 +87,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
             ("is_in", &mut is_in),
             ("layer", &mut layer),
             ("with_skip", &mut with_skip),
+            ("inject", &mut inject),
             ("enter", &mut enter),
             ("exit", &mut exit),
             ("prev_is", &mut prev_is)

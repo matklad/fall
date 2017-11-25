@@ -89,7 +89,8 @@ pub enum CallKind<'f> {
     IsIn(u32),
 
     RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>),
-    PrevIs(Arc<Vec<usize>>)
+    PrevIs(Arc<Vec<usize>>),
+    Inject(Expr<'f>, Expr<'f>),
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
