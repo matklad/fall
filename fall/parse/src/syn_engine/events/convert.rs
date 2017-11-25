@@ -8,6 +8,7 @@ pub fn convert(
     is_whitespace: &Fn(NodeType) -> bool,
     whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
 ) -> INode {
+    let events = reshuffle_events(events);
     let (first, rest) = (events[0], &events[1..]);
 
     let mut len = tu(0);
@@ -19,8 +20,8 @@ pub fn convert(
 
     let conv = Convertor { is_whitespace, whitespace_binder };
     match first {
-        Event::Start { ty, forward_parent } => {
-            let conversion = conv.go(ty, forward_parent, &tokens, rest);
+        Event::Start { ty, forward_parent: _ } => {
+            let conversion = conv.go(ty, &tokens, rest);
             assert_eq!(conversion.token_range, (0, tokens.len()));
             assert_eq!(conversion.n_events, rest.len());
             conversion.inode
@@ -28,6 +29,45 @@ pub fn convert(
         _ => unreachable!()
     }
 }
+
+fn reshuffle_events(events: &[Event]) -> Vec<Event> {
+    let mut result = Vec::with_capacity(events.len());
+    let mut holes = Vec::new();
+    let mut forward_parents = Vec::new();
+
+    for (i, &e) in events.iter().enumerate() {
+        if holes.last() == Some(&i) {
+            holes.pop();
+            continue
+        }
+        match e {
+            Event::Start { forward_parent: Some(_), .. } => {
+                forward_parents.clear();
+                let mut idx = i;
+                loop {
+                    let (ty, fwd) = match events[idx] {
+                        Event::Start { ty, forward_parent } => (ty, forward_parent),
+                        _ => unreachable!(),
+                    };
+                    forward_parents.push((idx, ty));
+                    if let Some(fwd) = fwd {
+                        idx += fwd as usize;
+                    } else {
+                        break;
+                    }
+                }
+                for &(idx, ty) in forward_parents.iter().into_iter().rev() {
+                    result.push(Event::Start { ty, forward_parent: None });
+                    holes.push(idx);
+                }
+                holes.pop();
+            }
+            _ => result.push(e)
+        }
+    }
+    result
+}
+
 
 struct Convertor<'a> {
     is_whitespace: &'a Fn(NodeType) -> bool,
@@ -45,80 +85,31 @@ impl<'a> Convertor<'a> {
     fn go(
         &self,
         ty: NodeType,
-        forward_parent: Option<u32>,
         tokens: &[(IToken, Text)],
         events: &[Event],
     ) -> Conversion {
-        let mut lhs: Option<INode> = None;
 
-        let mut tokens = tokens;
-        let mut events = events;
-        let mut n_events = 0;
-        let mut global_left_edge = None;
-        let mut right_edge = 0;
-        let mut ty = ty;
-        let mut forward_parent = forward_parent;
-        loop {
-            match forward_parent {
-                None => {
-                    let mut inode = INode::new(ty);
-                    let left_edge = if let Some(lhs) = lhs {
-                        inode.push_child(lhs);
-                        global_left_edge.unwrap()
-                    } else {
-                        let leading_ws = self.collect_tokens_for_binder(tokens);
-                        let left_edge = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
-                        tokens = &tokens[left_edge..];
-                        right_edge += left_edge;
-                        left_edge
-                    };
 
-                    let (right_n_tokens, right_n_events) = self.fill(&mut inode, tokens, events);
-                    right_edge += right_n_tokens;
-                    n_events += right_n_events;
-                    let tokens = &tokens[right_n_tokens..];
+        let leading_ws = self.collect_tokens_for_binder(tokens);
+        let left_wd = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
+        let tokens = &tokens[left_wd..];
 
-                    let trailing_ws = self.collect_tokens_for_binder(tokens);
-                    let to_bind = (self.whitespace_binder)(ty, &trailing_ws, false);
-                    for &(t, _) in &tokens[..to_bind] {
-                        inode.push_child(INode::new_leaf(t.ty, t.len))
-                    }
-                    right_edge += to_bind;
-                    return Conversion {
-                        token_range: (left_edge, right_edge),
-                        n_events,
-                        inode,
-                    };
-                }
+        let mut inode = INode::new(ty);
+        let (n_tokens, n_events) = self.fill(&mut inode, tokens, events);
+        let tokens = &tokens[n_tokens..];
 
-                Some(_) => {
-                    let mut inode = INode::new(ty);
-                    if let Some(lhs) = lhs {
-                        inode.push_child(lhs);
-                    } else {
-                        let leading_ws = self.collect_tokens_for_binder(tokens);
-                        tokens = &tokens[leading_ws.len()..];
-                        right_edge += leading_ws.len();
-                        global_left_edge = Some(leading_ws.len());
-                    };
-                    let (right_n_tokens, right_n_events) = self.fill(&mut inode, tokens, events);
-                    right_edge += right_n_tokens;
-                    n_events += right_n_events;
-                    lhs = Some(inode);
-                    tokens = &tokens[right_n_tokens..];
-                    events = &events[right_n_events..];
-                    match events[0] {
-                        Event::Start { ty: t, forward_parent: fp } => {
-                            ty = t;
-                            forward_parent = fp;
-                            events = &events[1..];
-                            n_events += 1;
-                        }
-                        _ => unimplemented!(),
-                    }
-                }
-            }
+        let trailing_ws = self.collect_tokens_for_binder(tokens);
+        let right_ws = (self.whitespace_binder)(ty, &trailing_ws, false);
+        for &(t, _) in &tokens[..right_ws] {
+            inode.push_child(INode::new_leaf(t.ty, t.len))
         }
+
+        let right_edge = left_wd + n_tokens + right_ws;
+        return Conversion {
+            token_range: (left_wd, right_edge),
+            n_events,
+            inode,
+        };
     }
 
     fn collect_tokens_for_binder<'t>(&self, tokens: &[(IToken, Text<'t>)]) -> Vec<(NodeType, Text<'t>)> {
@@ -143,9 +134,9 @@ impl<'a> Convertor<'a> {
             n_events += 1;
             events = rest;
             match first {
-                Event::Start { ty, forward_parent } => {
+                Event::Start { ty, forward_parent: _ } => {
                     let Conversion { token_range, n_events: child_events, inode: child } =
-                        self.go(ty, forward_parent, tokens, events);
+                        self.go(ty, tokens, events);
                     for i in 0..token_range.0 {
                         let t = tokens[i].0;
                         inode.push_child(INode::new_leaf(t.ty, t.len))

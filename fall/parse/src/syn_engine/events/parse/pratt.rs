@@ -26,6 +26,7 @@ fn go<'g, 't>(
             let new_lhs = p.mark();
             let mark = p.start(ix.ty);
             if let Some(rest) = parse_expr(p, &ix.op, tokens) {
+                p.forward_parent(lhs, mark);
                 tokens = rest;
                 if ix.has_rhs {
                     if let Some(rest) = go(p, table, tokens, ix.priority + 1) {
@@ -37,7 +38,6 @@ fn go<'g, 't>(
                 }
                 let ty = p.node_type(ix.ty);
                 p.prev = Some(ty);
-                p.forward_parent(lhs);
                 lhs = new_lhs;
                 p.finish();
                 continue 'l;

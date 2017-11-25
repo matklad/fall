@@ -104,9 +104,10 @@ impl<'g> Parser<'g> {
         }
     }
 
-    fn forward_parent(&mut self, mark: Mark) {
-        match self.events[mark.0] {
-            Event::Start { ref mut forward_parent, .. } => *forward_parent = Some(0),
+    fn forward_parent(&mut self, child: Mark, parent: Mark) {
+        match self.events[child.0] {
+            Event::Start { ref mut forward_parent, .. } =>
+                *forward_parent = Some((parent.0 - child.0) as u32),
             _ => unreachable!(),
         }
     }
