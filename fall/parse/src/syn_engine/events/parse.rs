@@ -4,8 +4,21 @@ use ::{Expr};
 
 use super::{Event, Grammar};
 
-pub fn parse(g: Grammar, ts: TokenSeq) -> Vec<Event> {
-    unimplemented!()
+pub fn parse(grammar: Grammar, ts: TokenSeq) -> Vec<Event> {
+    let start_rule = grammar.start_rule;
+    let mut parser = Parser {
+        grammar,
+        ticks: 0,
+        events: Vec::new(),
+        replacement: None,
+        predicate_mode: false,
+        contexts: [false; 16],
+        args: [None; 16],
+        prev: None,
+    };
+
+    parse_expr(&mut parser, start_rule, ts).unwrap();
+    parser.events
 }
 
 
@@ -224,7 +237,9 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
                     }
                     None => {}
                 }
-                if !skipped {
+                if skipped {
+                    p.reopen()
+                } else {
                     p.start_error()
                 }
                 skipped = true;
@@ -239,7 +254,7 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
         }
 
         //pratt::parse_pratt2(ctx, g, tokens),
-        Expr::Pratt(ref g) => unimplemented!(),
+        Expr::Pratt(_) => unimplemented!(),
 
         Expr::Enter(idx, ref e) => {
             let idx = idx as usize;

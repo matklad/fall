@@ -29,6 +29,43 @@ FILE
 }
 
 #[test]
+fn trivial1() {
+    match_ast(
+        &ast("()"), r#"
+FILE
+  LIST
+    LPAREN "("
+    RPAREN ")"
+"#)
+}
+
+#[test]
+fn trivial2() {
+    match_ast(
+        &ast("(atom)"), r#"
+FILE
+  LIST
+    LPAREN "("
+    ATOM "atom"
+    RPAREN ")"
+"#)
+}
+
+#[test]
+fn trivial3() {
+    match_ast(
+        &ast("( atom )"), r#"
+FILE
+  LIST
+    LPAREN "("
+    WHITESPACE " "
+    ATOM "atom"
+    WHITESPACE " "
+    RPAREN ")"
+"#)
+}
+
+#[test]
 fn simple() {
     match_ast(
         &ast("( hello ( world )  )"), r#"

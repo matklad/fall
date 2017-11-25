@@ -58,6 +58,39 @@ impl ParserDefinition {
         });
         inode
     }
+
+    pub fn parse2(&self, text: Text, tokens: &[IToken], lang: &Language, _: &Metrics) -> INode {
+        let start_rule = &self.syntactical_rules[0].body;
+        let g = syn_engine::events::Grammar {
+            node_types: &self.node_types,
+            rules: &self.syntactical_rules,
+            start_rule,
+        };
+        let file_ty = match start_rule {
+            &Expr::Pub { ty_idx, ..} => self.node_types[ty_idx],
+            _ => unreachable!()
+        };
+
+
+        let black_tokens = BlackTokens::new(lang, text, &tokens);
+        let ts = black_tokens.seq();
+        let events = syn_engine::events::parse(g, ts);
+        syn_engine::events::convert(
+            text,
+            tokens,
+            &events,
+            &|ty| lang.node_type_info(ty).whitespace_like,
+            &|ty, spaces, leading| {
+                if ty == file_ty {
+                    return spaces.len()
+                }
+                let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
+                let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
+                (self.whitespace_binder)(ty, spaces, leading)
+            }
+        )
+
+    }
 }
 
 /// Lexical (aka tokenizer) rule:

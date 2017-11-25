@@ -5,8 +5,8 @@ pub fn convert(
     text: Text,
     tokens: &[IToken],
     events: &[Event],
-    is_whitespace: fn(NodeType) -> bool,
-    whitespace_binder: fn(ty: NodeType, adjacent_spaces: &[(NodeType, Text)], leading: bool) -> usize,
+    is_whitespace: &Fn(NodeType) -> bool,
+    whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
 ) -> INode {
     let (first, rest) = (events[0], &events[1..]);
 
@@ -20,18 +20,18 @@ pub fn convert(
     match first {
         Event::Start { ty } => {
             let conv = Convertor { is_whitespace, whitespace_binder };
-            let conversion = conv.go(ty, &tokens, events);
+            let conversion = conv.go(ty, &tokens, rest);
             assert_eq!(conversion.token_range, (0, tokens.len()));
-            assert_eq!(conversion.n_events, events.len());
+            assert_eq!(conversion.n_events, rest.len());
             conversion.inode
         }
         _ => unreachable!()
     }
 }
 
-struct Convertor {
-    is_whitespace: fn(NodeType) -> bool,
-    whitespace_binder: fn(NodeType, &[(NodeType, Text)], leading: bool) -> usize,
+struct Convertor<'a> {
+    is_whitespace: &'a Fn(NodeType) -> bool,
+    whitespace_binder: &'a Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
 }
 
 struct Conversion {
@@ -40,7 +40,7 @@ struct Conversion {
     inode: INode,
 }
 
-impl Convertor {
+impl<'a> Convertor<'a> {
     fn collect_tokens_for_binder<'t>(&self, tokens: &[(IToken, Text<'t>)]) -> Vec<(NodeType, Text<'t>)> {
         tokens.iter()
             .take_while(|&&(t, _)| (self.is_whitespace)(t.ty))
@@ -60,10 +60,10 @@ impl Convertor {
         let left_edge = leading_ws.len();
         let left_edge = left_edge - (self.whitespace_binder)(ty, &leading_ws, true);
 
-        for &(t, _) in &tokens[..left_edge] {
+        for &(t, _) in &tokens[left_edge..leading_ws.len()] {
             inode.push_child(INode::new_leaf(t.ty, t.len))
         }
-        let mut tokens = &tokens[left_edge..];
+        let mut tokens = &tokens[leading_ws.len()..];
         let mut right_edge = leading_ws.len();
 
         let mut events = events;
@@ -72,7 +72,7 @@ impl Convertor {
             let (first, rest) = (events[0], &events[1..]);
             n_events += 1;
             events = rest;
-            match events[0] {
+            match first {
 
                 Event::Start { ty } => {
                     let Conversion { token_range, n_events: child_events, inode: child } = self.go(ty, tokens, events);
@@ -90,7 +90,7 @@ impl Convertor {
                 Event::End => {
                     let trailing_ws = self.collect_tokens_for_binder(tokens);
                     let to_bind = (self.whitespace_binder)(ty, &trailing_ws, false);
-                    for &(t, _) in &tokens[right_edge..right_edge + to_bind] {
+                    for &(t, _) in &tokens[..to_bind] {
                         inode.push_child(INode::new_leaf(t.ty, t.len))
                     }
                     right_edge += to_bind;
@@ -102,6 +102,14 @@ impl Convertor {
                 }
 
                 Event::Token { ty, n_raw_tokens } => {
+                    let non_white = tokens.iter().take_while(|&&(t, _)| (self.is_whitespace)(t.ty)).count();
+                    for i in 0..non_white {
+                        let t = tokens[i].0;
+                        inode.push_child(INode::new_leaf(t.ty, t.len))
+                    }
+                    tokens = &tokens[non_white..];
+                    right_edge += non_white;
+
                     let n_raw_tokens = n_raw_tokens as usize;
                     let mut token = INode::new(ty);
                     for &(t, _) in &tokens[..n_raw_tokens] {
@@ -115,4 +123,3 @@ impl Convertor {
         }
     }
 }
-
