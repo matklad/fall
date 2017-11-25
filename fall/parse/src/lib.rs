@@ -41,10 +41,6 @@ impl Default for ParserDefinition {
 
 impl ParserDefinition {
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
-        unimplemented!()
-    }
-
-    pub fn parse2(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
         let start_rule = &self.syntactical_rules[0].body;
         let g = syn_engine::events::Grammar {
             node_types: &self.node_types,

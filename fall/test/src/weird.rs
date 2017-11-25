@@ -61,7 +61,7 @@ pub fn language() -> &'static Language {
                 }
 
                 fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
-                    self.parser_definition.parse2(text, tokens, &LANG, metrics)
+                    self.parser_definition.parse(text, tokens, &LANG, metrics)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

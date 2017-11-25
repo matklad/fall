@@ -57,15 +57,10 @@ impl<'a> TokenSeq<'a> {
         if self.current().is_none() {
             return None;
         }
-        let ((ty, _), ts) = self.bump();
+        let (ty, ts) = self.bump();
         return Some((ty, ts));
     }
 
-    pub fn current(&self) -> Option<IToken> {
-        self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
-            self.original_tokens[idx]
-        })
-    }
 
     pub fn cut_suffix(&self, suffix: TokenSeq<'a>) -> TokenSeq<'a> {
         let end = self.non_ws_indexes.len() - suffix.non_ws_indexes.len();
@@ -74,18 +69,6 @@ impl<'a> TokenSeq<'a> {
             non_ws_indexes: &self.non_ws_indexes[..end],
             original_tokens: self.original_tokens
         }
-    }
-
-    pub fn bump(&self) -> ((NodeType, BlackIdx), TokenSeq<'a>) {
-        let token = self.current().expect("Can't bump an empty token sequence");
-        let (ty, (_, idx)) = (token.ty, self.non_ws_indexes[0]);
-
-        let rest = TokenSeq {
-            text: self.text,
-            non_ws_indexes: &self.non_ws_indexes[1..],
-            original_tokens: self.original_tokens,
-        };
-        ((ty, idx), rest)
     }
 
     pub fn bump_by_text(&self, text: &str) -> Option<(usize, TokenSeq<'a>)> {
@@ -120,5 +103,22 @@ impl<'a> TokenSeq<'a> {
         };
 
         Some((n_tokens, rest))
+    }
+
+
+    fn bump(&self) -> (NodeType, TokenSeq<'a>) {
+        let token = self.current().expect("Can't bump an empty token sequence");
+        let rest = TokenSeq {
+            text: self.text,
+            non_ws_indexes: &self.non_ws_indexes[1..],
+            original_tokens: self.original_tokens,
+        };
+        (token.ty, rest)
+    }
+
+    fn current(&self) -> Option<IToken> {
+        self.non_ws_indexes.first().map(|&(_, BlackIdx(idx))| {
+            self.original_tokens[idx]
+        })
     }
 }
