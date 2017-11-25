@@ -10,6 +10,15 @@ fn ast(code: &str) -> String {
 }
 
 #[test]
+fn trivial() {
+    match_ast(&ast("1"), r#"
+FILE
+  CONSTANT_EXPR
+    NUMBER "1"
+"#);
+}
+
+#[test]
 fn simple() {
     match_ast(&ast("1 + 2"), r#"
 FILE
@@ -128,6 +137,20 @@ FILE
           RPAREN ")"
         BANG "!"
 "#)
+}
+
+#[test]
+fn prefix_simple() {
+    match_ast(&ast("--1"), r#"
+FILE
+  NEGATE_EXPR
+    MINUS "-"
+    NEGATE_EXPR
+      MINUS "-"
+      CONSTANT_EXPR
+        NUMBER "1"
+"#)
+
 }
 
 #[test]

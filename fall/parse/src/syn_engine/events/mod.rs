@@ -3,7 +3,7 @@ use ::{Expr, SynRule};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Event {
-    Start { ty: NodeType },
+    Start { ty: NodeType, forward_parent: Option<u32> },
     Token { ty: NodeType, n_raw_tokens: u16 },
     End,
 }

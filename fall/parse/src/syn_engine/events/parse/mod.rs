@@ -54,7 +54,7 @@ impl<'g> Parser<'g> {
 
     fn start_ty(&mut self, ty: NodeType) -> Mark {
         let mark = Mark(self.events.len());
-        self.event(Event::Start { ty });
+        self.event(Event::Start { ty, forward_parent: None });
         mark
     }
 
@@ -91,6 +91,13 @@ impl<'g> Parser<'g> {
         match self.events[mark.0] {
             Event::Start { ty: ref mut prev, .. } => *prev = ty,
             _ => unreachable!()
+        }
+    }
+
+    fn forward_parent(&mut self, mark: Mark) {
+        match self.events[mark.0] {
+            Event::Start { ref mut forward_parent, .. } => *forward_parent = Some(0),
+            _ => unreachable!(),
         }
     }
 
