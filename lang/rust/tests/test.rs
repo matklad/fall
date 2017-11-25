@@ -39,6 +39,38 @@ FILE
 }
 
 #[test]
+fn double_replacement() {
+    check_syntax(&lang_rust(), r#"
+        fn main() {
+            if (Foo {}) {}
+        }
+"#, r#"
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      IF_EXPR
+        IF "if"
+        PAREN_EXPR
+          L_PAREN "("
+          STRUCT_LITERAL
+            PATH
+              IDENT "Foo"
+            L_CURLY "{"
+            R_CURLY "}"
+          R_PAREN ")"
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      R_CURLY "}"
+"#)
+}
+
+#[test]
 fn missing_token() {
     check_syntax(&lang_rust(), "fn foo foo", r#"
 FILE

@@ -123,9 +123,9 @@ fn compute_diff(expected: &str, actual: &str) -> Option<Changeset> {
     Some(compare_trees(expected, actual))
 }
 
-fn check_file(lang: &Language, source: &Path, tree: &Path, rewrite: bool) {
-    let source = file::get_text(source)
-        .expect(&format!("Can't read {}", source.display()));
+fn check_file(lang: &Language, source_path: &Path, tree: &Path, rewrite: bool) {
+    let source = file::get_text(source_path)
+        .expect(&format!("Can't read {}", source_path.display()));
 
     let file = lang.parse(source);
     let actual_tree = dump_file(&file);

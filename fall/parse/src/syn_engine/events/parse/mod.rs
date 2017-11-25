@@ -19,7 +19,17 @@ pub fn parse(grammar: Grammar, ts: TokenSeq) -> (Vec<Event>, u64) {
         prev: None,
     };
 
-    parse_expr(&mut parser, start_rule, ts).unwrap();
+    let mut leftover = parse_expr(&mut parser, start_rule, ts).unwrap();
+    if leftover.try_bump().is_some() {
+        parser.reopen();
+        parser.start_error();
+        while let Some((_, ts)) = parser.try_bump(leftover) {
+            leftover = ts;
+        }
+        parser.finish();
+        parser.finish();
+    };
+
     (parser.events, parser.ticks)
 }
 
@@ -89,7 +99,10 @@ impl<'g> Parser<'g> {
     fn replace(&mut self, mark: Mark, ty_idx: usize) {
         let ty = self.node_type(ty_idx);
         match self.events[mark.0] {
-            Event::Start { ty: ref mut prev, .. } => *prev = ty,
+            Event::Start { ty: ref mut prev, .. } => {
+                println!("replacing {:?} with {:?}", prev, ty);
+                *prev = ty
+            },
             _ => unreachable!()
         }
     }
@@ -140,6 +153,7 @@ fn parse_expr_inner<'g, 't>(p: &mut Parser<'g>, expr: &'g Expr, tokens: TokenSeq
             let mark = p.start(ty_idx);
             let ts = parse_expr(p, body, tokens)?;
             if let (true, Some(ty)) = (replaceable, p.replacement) {
+                p.replacement = None;
                 p.replace(mark, ty)
             };
             p.finish();
