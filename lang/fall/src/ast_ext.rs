@@ -121,54 +121,6 @@ impl<'f> TestDef<'f> {
     }
 }
 
-impl<'f> MethodDef<'f> {
-    pub fn resolve(&self) -> Option<MethodDescription<'f>> {
-        let kind = match self.selector().child_kind() {
-            None => return None,
-            Some(kind) => kind,
-        };
-
-        if self.selector().dot().is_some() {
-            return match kind {
-                ChildKind::Token(t) => Some(MethodDescription::TextAccessor(t, self.arity())),
-                _ => None
-            };
-        }
-
-        Some(MethodDescription::NodeAccessor(kind, self.arity()))
-    }
-
-    fn arity(&self) -> Arity {
-        if self.selector().optional().is_some() {
-            Arity::Optional
-        } else if self.selector().many().is_some() {
-            Arity::Many
-        } else {
-            Arity::Single
-        }
-    }
-}
-
-impl<'f> AstSelector<'f> {
-    pub fn child_kind(&self) -> Option<ChildKind<'f>> {
-        let file = ast::ancestor_exn::<FallFile>(self.node());
-
-        let ast_def = ast::ancestor_exn::<AstDef>(self.node());
-        if let Some(ast) = ast_def.ast_nodes().find(|a| a.name() == self.child()) {
-            return Some(ChildKind::AstNode(ast));
-        }
-        if let Some(class) = ast_def.ast_classes().find(|c| c.name() == self.child()) {
-            return Some(ChildKind::AstClass(class));
-        }
-
-        if let Some(lex_rule) = file.tokenizer_def().and_then(|td| td.lex_rules().find(|r| r.node_type() == self.child())) {
-            return Some(ChildKind::Token(lex_rule));
-        }
-
-        None
-    }
-}
-
 impl<'f> AstClassDef<'f> {
     pub fn name(&self) -> Text<'f> {
         child_of_type(self.node(), IDENT).unwrap().text()
@@ -177,23 +129,6 @@ impl<'f> AstClassDef<'f> {
     pub fn variants<'a>(&'a self) -> Box<Iterator<Item=Text<'f>> + 'a> {
         Box::new(children_of_type(self.node(), IDENT).skip(1).map(|it| it.text()))
     }
-}
-
-pub enum Arity {
-    Single,
-    Optional,
-    Many
-}
-
-pub enum ChildKind<'f> {
-    AstNode(AstNodeDef<'f>),
-    AstClass(AstClassDef<'f>),
-    Token(LexRule<'f>)
-}
-
-pub enum MethodDescription<'f> {
-    NodeAccessor(ChildKind<'f>, Arity),
-    TextAccessor(LexRule<'f>, Arity),
 }
 
 impl<'f> RefExpr<'f> {

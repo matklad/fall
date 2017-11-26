@@ -4,7 +4,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 
 use super::db::Query;
-use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr};
+use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef};
 
 
 #[derive(Debug)]
@@ -126,3 +126,32 @@ impl<'f> Query<'f> for ResolvePrattVariant<'f> {
 }
 
 mod resolve_pratt_variant;
+
+#[derive(Copy, Clone)]
+pub enum Arity {
+    Single,
+    Optional,
+    Many
+}
+
+#[derive(Copy, Clone)]
+pub enum ChildKind<'f> {
+    AstNode(AstNodeDef<'f>),
+    AstClass(AstClassDef<'f>),
+    Token(LexRule<'f>)
+}
+
+#[derive(Copy, Clone)]
+pub enum MethodKind<'f> {
+    NodeAccessor(ChildKind<'f>, Arity),
+    TextAccessor(LexRule<'f>, Arity),
+}
+
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
+pub(crate) struct ResolveMethod<'f>(pub MethodDef<'f>);
+
+impl<'f> Query<'f> for ResolveMethod<'f> {
+    type Result = Option<MethodKind<'f>>;
+}
+
+mod resolve_method;

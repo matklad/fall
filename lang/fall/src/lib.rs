@@ -18,13 +18,14 @@ pub mod editor_api;
 
 
 pub use self::fall::*;
-pub use self::ast_ext::{MethodDescription, Arity, ChildKind};
 pub use self::fall::language as lang_fall;
-pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVariant, PrattOp};
+pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVariant, PrattOp,
+                         MethodKind, Arity, ChildKind};
 
 pub fn parse<S: Into<String>>(text: S) -> File {
     language().parse(text.into())
 }
+
 pub fn ast(file: &File) -> FallFile {
     FallFile::wrap(file.root()).unwrap()
 }

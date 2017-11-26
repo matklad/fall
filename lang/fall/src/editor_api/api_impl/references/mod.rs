@@ -1,5 +1,6 @@
 use fall_tree::{Node, TextUnit, TextRange, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
+use fall_tree::search::ast;
 use ::*;
 use analysis::CallKind;
 
@@ -42,17 +43,17 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
                 })
             }))
         })
-        .visit::<AstSelector, _>(|result, selector| {
-            *result = Some(Reference::new(selector.node(), |_, node| {
-                let selector = AstSelector::wrap(node).unwrap();
-                let target = match selector.child_kind() {
-                    None => return None,
-                    Some(t) => t
-                };
+        .visit::<MethodDef, _>(|result, method| {
+            *result = Some(Reference::new(method.selector().node(), |analysis, node| {
+                let method = ast::ancestor_exn::<MethodDef>(node);
+                let target = analysis.resolve_method(method)?;
                 Some(match target {
-                    ChildKind::AstNode(node) => node.into(),
-                    ChildKind::AstClass(cls) => cls.into(),
-                    ChildKind::Token(token) => token.into()
+                    MethodKind::NodeAccessor(child_kind, _) => match child_kind {
+                        ChildKind::AstNode(node) => node.into(),
+                        ChildKind::AstClass(cls) => cls.into(),
+                        ChildKind::Token(token) => token.into()
+                    }
+                    _ => return None
                 })
             }))
         })

@@ -1,7 +1,7 @@
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{Visitor, NodeVisitor};
 
-use {FallFile, RefExpr, CallExpr, SynRule};
+use {FallFile, RefExpr, CallExpr, SynRule, MethodDef};
 use editor_api::{Diagnostic, Severity};
 
 mod diagnostics;
@@ -9,7 +9,7 @@ mod db;
 mod query;
 
 use self::diagnostics::DiagnosticSink;
-pub use self::query::{CallKind, RefKind, PratVariant, PrattOp};
+pub use self::query::{CallKind, RefKind, PratVariant, PrattOp, MethodKind, ChildKind, Arity};
 
 
 pub struct Analysis<'f> {
@@ -40,6 +40,10 @@ impl<'f> Analysis<'f> {
 
     pub fn resolve_pratt_variant(&self, rule: SynRule<'f>) -> Option<PratVariant<'f>> {
         self.db.get(query::ResolvePrattVariant(rule))
+    }
+
+    pub fn resolve_method(&self, method: MethodDef<'f>) -> Option<MethodKind<'f>> {
+        self.db.get(query::ResolveMethod(method))
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {

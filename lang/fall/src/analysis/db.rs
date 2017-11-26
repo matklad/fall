@@ -9,9 +9,9 @@ use super::query;
 
 type QMap<'f, Q> = Mutex<HashMap<Q, <Q as Query<'f>>::Result>>;
 
-pub ( crate ) struct DB<'f> {
+pub(crate) struct DB<'f> {
     file: FallFile<'f>,
-    pub (super) diagnostics: Mutex<Vec<Diagnostic>>,
+    pub(super) diagnostics: Mutex<Vec<Diagnostic>>,
 
     //query_stack: Mutex<Vec<String>>,
 
@@ -21,6 +21,7 @@ pub ( crate ) struct DB<'f> {
     resolve_call: QMap<'f, query::ResolveCall<'f>>,
     unused_rules: QMap<'f, query::UnusedRules>,
     resolve_pratt_variant: QMap<'f, query::ResolvePrattVariant<'f>>,
+    resolve_method: QMap<'f, query::ResolveMethod<'f>>,
 }
 
 impl<'f> DB<'f> {
@@ -37,6 +38,7 @@ impl<'f> DB<'f> {
             resolve_call: Default::default(),
             unused_rules: Default::default(),
             resolve_pratt_variant: Default::default(),
+            resolve_method: Default::default(),
         }
     }
 }
@@ -68,23 +70,23 @@ impl<'f> DB<'f> {
     }
 }
 
-pub ( crate ) trait Query<'f>: ::std::fmt::Debug {
+pub(crate) trait Query<'f>: ::std::fmt::Debug {
     type Result;
 }
 
 
-pub ( crate ) trait QExecutor<'f>: Query<'f> {
+pub(crate) trait QExecutor<'f>: Query<'f> {
     fn execute(self, db: &DB<'f>) -> Self::Result;
 }
 
 
-pub ( crate ) trait OnceQExecutor<'f>: Query<'f> + Eq + Hash
+pub(crate) trait OnceQExecutor<'f>: Query<'f> + Eq + Hash
     where Self: Clone, Self::Result: Clone
 {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Self::Result;
 }
 
-pub ( crate ) trait QueryCache<'f, Q>
+pub(crate) trait QueryCache<'f, Q>
     where
         Q: Query<'f> + Eq + Hash
 {
@@ -154,5 +156,11 @@ impl<'f> QueryCache<'f, query::UnusedRules> for DB<'f> {
 impl<'f> QueryCache<'f, query::ResolvePrattVariant<'f>> for DB<'f> {
     fn get_cache(&self) -> &QMap<'f, query::ResolvePrattVariant<'f>> {
         &self.resolve_pratt_variant
+    }
+}
+
+impl<'f> QueryCache<'f, query::ResolveMethod<'f>> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::ResolveMethod<'f>> {
+        &self.resolve_method
     }
 }

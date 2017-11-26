@@ -3,13 +3,12 @@ use tera::Context;
 
 use fall_tree::{Text, AstNode};
 use lang_fall::{FallFile, RefKind, SynRule, LexRule, Expr, BlockExpr, PratVariant, PrattOp,
-                CallKind, MethodDef, MethodDescription, Arity, ChildKind, Parameter,
+                CallKind, MethodDef, MethodKind, Arity, ChildKind, Parameter,
                 Analysis};
 
 use fall_parse as dst;
 
 use util::{scream, camel};
-
 
 
 pub type Result<T> = ::std::result::Result<T, ::failure::Error>;
@@ -77,7 +76,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     struct_name: camel(node.name()),
                     node_type_name: scream(node.name()),
                     methods: node.methods()
-                        .map(|method| generate_method(method))
+                        .map(|method| self.gen_method(method))
                         .collect::<Result<Vec<CtxMethod>>>()?
                 })
             }).collect::<Result<Vec<_>>>()?);
@@ -301,67 +300,68 @@ impl<'a, 'f> Codegen<'a, 'f> {
 
         Ok(result)
     }
-}
 
-fn generate_method<'f>(method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
-    let description = method.resolve()
-        .ok_or(format_err!("Bad method `{}`", method.node().text()))?;
+    fn gen_method(&self, method: MethodDef<'f>) -> Result<CtxMethod<'f>> {
+        let description = self.analysis.resolve_method(method)
+            .ok_or(format_err!("Bad method `{}`", method.node().text()))?;
 
-    let (ret_type, body) = match description {
-        MethodDescription::TextAccessor(lex_rule, arity) => {
-            let node_type = scream(lex_rule.node_type());
-            match arity {
-                Arity::Single =>
-                    ("Text<'f>".to_owned(),
-                     format!("child_of_type_exn(self.node, {}).text()", node_type)),
+        let (ret_type, body) = match description {
+            MethodKind::TextAccessor(lex_rule, arity) => {
+                let node_type = scream(lex_rule.node_type());
+                match arity {
+                    Arity::Single =>
+                        ("Text<'f>".to_owned(),
+                         format!("child_of_type_exn(self.node, {}).text()", node_type)),
 
-                Arity::Optional =>
-                    ("Option<Text<'f>>".to_owned(),
-                     format!("child_of_type(self.node, {}).map(|n| n.text())", node_type)),
+                    Arity::Optional =>
+                        ("Option<Text<'f>>".to_owned(),
+                         format!("child_of_type(self.node, {}).map(|n| n.text())", node_type)),
 
-                Arity::Many => unimplemented!(),
+                    Arity::Many => unimplemented!(),
+                }
             }
-        }
-        MethodDescription::NodeAccessor(kind, arity) => {
-            match (kind, arity) {
-                (ChildKind::AstNode(n), Arity::Single) =>
-                    (format!("{}<'f>", camel(n.name())),
-                     "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
-                (ChildKind::AstNode(n), Arity::Optional) =>
-                    (format!("Option<{}<'f>>", camel(n.name())),
-                     "AstChildren::new(self.node.children()).next()".to_owned()),
-                (ChildKind::AstNode(n), Arity::Many) =>
-                    (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
-                     "AstChildren::new(self.node.children())".to_owned()),
+            MethodKind::NodeAccessor(kind, arity) => {
+                match (kind, arity) {
+                    (ChildKind::AstNode(n), Arity::Single) =>
+                        (format!("{}<'f>", camel(n.name())),
+                         "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                    (ChildKind::AstNode(n), Arity::Optional) =>
+                        (format!("Option<{}<'f>>", camel(n.name())),
+                         "AstChildren::new(self.node.children()).next()".to_owned()),
+                    (ChildKind::AstNode(n), Arity::Many) =>
+                        (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
+                         "AstChildren::new(self.node.children())".to_owned()),
 
-                (ChildKind::AstClass(n), Arity::Single) =>
-                    (format!("{}<'f>", camel(n.name())),
-                     "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
-                (ChildKind::AstClass(n), Arity::Optional) =>
-                    (format!("Option<{}<'f>>", camel(n.name())),
-                     "AstChildren::new(self.node.children()).next()".to_owned()),
-                (ChildKind::AstClass(n), Arity::Many) =>
-                    (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
-                     "AstChildren::new(self.node.children())".to_owned()),
+                    (ChildKind::AstClass(n), Arity::Single) =>
+                        (format!("{}<'f>", camel(n.name())),
+                         "AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                    (ChildKind::AstClass(n), Arity::Optional) =>
+                        (format!("Option<{}<'f>>", camel(n.name())),
+                         "AstChildren::new(self.node.children()).next()".to_owned()),
+                    (ChildKind::AstClass(n), Arity::Many) =>
+                        (format!("AstChildren<'f, {}<'f>>", camel(n.name())),
+                         "AstChildren::new(self.node.children())".to_owned()),
 
-                (ChildKind::Token(lex_rule), arity) => {
-                    let node_type = scream(lex_rule.node_type());
-                    match arity {
-                        Arity::Single =>
-                            ("Node<'f>".to_owned(),
-                             format!("self.node().children().find(|n| n.ty() == {}).unwrap()", node_type)),
-                        Arity::Optional =>
-                            ("Option<Node<'f>>".to_owned(),
-                             format!("self.node().children().find(|n| n.ty() == {})", node_type)),
-                        Arity::Many => unimplemented!(),
+                    (ChildKind::Token(lex_rule), arity) => {
+                        let node_type = scream(lex_rule.node_type());
+                        match arity {
+                            Arity::Single =>
+                                ("Node<'f>".to_owned(),
+                                 format!("self.node().children().find(|n| n.ty() == {}).unwrap()", node_type)),
+                            Arity::Optional =>
+                                ("Option<Node<'f>>".to_owned(),
+                                 format!("self.node().children().find(|n| n.ty() == {})", node_type)),
+                            Arity::Many => unimplemented!(),
+                        }
                     }
                 }
             }
-        }
-    };
+        };
 
-    Ok(CtxMethod { name: method.name(), ret_type, body })
+        Ok(CtxMethod { name: method.name(), ret_type, body })
+    }
 }
+
 
 #[derive(Serialize)]
 struct CtxLexRule<'f> {

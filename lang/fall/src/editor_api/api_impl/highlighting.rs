@@ -39,13 +39,16 @@ pub(crate) fn highlight(analysis: &Analysis) -> Spans {
             };
             colorize_node(ref_.node(), color, spans)
         })
-        .visit::<AstSelector, _>(|spans, sel| {
-            let color = match sel.child_kind() {
-                Some(ChildKind::Token(..)) => "token",
-                Some(ChildKind::AstClass(..)) | Some(ChildKind::AstNode(..)) => "rule",
-                None => return
+        .visit::<MethodDef, _>(|spans, method| {
+
+            let color = match analysis.resolve_method(method) {
+                Some(MethodKind::NodeAccessor(child_kind, _)) => match child_kind {
+                    ChildKind::Token(..) => "token",
+                    ChildKind::AstClass(..) | ChildKind::AstNode(..) => "rule",
+                },
+                None | Some(_) => return
             };
-            colorize_child(sel.node(), IDENT, color, spans)
+            colorize_child(method.selector().node(), IDENT, color, spans)
         })
         .visit::<CallExpr, _>(|spans, call| {
             let color = match analysis.resolve_call(call) {
