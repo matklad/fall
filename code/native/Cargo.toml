@@ -12,14 +12,14 @@ name = "backend"
 crate-type = ["dylib"]
 
 [build-dependencies]
-neon-build = "=0.1.20"
+neon-build = "0.1.22"
 
 [dependencies]
-neon = "=0.1.20"
+neon = "0.1.22"
 
 serde = "1.0"
 serde_derive = "1.0"
-neon-serde = { git = "https://github.com/matklad/neon-serde", branch = "once-in-a-lifetime" }
+neon-serde = { git = "https://github.com/GabrielCastro/neon-serde" }
 
 lazy_static = "0.2.8"
 
