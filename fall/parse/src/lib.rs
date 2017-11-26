@@ -47,7 +47,7 @@ impl ParserDefinition {
             start_rule,
         };
         let file_ty = match start_rule {
-            &Expr::Pub { ty_idx, ..} => self.node_types[ty_idx],
+            &Expr::Pub { ty_idx, ..} => self.node_types[ty_idx.0 as usize],
             _ => unreachable!()
         };
 
@@ -102,22 +102,31 @@ pub struct SynRule {
     pub body: Expr,
 }
 
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+pub struct NodeTypeRef(pub u32);
+
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+pub struct Context(pub u32);
+
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+pub struct Arg(pub u32);
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Expr {
     Pub {
-        ty_idx: usize,
+        ty_idx: NodeTypeRef,
         body: Box<Expr>,
         replaceable: bool,
     },
     PubReplace {
-        ty_idx: usize,
+        ty_idx: NodeTypeRef,
         body: Box<Expr>,
     },
     Or(Vec<Expr>),
     And(Vec<Expr>, Option<usize>),
     Rule(usize),
-    Token(usize),
-    ContextualToken(usize, String),
+    Token(NodeTypeRef),
+    ContextualToken(NodeTypeRef, String),
     Rep(Box<Expr>),
     WithSkip(Box<Expr>, Box<Expr>),
     Opt(Box<Expr>),
@@ -126,12 +135,12 @@ pub enum Expr {
     Any,
     Layer(Box<Expr>, Box<Expr>),
     Pratt(Box<PrattTable>),
-    Enter(u32, Box<Expr>),
-    Exit(u32, Box<Expr>),
-    IsIn(u32),
-    Call(Box<Expr>, Vec<(u32, Expr)>),
-    Var(u32),
-    PrevIs(Vec<usize>),
+    Enter(Context, Box<Expr>),
+    Exit(Context, Box<Expr>),
+    IsIn(Context),
+    Call(Box<Expr>, Vec<(Arg, Expr)>),
+    Var(Arg),
+    PrevIs(Vec<NodeTypeRef>),
     Inject(Box<Expr>, Box<Expr>),
 }
 
@@ -153,14 +162,14 @@ impl PrattTable {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Prefix {
-    pub ty: usize,
+    pub ty: NodeTypeRef,
     pub op: Expr,
     pub priority: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Infix {
-    pub ty: usize,
+    pub ty: NodeTypeRef,
     pub op: Expr,
     pub priority: u32,
     pub has_rhs: bool,

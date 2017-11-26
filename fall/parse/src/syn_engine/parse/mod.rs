@@ -1,7 +1,7 @@
 mod pratt;
 
 use fall_tree::{NodeType, Language, Text, TextUnit, IToken, TextSuffix, tu};
-use ::Expr;
+use ::{Expr, NodeTypeRef, Context, Arg};
 
 use super::{Event, Grammar};
 
@@ -66,7 +66,7 @@ struct Parser<'g> {
 
     ticks: u64,
     events: Vec<Event>,
-    replacement: Option<usize>,
+    replacement: Option<NodeTypeRef>,
     predicate_mode: bool,
     contexts: [bool; 16],
     args: [Option<&'g Expr>; 16],
@@ -102,8 +102,8 @@ impl<'g> Parser<'g> {
         truncate_fast(&mut self.events, mark.0 as usize);
     }
 
-    fn start(&mut self, ty_idx: usize) -> Mark {
-        let ty = self.node_type(ty_idx);
+    fn start(&mut self, ty_idx: NodeTypeRef) -> Mark {
+        let ty = self[ty_idx];
         self.start_ty(ty)
     }
 
@@ -143,7 +143,7 @@ impl<'g> Parser<'g> {
         Some((ty, pos.next()))
     }
 
-    fn bump_by_text(&mut self, tokens: Pos, text: &str, ty_idx: usize) -> Option<Pos> {
+    fn bump_by_text(&mut self, tokens: Pos, text: &str, ty_idx: NodeTypeRef) -> Option<Pos> {
         if tokens.is_empty() {
             return None;
         }
@@ -170,7 +170,7 @@ impl<'g> Parser<'g> {
             pos = pos.next();
         }
 
-        let ty = self.node_type(ty_idx);
+        let ty = self[ty_idx];
         self.token(ty, n_tokens);
 
         Some(pos)
@@ -180,8 +180,8 @@ impl<'g> Parser<'g> {
         Pos(tokens.0, suffix.0)
     }
 
-    fn replace(&mut self, mark: Mark, ty_idx: usize) {
-        let ty = self.node_type(ty_idx);
+    fn replace(&mut self, mark: Mark, ty_idx: NodeTypeRef) {
+        let ty = self[ty_idx];
         match self.events[mark.0 as usize] {
             Event::Start { ty: ref mut prev, .. } => *prev = ty,
             _ => unreachable!()
@@ -196,10 +196,6 @@ impl<'g> Parser<'g> {
         }
     }
 
-    fn node_type(&self, ty_idx: usize) -> NodeType {
-        self.grammar.node_types[ty_idx]
-    }
-
     fn event(&mut self, event: Event) {
         if !self.predicate_mode {
             self.events.push(event)
@@ -212,6 +208,14 @@ impl<'g> ::std::ops::Index<Pos> for Parser<'g> {
 
     fn index(&self, index: Pos) -> &Self::Output {
         &self.tokens[self.non_ws_indexes[index.0 as usize].1]
+    }
+}
+
+impl<'g> ::std::ops::Index<NodeTypeRef> for Parser<'g> {
+    type Output = NodeType;
+
+    fn index(&self, index: NodeTypeRef) -> &Self::Output {
+        &self.grammar.node_types[index.0 as usize]
     }
 }
 
@@ -280,14 +284,14 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
         Expr::Pratt(ref table) =>
             pratt::parse_pratt(p, table, tokens),
 
-        Expr::Enter(idx, ref e) =>
-            parse_enter(p, tokens, idx, e),
+        Expr::Enter(ctx, ref e) =>
+            parse_enter(p, tokens, ctx, e),
 
-        Expr::Exit(idx, ref e) =>
-            parse_exit(p, tokens, idx, e),
+        Expr::Exit(ctx, ref e) =>
+            parse_exit(p, tokens, ctx, e),
 
-        Expr::IsIn(idx) =>
-            parse_is_in(p, tokens, idx),
+        Expr::IsIn(ctx) =>
+            parse_is_in(p, tokens, ctx),
 
         Expr::Call(ref body, ref args) =>
             parse_call(p, tokens, body, &*args),
@@ -306,7 +310,7 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
 
 fn parse_pub<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: usize, body: &'g Expr, replaceable: bool,
+    ty_idx: NodeTypeRef, body: &'g Expr, replaceable: bool,
 ) -> Option<Pos> {
     if replaceable {
         p.replacement = None;
@@ -318,13 +322,13 @@ fn parse_pub<'g>(
         p.replace(mark, ty)
     };
     p.finish();
-    p.prev = Some(p.node_type(ty_idx));
+    p.prev = Some(p[ty_idx]);
     Some(ts)
 }
 
 fn parse_pub_replace<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: usize, body: &'g Expr
+    ty_idx: NodeTypeRef, body: &'g Expr
 ) -> Option<Pos> {
     let ts = parse_expr(p, body, tokens)?;
     p.replacement = Some(ty_idx);
@@ -366,10 +370,10 @@ fn parse_and<'g>(
 
 fn parse_token<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: usize,
+    ty_idx: NodeTypeRef,
 ) -> Option<Pos> {
     let (ty, ts) = p.bump(tokens)?;
-    if p.node_type(ty_idx) != ty {
+    if p[ty_idx] != ty {
         return None;
     }
     Some(ts)
@@ -377,7 +381,7 @@ fn parse_token<'g>(
 
 fn parse_contextual_token<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: usize, text: &str,
+    ty_idx: NodeTypeRef, text: &str,
 ) -> Option<Pos> {
     p.bump_by_text(tokens, text, ty_idx)
 }
@@ -466,9 +470,9 @@ fn parse_with_skip<'g>(
 
 fn parse_enter<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    idx: u32, e: &'g Expr,
+    ctx: Context, e: &'g Expr,
 ) -> Option<Pos> {
-    let idx = idx as usize;
+    let idx = ctx.0 as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = true;
     let result = parse_expr(p, &*e, tokens);
@@ -478,9 +482,9 @@ fn parse_enter<'g>(
 
 fn parse_exit<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    idx: u32, e: &'g Expr,
+    ctx: Context, e: &'g Expr,
 ) -> Option<Pos> {
-    let idx = idx as usize;
+    let idx = ctx.0 as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = false;
     let result = parse_expr(p, &*e, tokens);
@@ -490,23 +494,23 @@ fn parse_exit<'g>(
 
 fn parse_is_in<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    idx: u32,
+    ctx: Context,
 ) -> Option<Pos> {
-    if p.contexts[idx as usize] { Some(tokens) } else { None }
+    if p.contexts[ctx.0 as usize] { Some(tokens) } else { None }
 }
 
 fn parse_call<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    body: &'g Expr, args: &'g [(u32, Expr)],
+    body: &'g Expr, args: &'g [(Arg, Expr)],
 ) -> Option<Pos> {
     let old = p.args;
     for &(arg_pos, ref arg) in args {
         let arg = match *arg {
-            Expr::Var(i) => p.args[i as usize].unwrap(),
+            Expr::Var(i) => p.args[i.0 as usize].unwrap(),
             _ => arg
         };
 
-        p.args[arg_pos as usize] = Some(arg);
+        p.args[arg_pos.0 as usize] = Some(arg);
     }
     let result = parse_expr(p, body, tokens);
     p.args = old;
@@ -515,19 +519,19 @@ fn parse_call<'g>(
 
 fn parse_var<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    i: u32,
+    i: Arg,
 ) -> Option<Pos> {
-    let expr = p.args[i as usize].unwrap();
+    let expr = p.args[i.0 as usize].unwrap();
     parse_expr(p, expr, tokens)
 }
 
 fn parse_prev_is<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ts: &[usize],
+    ts: &[NodeTypeRef],
 ) -> Option<Pos> {
     if let Some(prev) = p.prev {
         for &ty_idx in ts {
-            let t = p.node_type(ty_idx);
+            let t = p[ty_idx];
             if t == prev {
                 return Some(tokens);
             }

@@ -36,7 +36,7 @@ fn pratt_go<'g>(
                         p.finish();
                     }
                 }
-                let ty = p.node_type(ix.ty);
+                let ty = p[ix.ty];
                 p.prev = Some(ty);
                 lhs = new_lhs;
                 p.finish();
@@ -62,7 +62,7 @@ fn pratt_prefix<'p>(
         let mark = p.start(prefix.ty);
         if let Some(tokens) = parse_expr(p, &prefix.op, tokens) {
             if let Some(rest) = pratt_go(p, table, tokens, prefix.priority) {
-                p.prev = Some(p.node_type(prefix.ty));
+                p.prev = Some(p[prefix.ty]);
                 p.finish();
                 return Some(rest);
             }

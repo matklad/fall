@@ -175,12 +175,12 @@ fn compile_rule<'f>(analysis: &Analysis<'f>, ast: SynRule<'f>) -> Result<Option<
     let expr = if let Some(idx) = ast.resolve_ty() {
         if ast.is_replaces() {
             fall_parse::Expr::PubReplace {
-                ty_idx: idx,
+                ty_idx: fall_parse::NodeTypeRef(idx as u32),
                 body: Box::new(expr),
             }
         } else {
             fall_parse::Expr::Pub {
-                ty_idx: idx,
+                ty_idx: fall_parse::NodeTypeRef(idx as u32),
                 body: Box::new(expr),
                 replaceable: ast.is_replaceable(),
             }
@@ -220,7 +220,7 @@ fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall
                 result.atoms.push(compile_rule(analysis, rule)?.unwrap().body),
             PratVariant::Postfix(PrattOp { op, priority }) => {
                 result.infixes.push(fall_parse::Infix {
-                    ty,
+                    ty: fall_parse::NodeTypeRef(ty as u32),
                     op: compile_expr(analysis, op)?,
                     priority,
                     has_rhs: false,
@@ -228,14 +228,14 @@ fn compile_pratt<'f>(analysis: &Analysis<'f>, ast: BlockExpr<'f>) -> Result<fall
             }
             PratVariant::Prefix(PrattOp { op, priority }) => {
                 result.prefixes.push(fall_parse::Prefix {
-                    ty,
+                    ty: fall_parse::NodeTypeRef(ty as u32),
                     op: compile_expr(analysis, op)?,
                     priority,
                 })
             }
             PratVariant::Bin(PrattOp { op, priority }) => {
                 result.infixes.push(fall_parse::Infix {
-                    ty,
+                    ty: fall_parse::NodeTypeRef(ty as u32),
                     op: compile_expr(analysis, op)?,
                     priority,
                     has_rhs: true,
@@ -264,21 +264,34 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
             RefKind::Token(rule) => {
                 if rule.is_contextual() {
                     let text = rule.token_text().ok_or(error!("Missing contextual token text"))?;
-                    fall_parse::Expr::ContextualToken(rule.node_type_index(), text.to_string())
+                    fall_parse::Expr::ContextualToken(
+                        fall_parse::NodeTypeRef(rule.node_type_index() as u32),
+                        text.to_string()
+                    )
                 } else {
-                    fall_parse::Expr::Token(rule.node_type_index())
+                    fall_parse::Expr::Token(
+                        fall_parse::NodeTypeRef(rule.node_type_index() as u32)
+                    )
                 }
             }
             RefKind::RuleReference(rule) => fall_parse::Expr::Rule(rule.index()),
-            RefKind::Param(p) => fall_parse::Expr::Var(p.idx()),
+            RefKind::Param(p) => fall_parse::Expr::Var(fall_parse::Arg(p.idx())),
         },
         Expr::CallExpr(call) => {
             let r = match analysis.resolve_call(call).ok_or(error!("Failed to compile {}", call.node().text()))? {
                 CallKind::Eof => fall_parse::Expr::Eof,
                 CallKind::Any => fall_parse::Expr::Any,
-                CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(idx, Box::new(compile_expr(analysis, expr)?)),
-                CallKind::Exit(idx, expr) => fall_parse::Expr::Exit(idx, Box::new(compile_expr(analysis, expr)?)),
-                CallKind::IsIn(idx) => fall_parse::Expr::IsIn(idx),
+                CallKind::Enter(idx, expr) => fall_parse::Expr::Enter(
+                    fall_parse::Context(idx as u32),
+                    Box::new(compile_expr(analysis, expr)?)
+                ),
+                CallKind::Exit(idx, expr) => fall_parse::Expr::Exit(
+                    fall_parse::Context(idx as u32),
+                    Box::new(compile_expr(analysis, expr)?)
+                ),
+                CallKind::IsIn(idx) => fall_parse::Expr::IsIn(
+                    fall_parse::Context(idx as u32)
+                ),
                 CallKind::Not(expr) => fall_parse::Expr::Not(Box::new(compile_expr(analysis, expr)?)),
                 CallKind::Layer(e1, e2) => fall_parse::Expr::Layer(
                     Box::new(compile_expr(analysis, e1)?),
@@ -295,10 +308,12 @@ fn compile_expr<'f>(analysis: &Analysis<'f>, ast: Expr<'f>) -> Result<fall_parse
                 CallKind::RuleCall(rule, args) => fall_parse::Expr::Call(
                     Box::new(fall_parse::Expr::Rule(rule.index())),
                     args.iter()
-                        .map(|&(i, e)| Ok((i, compile_expr(analysis, e)?)))
+                        .map(|&(i, e)| Ok((fall_parse::Arg(i), compile_expr(analysis, e)?)))
                         .collect::<Result<Vec<_>>>()?
                 ),
-                CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs((*tokens).clone()),
+                CallKind::PrevIs(tokens) => fall_parse::Expr::PrevIs(
+                    tokens.iter().map(|&ty_idx| fall_parse::NodeTypeRef(ty_idx as u32)).collect()
+                ),
                 CallKind::Commit => panic!("Should be handled specially"),
             };
             return Ok(r);
