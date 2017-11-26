@@ -21,7 +21,7 @@ pub fn language() -> &'static Language {
     }
 
     fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-        let parser_json = r##"[{"body":{"Pub":{"ty_idx":5,"body":{"Or":[{"And":[[{"Rep":{"Rule":1}}],null]}]},"replaceable":false}}},{"body":{"Or":[{"And":[[{"Token":4}],null]},{"And":[[{"Rule":2}],null]}]}},{"body":{"Pub":{"ty_idx":6,"body":{"Or":[{"And":[[{"Token":2},{"Rep":{"Rule":1}},{"Token":3}],null]}]},"replaceable":false}}}]"##;
+        let parser_json = r##"[{"Pub":{"ty":5,"body":5,"replaceable":false}},{"Or":[7,8]},{"Pub":{"ty":6,"body":13,"replaceable":false}},{"Rep":1},{"And":[[3],null]},{"Or":[4]},{"Token":4},{"And":[[6],null]},{"And":[[2],null]},{"Token":2},{"Rep":1},{"Token":3},{"And":[[9,10,11],null]},{"Or":[12]}]"##;
 
         ::fall_parse::ParserDefinition {
             node_types: vec![

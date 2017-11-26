@@ -25,7 +25,7 @@ fn pratt_go<'g>(
         for ix in table.infixes(min_prior) {
             let new_lhs = p.mark();
             let mark = p.start(ix.ty);
-            if let Some(rest) = parse_expr(p, &ix.op, tokens) {
+            if let Some(rest) = parse_expr(p, ix.op, tokens) {
                 p.forward_parent(lhs, mark);
                 tokens = rest;
                 if ix.has_rhs {
@@ -60,7 +60,7 @@ fn pratt_prefix<'p>(
     }
     for prefix in table.prefixes.iter() {
         let mark = p.start(prefix.ty);
-        if let Some(tokens) = parse_expr(p, &prefix.op, tokens) {
+        if let Some(tokens) = parse_expr(p, prefix.op, tokens) {
             if let Some(rest) = pratt_go(p, table, tokens, prefix.priority) {
                 p.prev = Some(p[prefix.ty]);
                 p.finish();

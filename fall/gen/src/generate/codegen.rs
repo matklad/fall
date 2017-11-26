@@ -16,6 +16,8 @@ pub type Result<T> = ::std::result::Result<T, ::failure::Error>;
 pub(super) struct Codegen<'a, 'f: 'a> {
     analysis: &'a Analysis<'f>,
     node_types: Vec<(Text<'f>, bool)>,
+
+    expressions: Vec<(dst::Expr)>,
 }
 
 impl<'a, 'f> Codegen<'a, 'f> {
@@ -40,7 +42,8 @@ impl<'a, 'f> Codegen<'a, 'f> {
 
         Codegen {
             analysis,
-            node_types
+            node_types,
+            expressions: Vec::new(),
         }
     }
 
@@ -48,11 +51,14 @@ impl<'a, 'f> Codegen<'a, 'f> {
         let mut context = Context::new();
         context.add("node_types", &self.node_types);
 
-        let mut parser = Vec::new();
-        for r in self.file().syn_rules() {
-            parser.push(self.gen_rule(r)?)
+        for _ in self.file().syn_rules() {
+            self.expressions.push(dst::Expr::Any) // Placeholder
         }
-        let parser = serde_json::to_string(&parser).unwrap();
+        for (i, r) in self.file().syn_rules().enumerate() {
+            let expr = self.gen_rule(r)?;
+            self.expressions[i] = expr;
+        }
+        let parser = serde_json::to_string(&self.expressions).unwrap();
         context.add("parser_json", &parser);
 
         let lex_rules = self.file().tokenizer_def()
@@ -103,8 +109,9 @@ impl<'a, 'f> Codegen<'a, 'f> {
             .map(|i| dst::NodeTypeRef((i + 1) as u32))
     }
 
-    fn syn_rule_ref(&self, rule: SynRule<'f>) -> usize {
-        self.file().syn_rules().position(|r| r.node() == rule.node()).unwrap()
+    fn syn_rule_ref(&self, rule: SynRule<'f>) -> dst::ExprRef {
+        let idx = self.file().syn_rules().position(|r| r.node() == rule.node()).unwrap();
+        dst::ExprRef(idx as u32)
     }
 
     fn lex_rule_ty(&self, rule: LexRule<'f>) -> dst::NodeTypeRef {
@@ -125,32 +132,42 @@ impl<'a, 'f> Codegen<'a, 'f> {
         dst::Arg(idx as u32)
     }
 
-    fn gen_rule(&mut self, rule: SynRule<'f>) -> Result<dst::SynRule> {
-        let expr = match (rule.is_pratt(), rule.body()) {
-            (true, Expr::BlockExpr(block)) => dst::Expr::Pratt(
-                Box::new(self.gen_pratt(block)?)
-            ),
+    fn gen_rule(&mut self, rule: SynRule<'f>) -> Result<dst::Expr> {
+        let body = match (rule.is_pratt(), rule.body()) {
+            (true, Expr::BlockExpr(block)) => {
+                let pratt = dst::Expr::Pratt(Box::new(self.gen_pratt(block)?));
+                self.push_expr(pratt)
+            },
             (true, _) => unreachable!(),
             (false, body) => self.gen_expr(body)?
         };
 
         let body = match (self.syn_rule_ty(rule), rule.is_replaces()) {
-            (Some(ty_idx), true) => dst::Expr::PubReplace {
-                ty_idx,
-                body: Box::new(expr),
+            (Some(ty), true) => dst::Expr::PubReplace {
+                ty,
+                body,
             },
-            (Some(ty_idx), false) => dst::Expr::Pub {
-                ty_idx,
-                body: Box::new(expr),
+            (Some(ty), false) => dst::Expr::Pub {
+                ty,
+                body,
                 replaceable: rule.is_replaceable(),
             },
-            (None, _) => expr,
+            (None, _) => {
+                assert_eq!(self.expressions.len() - 1, body.0 as usize);
+                self.expressions.pop().unwrap()
+            }
         };
 
-        Ok(dst::SynRule { body })
+        Ok(body)
     }
 
-    fn gen_expr(&mut self, expr: Expr<'f>) -> Result<dst::Expr> {
+    fn push_expr(&mut self, expr: dst::Expr) -> dst::ExprRef {
+        let idx = self.expressions.len();
+        self.expressions.push(expr);
+        dst::ExprRef(idx as u32)
+    }
+
+    fn gen_expr(&mut self, expr: Expr<'f>) -> Result<dst::ExprRef> {
         let result = match expr {
             Expr::BlockExpr(block) =>
                 dst::Expr::Or(block.alts().map(|e| self.gen_expr(e)).collect::<Result<Vec<_>>>()?),
@@ -185,7 +202,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
                             dst::Expr::Token(ty_ref)
                         }
                     }
-                    RefKind::RuleReference(rule) => dst::Expr::Rule(self.syn_rule_ref(rule)),
+                    RefKind::RuleReference(rule) => return Ok(self.syn_rule_ref(rule)),
                     RefKind::Param(p) => dst::Expr::Var(self.param_ref(p)),
                 }
             }
@@ -194,35 +211,35 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 let call = self.analysis.resolve_call(call)
                     .ok_or(format_err!("Failed to compile {}", call.node().text()))?;
 
-                let r = match call {
+                match call {
                     CallKind::Eof => dst::Expr::Eof,
                     CallKind::Any => dst::Expr::Any,
                     CallKind::Enter(idx, expr) => dst::Expr::Enter(
                         dst::Context(idx as u32),
-                        Box::new(self.gen_expr(expr)?)
+                        self.gen_expr(expr)?
                     ),
                     CallKind::Exit(idx, expr) => dst::Expr::Exit(
                         dst::Context(idx as u32),
-                        Box::new(self.gen_expr(expr)?)
+                        self.gen_expr(expr)?
                     ),
                     CallKind::IsIn(idx) => dst::Expr::IsIn(
                         dst::Context(idx as u32)
                     ),
-                    CallKind::Not(expr) => dst::Expr::Not(Box::new(self.gen_expr(expr)?)),
+                    CallKind::Not(expr) => dst::Expr::Not(self.gen_expr(expr)?),
                     CallKind::Layer(e1, e2) => dst::Expr::Layer(
-                        Box::new(self.gen_expr(e1)?),
-                        Box::new(self.gen_expr(e2)?)
+                        self.gen_expr(e1)?,
+                        self.gen_expr(e2)?
                     ),
                     CallKind::WithSkip(e1, e2) => dst::Expr::WithSkip(
-                        Box::new(self.gen_expr(e1)?),
-                        Box::new(self.gen_expr(e2)?)
+                        self.gen_expr(e1)?,
+                        self.gen_expr(e2)?
                     ),
                     CallKind::Inject(e1, e2) => dst::Expr::Inject(
-                        Box::new(self.gen_expr(e1)?),
-                        Box::new(self.gen_expr(e2)?)
+                        self.gen_expr(e1)?,
+                        self.gen_expr(e2)?
                     ),
                     CallKind::RuleCall(rule, args) => dst::Expr::Call(
-                        Box::new(dst::Expr::Rule(self.syn_rule_ref(rule))),
+                        self.syn_rule_ref(rule),
                         args.iter()
                             .map(|&(p, e)| Ok((self.param_ref(p), self.gen_expr(e)?)))
                             .collect::<Result<Vec<_>>>()?
@@ -231,14 +248,13 @@ impl<'a, 'f> Codegen<'a, 'f> {
                         tokens.iter().map(|&r| self.syn_rule_ty(r).unwrap()).collect()
                     ),
                     CallKind::Commit => panic!("Should be handled specially"),
-                };
-                return Ok(r);
+                }
             }
-            Expr::OptExpr(opt_expr) => dst::Expr::Opt(Box::new(self.gen_expr(opt_expr.expr())?)),
-            Expr::RepExpr(rep_expr) => dst::Expr::Rep(Box::new(self.gen_expr(rep_expr.expr())?)),
+            Expr::OptExpr(opt_expr) => dst::Expr::Opt(self.gen_expr(opt_expr.expr())?),
+            Expr::RepExpr(rep_expr) => dst::Expr::Rep(self.gen_expr(rep_expr.expr())?),
         };
 
-        Ok(result)
+        Ok(self.push_expr(result))
     }
 
     fn gen_pratt(&mut self, ast: BlockExpr<'f>) -> Result<dst::PrattTable> {
@@ -271,7 +287,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
 
             match prat_kind {
                 PratVariant::Atom(_) =>
-                    result.atoms.push(self.gen_rule(rule)?.body),
+                    result.atoms.push(self.syn_rule_ref(rule)),
                 PratVariant::Postfix(PrattOp { op, priority }) => {
                     result.infixes.push(dst::Infix {
                         ty,

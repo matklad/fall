@@ -1,11 +1,10 @@
 use fall_tree::{Text, TextRange, AstNode};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type};
-use fall_tree::search::ast;
 
 use ::{STRING, IDENT, SIMPLE_STRING, PUB,
-       LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
-       RefExpr, AstNodeDef, AstClassDef, AstDef, Attributes, Attribute, TestDef,
-       CallExpr, AstSelector};
+       LexRule, SynRule, VerbatimDef,
+       RefExpr, AstClassDef, Attributes, Attribute, TestDef,
+       CallExpr};
 
 impl<'f> LexRule<'f> {
     pub fn token_re(&self) -> Option<String> {

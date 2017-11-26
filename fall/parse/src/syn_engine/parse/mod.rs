@@ -1,7 +1,7 @@
 mod pratt;
 
 use fall_tree::{NodeType, Language, Text, TextUnit, IToken, TextSuffix, tu};
-use ::{Expr, NodeTypeRef, Context, Arg};
+use ::{NodeTypeRef, Context, Arg, ExprRef, Expr};
 
 use super::{Event, Grammar};
 
@@ -11,8 +11,6 @@ pub fn parse(
     text: Text,
     tokens: &[IToken],
 ) -> (Vec<Event>, u64) {
-    let start_rule = grammar.start_rule;
-
     let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
 
     let non_ws_indexes = {
@@ -28,7 +26,7 @@ pub fn parse(
     };
 
     let mut parser = Parser {
-        grammar,
+        grammar: &grammar,
         text,
         tokens,
         non_ws_indexes,
@@ -43,6 +41,7 @@ pub fn parse(
     };
 
     let pos = Pos(0, parser.non_ws_indexes.len() as u32);
+    let start_rule = parser.grammar.start_rule;
     let mut leftover = parse_expr(&mut parser, start_rule, pos).unwrap();
     if !leftover.is_empty() {
         parser.reopen();
@@ -59,7 +58,7 @@ pub fn parse(
 
 
 struct Parser<'g> {
-    grammar: Grammar<'g>,
+    grammar: &'g Grammar<'g>,
     text: Text<'g>,
     tokens: &'g [IToken],
     non_ws_indexes: Vec<(TextUnit, usize)>,
@@ -69,7 +68,7 @@ struct Parser<'g> {
     replacement: Option<NodeTypeRef>,
     predicate_mode: bool,
     contexts: [bool; 16],
-    args: [Option<&'g Expr>; 16],
+    args: [Option<ExprRef>; 16],
     prev: Option<NodeType>,
 }
 
@@ -219,7 +218,15 @@ impl<'g> ::std::ops::Index<NodeTypeRef> for Parser<'g> {
     }
 }
 
-fn parse_expr<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
+impl<'g> ::std::ops::Index<ExprRef> for Grammar<'g> {
+    type Output = Expr;
+
+    fn index(&self, index: ExprRef) -> &Self::Output {
+        &self.rules[index.0 as usize]
+    }
+}
+
+fn parse_expr(p: &mut Parser, expr: ExprRef, tokens: Pos) -> Option<Pos> {
     p.ticks += 1;
     let mark = p.mark();
     let result = parse_expr_inner(p, expr, tokens);
@@ -229,7 +236,7 @@ fn parse_expr<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos
     result
 }
 
-fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
+fn parse_expr_pred(p: &mut Parser, expr: ExprRef, tokens: Pos) -> Option<Pos> {
     let old_mode = p.predicate_mode;
     p.predicate_mode = true;
     let result = parse_expr(p, expr, tokens);
@@ -237,13 +244,14 @@ fn parse_expr_pred<'t, 'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> O
     result
 }
 
-fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Option<Pos> {
-    match *expr {
-        Expr::Pub { ty_idx, ref body, replaceable } =>
-            parse_pub(p, tokens, ty_idx, body, replaceable),
+fn parse_expr_inner(p: &mut Parser, expr: ExprRef, tokens: Pos) -> Option<Pos> {
+    let grammar = &*p.grammar;
+    match grammar[expr] {
+        Expr::Pub { ty, body, replaceable } =>
+            parse_pub(p, tokens, ty, body, replaceable),
 
-        Expr::PubReplace { ty_idx, ref body } =>
-            parse_pub_replace(p, tokens, ty_idx, body),
+        Expr::PubReplace { ty, body } =>
+            parse_pub_replace(p, tokens, ty, body),
 
         Expr::Or(ref parts) =>
             parse_or(p, parts, tokens),
@@ -251,19 +259,16 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
         Expr::And(ref parts, commit) =>
             parse_and(p, tokens, &*parts, commit),
 
-        Expr::Rule(id) =>
-            parse_expr(p, &p.grammar.rules[id].body, tokens),
+        Expr::Token(ty) =>
+            parse_token(p, tokens, ty),
 
-        Expr::Token(ty_idx) =>
-            parse_token(p, tokens, ty_idx),
+        Expr::ContextualToken(ty, ref text) =>
+            parse_contextual_token(p, tokens, ty, text),
 
-        Expr::ContextualToken(ty_idx, ref text) =>
-            parse_contextual_token(p, tokens, ty_idx, text),
-
-        Expr::Opt(ref body) =>
+        Expr::Opt(body) =>
             parse_opt(p, tokens, body),
 
-        Expr::Not(ref e) =>
+        Expr::Not(e) =>
             parse_not(p, tokens, e),
 
         Expr::Eof =>
@@ -272,28 +277,28 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
         Expr::Any =>
             p.bump(tokens).map(|(_ty, ts)| ts),
 
-        Expr::Layer(ref l, ref e) =>
+        Expr::Layer(l, e) =>
             parse_layer(p, tokens, l, e),
 
-        Expr::Rep(ref body) =>
+        Expr::Rep(body) =>
             parse_rep(p, tokens, body),
 
-        Expr::WithSkip(ref first, ref body) =>
+        Expr::WithSkip(first, body) =>
             parse_with_skip(p, tokens, first, body),
 
         Expr::Pratt(ref table) =>
             pratt::parse_pratt(p, table, tokens),
 
-        Expr::Enter(ctx, ref e) =>
+        Expr::Enter(ctx, e) =>
             parse_enter(p, tokens, ctx, e),
 
-        Expr::Exit(ctx, ref e) =>
+        Expr::Exit(ctx, e) =>
             parse_exit(p, tokens, ctx, e),
 
         Expr::IsIn(ctx) =>
             parse_is_in(p, tokens, ctx),
 
-        Expr::Call(ref body, ref args) =>
+        Expr::Call(body, ref args) =>
             parse_call(p, tokens, body, &*args),
 
         Expr::Var(i) =>
@@ -302,7 +307,7 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
         Expr::PrevIs(ref ts) =>
             parse_prev_is(p, tokens, ts),
 
-        Expr::Inject(ref prefix, ref body) =>
+        Expr::Inject(prefix, body) =>
             parse_inject(p, tokens, prefix, body),
     }
 }
@@ -310,7 +315,7 @@ fn parse_expr_inner<'g>(p: &mut Parser<'g>, expr: &'g Expr, tokens: Pos) -> Opti
 
 fn parse_pub<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: NodeTypeRef, body: &'g Expr, replaceable: bool,
+    ty_idx: NodeTypeRef, body: ExprRef, replaceable: bool,
 ) -> Option<Pos> {
     if replaceable {
         p.replacement = None;
@@ -328,7 +333,7 @@ fn parse_pub<'g>(
 
 fn parse_pub_replace<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ty_idx: NodeTypeRef, body: &'g Expr
+    ty_idx: NodeTypeRef, body: ExprRef
 ) -> Option<Pos> {
     let ts = parse_expr(p, body, tokens)?;
     p.replacement = Some(ty_idx);
@@ -337,20 +342,20 @@ fn parse_pub_replace<'g>(
 
 fn parse_or<'t, 'g>(
     p: &mut Parser<'g>,
-    options: &'g [Expr],
+    options: &'g [ExprRef],
     tokens: Pos
 ) -> Option<(Pos)> {
-    options.iter().filter_map(|opt| parse_expr(p, opt, tokens)).next()
+    options.iter().filter_map(|&opt| parse_expr(p, opt, tokens)).next()
 }
 
 fn parse_and<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    parts: &'g [Expr], commit: Option<usize>,
+    parts: &'g [ExprRef], commit: Option<usize>,
 ) -> Option<Pos> {
     let mut tokens = tokens;
     let mut consumed = 0;
 
-    for part in parts {
+    for &part in parts {
         if let Some(ts) = parse_expr(p, part, tokens) {
             consumed += 1;
             tokens = ts;
@@ -388,14 +393,14 @@ fn parse_contextual_token<'g>(
 
 fn parse_opt<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    body: &'g Expr,
+    body: ExprRef,
 ) -> Option<Pos> {
     Some(parse_expr(p, body, tokens).unwrap_or(tokens))
 }
 
 fn parse_not<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    e: &'g Expr,
+    e: ExprRef,
 ) -> Option<Pos> {
     match parse_expr_pred(p, e, tokens) {
         None => Some(tokens),
@@ -411,7 +416,7 @@ fn parse_eof<'g>(
 
 fn parse_layer<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    l: &'g Expr, e: &'g Expr,
+    l: ExprRef, e: ExprRef,
 ) -> Option<Pos> {
     let rest = parse_expr_pred(p, l, tokens)?;
     let layer = p.cut_suffix(tokens, rest);
@@ -430,7 +435,7 @@ fn parse_layer<'g>(
 
 fn parse_rep<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    body: &'g Expr,
+    body: ExprRef,
 ) -> Option<Pos> {
     let mut tokens = tokens;
     while let Some(ts) = parse_expr(p, body, tokens) {
@@ -441,7 +446,7 @@ fn parse_rep<'g>(
 
 fn parse_with_skip<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    first: &'g Expr, body: &'g Expr,
+    first: ExprRef, body: ExprRef,
 ) -> Option<Pos> {
     let mut skipped = false;
     let mut tokens = tokens;
@@ -470,24 +475,24 @@ fn parse_with_skip<'g>(
 
 fn parse_enter<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ctx: Context, e: &'g Expr,
+    ctx: Context, e: ExprRef,
 ) -> Option<Pos> {
     let idx = ctx.0 as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = true;
-    let result = parse_expr(p, &*e, tokens);
+    let result = parse_expr(p, e, tokens);
     p.contexts[idx] = old;
     result
 }
 
 fn parse_exit<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    ctx: Context, e: &'g Expr,
+    ctx: Context, e: ExprRef,
 ) -> Option<Pos> {
     let idx = ctx.0 as usize;
     let old = p.contexts[idx];
     p.contexts[idx] = false;
-    let result = parse_expr(p, &*e, tokens);
+    let result = parse_expr(p, e, tokens);
     p.contexts[idx] = old;
     result
 }
@@ -501,11 +506,11 @@ fn parse_is_in<'g>(
 
 fn parse_call<'g>(
     p: &mut Parser<'g>, tokens: Pos,
-    body: &'g Expr, args: &'g [(Arg, Expr)],
+    body: ExprRef, args: &'g [(Arg, ExprRef)],
 ) -> Option<Pos> {
     let old = p.args;
-    for &(arg_pos, ref arg) in args {
-        let arg = match *arg {
+    for &(arg_pos, arg) in args {
+        let arg = match p.grammar[arg] {
             Expr::Var(i) => p.args[i.0 as usize].unwrap(),
             _ => arg
         };
@@ -542,7 +547,7 @@ fn parse_prev_is<'g>(
 
 fn parse_inject<'g>(
     p: &mut Parser<'g>, pos: Pos,
-    prefix: &'g Expr, body: &'g Expr,
+    prefix: ExprRef, body: ExprRef,
 ) -> Option<Pos> {
     let prefix_mark = p.mark();
     let after_prefix = parse_expr(p, prefix, pos)?;

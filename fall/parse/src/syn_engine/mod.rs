@@ -1,5 +1,5 @@
 use fall_tree::NodeType;
-use ::{Expr, SynRule};
+use ::{Expr, ExprRef};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Event {
@@ -10,8 +10,8 @@ pub enum Event {
 
 pub struct Grammar<'g> {
     pub node_types: &'g [NodeType],
-    pub rules: &'g [SynRule],
-    pub start_rule: &'g Expr,
+    pub rules: &'g [Expr],
+    pub start_rule: ExprRef,
 }
 
 mod parse;

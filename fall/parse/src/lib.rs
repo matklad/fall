@@ -20,7 +20,7 @@ mod syn_engine;
 /// and is used to create an instance of `Language`.
 pub struct ParserDefinition {
     pub node_types: Vec<NodeType>,
-    pub syntactical_rules: Vec<SynRule>,
+    pub syntactical_rules: Vec<Expr>,
     pub whitespace_binder: fn(ty: NodeType, adjacent_spaces: Vec<(NodeType, &str)>, leading: bool) -> usize,
 }
 
@@ -40,14 +40,13 @@ impl Default for ParserDefinition {
 
 impl ParserDefinition {
     pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
-        let start_rule = &self.syntactical_rules[0].body;
         let g = syn_engine::Grammar {
             node_types: &self.node_types,
             rules: &self.syntactical_rules,
-            start_rule,
+            start_rule: ExprRef(0),
         };
-        let file_ty = match start_rule {
-            &Expr::Pub { ty_idx, ..} => self.node_types[ty_idx.0 as usize],
+        let file_ty = match self.syntactical_rules[0] {
+            Expr::Pub { ty, ..} => self.node_types[ty.0 as usize],
             _ => unreachable!()
         };
 
@@ -88,18 +87,9 @@ pub type CustomLexRule = fn(&str) -> Option<usize>;
 
 impl LexRule {
     pub fn new(ty: NodeType, re: &str, f: Option<CustomLexRule>) -> LexRule {
-        LexRule {
-            ty,
-            re: Regex::new(&format!("^({})", re)).unwrap(),
-            f,
-        }
+        let re = Regex::new(&format!("^({})", re)).unwrap();
+        LexRule { ty, re, f }
     }
-}
-
-/// Syntactical (aka parser) rule
-#[derive(Serialize, Deserialize)]
-pub struct SynRule {
-    pub body: Expr,
 }
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
@@ -111,42 +101,44 @@ pub struct Context(pub u32);
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct Arg(pub u32);
 
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+pub struct ExprRef(pub u32);
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Expr {
     Pub {
-        ty_idx: NodeTypeRef,
-        body: Box<Expr>,
+        ty: NodeTypeRef,
+        body: ExprRef,
         replaceable: bool,
     },
     PubReplace {
-        ty_idx: NodeTypeRef,
-        body: Box<Expr>,
+        ty: NodeTypeRef,
+        body: ExprRef,
     },
-    Or(Vec<Expr>),
-    And(Vec<Expr>, Option<usize>),
-    Rule(usize),
+    Or(Vec<ExprRef>),
+    And(Vec<ExprRef>, Option<usize>),
     Token(NodeTypeRef),
     ContextualToken(NodeTypeRef, String),
-    Rep(Box<Expr>),
-    WithSkip(Box<Expr>, Box<Expr>),
-    Opt(Box<Expr>),
-    Not(Box<Expr>),
+    Rep(ExprRef),
+    WithSkip(ExprRef, ExprRef),
+    Opt(ExprRef),
+    Not(ExprRef),
     Eof,
     Any,
-    Layer(Box<Expr>, Box<Expr>),
+    Layer(ExprRef, ExprRef),
     Pratt(Box<PrattTable>),
-    Enter(Context, Box<Expr>),
-    Exit(Context, Box<Expr>),
+    Enter(Context, ExprRef),
+    Exit(Context, ExprRef),
     IsIn(Context),
-    Call(Box<Expr>, Vec<(Arg, Expr)>),
+    Call(ExprRef, Vec<(Arg, ExprRef)>),
     Var(Arg),
     PrevIs(Vec<NodeTypeRef>),
-    Inject(Box<Expr>, Box<Expr>),
+    Inject(ExprRef, ExprRef),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PrattTable {
-    pub atoms: Vec<Expr>,
+    pub atoms: Vec<ExprRef>,
     pub prefixes: Vec<Prefix>,
     pub infixes: Vec<Infix>
 }
@@ -163,14 +155,14 @@ impl PrattTable {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Prefix {
     pub ty: NodeTypeRef,
-    pub op: Expr,
+    pub op: ExprRef,
     pub priority: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Infix {
     pub ty: NodeTypeRef,
-    pub op: Expr,
+    pub op: ExprRef,
     pub priority: u32,
     pub has_rhs: bool,
 }
