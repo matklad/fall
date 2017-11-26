@@ -143,10 +143,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "failure"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "backtrace 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "fall_gen"
 version = "0.1.0"
 dependencies = [
  "clap 2.27.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "failure 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -722,6 +731,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6f4e5af126dafd0741c2ad62d47f68b28602550102e5f0dd45c8a97fc8b49c29"
 "checksum env_logger 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "15abd780e45b3ea4f76b4e9a26ff4843258dd8a3eed2775a0e7368c2e7936c2f"
 "checksum error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d9435d864e017c3c6afeac1654189b06cdb491cf2ff73dbf0d73b0f292f42ff8"
+"checksum failure 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "76aa046667594883228b6c1f55c260425950a5cdc66d3aa09c30472d5ac6e70c"
 "checksum file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "22ee694e3d88d6b103e0ad75a11abcf013c65e6a836be83598be9087b08fd88b"
 "checksum fuchsia-zircon 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f6c0581a4e363262e52b87f59ee2afe3415361c6ec35e665924eb08afe8ff159"
 "checksum fuchsia-zircon-sys 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "43f3795b4bae048dc6123a6b972cadde2e676f9ded08aef6bb77f5f157684a82"

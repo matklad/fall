@@ -5,31 +5,7 @@ use fall_tree::search::ast;
 use ::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, FallFile, VerbatimDef, MethodDef,
        RefExpr, AstNodeDef, AstClassDef, AstDef, Attributes, Attribute, TestDef,
-       CallExpr, Parameter, AstSelector};
-
-impl<'f> FallFile<'f> {
-    pub fn node_types(&self) -> Vec<(Text<'f>, bool)> {
-        let mut result = Vec::new();
-        if let Some(tokenizer) = self.tokenizer_def() {
-            result.extend(
-                tokenizer.lex_rules()
-                    .map(|r| (r.node_type(), r.is_skip()))
-            )
-        }
-        result.extend(
-            self.syn_rules()
-                .filter(|r| r.is_pub() && r.type_attr().is_none())
-                .filter_map(|r| r.name())
-                .map(|n| (n, false))
-        );
-        result
-    }
-
-    fn resolve_ty(&self, name: Text<'f>) -> Option<usize> {
-        self.node_types().iter().position(|&it| it.0 == name)
-            .map(|idx| idx + 1)
-    }
-}
+       CallExpr, AstSelector};
 
 impl<'f> LexRule<'f> {
     pub fn token_re(&self) -> Option<String> {
@@ -87,37 +63,14 @@ impl<'f> LexRule<'f> {
         false
     }
 
-    pub fn node_type_index(&self) -> usize {
-        let file = ast::ancestor_exn::<FallFile>(self.node());
-        file.resolve_ty(self.node_type()).unwrap()
-    }
-
     fn re(&self) -> Option<Text<'f>> {
         child_of_type(self.node(), STRING).map(|n| n.text())
     }
 }
 
 impl<'f> SynRule<'f> {
-    pub fn resolve_ty(&self) -> Option<usize> {
-        if !self.is_pub() || self.is_pratt() {
-            return None;
-        }
-
-        let file = ast::ancestor_exn::<FallFile>(self.node());
-        if let Some(name) = self.ty_name() {
-            file.resolve_ty(name)
-        } else {
-            None
-        }
-    }
-
     pub fn is_pub(&self) -> bool {
         child_of_type(self.node(), PUB).is_some()
-    }
-
-    pub fn index(&self) -> usize {
-        let file = ast::ancestor_exn::<FallFile>(self.node());
-        file.syn_rules().position(|r| r.node() == self.node()).unwrap()
     }
 
     pub fn is_pratt(&self) -> bool {
@@ -140,11 +93,15 @@ impl<'f> SynRule<'f> {
         }
     }
 
-    fn type_attr(&self) -> Option<Attribute<'f>> {
+    pub fn type_attr(&self) -> Option<Attribute<'f>> {
         self.attributes().and_then(|attrs| attrs.find("type"))
     }
 
-    fn ty_name(&self) -> Option<Text<'f>> {
+    pub fn ty_name(&self) -> Option<Text<'f>> {
+        if !self.is_pub() || self.is_pratt() {
+            return None;
+        }
+
         if let Some(ty) = self.type_attr() {
             return ty.text_value();
         }
@@ -166,16 +123,14 @@ impl<'f> TestDef<'f> {
 
 impl<'f> MethodDef<'f> {
     pub fn resolve(&self) -> Option<MethodDescription<'f>> {
-        let file = ast::ancestor_exn::<FallFile>(self.node());
         let kind = match self.selector().child_kind() {
             None => return None,
             Some(kind) => kind,
         };
-        let name = self.selector().child();
 
         if self.selector().dot().is_some() {
-            return match (file.resolve_ty(name), kind) {
-                (Some(_), ChildKind::Token(t)) => Some(MethodDescription::TextAccessor(t, self.arity())),
+            return match kind {
+                ChildKind::Token(t) => Some(MethodDescription::TextAccessor(t, self.arity())),
                 _ => None
             };
         }
@@ -260,19 +215,6 @@ impl<'f> CallExpr<'f> {
     }
 }
 
-impl<'f> Parameter<'f> {
-    pub fn idx(&self) -> u32 {
-        let file: FallFile = ast::ancestor_exn(self.node());
-        let idx = file.syn_rules()
-            .filter_map(|rule| rule.parameters())
-            .flat_map(|p| p.parameters())
-            .position(|p| p.node() == self.node())
-            .unwrap();
-
-        idx as u32
-    }
-}
-
 impl<'f> Attributes<'f> {
     pub fn has_attribute(&self, name: &str) -> bool {
         self.find(name).is_some()
@@ -294,7 +236,7 @@ impl<'f> Attribute<'f> {
     }
 }
 
-pub ( crate ) fn lit_body(lit: Text) -> Text {
+pub(crate) fn lit_body(lit: Text) -> Text {
     let q = if lit.starts_with("'") { "'" } else { "\"" };
     let s = lit.find(q).unwrap();
     let e = lit.rfind(q).unwrap();

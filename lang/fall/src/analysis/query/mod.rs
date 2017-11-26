@@ -8,7 +8,7 @@ use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr};
 
 
 #[derive(Debug)]
-pub ( crate ) struct FindLexRule<'f>(pub Text<'f>);
+pub(crate) struct FindLexRule<'f>(pub Text<'f>);
 
 impl<'f> Query<'f> for FindLexRule<'f> {
     type Result = Option<LexRule<'f>>;
@@ -18,7 +18,7 @@ mod find_lex_rule;
 
 
 #[derive(Debug)]
-pub ( crate ) struct FindSynRule<'f>(pub Text<'f>);
+pub(crate) struct FindSynRule<'f>(pub Text<'f>);
 
 impl<'f> Query<'f> for FindSynRule<'f> {
     type Result = Option<SynRule<'f>>;
@@ -28,7 +28,7 @@ mod find_syn_rule;
 
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub ( crate ) struct AllRules;
+pub(crate) struct AllRules;
 
 impl<'f> Query<'f> for AllRules {
     type Result = Arc<HashMap<Text<'f>, SynRule<'f>>>;
@@ -38,7 +38,7 @@ mod all_rules;
 
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub ( crate ) struct UnusedRules;
+pub(crate) struct UnusedRules;
 
 impl<'f> Query<'f> for UnusedRules {
     type Result = ();
@@ -48,7 +48,7 @@ mod unused_rules;
 
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub ( crate ) struct AllContexts;
+pub(crate) struct AllContexts;
 
 impl<'f> Query<'f> for AllContexts {
     type Result = Arc<Vec<Text<'f>>>;
@@ -65,7 +65,7 @@ pub enum RefKind<'f> {
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub ( crate ) struct ResolveRefExpr<'f>(pub RefExpr<'f>);
+pub(crate) struct ResolveRefExpr<'f>(pub RefExpr<'f>);
 
 impl<'f> Query<'f> for ResolveRefExpr<'f> {
     type Result = Option<RefKind<'f>>;
@@ -88,13 +88,13 @@ pub enum CallKind<'f> {
     Exit(u32, Expr<'f>),
     IsIn(u32),
 
-    RuleCall(SynRule<'f>, Arc<Vec<(u32, Expr<'f>)>>),
-    PrevIs(Arc<Vec<usize>>),
+    RuleCall(SynRule<'f>, Arc<Vec<(Parameter<'f>, Expr<'f>)>>),
+    PrevIs(Arc<Vec<SynRule<'f>>>),
     Inject(Expr<'f>, Expr<'f>),
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub (crate) struct ResolveCall<'f>(pub CallExpr<'f>);
+pub(crate) struct ResolveCall<'f>(pub CallExpr<'f>);
 
 impl<'f> Query<'f> for ResolveCall<'f> {
     type Result = Option<CallKind<'f>>;
@@ -119,7 +119,7 @@ pub struct PrattOp<'f> {
 
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub (crate) struct ResolvePrattVariant<'f>(pub SynRule<'f>);
+pub(crate) struct ResolvePrattVariant<'f>(pub SynRule<'f>);
 
 impl<'f> Query<'f> for ResolvePrattVariant<'f> {
     type Result = Option<PratVariant<'f>>;

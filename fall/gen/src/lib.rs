@@ -4,6 +4,8 @@ extern crate serde_derive;
 extern crate regex;
 extern crate tera;
 extern crate file;
+#[macro_use]
+extern crate failure;
 
 extern crate fall_tree;
 extern crate fall_parse;

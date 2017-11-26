@@ -66,8 +66,8 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
                 let mut ok = false;
                 if let Expr::RefExpr(expr) = arg {
                     if let Some(RefKind::RuleReference(rule)) = db.get(query::ResolveRefExpr(expr)) {
-                        if let Some(ty) = rule.resolve_ty() {
-                            args.push(ty);
+                        if rule.ty_name().is_some() {
+                            args.push(rule);
                             ok = true;
                         }
                     }
@@ -110,7 +110,6 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
                 }
 
                 let params = parameters.parameters()
-                    .map(|p| p.idx())
                     .zip(call.args())
                     .collect();
                 return Some(CallKind::RuleCall(rule, Arc::new(params)));
@@ -218,7 +217,7 @@ mod tests {
     fn check_prev_is() {
         check_resolved(
             "pub rule foo {} pub rule bar {} rule baz { <^prev_is foo bar> }",
-            "PrevIs([1, 2])"
+            "PrevIs([SynRule@[0; 15), SynRule@[16; 31)])"
         )
     }
 
@@ -226,7 +225,7 @@ mod tests {
     fn call_custom_rule() {
         check_resolved(
             "rule foo { <^bar a b>} rule bar(x, y) { }",
-            "RuleCall(SynRule@[22; 40), [(0, RefExpr@[16; 17)), (1, RefExpr@[18; 19))])"
+            "RuleCall(SynRule@[22; 40), [(Parameter@[31; 32), RefExpr@[16; 17)), (Parameter@[34; 35), RefExpr@[18; 19))])"
         );
         check_diagnostics(
             "rule foo { <bar <eof>>} rule bar(x, y) { }",

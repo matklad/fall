@@ -11,6 +11,8 @@ serde = "1.*"
 serde_derive = "1.*"
 serde_json = "1.*"
 file = "*"
+failure = "0.1"
+
 
 fall_tree = { path = "../tree" }
 fall_parse = { path = "../parse" }
