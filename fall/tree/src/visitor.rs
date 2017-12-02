@@ -1,11 +1,29 @@
 use std::marker::PhantomData;
 use {Node, NodeType, AstNode};
 
-pub trait NodeVisitor<'f, C> {
-    fn context(&mut self) -> &mut C;
-    fn do_visit(&mut self, node: Node<'f>);
-    fn into_context(self) -> C;
 
+pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, mut visitor: V) -> C
+    where V: NodeVisitor<'f, C>
+{
+    go(&mut visitor, node);
+    return visitor.into_context();
+
+    fn go<'f, C, V: NodeVisitor<'f, C>>(v: &mut V, node: Node<'f>) {
+        for child in node.children() {
+            go(v, child)
+        }
+        v.do_visit(node);
+    }
+}
+
+pub fn process_node<'f, V, C>(node: Node<'f>, mut visitor: V) -> C
+    where V: NodeVisitor<'f, C>
+{
+    visitor.do_visit(node);
+    visitor.into_context()
+}
+
+pub trait BuildVisitor<'f, C> {
     fn visit<T, F>(self, f: F) -> AstVisitor<Self, T, F>
         where Self: Sized, T: AstNode<'f>, F: FnMut(&mut C, T) {
         AstVisitor { visitor: self, f, t: PhantomData }
@@ -15,24 +33,15 @@ pub trait NodeVisitor<'f, C> {
         where Self: Sized, F: FnMut(&mut C, Node<'f>) {
         NodesVisitor { visitor: self, f, nodes }
     }
+}
+
+impl<'f, C, T: NodeVisitor<'f, C>> BuildVisitor<'f, C> for T {}
 
 
-    fn walk_recursively_children_first(mut self, node: Node<'f>) -> C where Self: Sized {
-        go(&mut self, node);
-        return self.into_context();
-
-        fn go<'f, C, V: NodeVisitor<'f, C>>(v: &mut V, node: Node<'f>) {
-            for child in node.children() {
-                go(v, child)
-            }
-            v.do_visit(node);
-        }
-    }
-
-    fn walk_single_node(mut self, node: Node<'f>) -> C where Self: Sized {
-        self.do_visit(node);
-        self.into_context()
-    }
+pub trait NodeVisitor<'f, C> {
+    fn context(&mut self) -> &mut C;
+    fn do_visit(&mut self, node: Node<'f>);
+    fn into_context(self) -> C;
 }
 
 pub struct Visitor<C>(pub C);

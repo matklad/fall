@@ -1,5 +1,5 @@
 use fall_tree::{Node, TextUnit, TextRange, AstNode};
-use fall_tree::visitor::{Visitor, NodeVisitor};
+use fall_tree::visitor::{Visitor, BuildVisitor, process_node};
 use fall_tree::search::ast;
 use ::*;
 use analysis::CallKind;
@@ -27,63 +27,67 @@ pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
 }
 
 fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference<'f>> {
-    Visitor(None)
-        .visit::<RefExpr, _>(|result, ref_expr| {
-            *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
-                let ref_ = RefExpr::wrap(node).unwrap();
-                let target = match analysis.resolve_reference(ref_) {
-                    None => return None,
-                    Some(t) => t
-                };
+    process_node(
+        node,
+        Visitor(None)
+            .visit::<RefExpr, _>(|result, ref_expr| {
+                *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
+                    let ref_ = RefExpr::wrap(node).unwrap();
+                    let target = match analysis.resolve_reference(ref_) {
+                        None => return None,
+                        Some(t) => t
+                    };
 
-                Some(match target {
-                    RefKind::RuleReference(rule) => rule.into(),
-                    RefKind::Param(param) => param.into(),
-                    RefKind::Token(token) => token.into(),
-                })
-            }))
-        })
-        .visit::<MethodDef, _>(|result, method| {
-            *result = Some(Reference::new(method.selector().node(), |analysis, node| {
-                let method = ast::ancestor_exn::<MethodDef>(node);
-                let target = analysis.resolve_method(method)?;
-                Some(match target {
-                    MethodKind::NodeAccessor(child_kind, _) => match child_kind {
-                        ChildKind::AstNode(node) => node.into(),
-                        ChildKind::AstClass(cls) => cls.into(),
-                        ChildKind::Token(token) => token.into()
+                    Some(match target {
+                        RefKind::RuleReference(rule) => rule.into(),
+                        RefKind::Param(param) => param.into(),
+                        RefKind::Token(token) => token.into(),
+                    })
+                }))
+            })
+            .visit::<MethodDef, _>(|result, method| {
+                *result = Some(Reference::new(method.selector().node(), |analysis, node| {
+                    let method = ast::ancestor_exn::<MethodDef>(node);
+                    let target = analysis.resolve_method(method)?;
+                    Some(match target {
+                        MethodKind::NodeAccessor(child_kind, _) => match child_kind {
+                            ChildKind::AstNode(node) => node.into(),
+                            ChildKind::AstClass(cls) => cls.into(),
+                            ChildKind::Token(token) => token.into()
+                        }
+                        _ => return None
+                    })
+                }))
+            })
+            .visit_nodes(&[IDENT], |result, ident| {
+                match ident.parent().and_then(CallExpr::wrap) {
+                    Some(call) => {
+                        if let Some(CallKind::RuleCall(..)) = analysis.resolve_call(call) {
+                            *result = Some(Reference::new(ident, |analysis, node| {
+                                let call = CallExpr::wrap(node.parent().unwrap()).unwrap();
+                                match analysis.resolve_call(call).unwrap() {
+                                    CallKind::RuleCall(rule, ..) => Some(rule.into()),
+                                    _ => unimplemented!()
+                                }
+                            }))
+                        }
                     }
-                    _ => return None
-                })
-            }))
-        })
-        .visit_nodes(&[IDENT], |result, ident| {
-            match ident.parent().and_then(CallExpr::wrap) {
-                Some(call) => {
-                    if let Some(CallKind::RuleCall(..)) = analysis.resolve_call(call) {
-                        *result = Some(Reference::new(ident, |analysis, node| {
-                            let call = CallExpr::wrap(node.parent().unwrap()).unwrap();
-                            match analysis.resolve_call(call).unwrap() {
-                                CallKind::RuleCall(rule, ..) => Some(rule.into()),
-                                _ => unimplemented!()
-                            }
-                        }))
-                    }
+                    _ => {}
                 }
-                _ => {}
-            }
-        })
-        .walk_single_node(node)
+            })
+    )
 }
 
 fn def_provider<'f>(node: Node<'f>) -> Option<Declaration<'f>> {
-    Visitor(None)
-        .visit::<SynRule, _>(|result, node| *result = Some(node.into()))
-        .visit::<LexRule, _>(|result, node| *result = Some(node.into()))
-        .visit::<Parameter, _>(|result, node| *result = Some(node.into()))
-        .visit::<AstNodeDef, _>(|result, node| *result = Some(node.into()))
-        .visit::<AstClassDef, _>(|result, node| *result = Some(node.into()))
-        .walk_single_node(node)
+    process_node(
+        node,
+        Visitor(None)
+            .visit::<SynRule, _>(|result, node| *result = Some(node.into()))
+            .visit::<LexRule, _>(|result, node| *result = Some(node.into()))
+            .visit::<Parameter, _>(|result, node| *result = Some(node.into()))
+            .visit::<AstNodeDef, _>(|result, node| *result = Some(node.into()))
+            .visit::<AstClassDef, _>(|result, node| *result = Some(node.into()))
+    )
 }
 
 impl<'f> From<SynRule<'f>> for Declaration<'f> {

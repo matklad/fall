@@ -1,36 +1,38 @@
 use fall_tree::{File, AstNode};
-use fall_tree::visitor::{Visitor, NodeVisitor};
+use fall_tree::visitor::{Visitor, BuildVisitor, process_subtree_bottom_up};
 
 use ::*;
 use editor_api::FileStructureNode;
 
 
 pub fn structure(file: &File) -> Vec<FileStructureNode> {
-    Visitor(Vec::new())
-        .visit::<SynRule, _>(|nodes, rule| {
-            if let Some(name) = rule.name() {
+    process_subtree_bottom_up(
+        file.root(),
+        Visitor(Vec::new())
+            .visit::<SynRule, _>(|nodes, rule| {
+                if let Some(name) = rule.name() {
+                    nodes.push(FileStructureNode {
+                        name: name.to_string(),
+                        range: rule.node().range(),
+                        children: Vec::new(),
+                    })
+                }
+            })
+            .visit::<TokenizerDef, _>(|nodes, tokenizer| {
                 nodes.push(FileStructureNode {
-                    name: name.to_string(),
-                    range: rule.node().range(),
-                    children: Vec::new(),
+                    name: "tokenizer".to_owned(),
+                    range: tokenizer.node().range(),
+                    children: Vec::new()
                 })
-            }
-        })
-        .visit::<TokenizerDef, _>(|nodes, tokenizer|{
-            nodes.push(FileStructureNode {
-                name: "tokenizer".to_owned(),
-                range: tokenizer.node().range(),
-                children: Vec::new()
             })
-        })
-        .visit::<AstDef, _>(|nodes, ast|{
-            nodes.push(FileStructureNode {
-                name: "ast".to_owned(),
-                range: ast.node().range(),
-                children: Vec::new()
+            .visit::<AstDef, _>(|nodes, ast| {
+                nodes.push(FileStructureNode {
+                    name: "ast".to_owned(),
+                    range: ast.node().range(),
+                    children: Vec::new()
+                })
             })
-        })
-        .walk_recursively_children_first(file.root())
+    )
 }
 
 

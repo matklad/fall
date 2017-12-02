@@ -1,5 +1,5 @@
 use fall_tree::{File, AstNode};
-use fall_tree::visitor::{Visitor, NodeVisitor};
+use fall_tree::visitor::{Visitor, BuildVisitor, process_subtree_bottom_up};
 
 use {FallFile, RefExpr, CallExpr, SynRule, MethodDef};
 use editor_api::{Diagnostic, Severity};
@@ -47,11 +47,13 @@ impl<'f> Analysis<'f> {
     }
 
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
-        Visitor(())
-            .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
-            .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
-            .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
-            .walk_recursively_children_first(self.ast().node());
+        process_subtree_bottom_up(
+            self.ast().node(),
+            Visitor(())
+                .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
+                .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
+                .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
+        );
         self.db.get(query::UnusedRules);
 
         let mut result = self.db.diagnostics.lock().unwrap().clone();
