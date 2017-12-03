@@ -1,4 +1,5 @@
-use fall_tree::{Language, Text, IToken, Event};
+use std::collections::HashMap;
+use fall_tree::{Language, Text, IToken, Event, TextUnit};
 use syn_engine::parser::{Parser, Pos};
 
 use ::{NodeTypeRef, Context, Arg, ExprRef, Expr};
@@ -7,13 +8,14 @@ use super::Grammar;
 use super::pratt::parse_pratt;
 
 pub fn parse(
+    prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
     grammar: Grammar,
     lang: &Language,
     text: Text,
     tokens: &[IToken],
 ) -> (Vec<Event>, u64) {
     let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
-    let (mut parser, pos) = Parser::new(&grammar, &is_ws, text, tokens);
+    let (mut parser, pos) = Parser::new(prev, &grammar, &is_ws, text, tokens);
 
     let start_rule = parser.grammar.start_rule;
     let mut leftover = parse_expr(&mut parser, start_rule, pos).unwrap();
@@ -368,6 +370,10 @@ fn parse_inject<'g>(
 }
 
 fn parse_cached<'g>(p: &mut Parser<'g>, expr: ExprRef, pos: Pos) -> Option<Pos> {
+    if let Some(pos) = p.get_from_cache(expr, pos) {
+        return Some(pos);
+    }
+
     let mark = p.start_cached(expr);
     let result = parse_expr(p, expr, pos)?;
     p.finish_cached(mark);

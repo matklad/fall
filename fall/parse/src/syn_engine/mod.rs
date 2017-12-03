@@ -27,12 +27,12 @@ mod convert;
 
 pub use self::convert::convert;
 
-fn salvage_segments(
+pub fn salvage_segments(
     old_events: &[Event],
     old_tokens: &[IToken],
     is_ws: &Fn(&IToken) -> bool,
-    edit: TextEdit,
-) -> HashMap<(TextUnit, ExprRef), u32> {
+    edit: &TextEdit,
+) -> HashMap<(TextUnit, ExprRef), (u32, u32, u32)> {
     let mut result = HashMap::new();
 
     let mut raw_token_pos = 0;
@@ -59,20 +59,25 @@ fn salvage_segments(
     skip_ws(&mut raw_token_pos, &mut text_pos);
 
     let mut events = old_events.iter();
+    let mut start_event = 0;
 
     while let Some(event) = events.next() {
+        start_event += 1;
         match *event {
             Event::Start { .. } => (),
             Event::End => (),
-            Event::Token { n_raw_tokens, ..} =>
+            Event::Token { n_raw_tokens, .. } =>
                 eat_tokens(&mut raw_token_pos, &mut text_pos, n_raw_tokens),
 
             Event::Cached { key, n_events } => {
                 let start = text_pos;
+                let mut n_tokens = 0u32;
                 for _ in 0..n_events {
                     match *events.next().unwrap() {
-                        Event::Token { n_raw_tokens, ..} =>
-                            eat_tokens(&mut raw_token_pos, &mut text_pos, n_raw_tokens),
+                        Event::Token { n_raw_tokens, .. } => {
+                            eat_tokens(&mut raw_token_pos, &mut text_pos, n_raw_tokens);
+                            n_tokens += n_raw_tokens as u32;
+                        }
                         _ => (),
                     }
                 }
@@ -84,15 +89,15 @@ fn salvage_segments(
                     match *op {
                         TextEditOp::Copy(copy) => if range.is_subrange_of(copy) {
                             let fixed_start = inserted + (start - copy.start());
-                            result.insert((fixed_start, ExprRef(key)), n_events);
+                            result.insert((fixed_start, ExprRef(key)), (start_event, n_events, n_tokens));
                         } else {
                             inserted += copy.len()
                         }
                         TextEditOp::Insert(ref text) => inserted += text.len(),
                     }
                 }
-
-            },
+                start_event += n_events;
+            }
         }
     }
 

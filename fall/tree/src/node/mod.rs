@@ -52,6 +52,10 @@ impl File {
     pub fn edit(&self, edit: TextEdit) -> File {
         self.language().reparse(self, edit)
     }
+
+    pub fn events(&self) -> &[Event] {
+        &self.events
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

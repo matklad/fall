@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, Event, tu};
 use syn_engine::Grammar;
 use {NodeTypeRef, ExprRef};
 
 pub(crate) struct Parser<'g> {
+    cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
     pub grammar: &'g Grammar<'g>,
     text: Text<'g>,
     tokens: &'g [IToken],
@@ -34,6 +37,7 @@ pub(crate) struct Mark(u32);
 
 impl<'g> Parser<'g> {
     pub fn new(
+        cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
         grammar: &'g Grammar<'g>,
         is_ws: &Fn(IToken) -> bool,
         text: Text<'g>,
@@ -54,6 +58,7 @@ impl<'g> Parser<'g> {
         let pos = Pos(0, non_ws_indexes.len() as u32);
 
         let parser = Parser {
+            cache,
             grammar,
             text,
             tokens,
@@ -93,9 +98,21 @@ impl<'g> Parser<'g> {
         self.event(Event::End)
     }
 
+    pub fn get_from_cache(&mut self, expr: ExprRef, pos: Pos) -> Option<Pos> {
+        if let Some((ref cache, events)) = self.cache {
+            let text_pos = self.non_ws_indexes[pos.0 as usize].0;
+            if let Some(&(start_event, n_events, n_tokens)) = cache.get(&(text_pos, expr)) {
+                self.events.extend_from_slice(&events[start_event as usize..(start_event + n_events) as usize]);
+                return Some(Pos(pos.0 + n_tokens, pos.1));
+            }
+        }
+
+        return None;
+    }
+
     pub fn start_cached(&mut self, expr: ExprRef) -> Mark {
         let mark = self.mark();
-        self.event(Event::Cached { key: expr.0, n_events: 0});
+        self.event(Event::Cached { key: expr.0, n_events: 0 });
         mark
     }
 

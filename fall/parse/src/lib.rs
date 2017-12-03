@@ -6,9 +6,10 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, Event};
+use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, Event, TextEdit};
 
 mod lex_engine;
+
 pub use lex_engine::RegexLexer;
 
 mod syn_engine;
@@ -46,12 +47,12 @@ impl ParserDefinition {
             start_rule: ExprRef(0),
         };
         let file_ty = match self.syntactical_rules[0] {
-            Expr::Pub { ty, ..} => self.node_types[ty.0 as usize],
+            Expr::Pub { ty, .. } => self.node_types[ty.0 as usize],
             _ => unreachable!()
         };
 
         let (events, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::parse(g, lang, text, &tokens)
+            syn_engine::parse(None, g, lang, text, &tokens)
         });
         metrics.record("parsing ticks", ticks, "");
 
@@ -63,14 +64,59 @@ impl ParserDefinition {
                 &|ty| lang.node_type_info(ty).whitespace_like,
                 &|ty, spaces, leading| {
                     if ty == file_ty {
-                        return spaces.len()
+                        return spaces.len();
                     }
                     let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
                     let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
                     (self.whitespace_binder)(ty, spaces, leading)
                 }
             );
-            (Vec::new(), inode)
+            (events, inode)
+        })
+    }
+
+    pub fn reparse(
+        &self,
+        old_tokens: &[IToken],
+        old_events: &[Event],
+        edit: &TextEdit, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> (Vec<Event>, INode) {
+        let g = syn_engine::Grammar {
+            node_types: &self.node_types,
+            rules: &self.syntactical_rules,
+            start_rule: ExprRef(0),
+        };
+        let file_ty = match self.syntactical_rules[0] {
+            Expr::Pub { ty, .. } => self.node_types[ty.0 as usize],
+            _ => unreachable!()
+        };
+
+
+        let salvaged = syn_engine::salvage_segments(
+            old_events, old_tokens, &|t| lang.node_type_info(t.ty).whitespace_like,
+            edit
+        );
+
+        let (events, ticks) = metrics.measure_time("parsing", || {
+            syn_engine::parse(Some((salvaged, old_events)), g, lang, text, &tokens)
+        });
+        metrics.record("parsing ticks", ticks, "");
+
+        metrics.measure_time("inode construction", || {
+            let inode = syn_engine::convert(
+                text,
+                tokens,
+                &events,
+                &|ty| lang.node_type_info(ty).whitespace_like,
+                &|ty, spaces, leading| {
+                    if ty == file_ty {
+                        return spaces.len();
+                    }
+                    let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
+                    let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
+                    (self.whitespace_binder)(ty, spaces, leading)
+                }
+            );
+            (events, inode)
         })
     }
 }

@@ -85,6 +85,7 @@ rule file_form {
 }
 
 // Each rule has the following pattern:
+#[cached]
 pub rule syn_rule {
   // Optional `#[foo]` style attributes
   attributes?

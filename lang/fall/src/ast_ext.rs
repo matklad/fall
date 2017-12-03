@@ -84,6 +84,8 @@ impl<'f> SynRule<'f> {
         self.has_attribute("replaces")
     }
 
+    pub fn is_cached(&self) -> bool { self.has_attribute("cached") }
+
     fn has_attribute(&self, attribute: &str) -> bool {
         if let Some(attrs) = self.attributes() {
             attrs.has_attribute(attribute)

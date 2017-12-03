@@ -142,17 +142,25 @@ impl<'a, 'f> Codegen<'a, 'f> {
             (false, body) => self.gen_expr(body)?
         };
 
-        let body = match (self.syn_rule_ty(rule), rule.is_replaces()) {
-            (Some(ty), true) => dst::Expr::PubReplace {
+        let body = match (self.syn_rule_ty(rule), rule.is_replaces(), rule.is_cached()) {
+            (Some(ty), true, _) => dst::Expr::PubReplace {
                 ty,
                 body,
             },
-            (Some(ty), false) => dst::Expr::Pub {
+            (Some(ty), false, false) => dst::Expr::Pub {
                 ty,
                 body,
                 replaceable: rule.is_replaceable(),
             },
-            (None, _) => {
+            (Some(ty), false, true) => {
+                let body = self.push_expr(dst::Expr::Cached(body));
+                dst::Expr::Pub {
+                    ty,
+                    body,
+                    replaceable: rule.is_replaceable(),
+                }
+            },
+            (None, _, _) => {
                 assert_eq!(self.expressions.len() - 1, body.0 as usize);
                 self.expressions.pop().unwrap()
             }

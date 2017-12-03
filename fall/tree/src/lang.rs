@@ -5,6 +5,17 @@ use {Text, TextBuf, TextSuffix, TextEdit, TextEditOp, File, NodeType, NodeTypeIn
 pub trait LanguageImpl: 'static + Send + Sync {
     fn lexer(&self) -> &Lexer;
     fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> (Vec<Event>, INode);
+    fn reparse(
+        &self,
+        old_tokens: &[IToken],
+        old_events: &[Event],
+        edit: &TextEdit,
+        text: Text,
+        tokens: &[IToken],
+        metrics: &Metrics
+    ) -> (Vec<Event>, INode) {
+        unimplemented!()
+    }
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }
 
@@ -138,7 +149,14 @@ impl Language {
             &metrics
         ));
 
-        let (events, inode) = self.imp.parse(new_text.as_slice(), &tokens, &metrics);
+        let (events, inode) = self.imp.reparse(
+            file.tokens(),
+            file.events(),
+            &edit,
+            new_text.as_slice(),
+            &tokens,
+            &metrics
+        );
         File::new(self.clone(), new_text, metrics, tokens, events, inode)
     }
 
