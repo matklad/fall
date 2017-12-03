@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, Event, tu};
+use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, tu};
 use syn_engine::Grammar;
-use {NodeTypeRef, ExprRef};
+use {NodeTypeRef, ExprRef, Event};
 
 pub(crate) struct Parser<'g> {
     cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,

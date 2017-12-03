@@ -19,7 +19,7 @@ mod metrics;
 
 pub use fall_text::*;
 pub use node_type::{NodeType, NodeTypeInfo, ERROR};
-pub use node::{File, Node, IToken, INode, Event};
+pub use node::{File, Node, IToken, INode};
 pub use edit::FileEdit;
 pub use lang::{Language, LanguageImpl, Lexer};
 pub use ast::{AstNode, AstChildren};

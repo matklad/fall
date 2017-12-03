@@ -1,16 +1,17 @@
+use std::any::Any;
+
 use {TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
 
 mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{IToken, INode, Event};
+pub use self::immutable::{IToken, INode};
 
 
 pub struct File {
     imp: imp::FileImpl,
-    tokens: Vec<IToken>,
-    events: Vec<Event>,
+    incremental_data: Option<Box<Any + Sync + Send>>,
 }
 
 impl File {
@@ -18,14 +19,12 @@ impl File {
         lang: Language,
         text: T,
         metrics: Metrics,
-        tokens: Vec<IToken>,
-        events: Vec<Event>,
-        node: INode
+        node: INode,
+        incremental_data: Option<Box<Any + Sync + Send>>,
     ) -> File {
         File {
             imp: imp::new_file(lang, text.into(), metrics, &node),
-            tokens,
-            events,
+            incremental_data,
         }
     }
 
@@ -45,16 +44,12 @@ impl File {
         self.imp.metrics()
     }
 
-    pub fn tokens(&self) -> &[IToken] {
-        &self.tokens
-    }
-
     pub fn edit(&self, edit: TextEdit) -> File {
         self.language().reparse(self, edit)
     }
 
-    pub fn events(&self) -> &[Event] {
-        &self.events
+    pub fn incremental_data(&self) -> Option<&(Any + Send + Sync)> {
+        self.incremental_data.as_ref().map(|r| r.as_ref())
     }
 }
 

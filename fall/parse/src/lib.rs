@@ -5,14 +5,75 @@ pub extern crate regex;
 pub extern crate fall_tree;
 pub extern crate serde_json;
 
+use std::any::Any;
+
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, Event, TextEdit};
+use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, TextEdit, Lexer};
 
 mod lex_engine;
 
 pub use lex_engine::RegexLexer;
 
 mod syn_engine;
+
+struct IncrementalData {
+    tokens: Vec<IToken>,
+    events: Vec<Event>,
+}
+
+pub fn parse(
+    lang: &Language,
+    lexer_def: &RegexLexer,
+    parser_def: &ParserDefinition,
+    text: Text,
+    metrics: &Metrics,
+) -> (Option<Box<Any + Sync + Send>>, INode) {
+    let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
+        metrics.record("relexed region", text.len().utf8_len() as u64, "");
+        lexer_def.collect_tokens(text)
+    });
+
+    let (events, inode) = parser_def.parse(text, &tokens, lang, metrics);
+    let incremental_data = IncrementalData { tokens, events };
+    (Some(Box::new(incremental_data)), inode)
+}
+
+pub fn reparse(
+    lang: &Language,
+    lexer_def: &RegexLexer,
+    parser_def: &ParserDefinition,
+    incremental_data: &Any,
+    edit: &TextEdit,
+    new_text: Text,
+    metrics: &Metrics,
+) -> (Option<Box<Any + Sync + Send>>, INode) {
+    let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
+    let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
+        lexer_def.relex(&incremental_data.tokens, edit, new_text, metrics)
+    });
+
+    let (events, inode) = parser_def.reparse(
+        &incremental_data.tokens,
+        &incremental_data.events,
+        edit,
+        new_text,
+        &tokens,
+        lang,
+        metrics
+    );
+
+    let incremental_data = IncrementalData { tokens, events };
+    (Some(Box::new(incremental_data)), inode)
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum Event {
+    Start { ty: NodeType, forward_parent: Option<u32> },
+    Token { ty: NodeType, n_raw_tokens: u16 },
+    End,
+    Cached { key: u32, n_events: u32 },
+}
+
 
 /// Describes both lexical and syntactical grammar
 /// of a language.

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, IToken, tu, TextRange, Event};
-use ::{Expr, ExprRef};
+use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, IToken, tu, TextRange};
+use ::{Expr, ExprRef, Event};
 
 pub struct Grammar<'g> {
     pub node_types: &'g [NodeType],

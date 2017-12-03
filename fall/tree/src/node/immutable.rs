@@ -2,14 +2,6 @@ use std::sync::Arc;
 
 use ::{NodeType, TextUnit, tu};
 
-#[derive(Copy, Clone, Debug)]
-pub enum Event {
-    Start { ty: NodeType, forward_parent: Option<u32> },
-    Token { ty: NodeType, n_raw_tokens: u16 },
-    End,
-    Cached { key: u32, n_events: u32 },
-}
-
 #[derive(Debug, Copy, Clone)]
 pub struct IToken {
     pub ty: NodeType,

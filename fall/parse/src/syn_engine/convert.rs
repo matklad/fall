@@ -1,4 +1,5 @@
-use fall_tree::{NodeType, IToken, INode, Text, TextRange, Event, tu};
+use fall_tree::{NodeType, IToken, INode, Text, TextRange, tu};
+use Event;
 
 pub fn convert(
     text: Text,

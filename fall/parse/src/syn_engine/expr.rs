@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use fall_tree::{Language, Text, IToken, Event, TextUnit};
+use fall_tree::{Language, Text, IToken, TextUnit};
 use syn_engine::parser::{Parser, Pos};
 
-use ::{NodeTypeRef, Context, Arg, ExprRef, Expr};
+use ::{NodeTypeRef, Context, Arg, ExprRef, Expr, Event};
 
 use super::Grammar;
 use super::pratt::parse_pratt;
