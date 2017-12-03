@@ -7,7 +7,7 @@ use ::{NodeTypeRef, Context, Arg, ExprRef, Expr, Event};
 use super::Grammar;
 use super::pratt::parse_pratt;
 
-pub fn parse(
+pub(crate) fn parse(
     prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
     grammar: Grammar,
     lang: &Language,

@@ -6,12 +6,12 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use std::any::Any;
+use std::collections::HashMap;
 
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, TextEdit, Lexer};
+use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, TextEdit, TextUnit};
 
 mod lex_engine;
-
 pub use lex_engine::RegexLexer;
 
 mod syn_engine;
@@ -29,11 +29,11 @@ pub fn parse(
     metrics: &Metrics,
 ) -> (Option<Box<Any + Sync + Send>>, INode) {
     let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
-        metrics.record("relexed region", text.len().utf8_len() as u64, "");
-        lexer_def.collect_tokens(text)
+        lex_engine::lex(lexer_def, text)
     });
+    metrics.record("relexed region", text.len().utf8_len() as u64, "");
 
-    let (events, inode) = parser_def.parse(text, &tokens, lang, metrics);
+    let (events, inode) = parser_def.parse(None, text, &tokens, lang, metrics);
     let incremental_data = IncrementalData { tokens, events };
     (Some(Box::new(incremental_data)), inode)
 }
@@ -48,26 +48,25 @@ pub fn reparse(
     metrics: &Metrics,
 ) -> (Option<Box<Any + Sync + Send>>, INode) {
     let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
-    let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
-        lexer_def.relex(&incremental_data.tokens, edit, new_text, metrics)
+    let (tokens, relexed_region) = metrics.measure_time("lexing", || {
+        lex_engine::relex(lexer_def, &incremental_data.tokens, edit, new_text)
     });
+    metrics.record("relexed region", relexed_region as u64, "");
 
-    let (events, inode) = parser_def.reparse(
-        &incremental_data.tokens,
+    let salvaged = syn_engine::salvage_segments(
         &incremental_data.events,
-        edit,
-        new_text,
-        &tokens,
-        lang,
-        metrics
+        &incremental_data.tokens,
+        &|t| lang.node_type_info(t.ty).whitespace_like,
+        edit
     );
-
+    let prev = Some((salvaged, incremental_data.events.as_ref()));
+    let (events, inode) = parser_def.parse(prev, new_text, &tokens, lang, metrics);
     let incremental_data = IncrementalData { tokens, events };
     (Some(Box::new(incremental_data)), inode)
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum Event {
+pub(crate) enum Event {
     Start { ty: NodeType, forward_parent: Option<u32> },
     Token { ty: NodeType, n_raw_tokens: u16 },
     End,
@@ -101,50 +100,12 @@ impl Default for ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> (Vec<Event>, INode) {
-        let g = syn_engine::Grammar {
-            node_types: &self.node_types,
-            rules: &self.syntactical_rules,
-            start_rule: ExprRef(0),
-        };
-        let file_ty = match self.syntactical_rules[0] {
-            Expr::Pub { ty, .. } => self.node_types[ty.0 as usize],
-            _ => unreachable!()
-        };
-
-        let (events, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::parse(None, g, lang, text, &tokens)
-        });
-        metrics.record("parsing ticks", ticks, "");
-
-        metrics.measure_time("inode construction", || {
-            let inode = syn_engine::convert(
-                text,
-                tokens,
-                &events,
-                &|ty| lang.node_type_info(ty).whitespace_like,
-                &|ty, spaces, leading| {
-                    if ty == file_ty {
-                        return spaces.len();
-                    }
-                    let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
-                    let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
-                    (self.whitespace_binder)(ty, spaces, leading)
-                }
-            );
-            (events, inode)
-        })
-    }
-
-    pub fn reparse(
-        &self,
-        old_tokens: &[IToken],
-        old_events: &[Event],
-        edit: &TextEdit,
-        text: Text,
-        tokens: &[IToken],
-        lang: &Language,
-        metrics: &Metrics
+    fn parse(&self,
+             prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
+             text: Text,
+             tokens: &[IToken],
+             lang: &Language,
+             metrics: &Metrics
     ) -> (Vec<Event>, INode) {
         let g = syn_engine::Grammar {
             node_types: &self.node_types,
@@ -156,14 +117,8 @@ impl ParserDefinition {
             _ => unreachable!()
         };
 
-
-        let salvaged = syn_engine::salvage_segments(
-            old_events, old_tokens, &|t| lang.node_type_info(t.ty).whitespace_like,
-            edit
-        );
-
         let (events, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::parse(Some((salvaged, old_events)), g, lang, text, &tokens)
+            syn_engine::parse(prev, g, lang, text, &tokens)
         });
         metrics.record("parsing ticks", ticks, "");
 

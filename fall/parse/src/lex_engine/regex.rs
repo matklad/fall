@@ -1,6 +1,7 @@
-use fall_tree::{Text, ERROR, tu, IToken, Lexer};
+use fall_tree::{Text, ERROR, tu, IToken};
 
 use LexRule;
+use super::Lexer;
 
 pub struct RegexLexer {
     rules: Vec<LexRule>,
@@ -52,9 +53,10 @@ fn tokenize_longest_first_wins() {
     ]);
 
     let text: ::fall_tree::TextBuf = "foo foob foobar".into();
-    let tokens: Vec<_> = lexer.collect_tokens(text.as_slice())
+    let tokens: Vec<_> = ::lex_engine::lex(&lexer, text.as_slice())
         .into_iter()
         .map(|t| t.ty.0)
         .collect();
     assert_eq!(tokens, vec![10, 1, 11, 1, 11]);
 }
+

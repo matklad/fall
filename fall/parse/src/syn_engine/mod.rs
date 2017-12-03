@@ -21,13 +21,13 @@ mod parser;
 mod expr;
 mod pratt;
 
-pub use self::expr::parse;
+pub(crate) use self::expr::parse;
 
 mod convert;
 
-pub use self::convert::convert;
+pub(crate) use self::convert::convert;
 
-pub fn salvage_segments(
+pub(crate) fn salvage_segments(
     old_events: &[Event],
     old_tokens: &[IToken],
     is_ws: &Fn(&IToken) -> bool,

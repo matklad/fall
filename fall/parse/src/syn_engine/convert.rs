@@ -1,7 +1,7 @@
 use fall_tree::{NodeType, IToken, INode, Text, TextRange, tu};
 use Event;
 
-pub fn convert(
+pub(crate) fn convert(
     text: Text,
     tokens: &[IToken],
     events: &[Event],
