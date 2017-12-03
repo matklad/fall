@@ -31,15 +31,6 @@ pub fn parse(
 }
 
 
-
-impl<'g> ::std::ops::Index<ExprRef> for Grammar<'g> {
-    type Output = Expr;
-
-    fn index(&self, index: ExprRef) -> &Self::Output {
-        &self.rules[index.0 as usize]
-    }
-}
-
 pub(crate) fn parse_expr(p: &mut Parser, expr: ExprRef, tokens: Pos) -> Option<Pos> {
     p.tick();
     let mark = p.mark();

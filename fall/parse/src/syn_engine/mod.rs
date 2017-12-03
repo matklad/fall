@@ -14,6 +14,14 @@ pub struct Grammar<'g> {
     pub start_rule: ExprRef,
 }
 
+impl<'g> ::std::ops::Index<ExprRef> for Grammar<'g> {
+    type Output = Expr;
+
+    fn index(&self, index: ExprRef) -> &Self::Output {
+        &self.rules[index.0 as usize]
+    }
+}
+
 mod parser;
 mod expr;
 mod pratt;
