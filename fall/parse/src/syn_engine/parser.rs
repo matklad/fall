@@ -118,7 +118,7 @@ impl<'g> Parser<'g> {
 
     pub fn finish_cached(&mut self, mark: Mark) {
         if !self.predicate_mode {
-            let len = self.events.len() as u32 - mark.0;
+            let len = self.events.len() as u32 - (mark.0 + 1);
             match self.events[mark.0 as usize] {
                 Event::Cached { ref mut n_events, .. } => *n_events = len,
                 _ => unreachable!(),

@@ -7,14 +7,14 @@ pub trait LanguageImpl: 'static + Send + Sync {
     fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> (Vec<Event>, INode);
     fn reparse(
         &self,
-        old_tokens: &[IToken],
-        old_events: &[Event],
-        edit: &TextEdit,
+        _old_tokens: &[IToken],
+        _old_events: &[Event],
+        _edit: &TextEdit,
         text: Text,
         tokens: &[IToken],
         metrics: &Metrics
     ) -> (Vec<Event>, INode) {
-        unimplemented!()
+        self.parse(text, tokens, metrics)
     }
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }

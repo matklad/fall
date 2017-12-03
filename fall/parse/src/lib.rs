@@ -79,7 +79,12 @@ impl ParserDefinition {
         &self,
         old_tokens: &[IToken],
         old_events: &[Event],
-        edit: &TextEdit, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> (Vec<Event>, INode) {
+        edit: &TextEdit,
+        text: Text,
+        tokens: &[IToken],
+        lang: &Language,
+        metrics: &Metrics
+    ) -> (Vec<Event>, INode) {
         let g = syn_engine::Grammar {
             node_types: &self.node_types,
             rules: &self.syntactical_rules,

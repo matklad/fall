@@ -370,12 +370,9 @@ fn parse_inject<'g>(
 }
 
 fn parse_cached<'g>(p: &mut Parser<'g>, expr: ExprRef, pos: Pos) -> Option<Pos> {
-    if let Some(pos) = p.get_from_cache(expr, pos) {
-        return Some(pos);
-    }
 
     let mark = p.start_cached(expr);
-    let result = parse_expr(p, expr, pos)?;
+    let result = p.get_from_cache(expr, pos).or_else(|| parse_expr(p, expr, pos))?;
     p.finish_cached(mark);
 
     Some(result)

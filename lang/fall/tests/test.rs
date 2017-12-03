@@ -12,7 +12,7 @@ fn inline_tests() {
 }
 
 #[test]
-fn reparse_test() {
+fn relex_test() {
     let mut text: TextBuf = "tokenizer { foo 'foo' bar 'bar' }".into();
     let mut file = lang_fall::parse(text.to_string());
 
@@ -33,6 +33,34 @@ fn reparse_test() {
         };
         text = edit.apply(text.as_slice());
         eprintln!("text = {}", text);
+        file = file.edit(edit);
+        let fresh_file = lang_fall::parse(text.to_string());
+        report_diff(&dump_file_ws(&fresh_file), &dump_file_ws(&file));
+    }
+}
+
+#[test]
+fn reparse_test() {
+    let mut text: TextBuf = "pub rule foo { bar }  pub rule bar { }".into();
+    let mut file = lang_fall::parse(text.to_string());
+
+    let edit1 = |b: &mut TextEditBuilder| {
+        b.replace(TextRange::from_len(tu(15), tu(3)), "baz".to_string());
+    };
+
+    let edit2 = |b: &mut TextEditBuilder| {
+        b.replace(TextRange::from_len(tu(15), tu(3)), "baz".to_string());
+    };
+
+    let edits: Vec<fn(&mut TextEditBuilder)> = vec![edit1, edit2];
+
+    for edit in edits {
+        let edit = {
+            let mut b = TextEditBuilder::new(text.as_slice());
+            edit(&mut b);
+            b.build()
+        };
+        text = edit.apply(text.as_slice());
         file = file.edit(edit);
         let fresh_file = lang_fall::parse(text.to_string());
         report_diff(&dump_file_ws(&fresh_file), &dump_file_ws(&file));
