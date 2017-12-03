@@ -6,7 +6,7 @@ pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics};
+use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, Event};
 
 mod lex_engine;
 pub use lex_engine::RegexLexer;
@@ -39,7 +39,7 @@ impl Default for ParserDefinition {
 }
 
 impl ParserDefinition {
-    pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> INode {
+    pub fn parse(&self, text: Text, tokens: &[IToken], lang: &Language, metrics: &Metrics) -> (Vec<Event>, INode) {
         let g = syn_engine::Grammar {
             node_types: &self.node_types,
             rules: &self.syntactical_rules,
@@ -56,7 +56,7 @@ impl ParserDefinition {
         metrics.record("parsing ticks", ticks, "");
 
         metrics.measure_time("inode construction", || {
-            syn_engine::convert(
+            let inode = syn_engine::convert(
                 text,
                 tokens,
                 &events,
@@ -69,7 +69,8 @@ impl ParserDefinition {
                     let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
                     (self.whitespace_binder)(ty, spaces, leading)
                 }
-            )
+            );
+            (Vec::new(), inode)
         })
     }
 }
@@ -101,7 +102,7 @@ pub struct Context(pub u32);
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct Arg(pub u32);
 
-#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
 pub struct ExprRef(pub u32);
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -134,6 +135,7 @@ pub enum Expr {
     Var(Arg),
     PrevIs(Vec<NodeTypeRef>),
     Inject(ExprRef, ExprRef),
+    Cached(ExprRef),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

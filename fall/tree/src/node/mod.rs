@@ -4,13 +4,13 @@ mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{IToken, INode};
+pub use self::immutable::{IToken, INode, Event};
 
 
 pub struct File {
     imp: imp::FileImpl,
     tokens: Vec<IToken>,
-    inode: INode,
+    events: Vec<Event>,
 }
 
 impl File {
@@ -19,12 +19,13 @@ impl File {
         text: T,
         metrics: Metrics,
         tokens: Vec<IToken>,
+        events: Vec<Event>,
         node: INode
     ) -> File {
         File {
             imp: imp::new_file(lang, text.into(), metrics, &node),
             tokens,
-            inode: node,
+            events,
         }
     }
 
@@ -46,10 +47,6 @@ impl File {
 
     pub fn tokens(&self) -> &[IToken] {
         &self.tokens
-    }
-
-    pub fn inode(&self) -> INode {
-        self.inode.clone()
     }
 
     pub fn edit(&self, edit: TextEdit) -> File {

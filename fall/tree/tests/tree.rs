@@ -2,7 +2,7 @@ extern crate fall_tree;
 extern crate quickcheck;
 
 use fall_tree::{Text, TextBuf, tu, ArbitraryEdit};
-use fall_tree::{Language, LanguageImpl, IToken, INode, Metrics, NodeType, NodeTypeInfo, ERROR};
+use fall_tree::{Language, LanguageImpl, IToken, INode, Metrics, NodeType, NodeTypeInfo, ERROR, Event};
 
 
 #[test]
@@ -71,12 +71,12 @@ impl LanguageImpl for TestLang {
         &TestLang
     }
 
-    fn parse(&self, _: Text, tokens: &[IToken], _: &Metrics) -> INode {
+    fn parse(&self, _: Text, tokens: &[IToken], _: &Metrics) -> (Vec<Event>, INode) {
         let mut result = INode::new(TEST_FILE);
         for &t in tokens {
             result.push_child(INode::new_leaf(t.ty, t.len));
         }
-        result
+        (Vec::new(), result)
     }
 
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

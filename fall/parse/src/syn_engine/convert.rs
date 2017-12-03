@@ -1,5 +1,4 @@
-use super::Event;
-use fall_tree::{NodeType, IToken, INode, Text, TextRange, tu};
+use fall_tree::{NodeType, IToken, INode, Text, TextRange, Event, tu};
 
 pub fn convert(
     text: Text,
@@ -88,8 +87,6 @@ impl<'a> Convertor<'a> {
         tokens: &[(IToken, Text)],
         events: &[Event],
     ) -> Conversion {
-
-
         let leading_ws = self.collect_tokens_for_binder(tokens);
         let left_wd = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
         let tokens = &tokens[left_wd..];
@@ -168,6 +165,8 @@ impl<'a> Convertor<'a> {
                     inode.push_child(token);
                     tokens = &tokens[n_raw_tokens..];
                 }
+
+                Event::Cached { .. } => {}
             }
         }
     }

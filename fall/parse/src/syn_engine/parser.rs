@@ -1,5 +1,5 @@
-use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, tu};
-use syn_engine::{Event, Grammar};
+use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, Event, tu};
+use syn_engine::Grammar;
 use {NodeTypeRef, ExprRef};
 
 pub(crate) struct Parser<'g> {
@@ -91,6 +91,22 @@ impl<'g> Parser<'g> {
 
     pub fn finish(&mut self) {
         self.event(Event::End)
+    }
+
+    pub fn start_cached(&mut self, expr: ExprRef) -> Mark {
+        let mark = self.mark();
+        self.event(Event::Cached { key: expr.0, n_events: 0});
+        mark
+    }
+
+    pub fn finish_cached(&mut self, mark: Mark) {
+        if !self.predicate_mode {
+            let len = self.events.len() as u32 - mark.0;
+            match self.events[mark.0 as usize] {
+                Event::Cached { ref mut n_events, .. } => *n_events = len,
+                _ => unreachable!(),
+            }
+        }
     }
 
     pub fn reopen(&mut self) {

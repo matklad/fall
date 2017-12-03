@@ -1,9 +1,9 @@
-use fall_tree::{Language, Text, IToken};
+use fall_tree::{Language, Text, IToken, Event};
 use syn_engine::parser::{Parser, Pos};
 
 use ::{NodeTypeRef, Context, Arg, ExprRef, Expr};
 
-use super::{Event, Grammar};
+use super::Grammar;
 use super::pratt::parse_pratt;
 
 pub fn parse(
@@ -114,6 +114,9 @@ fn parse_expr_inner(p: &mut Parser, expr: ExprRef, tokens: Pos) -> Option<Pos> {
 
         Expr::Inject(prefix, body) =>
             parse_inject(p, tokens, prefix, body),
+
+        Expr::Cached(body) =>
+            parse_cached(p, body, tokens),
     }
 }
 
@@ -361,5 +364,13 @@ fn parse_inject<'g>(
     if after_prefix != pos {
         p.forward_parent(prefix_mark, body_mark);
     }
+    Some(result)
+}
+
+fn parse_cached<'g>(p: &mut Parser<'g>, expr: ExprRef, pos: Pos) -> Option<Pos> {
+    let mark = p.start_cached(expr);
+    let result = parse_expr(p, expr, pos)?;
+    p.finish_cached(mark);
+
     Some(result)
 }

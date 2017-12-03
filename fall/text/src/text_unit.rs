@@ -2,7 +2,7 @@ use std::ops;
 use std::fmt;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TextUnit(pub (super) u32);
 
 impl TextUnit {

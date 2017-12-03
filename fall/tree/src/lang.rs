@@ -1,15 +1,10 @@
 use std::cmp::Ordering;
 use std::sync::Arc;
-use {Text, TextBuf, TextSuffix, TextEdit, TextEditOp, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, tu};
+use {Text, TextBuf, TextSuffix, TextEdit, TextEditOp, File, NodeType, NodeTypeInfo, IToken, INode, Metrics, Event, tu};
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn lexer(&self) -> &Lexer {
-        unimplemented!()
-    }
-    fn tokenize<'t>(&'t self, text: Text<'t>) -> Box<Iterator<Item=IToken> + 't> {
-        Box::new(self.lexer().collect_tokens(text).into_iter())
-    }
-    fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode;
+    fn lexer(&self) -> &Lexer;
+    fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> (Vec<Event>, INode);
     fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo;
 }
 
@@ -128,8 +123,8 @@ impl Language {
             metrics.record("relexed region", text.len().utf8_len() as u64, "");
             self.imp.lexer().collect_tokens(text.as_slice())
         });
-        let inode = self.imp.parse(text.as_slice(), &tokens, &metrics);
-        File::new(self.clone(), text, metrics, tokens, inode)
+        let (events, inode) = self.imp.parse(text.as_slice(), &tokens, &metrics);
+        File::new(self.clone(), text, metrics, tokens, events, inode)
     }
 
     pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
@@ -143,8 +138,8 @@ impl Language {
             &metrics
         ));
 
-        let inode = self.imp.parse(new_text.as_slice(), &tokens, &metrics);
-        File::new(self.clone(), new_text, metrics, tokens, inode)
+        let (events, inode) = self.imp.parse(new_text.as_slice(), &tokens, &metrics);
+        File::new(self.clone(), new_text, metrics, tokens, events, inode)
     }
 
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

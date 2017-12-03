@@ -1,5 +1,5 @@
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, IToken, INode};
+use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, IToken, INode, Event};
 pub use self::fall_tree::ERROR;
 
 pub const WHITESPACE: NodeType = NodeType(100);
@@ -61,7 +61,7 @@ pub fn language() -> &'static Language {
                     &self.lexer
                 }
 
-                fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> INode {
+                fn parse(&self, text: Text, tokens: &[IToken], metrics: &Metrics) -> (Vec<Event>, INode) {
                     self.parser_definition.parse(text, tokens, &LANG, metrics)
                 }
 
