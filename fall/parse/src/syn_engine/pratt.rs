@@ -1,5 +1,6 @@
 use PrattTable;
-use super::{Parser, parse_or, parse_expr, Pos};
+use syn_engine::parser::{Parser, Pos};
+use super::expr::{parse_or, parse_expr};
 
 pub(super) fn parse_pratt<'g>(
     p: &mut Parser<'g>,

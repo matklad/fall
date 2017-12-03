@@ -14,8 +14,10 @@ pub struct Grammar<'g> {
     pub start_rule: ExprRef,
 }
 
-mod parse;
-pub use self::parse::parse;
+mod parser;
+mod expr;
+mod pratt;
+pub use self::expr::parse;
 mod convert;
 pub use self::convert::convert;
 
