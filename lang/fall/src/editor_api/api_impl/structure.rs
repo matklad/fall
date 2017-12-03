@@ -1,5 +1,5 @@
 use fall_tree::{File, AstNode};
-use fall_tree::visitor::{Visitor, BuildVisitor, process_subtree_bottom_up};
+use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 
 use ::*;
 use editor_api::FileStructureNode;
@@ -8,7 +8,7 @@ use editor_api::FileStructureNode;
 pub fn structure(file: &File) -> Vec<FileStructureNode> {
     process_subtree_bottom_up(
         file.root(),
-        Visitor(Vec::new())
+        visitor(Vec::new())
             .visit::<SynRule, _>(|nodes, rule| {
                 if let Some(name) = rule.name() {
                     nodes.push(FileStructureNode {

@@ -1,113 +1,121 @@
 use std::marker::PhantomData;
 use {Node, NodeType, AstNode};
 
+pub fn visitor<'f, C>(ctx: C) -> VisitorBuilder<'f, C, EmptyVisitor<C>> {
+    VisitorBuilder { ctx, visitor: EmptyVisitor(PhantomData), n: PhantomData }
+}
 
-pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, mut visitor: V) -> C
-    where V: NodeVisitor<'f, C>
+pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, visitor: VisitorBuilder<'f, C, V>) -> C
+    where V: Visit<'f, Context=C>
 {
-    go(&mut visitor, node);
-    return visitor.into_context();
+    let VisitorBuilder { mut ctx, mut visitor, .. } = visitor;
+    go(&mut ctx, &mut visitor, node);
+    return ctx;
 
-    fn go<'f, C, V: NodeVisitor<'f, C>>(v: &mut V, node: Node<'f>) {
+    fn go<'f, C, V: Visit<'f, Context=C>>(ctx: &mut C, v: &mut V, node: Node<'f>) {
         for child in node.children() {
-            go(v, child)
+            go(ctx, v, child)
         }
-        v.do_visit(node);
+        v.visit(ctx, node);
     }
 }
 
-pub fn process_node<'f, V, C>(node: Node<'f>, mut visitor: V) -> C
-    where V: NodeVisitor<'f, C>
+pub fn process_node<'f, V, C>(node: Node<'f>, visitor: VisitorBuilder<'f, C, V>) -> C
+    where V: Visit<'f, Context=C>
 {
-    visitor.do_visit(node);
-    visitor.into_context()
+    let VisitorBuilder { mut ctx, mut visitor, .. } = visitor;
+    visitor.visit(&mut ctx, node);
+    ctx
 }
 
-pub trait BuildVisitor<'f, C> {
-    fn visit<T, F>(self, f: F) -> AstVisitor<Self, T, F>
-        where Self: Sized, T: AstNode<'f>, F: FnMut(&mut C, T) {
-        AstVisitor { visitor: self, f, t: PhantomData }
+pub struct VisitorBuilder<'f, C, V> {
+    ctx: C,
+    visitor: V,
+    n: PhantomData<Node<'f>>,
+}
+
+impl<'f, C, V> VisitorBuilder<'f, C, V> {
+    pub fn visit<T, F>(self, f: F) -> VisitorBuilder<'f, C, AstVisitor<V, F, T>>
+        where V: Visit<'f>,
+              F: FnMut(&mut V::Context, T),
+    {
+        VisitorBuilder {
+            ctx: self.ctx,
+            visitor: AstVisitor { visitor: self.visitor, f, p: PhantomData },
+            n: PhantomData,
+        }
     }
 
-    fn visit_nodes<'n, F>(self, nodes: &'n [NodeType], f: F) -> NodesVisitor<'n, Self, F>
-        where Self: Sized, F: FnMut(&mut C, Node<'f>) {
-        NodesVisitor { visitor: self, f, nodes }
+    pub fn visit_nodes<'n, F>(self, nodes: &'n [NodeType], f: F) -> VisitorBuilder<'f, C, TyVisitor<'n, V, F>>
+        where V: Visit<'f>,
+              F: FnMut(&mut V::Context, Node<'f>),
+
+    {
+        VisitorBuilder {
+            ctx: self.ctx,
+            visitor: TyVisitor { visitor: self.visitor, f, nodes },
+            n: PhantomData,
+        }
     }
 }
 
-impl<'f, C, T: NodeVisitor<'f, C>> BuildVisitor<'f, C> for T {}
 
+pub trait Visit<'f> {
+    type Context;
 
-pub trait NodeVisitor<'f, C> {
-    fn context(&mut self) -> &mut C;
-    fn do_visit(&mut self, node: Node<'f>);
-    fn into_context(self) -> C;
+    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>);
 }
 
-pub struct Visitor<C>(pub C);
 
-impl<'f, C> NodeVisitor<'f, C> for Visitor<C> {
-    fn context(&mut self) -> &mut C {
-        &mut self.0
-    }
+pub struct EmptyVisitor<C>(PhantomData<C>);
 
-    fn into_context(self) -> C {
-        self.0
-    }
+impl<'f, C> Visit<'f> for EmptyVisitor<C> {
+    type Context = C;
 
-    fn do_visit(&mut self, _node: Node<'f>) {}
+    fn visit(&mut self, _ctx: &mut C, _node: Node<'f>) {}
 }
 
-pub struct AstVisitor<V, T, F> {
+
+pub struct AstVisitor<V, F, T> {
     visitor: V,
     f: F,
-    t: PhantomData<*const T>
+    p: PhantomData<*const T>
 }
 
-impl<'f, C, V, T, F> NodeVisitor<'f, C> for AstVisitor<V, T, F>
-    where V: NodeVisitor<'f, C>, T: AstNode<'f>, F: FnMut(&mut C, T)
+impl<'f, V, F, T> Visit<'f> for AstVisitor<V, F, T>
+    where V: Visit<'f>,
+          T: AstNode<'f>,
+          F: FnMut(&mut V::Context, T),
 {
-    fn context(&mut self) -> &mut C {
-        self.visitor.context()
-    }
+    type Context = V::Context;
 
-    fn into_context(self) -> C {
-        self.visitor.into_context()
-    }
-
-    fn do_visit(&mut self, node: Node<'f>) {
-        self.visitor.do_visit(node);
+    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>) {
+        self.visitor.visit(ctx, node);
         if let Some(a) = T::wrap(node) {
             let f = &mut self.f;
-            let c = self.visitor.context();
-            f(c, a)
+            f(ctx, a)
         }
     }
 }
 
-pub struct NodesVisitor<'n, V, F> {
+
+pub struct TyVisitor<'n, V, F> {
     visitor: V,
     f: F,
     nodes: &'n [NodeType]
 }
 
-impl<'f, 'n, C, V, F> NodeVisitor<'f, C> for NodesVisitor<'n, V, F>
-    where V: NodeVisitor<'f, C>, F: FnMut(&mut C, Node<'f>)
+impl<'n, 'f, V, F> Visit<'f> for TyVisitor<'n, V, F>
+    where V: Visit<'f>,
+          F: FnMut(&mut V::Context, Node<'f>),
 {
-    fn context(&mut self) -> &mut C {
-        self.visitor.context()
-    }
+    type Context = V::Context;
 
-    fn into_context(self) -> C {
-        self.visitor.into_context()
-    }
-
-    fn do_visit(&mut self, node: Node<'f>) {
-        self.visitor.do_visit(node);
+    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>) {
+        self.visitor.visit(ctx, node);
         if self.nodes.contains(&node.ty()) {
             let f = &mut self.f;
-            let c = self.visitor.context();
-            f(c, node)
+            f(ctx, node)
         }
     }
 }

@@ -1,6 +1,6 @@
 use fall_tree::{TextRange, Node, NodeType, tu, AstNode};
 use fall_tree::search::child_of_type;
-use fall_tree::visitor::{Visitor, BuildVisitor, process_subtree_bottom_up};
+use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 
 use ::*;
 use analysis::{CallKind, RefKind};
@@ -10,7 +10,7 @@ type Spans = Vec<(TextRange, &'static str)>;
 pub(crate) fn highlight(analysis: &Analysis) -> Spans {
     process_subtree_bottom_up(
         analysis.ast().node(),
-        Visitor(Vec::new())
+        visitor(Vec::new())
             .visit_nodes(&[EOL_COMMENT], |spans, node| {
                 colorize_node(node, "comment", spans)
             })

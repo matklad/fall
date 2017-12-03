@@ -1,5 +1,5 @@
 use fall_tree::{Node, TextUnit, TextRange, AstNode};
-use fall_tree::visitor::{Visitor, BuildVisitor, process_node};
+use fall_tree::visitor::{visitor, process_node};
 use fall_tree::search::ast;
 use ::*;
 use analysis::CallKind;
@@ -29,7 +29,7 @@ pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
 fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference<'f>> {
     process_node(
         node,
-        Visitor(None)
+        visitor(None)
             .visit::<RefExpr, _>(|result, ref_expr| {
                 *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
                     let ref_ = RefExpr::wrap(node).unwrap();
@@ -81,7 +81,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
 fn def_provider<'f>(node: Node<'f>) -> Option<Declaration<'f>> {
     process_node(
         node,
-        Visitor(None)
+        visitor(None)
             .visit::<SynRule, _>(|result, node| *result = Some(node.into()))
             .visit::<LexRule, _>(|result, node| *result = Some(node.into()))
             .visit::<Parameter, _>(|result, node| *result = Some(node.into()))

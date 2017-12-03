@@ -1,5 +1,5 @@
 use {Node, NodeType, TextUnit, TextRange};
-use ::visitor::{Visitor, BuildVisitor, process_subtree_bottom_up};
+use ::visitor::{visitor, process_subtree_bottom_up};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
@@ -16,7 +16,7 @@ pub fn subtree<'f>(node: Node<'f>) -> Box<Iterator<Item=Node<'f>> + 'f> {
 pub fn descendants_of_type<'f>(node: Node<'f>, ty: NodeType) -> Vec<Node<'f>> {
     process_subtree_bottom_up(
         node,
-        Visitor(Vec::new())
+        visitor(Vec::new())
             .visit_nodes(&[ty], |nodes, node| nodes.push(node))
     )
 }
@@ -134,7 +134,7 @@ pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
 
 pub mod ast {
     use {Node, AstNode};
-    use visitor::{BuildVisitor, Visitor, process_subtree_bottom_up};
+    use visitor::{visitor, process_subtree_bottom_up};
     use super::ancestors;
 
     pub fn ancestor<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
@@ -150,7 +150,7 @@ pub mod ast {
     pub fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {
         process_subtree_bottom_up(
             node,
-            Visitor(Vec::new())
+            visitor(Vec::new())
                 .visit::<N, _>(|acc, node| acc.push(node))
         )
     }
