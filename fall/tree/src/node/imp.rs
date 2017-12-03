@@ -1,7 +1,8 @@
 use std::ops::Index;
 
-use {TextBuf, Text, TextRange, NodeType, TextUnit, Language, tu, Metrics, INode};
+use {TextBuf, Text, TextRange, NodeType, Language, tu, Metrics, INode};
 use super::Node;
+use node::tree_builder::{TreeBuilder, NodeData, NodeId};
 
 pub struct FileImpl {
     pub lang: Language,
@@ -95,9 +96,6 @@ impl<'f> Iterator for NodeChildren<'f> {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct NodeId(u32);
-
 impl Index<NodeId> for FileImpl {
     type Output = NodeData;
     fn index(&self, index: NodeId) -> &Self::Output {
@@ -105,19 +103,11 @@ impl Index<NodeId> for FileImpl {
     }
 }
 
-pub struct NodeData {
-    ty: NodeType,
-    parent: Option<NodeId>,
-    children: Vec<NodeId>,
-    range: TextRange,
-}
-
 
 pub fn new_file(lang: Language, text: TextBuf, metrics: Metrics, node: &INode) -> FileImpl {
-    let mut nodes = Vec::new();
-
+    let mut builder = TreeBuilder::new();
     metrics.measure_time("parent links", || {
-        go(tu(0), node, &mut nodes);
+        go(node, &mut builder);
     });
 
     return FileImpl {
@@ -125,24 +115,18 @@ pub fn new_file(lang: Language, text: TextBuf, metrics: Metrics, node: &INode) -
         metrics,
         text,
         root: NodeId(0),
-        nodes,
+        nodes: builder.finish(),
     };
 
-    fn go(range_start: TextUnit, node: &INode, nodes: &mut Vec<NodeData>) {
-        let my_idx = nodes.len();
-        nodes.push(NodeData {
-            ty: node.ty(),
-            parent: None,
-            children: Vec::new(),
-            range: TextRange::from_to(range_start, range_start + node.len()),
-        });
-        let mut range_start = range_start;
+    fn go(node: &INode, builder: &mut TreeBuilder) {
+        if node.children().is_empty() && node.len() > tu(0) {
+            builder.leaf(node.ty(), node.len());
+            return;
+        };
+        builder.start_internal(node.ty());
         for child in node.children() {
-            let child_idx = nodes.len();
-            nodes[my_idx].children.push(NodeId(child_idx as u32));
-            go(range_start, child, nodes);
-            nodes[child_idx].parent = Some(NodeId(my_idx as u32));
-            range_start += child.len();
+            go(child, builder);
         }
+        builder.finish_internal();
     }
 }

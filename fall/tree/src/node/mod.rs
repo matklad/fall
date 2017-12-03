@@ -4,6 +4,7 @@ use {TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
 
 mod imp;
 mod immutable;
+mod tree_builder;
 
 pub use self::imp::NodeChildren;
 pub use self::immutable::INode;
