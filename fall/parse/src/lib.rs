@@ -9,68 +9,40 @@ use std::any::Any;
 use std::collections::HashMap;
 
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, IToken, INode, Metrics, TextEdit, TextUnit};
+use fall_tree::{Text, Language, NodeType, INode, Metrics, TextEdit, TextUnit};
 
 mod lex_engine;
-pub use lex_engine::RegexLexer;
+use lex_engine::Token;
 
 mod syn_engine;
+use syn_engine::Event;
 
-struct IncrementalData {
-    tokens: Vec<IToken>,
-    events: Vec<Event>,
+pub struct RegexLexer {
+    rules: Vec<LexRule>,
 }
 
-pub fn parse(
-    lang: &Language,
-    lexer_def: &RegexLexer,
-    parser_def: &ParserDefinition,
-    text: Text,
-    metrics: &Metrics,
-) -> (Option<Box<Any + Sync + Send>>, INode) {
-    let tokens: Vec<IToken> = metrics.measure_time("lexing", || {
-        lex_engine::lex(lexer_def, text)
-    });
-    metrics.record("relexed region", text.len().utf8_len() as u64, "");
-
-    let (events, inode) = parser_def.parse(None, text, &tokens, lang, metrics);
-    let incremental_data = IncrementalData { tokens, events };
-    (Some(Box::new(incremental_data)), inode)
+impl RegexLexer {
+    pub fn new(rules: Vec<LexRule>) -> RegexLexer {
+        RegexLexer { rules }
+    }
 }
 
-pub fn reparse(
-    lang: &Language,
-    lexer_def: &RegexLexer,
-    parser_def: &ParserDefinition,
-    incremental_data: &Any,
-    edit: &TextEdit,
-    new_text: Text,
-    metrics: &Metrics,
-) -> (Option<Box<Any + Sync + Send>>, INode) {
-    let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
-    let (tokens, relexed_region) = metrics.measure_time("lexing", || {
-        lex_engine::relex(lexer_def, &incremental_data.tokens, edit, new_text)
-    });
-    metrics.record("relexed region", relexed_region as u64, "");
-
-    let salvaged = syn_engine::salvage_segments(
-        &incremental_data.events,
-        &incremental_data.tokens,
-        &|t| lang.node_type_info(t.ty).whitespace_like,
-        edit
-    );
-    let prev = Some((salvaged, incremental_data.events.as_ref()));
-    let (events, inode) = parser_def.parse(prev, new_text, &tokens, lang, metrics);
-    let incremental_data = IncrementalData { tokens, events };
-    (Some(Box::new(incremental_data)), inode)
+/// Lexical (aka tokenizer) rule:
+/// either a regular expression, or a user-supplied
+/// custom Rust function
+pub struct LexRule {
+    pub ty: NodeType,
+    pub re: Regex,
+    pub f: Option<CustomLexRule>,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub(crate) enum Event {
-    Start { ty: NodeType, forward_parent: Option<u32> },
-    Token { ty: NodeType, n_raw_tokens: u16 },
-    End,
-    Cached { key: u32, n_events: u32 },
+pub type CustomLexRule = fn(&str) -> Option<usize>;
+
+impl LexRule {
+    pub fn new(ty: NodeType, re: &str, f: Option<CustomLexRule>) -> LexRule {
+        let re = Regex::new(&format!("^({})", re)).unwrap();
+        LexRule { ty, re, f }
+    }
 }
 
 
@@ -99,66 +71,6 @@ impl Default for ParserDefinition {
     }
 }
 
-impl ParserDefinition {
-    fn parse(&self,
-             prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
-             text: Text,
-             tokens: &[IToken],
-             lang: &Language,
-             metrics: &Metrics
-    ) -> (Vec<Event>, INode) {
-        let g = syn_engine::Grammar {
-            node_types: &self.node_types,
-            rules: &self.syntactical_rules,
-            start_rule: ExprRef(0),
-        };
-        let file_ty = match self.syntactical_rules[0] {
-            Expr::Pub { ty, .. } => self.node_types[ty.0 as usize],
-            _ => unreachable!()
-        };
-
-        let (events, ticks) = metrics.measure_time("parsing", || {
-            syn_engine::parse(prev, g, lang, text, &tokens)
-        });
-        metrics.record("parsing ticks", ticks, "");
-
-        metrics.measure_time("inode construction", || {
-            let inode = syn_engine::convert(
-                text,
-                tokens,
-                &events,
-                &|ty| lang.node_type_info(ty).whitespace_like,
-                &|ty, spaces, leading| {
-                    if ty == file_ty {
-                        return spaces.len();
-                    }
-                    let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
-                    let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
-                    (self.whitespace_binder)(ty, spaces, leading)
-                }
-            );
-            (events, inode)
-        })
-    }
-}
-
-/// Lexical (aka tokenizer) rule:
-/// either a regular expression, or a user-supplied
-/// custom Rust function
-pub struct LexRule {
-    pub ty: NodeType,
-    pub re: Regex,
-    pub f: Option<CustomLexRule>,
-}
-
-pub type CustomLexRule = fn(&str) -> Option<usize>;
-
-impl LexRule {
-    pub fn new(ty: NodeType, re: &str, f: Option<CustomLexRule>) -> LexRule {
-        let re = Regex::new(&format!("^({})", re)).unwrap();
-        LexRule { ty, re, f }
-    }
-}
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct NodeTypeRef(pub u32);
@@ -234,6 +146,101 @@ pub struct Infix {
     pub op: ExprRef,
     pub priority: u32,
     pub has_rhs: bool,
+}
+
+
+struct IncrementalData {
+    tokens: Vec<Token>,
+    events: Vec<Event>,
+}
+
+pub fn parse(
+    lang: &Language,
+    lexer_def: &RegexLexer,
+    parser_def: &ParserDefinition,
+    text: Text,
+    metrics: &Metrics,
+) -> (Option<Box<Any + Sync + Send>>, INode) {
+    let tokens: Vec<Token> = metrics.measure_time("lexing", || {
+        lex_engine::lex(lexer_def, text)
+    });
+    metrics.record("relexed region", text.len().utf8_len() as u64, "");
+
+    let (events, inode) = parser_def.parse(None, text, &tokens, lang, metrics);
+    let incremental_data = IncrementalData { tokens, events };
+    (Some(Box::new(incremental_data)), inode)
+}
+
+pub fn reparse(
+    lang: &Language,
+    lexer_def: &RegexLexer,
+    parser_def: &ParserDefinition,
+    incremental_data: &Any,
+    edit: &TextEdit,
+    new_text: Text,
+    metrics: &Metrics,
+) -> (Option<Box<Any + Sync + Send>>, INode) {
+    let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
+    let (tokens, relexed_region) = metrics.measure_time("lexing", || {
+        lex_engine::relex(lexer_def, &incremental_data.tokens, edit, new_text)
+    });
+    metrics.record("relexed region", relexed_region as u64, "");
+
+    let salvaged = syn_engine::salvage_segments(
+        &incremental_data.events,
+        &incremental_data.tokens,
+        &|t| lang.node_type_info(t.ty).whitespace_like,
+        edit
+    );
+    let prev = Some((salvaged, incremental_data.events.as_ref()));
+    let (events, inode) = parser_def.parse(prev, new_text, &tokens, lang, metrics);
+    let incremental_data = IncrementalData { tokens, events };
+    (Some(Box::new(incremental_data)), inode)
+}
+
+
+impl ParserDefinition {
+    fn parse(
+        &self,
+        prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
+        text: Text,
+        tokens: &[Token],
+        lang: &Language,
+        metrics: &Metrics
+    ) -> (Vec<Event>, INode) {
+        let g = syn_engine::Grammar {
+            node_types: &self.node_types,
+            rules: &self.syntactical_rules,
+            start_rule: ExprRef(0),
+        };
+        let file_ty = match self.syntactical_rules[0] {
+            Expr::Pub { ty, .. } => self.node_types[ty.0 as usize],
+            _ => unreachable!()
+        };
+
+        let (events, ticks) = metrics.measure_time("parsing", || {
+            syn_engine::parse(prev, g, lang, text, &tokens)
+        });
+        metrics.record("parsing ticks", ticks, "");
+
+        metrics.measure_time("inode construction", || {
+            let inode = syn_engine::convert(
+                text,
+                tokens,
+                &events,
+                &|ty| lang.node_type_info(ty).whitespace_like,
+                &|ty, spaces, leading| {
+                    if ty == file_ty {
+                        return spaces.len();
+                    }
+                    let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
+                    let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
+                    (self.whitespace_binder)(ty, spaces, leading)
+                }
+            );
+            (events, inode)
+        })
+    }
 }
 
 pub mod runtime {

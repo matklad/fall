@@ -1,20 +1,10 @@
-use fall_tree::{Text, ERROR, tu, IToken};
+use fall_tree::{Text, ERROR, tu};
 
-use LexRule;
-use super::Lexer;
-
-pub struct RegexLexer {
-    rules: Vec<LexRule>,
-}
-
-impl RegexLexer {
-    pub fn new(rules: Vec<LexRule>) -> RegexLexer {
-        RegexLexer { rules }
-    }
-}
+use RegexLexer;
+use lex_engine::{Lexer, Token};
 
 impl Lexer for RegexLexer {
-    fn next_token(&self, text: Text) -> IToken {
+    fn next_token(&self, text: Text) -> Token {
         let text = text.to_cow();
         let text = text.as_ref();
         let longest_match = self.rules.iter().rev()
@@ -26,17 +16,17 @@ impl Lexer for RegexLexer {
         let first_char_len = tu(text.chars().next().unwrap().len_utf8() as u32);
         let (len, (ty, custom_rule)) = match longest_match {
             Some(m) => m,
-            None => return IToken { ty: ERROR, len: first_char_len },
+            None => return Token { ty: ERROR, len: first_char_len },
         };
 
         assert!(len > tu(0), "Empty Token {:?}", ty);
 
         match custom_rule {
-            None => IToken { ty, len },
+            None => Token { ty, len },
             Some(f) => if let Some(len) = f(text) {
-                IToken { ty, len: tu(len as u32) }
+                Token { ty, len: tu(len as u32) }
             } else {
-                IToken { ty: ERROR, len: first_char_len }
+                Token { ty: ERROR, len: first_char_len }
             }
         }
     }
@@ -45,6 +35,8 @@ impl Lexer for RegexLexer {
 #[test]
 fn tokenize_longest_first_wins() {
     use fall_tree::NodeType;
+    use LexRule;
+
     let lexer = RegexLexer::new(vec![
         LexRule::new(NodeType(1), r"\s+", None),
         LexRule::new(NodeType(10), "foo", None),

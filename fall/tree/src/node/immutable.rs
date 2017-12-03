@@ -2,12 +2,6 @@ use std::sync::Arc;
 
 use ::{NodeType, TextUnit, tu};
 
-#[derive(Debug, Copy, Clone)]
-pub struct IToken {
-    pub ty: NodeType,
-    pub len: TextUnit,
-}
-
 #[derive(Clone, Debug)]
 pub struct INode {
     inner: Arc<Inner>

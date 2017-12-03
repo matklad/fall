@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 
-use fall_tree::{TextUnit, IToken, Text, TextSuffix, NodeType, tu};
-use syn_engine::Grammar;
-use {NodeTypeRef, ExprRef, Event};
+use fall_tree::{TextUnit, Text, TextSuffix, NodeType, tu};
+use lex_engine::Token;
+use syn_engine::{Grammar, Event};
+use {NodeTypeRef, ExprRef};
 
 pub(crate) struct Parser<'g> {
     cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
     pub grammar: &'g Grammar<'g>,
     text: Text<'g>,
-    tokens: &'g [IToken],
+    tokens: &'g [Token],
     non_ws_indexes: Vec<(TextUnit, usize)>,
 
     ticks: u64,
@@ -39,9 +40,9 @@ impl<'g> Parser<'g> {
     pub fn new(
         cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
         grammar: &'g Grammar<'g>,
-        is_ws: &Fn(IToken) -> bool,
+        is_ws: &Fn(Token) -> bool,
         text: Text<'g>,
-        tokens: &'g [IToken],
+        tokens: &'g [Token],
     ) -> (Parser<'g>, Pos) {
         let non_ws_indexes = {
             let mut indexes = Vec::new();
@@ -228,7 +229,7 @@ impl<'g> Parser<'g> {
 }
 
 impl<'g> ::std::ops::Index<Pos> for Parser<'g> {
-    type Output = IToken;
+    type Output = Token;
 
     fn index(&self, index: Pos) -> &Self::Output {
         &self.tokens[self.non_ws_indexes[index.0 as usize].1]

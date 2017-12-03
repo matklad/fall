@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
-use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, IToken, tu, TextRange};
-use ::{Expr, ExprRef, Event};
+use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, tu, TextRange};
+use lex_engine::Token;
+use ::{Expr, ExprRef};
 
 pub struct Grammar<'g> {
     pub node_types: &'g [NodeType],
@@ -27,10 +28,19 @@ mod convert;
 
 pub(crate) use self::convert::convert;
 
+
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum Event {
+    Start { ty: NodeType, forward_parent: Option<u32> },
+    Token { ty: NodeType, n_raw_tokens: u16 },
+    End,
+    Cached { key: u32, n_events: u32 },
+}
+
 pub(crate) fn salvage_segments(
     old_events: &[Event],
-    old_tokens: &[IToken],
-    is_ws: &Fn(&IToken) -> bool,
+    old_tokens: &[Token],
+    is_ws: &Fn(&Token) -> bool,
     edit: &TextEdit,
 ) -> HashMap<(TextUnit, ExprRef), (u32, u32, u32)> {
     let mut result = HashMap::new();

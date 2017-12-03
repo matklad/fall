@@ -6,7 +6,7 @@ mod imp;
 mod immutable;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::{IToken, INode};
+pub use self::immutable::INode;
 
 
 pub struct File {

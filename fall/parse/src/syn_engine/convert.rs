@@ -1,9 +1,10 @@
-use fall_tree::{NodeType, IToken, INode, Text, TextRange, tu};
-use Event;
+use fall_tree::{NodeType, INode, Text, TextRange, tu};
+use lex_engine::Token;
+use syn_engine::Event;
 
 pub(crate) fn convert(
     text: Text,
-    tokens: &[IToken],
+    tokens: &[Token],
     events: &[Event],
     is_whitespace: &Fn(NodeType) -> bool,
     whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
@@ -85,7 +86,7 @@ impl<'a> Convertor<'a> {
     fn go(
         &self,
         ty: NodeType,
-        tokens: &[(IToken, Text)],
+        tokens: &[(Token, Text)],
         events: &[Event],
     ) -> Conversion {
         let leading_ws = self.collect_tokens_for_binder(tokens);
@@ -110,7 +111,7 @@ impl<'a> Convertor<'a> {
         };
     }
 
-    fn collect_tokens_for_binder<'t>(&self, tokens: &[(IToken, Text<'t>)]) -> Vec<(NodeType, Text<'t>)> {
+    fn collect_tokens_for_binder<'t>(&self, tokens: &[(Token, Text<'t>)]) -> Vec<(NodeType, Text<'t>)> {
         tokens.iter()
             .take_while(|&&(t, _)| (self.is_whitespace)(t.ty))
             .map(|&(t, text)| (t.ty, text))
@@ -120,7 +121,7 @@ impl<'a> Convertor<'a> {
     fn fill(
         &self,
         inode: &mut INode,
-        tokens: &[(IToken, Text)],
+        tokens: &[(Token, Text)],
         events: &[Event],
     ) -> (usize, usize) {
         let mut tokens = tokens;

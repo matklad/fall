@@ -1,21 +1,25 @@
 use std::cmp::Ordering;
-use fall_tree::{Text, tu, IToken, TextSuffix, TextEditOp, TextEdit};
+use fall_tree::{Text, tu, TextSuffix, TextEditOp, TextEdit, TextUnit, NodeType};
 
 mod regex;
 
-pub use self::regex::RegexLexer;
+#[derive(Debug, Copy, Clone)]
+pub struct Token {
+    pub ty: NodeType,
+    pub len: TextUnit,
+}
 
 pub trait Lexer {
-    fn next_token(&self, text: Text) -> IToken;
+    fn next_token(&self, text: Text) -> Token;
 
-    fn step(&self, text: &mut Text) -> IToken {
+    fn step(&self, text: &mut Text) -> Token {
         let t = self.next_token(*text);
         *text = text.slice(TextSuffix::from(t.len));
         t
     }
 }
 
-pub fn lex<L: Lexer>(lexer: &L, text: Text) -> Vec<IToken> {
+pub fn lex<L: Lexer>(lexer: &L, text: Text) -> Vec<Token> {
     let mut result = Vec::new();
     let mut text = text;
     while !text.is_empty() {
@@ -27,15 +31,15 @@ pub fn lex<L: Lexer>(lexer: &L, text: Text) -> Vec<IToken> {
 
 pub fn relex<L: Lexer>(
     lexer: &L,
-    old_tokens: &[IToken],
+    old_tokens: &[Token],
     edit: &TextEdit,
     new_text: Text
-) -> (Vec<IToken>, usize)
+) -> (Vec<Token>, usize)
 {
     let mut old_tokens = old_tokens.iter().cloned();
     let mut old_len = tu(0);
 
-    let mut new_tokens: Vec<IToken> = Vec::new();
+    let mut new_tokens: Vec<Token> = Vec::new();
     let mut new_len = tu(0);
 
     let mut edit_point = tu(0);

@@ -1,8 +1,10 @@
 use std::collections::HashMap;
-use fall_tree::{Language, Text, IToken, TextUnit};
-use syn_engine::parser::{Parser, Pos};
+use fall_tree::{Language, Text, TextUnit};
 
-use ::{NodeTypeRef, Context, Arg, ExprRef, Expr, Event};
+use {NodeTypeRef, Context, Arg, ExprRef, Expr};
+use lex_engine::Token;
+use syn_engine::parser::{Parser, Pos};
+use syn_engine::Event;
 
 use super::Grammar;
 use super::pratt::parse_pratt;
@@ -12,9 +14,9 @@ pub(crate) fn parse(
     grammar: Grammar,
     lang: &Language,
     text: Text,
-    tokens: &[IToken],
+    tokens: &[Token],
 ) -> (Vec<Event>, u64) {
-    let is_ws = |t: IToken| lang.node_type_info(t.ty).whitespace_like;
+    let is_ws = |t: Token| lang.node_type_info(t.ty).whitespace_like;
     let (mut parser, pos) = Parser::new(prev, &grammar, &is_ws, text, tokens);
 
     let start_rule = parser.grammar.start_rule;
