@@ -1,31 +1,23 @@
 use std::marker::PhantomData;
+use ::search::traversal;
 use {Node, NodeType, AstNode};
 
 pub fn visitor<'f, C>(ctx: C) -> VisitorBuilder<'f, C, EmptyVisitor<C>> {
     VisitorBuilder { ctx, visitor: EmptyVisitor(PhantomData), n: PhantomData }
 }
 
-pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, visitor: VisitorBuilder<'f, C, V>) -> C
+pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, mut visitor: VisitorBuilder<'f, C, V>) -> C
     where V: Visit<'f, Context=C>
 {
-    let VisitorBuilder { mut ctx, mut visitor, .. } = visitor;
-    go(&mut ctx, &mut visitor, node);
-    return ctx;
-
-    fn go<'f, C, V: Visit<'f, Context=C>>(ctx: &mut C, v: &mut V, node: Node<'f>) {
-        for child in node.children() {
-            go(ctx, v, child)
-        }
-        v.visit(ctx, node);
-    }
+    traversal::bottom_up(node, |node| visitor.do_visit(node));
+    return visitor.ctx;
 }
 
-pub fn process_node<'f, V, C>(node: Node<'f>, visitor: VisitorBuilder<'f, C, V>) -> C
+pub fn process_node<'f, V, C>(node: Node<'f>, mut visitor: VisitorBuilder<'f, C, V>) -> C
     where V: Visit<'f, Context=C>
 {
-    let VisitorBuilder { mut ctx, mut visitor, .. } = visitor;
-    visitor.visit(&mut ctx, node);
-    ctx
+    visitor.do_visit(node);
+    visitor.ctx
 }
 
 pub struct VisitorBuilder<'f, C, V> {
@@ -56,6 +48,10 @@ impl<'f, C, V> VisitorBuilder<'f, C, V> {
             visitor: TyVisitor { visitor: self.visitor, f, nodes },
             n: PhantomData,
         }
+    }
+
+    fn do_visit(&mut self, node: Node<'f>) where V: Visit<'f, Context=C> {
+        self.visitor.visit(&mut self.ctx, node)
     }
 }
 

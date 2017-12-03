@@ -156,6 +156,22 @@ pub mod ast {
     }
 }
 
+pub mod traversal {
+    use {Node};
+
+    pub fn bottom_up<'f, F: FnMut(Node<'f>)>(node: Node<'f>, mut f: F)
+    {
+        go(node, &mut f);
+
+        fn go<'f, F: FnMut(Node<'f>)>(node: Node<'f>, f: &mut F) {
+            for child in node.children() {
+                go(child, f)
+            }
+            f(node);
+        }
+    }
+}
+
 fn child_position(child: Node) -> Option<(Node, usize)> {
     child.parent()
         .map(|parent| {
