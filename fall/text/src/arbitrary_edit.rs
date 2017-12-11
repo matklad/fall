@@ -6,19 +6,32 @@ use ::{TextEdit, TextEditOp, Text, TextUnit, TextRange, tu};
 
 #[derive(Clone, Debug)]
 pub struct ArbitraryEdit {
-    inner: TextEdit
+    ops: Vec<Op>
+}
+
+#[derive(Copy, Clone, Debug)]
+enum Op {
+    Copy(TextRange),
+    Insert(TextRange),
 }
 
 impl ArbitraryEdit {
     pub fn into_text_edit(self, text: Text) -> TextEdit {
         let len: TextUnit = text.len();
-        let scale = |x: TextUnit| scale(x, tu(LEN), len);
+        let scale_unit = |x: TextUnit| scale(x, tu(LEN), len);
+        let scale_range = |r: TextRange| {
+            let start = scale_unit(r.start());
+            let end = scale_unit(r.end());
+            TextRange::from_to(start, end)
+        };
         TextEdit {
-            ops: self.inner.ops.into_iter().map(|op| match op {
-                TextEditOp::Copy(range) => TextEditOp::Copy(
-                    TextRange::from_to(scale(range.start()), scale(range.end()))
-                ),
-                insert @ TextEditOp::Insert(_) => insert,
+            ops: self.ops.into_iter().map(|op| match op {
+                Op::Copy(range) => {
+                    TextEditOp::Copy(scale_range(range))
+                },
+                Op::Insert(range) => {
+                    TextEditOp::Insert(text.slice(scale_range(range)).to_text_buf())
+                },
             }).collect()
         }
     }
@@ -34,10 +47,18 @@ impl Arbitrary for ArbitraryEdit {
 
         let mut ops = Vec::new();
         for (b, e) in copy_ends.into_iter().map(tu).tuples() {
-            ops.push(TextEditOp::Copy(TextRange::from_to(b, e)))
+            let op = if u32::rand(g) % 3 == 0 {
+                let start = u32::rand(g) % (LEN + 1);
+                let end = u32::rand(g) % (LEN + 1);
+                let (start, end) = if start < end { (start, end) } else { (end, start) };
+                Op::Insert(TextRange::from_to(tu(start), tu(end)))
+            } else {
+                Op::Copy(TextRange::from_to(b, e))
+            };
+            ops.push(op)
+
         }
-        let inner = TextEdit { ops };
-        ArbitraryEdit { inner }
+        ArbitraryEdit { ops }
     }
 }
 

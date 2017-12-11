@@ -3,7 +3,7 @@ use std::borrow::Cow;
 
 use serde::{Serialize, Serializer};
 
-use ::{TextRange, TextUnit};
+use ::{TextRange, TextUnit, TextBuf};
 use text_slice::TextSlice;
 
 #[derive(Clone, Copy, Eq)]
@@ -75,6 +75,10 @@ impl<'f> Text<'f> {
 
     pub fn to_cow(&self) -> Cow<'f, str> {
         Cow::Borrowed(self.as_str())
+    }
+
+    pub fn to_text_buf(&self) -> TextBuf {
+        TextBuf::from(self.as_str())
     }
 
     pub fn chars(&self) -> ::std::str::Chars {
