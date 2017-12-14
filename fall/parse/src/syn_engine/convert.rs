@@ -1,6 +1,47 @@
-use fall_tree::{NodeType, INode, Text, TextRange, tu};
+use fall_tree::{NodeType, INode, Text, TextRange, tu, TextUnit};
 use lex_engine::Token;
 use syn_engine::Event;
+
+trait TB {
+    fn start_internal(&mut self, ty: NodeType);
+    fn leaf(&mut self, ty: NodeType, len: TextUnit);
+    fn finish_internal(&mut self);
+}
+
+struct INodeBuilder {
+    nodes: Vec<INode>,
+    result: Option<INode>,
+}
+
+impl INodeBuilder {
+    fn new() -> INodeBuilder {
+        INodeBuilder {
+            nodes: Vec::new(),
+            result: None,
+        }
+    }
+}
+
+impl TB for INodeBuilder {
+    fn start_internal(&mut self, ty: NodeType) {
+        self.nodes.push(INode::new(ty))
+    }
+
+    fn leaf(&mut self, ty: NodeType, len: TextUnit) {
+        let mut inode = INode::new(ty);
+        inode.push_token_part(len);
+        self.nodes.last_mut().unwrap().push_child(inode);
+    }
+
+    fn finish_internal(&mut self) {
+        let node = self.nodes.pop().unwrap();
+        if let Some(parent) = self.nodes.last_mut() {
+            parent.push_child(node)
+        } else {
+            self.result = Some(node)
+        }
+    }
+}
 
 pub(crate) fn convert(
     text: Text,
@@ -20,12 +61,11 @@ pub(crate) fn convert(
     }).collect::<Vec<_>>();
 
     let conv = Convertor { is_whitespace, whitespace_binder };
+    let mut bulider = INodeBuilder::new();
     match first {
         Event::Start { ty, forward_parent: _ } => {
-            let conversion = conv.go(ty, &tokens, rest);
-            assert_eq!(conversion.right_edge, tokens.len());
-            assert_eq!(conversion.n_events, rest.len());
-            conversion.inode
+            conv.go(ty, &tokens, rest, &mut bulider);
+            bulider.result.unwrap()
         }
         _ => unreachable!()
     }
@@ -79,7 +119,6 @@ struct Convertor<'a> {
 struct Conversion {
     right_edge: usize,
     n_events: usize,
-    inode: INode,
 }
 
 impl<'a> Convertor<'a> {
@@ -88,22 +127,23 @@ impl<'a> Convertor<'a> {
         ty: NodeType,
         tokens: &[(Token, Text)],
         events: &[Event],
+        builder: &mut TB,
     ) -> Conversion {
-        let mut inode = INode::new(ty);
-        let (n_tokens, n_events) = self.fill(&mut inode, tokens, events);
+        builder.start_internal(ty);
+        let (n_tokens, n_events) = self.fill(tokens, events, builder);
         let tokens = &tokens[n_tokens..];
 
         let trailing_ws = self.collect_tokens_for_binder(tokens);
         let right_ws = (self.whitespace_binder)(ty, &trailing_ws, false);
         for &(t, _) in &tokens[..right_ws] {
-            inode.push_child(INode::new_leaf(t.ty, t.len))
+            builder.leaf(t.ty, t.len);
         }
+        builder.finish_internal();
 
         let right_edge = n_tokens + right_ws;
         return Conversion {
             right_edge,
             n_events,
-            inode,
         };
     }
 
@@ -116,9 +156,9 @@ impl<'a> Convertor<'a> {
 
     fn fill(
         &self,
-        inode: &mut INode,
         tokens: &[(Token, Text)],
         events: &[Event],
+        builder: &mut TB,
     ) -> (usize, usize) {
         let mut tokens = tokens;
         let mut n_tokens = 0;
@@ -134,14 +174,13 @@ impl<'a> Convertor<'a> {
                     let left_wd = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
                     for i in 0..left_wd {
                         let t = tokens[i].0;
-                        inode.push_child(INode::new_leaf(t.ty, t.len))
+                        builder.leaf(t.ty, t.len);
                     }
                     tokens = &tokens[left_wd..];
                     n_tokens += left_wd;
 
-                    let Conversion { right_edge, n_events: child_events, inode: child } =
-                        self.go(ty, tokens, events);
-                    inode.push_child(child);
+                    let Conversion { right_edge, n_events: child_events } =
+                        self.go(ty, tokens, events, builder);
                     tokens = &tokens[right_edge..];
                     n_tokens += right_edge;
                     events = &events[child_events..];
@@ -154,18 +193,18 @@ impl<'a> Convertor<'a> {
                     let non_white = tokens.iter().take_while(|&&(t, _)| (self.is_whitespace)(t.ty)).count();
                     for i in 0..non_white {
                         let t = tokens[i].0;
-                        inode.push_child(INode::new_leaf(t.ty, t.len))
+                        builder.leaf(t.ty, t.len);
                     }
                     tokens = &tokens[non_white..];
                     n_tokens += non_white;
 
                     let n_raw_tokens = n_raw_tokens as usize;
-                    let mut token = INode::new(ty);
+                    let mut len = tu(0);
                     for &(t, _) in &tokens[..n_raw_tokens] {
                         n_tokens += 1;
-                        token.push_token_part(t.len)
+                        len += t.len;
                     }
-                    inode.push_child(token);
+                    builder.leaf(ty, len);
                     tokens = &tokens[n_raw_tokens..];
                 }
 
