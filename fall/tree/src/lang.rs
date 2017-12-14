@@ -3,14 +3,14 @@ use std::sync::Arc;
 use {Text, TextBuf, TextEdit, File, NodeType, NodeTypeInfo, Metrics, TreeBuilder};
 
 pub trait LanguageImpl: 'static + Send + Sync {
-    fn parse2(
+    fn parse(
         &self,
         text: Text,
         metrics: &Metrics,
         builder: &mut TreeBuilder,
     ) -> Option<Box<Any + Sync + Send>>;
 
-    fn reparse2(
+    fn reparse(
         &self,
         incremental_data: &Any,
         edit: &TextEdit,
@@ -36,7 +36,7 @@ impl Language {
         let text: TextBuf = text.into();
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
-        let incremental = self.imp.parse2(text.as_slice(), &metrics, &mut builder);
+        let incremental = self.imp.parse(text.as_slice(), &metrics, &mut builder);
         File::new2(self.clone(), text, metrics, incremental, builder)
     }
 
@@ -45,9 +45,9 @@ impl Language {
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
         let incremental = if let Some(incremental) = file.incremental_data() {
-            self.imp.reparse2(incremental, &edit, new_text.as_slice(), &metrics, &mut builder)
+            self.imp.reparse(incremental, &edit, new_text.as_slice(), &metrics, &mut builder)
         } else {
-            self.imp.parse2(new_text.as_slice(), &metrics, &mut builder)
+            self.imp.parse(new_text.as_slice(), &metrics, &mut builder)
         };
         File::new2(self.clone(), new_text, metrics, incremental, builder)
     }

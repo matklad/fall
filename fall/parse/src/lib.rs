@@ -154,7 +154,7 @@ struct IncrementalData {
     events: Vec<Event>,
 }
 
-pub fn parse2(
+pub fn parse(
     lang: &Language,
     lexer_def: &RegexLexer,
     parser_def: &ParserDefinition,
@@ -167,12 +167,12 @@ pub fn parse2(
     });
     metrics.record("relexed region", text.len().utf8_len() as u64, "");
 
-    let events = parser_def.parse2(None, text, &tokens, lang, metrics, builder);
+    let events = parser_def.parse(None, text, &tokens, lang, metrics, builder);
     let incremental_data = IncrementalData { tokens, events };
     Some(Box::new(incremental_data))
 }
 
-pub fn reparse2(
+pub fn reparse(
     lang: &Language,
     lexer_def: &RegexLexer,
     parser_def: &ParserDefinition,
@@ -195,14 +195,14 @@ pub fn reparse2(
         edit
     );
     let prev = Some((salvaged, incremental_data.events.as_ref()));
-    let events= parser_def.parse2(prev, new_text, &tokens, lang, metrics, builder);
+    let events= parser_def.parse(prev, new_text, &tokens, lang, metrics, builder);
     let incremental_data = IncrementalData { tokens, events };
     Some(Box::new(incremental_data))
 }
 
 
 impl ParserDefinition {
-    fn parse2(
+    fn parse(
         &self,
         prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
         text: Text,

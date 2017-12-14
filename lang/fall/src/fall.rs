@@ -99,21 +99,21 @@ pub fn language() -> &'static Language {
 
     lazy_static! {
         static ref LANG: Language = {
-            use fall_parse::{ParserDefinition, parse2, reparse2};
+            use fall_parse::{ParserDefinition, parse, reparse};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn parse2(
+                fn parse(
                     &self,
                     text: Text,
                     metrics: &Metrics,
                     builder: &mut TreeBuilder,
                 ) -> Option<Box<Any + Sync + Send>> {
-                    parse2(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
+                    parse(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
                 }
 
-                fn reparse2(
+                fn reparse(
                     &self,
                     incremental_data: &Any,
                     edit: &TextEdit,
@@ -121,7 +121,7 @@ pub fn language() -> &'static Language {
                     metrics: &Metrics,
                     builder: &mut TreeBuilder,
                 ) -> Option<Box<Any + Sync + Send>> {
-                    reparse2(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
+                    reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
