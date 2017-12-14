@@ -26,7 +26,7 @@ pub(crate) use self::expr::parse;
 
 mod convert;
 
-pub(crate) use self::convert::{convert, TB};
+pub(crate) use self::convert::convert;
 
 
 #[derive(Copy, Clone, Debug)]

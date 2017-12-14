@@ -226,20 +226,6 @@ impl ParserDefinition {
         });
         metrics.record("parsing ticks", ticks, "");
 
-        impl syn_engine::TB for TreeBuilder {
-            fn start_internal(&mut self, ty: NodeType) {
-                self.start_internal(ty);
-            }
-
-            fn leaf(&mut self, ty: NodeType, len: TextUnit) {
-                self.leaf(ty, len);
-            }
-
-            fn finish_internal(&mut self) {
-                self.finish_internal();
-            }
-        }
-
         metrics.measure_time("inode construction", || {
             syn_engine::convert(
                 text,

@@ -1,12 +1,6 @@
-use fall_tree::{NodeType, Text, TextRange, TextUnit, tu};
+use fall_tree::{NodeType, Text, TextRange, TextUnit, tu, TreeBuilder};
 use lex_engine::Token;
 use syn_engine::Event;
-
-pub trait TB {
-    fn start_internal(&mut self, ty: NodeType);
-    fn leaf(&mut self, ty: NodeType, len: TextUnit);
-    fn finish_internal(&mut self);
-}
 
 pub(crate) fn convert(
     text: Text,
@@ -14,7 +8,7 @@ pub(crate) fn convert(
     events: &[Event],
     is_whitespace: &Fn(NodeType) -> bool,
     whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
-    builder: &mut TB,
+    builder: &mut TreeBuilder,
 ) {
     let events = reshuffle_events(events);
     let (first, rest) = (events[0], &events[1..]);
@@ -91,7 +85,7 @@ impl<'a> Convertor<'a> {
         ty: NodeType,
         tokens: &[(Token, Text)],
         events: &[Event],
-        builder: &mut TB,
+        builder: &mut TreeBuilder,
     ) -> Conversion {
         builder.start_internal(ty);
         let (n_tokens, n_events) = self.fill(tokens, events, builder);
@@ -122,7 +116,7 @@ impl<'a> Convertor<'a> {
         &self,
         tokens: &[(Token, Text)],
         events: &[Event],
-        builder: &mut TB,
+        builder: &mut TreeBuilder,
     ) -> (usize, usize) {
         let mut tokens = tokens;
         let mut n_tokens = 0;
