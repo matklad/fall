@@ -1,46 +1,11 @@
-use fall_tree::{NodeType, INode, Text, TextRange, tu, TextUnit};
+use fall_tree::{NodeType, Text, TextRange, TextUnit, tu};
 use lex_engine::Token;
 use syn_engine::Event;
 
-trait TB {
+pub trait TB {
     fn start_internal(&mut self, ty: NodeType);
     fn leaf(&mut self, ty: NodeType, len: TextUnit);
     fn finish_internal(&mut self);
-}
-
-struct INodeBuilder {
-    nodes: Vec<INode>,
-    result: Option<INode>,
-}
-
-impl INodeBuilder {
-    fn new() -> INodeBuilder {
-        INodeBuilder {
-            nodes: Vec::new(),
-            result: None,
-        }
-    }
-}
-
-impl TB for INodeBuilder {
-    fn start_internal(&mut self, ty: NodeType) {
-        self.nodes.push(INode::new(ty))
-    }
-
-    fn leaf(&mut self, ty: NodeType, len: TextUnit) {
-        let mut inode = INode::new(ty);
-        inode.push_token_part(len);
-        self.nodes.last_mut().unwrap().push_child(inode);
-    }
-
-    fn finish_internal(&mut self) {
-        let node = self.nodes.pop().unwrap();
-        if let Some(parent) = self.nodes.last_mut() {
-            parent.push_child(node)
-        } else {
-            self.result = Some(node)
-        }
-    }
 }
 
 pub(crate) fn convert(
@@ -49,7 +14,8 @@ pub(crate) fn convert(
     events: &[Event],
     is_whitespace: &Fn(NodeType) -> bool,
     whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
-) -> INode {
+    builder: &mut TB,
+) {
     let events = reshuffle_events(events);
     let (first, rest) = (events[0], &events[1..]);
 
@@ -61,11 +27,9 @@ pub(crate) fn convert(
     }).collect::<Vec<_>>();
 
     let conv = Convertor { is_whitespace, whitespace_binder };
-    let mut bulider = INodeBuilder::new();
     match first {
         Event::Start { ty, forward_parent: _ } => {
-            conv.go(ty, &tokens, rest, &mut bulider);
-            bulider.result.unwrap()
+            conv.go(ty, &tokens, rest, builder);
         }
         _ => unreachable!()
     }

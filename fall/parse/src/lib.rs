@@ -223,8 +223,44 @@ impl ParserDefinition {
         });
         metrics.record("parsing ticks", ticks, "");
 
+        impl INodeBuilder {
+            fn new() -> INodeBuilder {
+                INodeBuilder {
+                    nodes: Vec::new(),
+                    result: None,
+                }
+            }
+        }
+
+        struct INodeBuilder {
+            nodes: Vec<INode>,
+            result: Option<INode>,
+        }
+
+        impl syn_engine::TB for INodeBuilder {
+            fn start_internal(&mut self, ty: NodeType) {
+                self.nodes.push(INode::new(ty))
+            }
+
+            fn leaf(&mut self, ty: NodeType, len: TextUnit) {
+                let mut inode = INode::new(ty);
+                inode.push_token_part(len);
+                self.nodes.last_mut().unwrap().push_child(inode);
+            }
+
+            fn finish_internal(&mut self) {
+                let node = self.nodes.pop().unwrap();
+                if let Some(parent) = self.nodes.last_mut() {
+                    parent.push_child(node)
+                } else {
+                    self.result = Some(node)
+                }
+            }
+        }
+
         metrics.measure_time("inode construction", || {
-            let inode = syn_engine::convert(
+            let mut builder = INodeBuilder::new();
+            syn_engine::convert(
                 text,
                 tokens,
                 &events,
@@ -236,9 +272,10 @@ impl ParserDefinition {
                     let owned: Vec<_> = spaces.iter().map(|&(t, text)| (t, text.to_cow())).collect();
                     let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
                     (self.whitespace_binder)(ty, spaces, leading)
-                }
+                },
+                &mut builder,
             );
-            (events, inode)
+            (events, builder.result.unwrap())
         })
     }
 }
