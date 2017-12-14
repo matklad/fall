@@ -23,7 +23,7 @@ pub(crate) fn convert(
     match first {
         Event::Start { ty, forward_parent: _ } => {
             let conversion = conv.go(ty, &tokens, rest);
-            assert_eq!(conversion.token_range, (0, tokens.len()));
+            assert_eq!(conversion.right_edge, tokens.len());
             assert_eq!(conversion.n_events, rest.len());
             conversion.inode
         }
@@ -77,7 +77,7 @@ struct Convertor<'a> {
 
 #[derive(Debug)]
 struct Conversion {
-    token_range: (usize, usize),
+    right_edge: usize,
     n_events: usize,
     inode: INode,
 }
@@ -89,10 +89,6 @@ impl<'a> Convertor<'a> {
         tokens: &[(Token, Text)],
         events: &[Event],
     ) -> Conversion {
-        let leading_ws = self.collect_tokens_for_binder(tokens);
-        let left_wd = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
-        let tokens = &tokens[left_wd..];
-
         let mut inode = INode::new(ty);
         let (n_tokens, n_events) = self.fill(&mut inode, tokens, events);
         let tokens = &tokens[n_tokens..];
@@ -103,9 +99,9 @@ impl<'a> Convertor<'a> {
             inode.push_child(INode::new_leaf(t.ty, t.len))
         }
 
-        let right_edge = left_wd + n_tokens + right_ws;
+        let right_edge = n_tokens + right_ws;
         return Conversion {
-            token_range: (left_wd, right_edge),
+            right_edge,
             n_events,
             inode,
         };
@@ -134,15 +130,20 @@ impl<'a> Convertor<'a> {
             events = rest;
             match first {
                 Event::Start { ty, forward_parent: _ } => {
-                    let Conversion { token_range, n_events: child_events, inode: child } =
-                        self.go(ty, tokens, events);
-                    for i in 0..token_range.0 {
+                    let leading_ws = self.collect_tokens_for_binder(tokens);
+                    let left_wd = leading_ws.len() - (self.whitespace_binder)(ty, &leading_ws, true);
+                    for i in 0..left_wd {
                         let t = tokens[i].0;
                         inode.push_child(INode::new_leaf(t.ty, t.len))
                     }
+                    tokens = &tokens[left_wd..];
+                    n_tokens += left_wd;
+
+                    let Conversion { right_edge, n_events: child_events, inode: child } =
+                        self.go(ty, tokens, events);
                     inode.push_child(child);
-                    tokens = &tokens[token_range.1..];
-                    n_tokens += token_range.1;
+                    tokens = &tokens[right_edge..];
+                    n_tokens += right_edge;
                     events = &events[child_events..];
                     n_events += child_events;
                 }
