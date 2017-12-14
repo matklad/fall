@@ -1,4 +1,4 @@
-use fall_tree::{NodeType, Text, TextRange, TextUnit, tu, TreeBuilder};
+use fall_tree::{NodeType, Text, TextRange, TreeBuilder, tu};
 use lex_engine::Token;
 use syn_engine::Event;
 
