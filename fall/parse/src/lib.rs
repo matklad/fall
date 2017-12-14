@@ -9,7 +9,7 @@ use std::any::Any;
 use std::collections::HashMap;
 
 use regex::Regex;
-use fall_tree::{Text, Language, NodeType, INode, Metrics, TextEdit, TextUnit};
+use fall_tree::{Text, Language, NodeType, Metrics, TextEdit, TextUnit, TreeBuilder};
 
 mod lex_engine;
 use lex_engine::Token;
@@ -154,24 +154,25 @@ struct IncrementalData {
     events: Vec<Event>,
 }
 
-pub fn parse(
+pub fn parse2(
     lang: &Language,
     lexer_def: &RegexLexer,
     parser_def: &ParserDefinition,
     text: Text,
     metrics: &Metrics,
-) -> (Option<Box<Any + Sync + Send>>, INode) {
+    builder: &mut TreeBuilder,
+) -> Option<Box<Any + Sync + Send>> {
     let tokens: Vec<Token> = metrics.measure_time("lexing", || {
         lex_engine::lex(lexer_def, text)
     });
     metrics.record("relexed region", text.len().utf8_len() as u64, "");
 
-    let (events, inode) = parser_def.parse(None, text, &tokens, lang, metrics);
+    let events = parser_def.parse2(None, text, &tokens, lang, metrics, builder);
     let incremental_data = IncrementalData { tokens, events };
-    (Some(Box::new(incremental_data)), inode)
+    Some(Box::new(incremental_data))
 }
 
-pub fn reparse(
+pub fn reparse2(
     lang: &Language,
     lexer_def: &RegexLexer,
     parser_def: &ParserDefinition,
@@ -179,7 +180,8 @@ pub fn reparse(
     edit: &TextEdit,
     new_text: Text,
     metrics: &Metrics,
-) -> (Option<Box<Any + Sync + Send>>, INode) {
+    builder: &mut TreeBuilder,
+) -> Option<Box<Any + Sync + Send>> {
     let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
     let (tokens, relexed_region) = metrics.measure_time("lexing", || {
         lex_engine::relex(lexer_def, &incremental_data.tokens, edit, new_text)
@@ -193,21 +195,22 @@ pub fn reparse(
         edit
     );
     let prev = Some((salvaged, incremental_data.events.as_ref()));
-    let (events, inode) = parser_def.parse(prev, new_text, &tokens, lang, metrics);
+    let events= parser_def.parse2(prev, new_text, &tokens, lang, metrics, builder);
     let incremental_data = IncrementalData { tokens, events };
-    (Some(Box::new(incremental_data)), inode)
+    Some(Box::new(incremental_data))
 }
 
 
 impl ParserDefinition {
-    fn parse(
+    fn parse2(
         &self,
         prev: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &[Event])>,
         text: Text,
         tokens: &[Token],
         lang: &Language,
-        metrics: &Metrics
-    ) -> (Vec<Event>, INode) {
+        metrics: &Metrics,
+        builder: &mut TreeBuilder,
+    ) -> Vec<Event> {
         let g = syn_engine::Grammar {
             node_types: &self.node_types,
             rules: &self.syntactical_rules,
@@ -223,43 +226,21 @@ impl ParserDefinition {
         });
         metrics.record("parsing ticks", ticks, "");
 
-        impl INodeBuilder {
-            fn new() -> INodeBuilder {
-                INodeBuilder {
-                    nodes: Vec::new(),
-                    result: None,
-                }
-            }
-        }
-
-        struct INodeBuilder {
-            nodes: Vec<INode>,
-            result: Option<INode>,
-        }
-
-        impl syn_engine::TB for INodeBuilder {
+        impl syn_engine::TB for TreeBuilder {
             fn start_internal(&mut self, ty: NodeType) {
-                self.nodes.push(INode::new(ty))
+                self.start_internal(ty);
             }
 
             fn leaf(&mut self, ty: NodeType, len: TextUnit) {
-                let mut inode = INode::new(ty);
-                inode.push_token_part(len);
-                self.nodes.last_mut().unwrap().push_child(inode);
+                self.leaf(ty, len);
             }
 
             fn finish_internal(&mut self) {
-                let node = self.nodes.pop().unwrap();
-                if let Some(parent) = self.nodes.last_mut() {
-                    parent.push_child(node)
-                } else {
-                    self.result = Some(node)
-                }
+                self.finish_internal();
             }
         }
 
         metrics.measure_time("inode construction", || {
-            let mut builder = INodeBuilder::new();
             syn_engine::convert(
                 text,
                 tokens,
@@ -273,10 +254,10 @@ impl ParserDefinition {
                     let spaces = owned.iter().map(|&(t, ref text)| (t, text.as_ref())).collect();
                     (self.whitespace_binder)(ty, spaces, leading)
                 },
-                &mut builder,
+                builder,
             );
-            (events, builder.result.unwrap())
-        })
+        });
+        events
     }
 }
 

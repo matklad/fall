@@ -3,11 +3,10 @@ use std::any::Any;
 use {TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
 
 mod imp;
-mod immutable;
 mod tree_builder;
 
 pub use self::imp::NodeChildren;
-pub use self::immutable::INode;
+pub use self::tree_builder::TreeBuilder;
 
 
 pub struct File {
@@ -16,15 +15,15 @@ pub struct File {
 }
 
 impl File {
-    pub fn new<T: Into<TextBuf>>(
+    pub fn new2<T: Into<TextBuf>>(
         lang: Language,
         text: T,
         metrics: Metrics,
-        node: INode,
         incremental_data: Option<Box<Any + Sync + Send>>,
+        builder: TreeBuilder,
     ) -> File {
         File {
-            imp: imp::new_file(lang, text.into(), metrics, &node),
+            imp: imp::new_file2(lang, text.into(), metrics, builder),
             incremental_data,
         }
     }

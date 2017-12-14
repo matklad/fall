@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use {TextBuf, Text, TextRange, NodeType, Language, tu, Metrics, INode};
+use {TextBuf, Text, TextRange, NodeType, Language, Metrics};
 use super::Node;
 use node::tree_builder::{TreeBuilder, NodeData, NodeId};
 
@@ -104,29 +104,12 @@ impl Index<NodeId> for FileImpl {
 }
 
 
-pub fn new_file(lang: Language, text: TextBuf, metrics: Metrics, node: &INode) -> FileImpl {
-    let mut builder = TreeBuilder::new();
-    metrics.measure_time("parent links", || {
-        go(node, &mut builder);
-    });
-
-    return FileImpl {
+pub fn new_file2(lang: Language, text: TextBuf, metrics: Metrics, builder: TreeBuilder) -> FileImpl {
+    FileImpl {
         lang,
         metrics,
         text,
         root: NodeId(0),
         nodes: builder.finish(),
-    };
-
-    fn go(node: &INode, builder: &mut TreeBuilder) {
-        if node.children().is_empty() && node.len() > tu(0) {
-            builder.leaf(node.ty(), node.len());
-            return;
-        };
-        builder.start_internal(node.ty());
-        for child in node.children() {
-            go(child, builder);
-        }
-        builder.finish_internal();
     }
 }

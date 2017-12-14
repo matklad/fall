@@ -1,5 +1,5 @@
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, INode, TextEdit};
+use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, TextEdit, TreeBuilder};
 pub use self::fall_tree::ERROR;
 
 pub const WHITESPACE: NodeType = NodeType(100);
@@ -305,23 +305,29 @@ pub fn language() -> &'static Language {
 
     lazy_static! {
         static ref LANG: Language = {
-            use fall_parse::{ParserDefinition, parse, reparse};
+            use fall_parse::{ParserDefinition, parse2, reparse2};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
             impl LanguageImpl for Impl {
-                fn parse(&self, text: Text, metrics: &Metrics) -> (Option<Box<Any + Sync + Send>>, INode) {
-                    parse(&LANG, &self.lexer, &self.parser_definition, text, metrics)
+                fn parse2(
+                    &self,
+                    text: Text,
+                    metrics: &Metrics,
+                    builder: &mut TreeBuilder,
+                ) -> Option<Box<Any + Sync + Send>> {
+                    parse2(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
                 }
 
-                fn reparse(
+                fn reparse2(
                     &self,
                     incremental_data: &Any,
                     edit: &TextEdit,
                     new_text: Text,
-                    metrics: &Metrics
-                ) -> (Option<Box<Any + Sync + Send>>, INode) {
-                    reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics)
+                    metrics: &Metrics,
+                    builder: &mut TreeBuilder,
+                ) -> Option<Box<Any + Sync + Send>> {
+                    reparse2(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
                 }
 
                 fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {

@@ -2,7 +2,7 @@
 //extern crate quickcheck;
 //
 //use fall_tree::{Text, TextBuf, tu, ArbitraryEdit};
-//use fall_tree::{Language, LanguageImpl, Token, INode, Metrics, NodeType, NodeTypeInfo, ERROR};
+//use fall_tree::{Language, LanguageImpl, Token,  Metrics, NodeType, NodeTypeInfo, ERROR};
 //
 //
 //#[test]
