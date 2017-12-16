@@ -11,6 +11,7 @@ name = "backend"
 version = "0.1.0"
 dependencies = [
  "fall_editor 0.1.0",
+ "fall_tree 0.1.0",
  "lang_fall 0.1.0",
  "lang_rust 0.1.0",
  "neon 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",

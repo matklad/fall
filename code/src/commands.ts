@@ -11,7 +11,7 @@ export default {
     },
     
     async showSyntaxTree(state: State) {
-        let tree = state.support.showSyntaxTree(state.getText())
+        let tree = state.file.syntaxTree()
         container.textDocumentContentProvider.syntaxTree = tree
         container.textDocumentContentProvider.eventEmitter.fire(container.uris.syntaxTree)
         let document = await vscode.workspace.openTextDocument(container.uris.syntaxTree)

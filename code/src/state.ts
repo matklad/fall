@@ -1,13 +1,16 @@
 import * as vscode from 'vscode'
-import { backend, LangSupport } from './backend'
+import { backend, LangSupport, VsFile } from './backend'
+import { log } from 'util';
 
 export class State {
     editor: vscode.TextEditor
     support: LangSupport
+    file: VsFile
 
-    private constructor(editor: vscode.TextEditor, support: LangSupport) {
+    private constructor(editor: vscode.TextEditor, support: LangSupport, file: VsFile) {
         this.editor = editor
         this.support = support
+        this.file = file
     }
 
     static fromEditor(editor: vscode.TextEditor): State | null {
@@ -17,7 +20,9 @@ export class State {
         let extension = filename.substr(idx + 1)
         let support = LangSupport.forExtension(extension)
         if (support == null) return null
-        return new State(editor, support)
+        log(`found support for ${editor.document.fileName.toString()}`)
+        let file = support.parse(editor.document.getText())
+        return new State(editor, support, file)
     }
 
     getText(): string {

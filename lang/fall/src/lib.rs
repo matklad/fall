@@ -31,12 +31,13 @@ pub fn ast(file: &File) -> syntax::FallFile {
 pub use self::editor::FALL_EDITOR_SUPPORT;
 
 mod editor {
-    use fall_editor::{EditorSupport, gen_syntax_tree};
+    use fall_editor::{EditorSupport, gen_parse, gen_syntax_tree};
     use syntax::lang_fall;
 
     pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
         extension: "fall",
-        syntax_tree: Some(|text| gen_syntax_tree(lang_fall(), text)),
+        parse: |text| gen_parse(lang_fall(), text),
+        syntax_tree: Some(|file| gen_syntax_tree(lang_fall(), file)),
     };
 }
 

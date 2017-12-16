@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { type } from 'os';
 
 const native = require("../../native")
 
@@ -15,12 +16,16 @@ export class LangSupport {
     }
 
     static forExtension(ext: string): LangSupport | null {
-        let sup = native.support_for_extension(ext)
+        let sup = native.supportForExtension(ext)
         if (sup == null) return null
         return new LangSupport(sup)
     }
 
-    showSyntaxTree(text: string): string {
-        return this.sup.syntax_tree(text)
+    parse(text: string): VsFile {
+        return this.sup.parse(text)
     }
+}
+
+export type VsFile = {
+    syntaxTree(): string
 }

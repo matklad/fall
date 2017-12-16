@@ -2,9 +2,12 @@ extern crate serde;
 #[macro_use]
 extern crate neon;
 extern crate neon_serde;
+extern crate fall_tree;
 extern crate fall_editor;
 extern crate lang_rust;
 extern crate lang_fall;
+
+use std::iter;
 
 use neon::vm::{Call, VmResult, JsResult, Lock, FunctionCall};
 use neon::mem::Handle;
@@ -13,6 +16,7 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction, JsUndefined};
 use neon::js::class::{Class, JsClass};
 use neon::task::Task;
 
+use fall_tree::File;
 use fall_editor::{EditorSupport};
 
 mod support;
@@ -23,6 +27,10 @@ const LANGUAGES: &[EditorSupport] = &[
     lang_rust::RUST_EDITOR_SUPPORT,
 ];
 
+pub struct VsFile {
+    file: File,
+    support: EditorSupport,
+}
 
 declare_types! {
     pub class JsSupport for EditorSupport {
@@ -32,20 +40,54 @@ declare_types! {
             Ok(LANGUAGES[idx])
         }
 
-        method syntax_tree(call) {
+        method parse(call) {
             let scope = call.scope;
-            let text: String = arg1(scope, &call.arguments)?;
-            let tree = call.arguments.this(scope).grab(move |support| {
-                support.syntax_tree(&text)
+            let text = call.arguments.require(scope, 0)?.check::<JsString>()?;
+            let support = call.arguments.this(scope);
+
+            let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
+            let ctor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
+            let ctor_args = iter::once(support.upcast()).chain(iter::once(text.upcast()));
+            let file = ctor.construct::<_, JsValue, _>(scope, ctor_args)?;
+            Ok(file.upcast())
+        }
+    }
+
+    pub class JsFile for VsFile {
+        init(call) {
+            let scope = call.scope;
+            let mut support = call.arguments.require(scope, 0)?.check::<JsSupport>()?;
+            let text = call.arguments.require(scope, 1)?.check::<JsString>()?.value();
+            let file = support.grab(move |support| support.parse(&text));
+            let support = support.grab(|support| *support);
+            Ok(VsFile {file, support })
+        }
+
+        method syntaxTree(call) {
+            let scope = call.scope;
+            let tree = call.arguments.this(scope).grab(move |vs_file| {
+                vs_file.support.syntax_tree(&vs_file.file)
             });
             ret(scope, tree)
+        }
+
+        method change(call) {
+            let scope = call.scope;
+
+            let this = call.arguments.this(scope);
+            let edits = call.arguments.require(scope, 0)?;
+
+            let class: Handle<JsClass<JsFile>> = JsFile::class(scope)?;
+            let constructor: Handle<JsFunction<JsFile>> = class.constructor(scope)?;
+            let file = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(this.upcast()).chain(::std::iter::once(edits)))?;
+            Ok(file.upcast())
         }
     }
 }
 
 register_module!(m, {
     m.export("status", status)?;
-    m.export("support_for_extension", support_for_extension)?;
+    m.export("supportForExtension", support_for_extension)?;
     Ok(())
 });
 
