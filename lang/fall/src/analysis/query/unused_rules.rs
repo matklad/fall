@@ -5,7 +5,8 @@ use fall_tree::search::ast;
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
 use analysis::query;
-use ::{SynRule, RefKind, CallExpr, CallKind, RefExpr};
+use analysis::{RefKind, CallKind};
+use syntax::{SynRule, CallExpr, RefExpr};
 
 impl<'f> db::OnceQExecutor<'f> for super::UnusedRules {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) {

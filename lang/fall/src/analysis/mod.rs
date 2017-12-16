@@ -1,7 +1,7 @@
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 
-use {FallFile, RefExpr, CallExpr, SynRule, MethodDef};
+use syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef};
 use editor_api::{Diagnostic, Severity};
 
 mod diagnostics;

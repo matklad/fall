@@ -1,6 +1,6 @@
 use fall_tree::{Node, NodeType, File, TextEdit, FileEdit, tu};
 use fall_tree::search::{next_sibling, prev_sibling};
-use ::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
+use syntax::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 
 pub fn reformat(file: &File) -> TextEdit {
     reformat_file(file, FALL_SPACING, WHITESPACE)

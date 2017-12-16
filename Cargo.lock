@@ -281,10 +281,20 @@ dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
  "itertools 0.7.2 (git+https://github.com/bluss/rust-itertools.git)",
+ "lang_fall_syntax 0.1.0",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rental 0.4.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "lang_fall_syntax"
+version = "0.1.0"
+dependencies = [
+ "fall_parse 0.1.0",
+ "fall_tree 0.1.0",
+ "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

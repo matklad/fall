@@ -1,6 +1,6 @@
 use analysis::db::{self, DB};
 use analysis::query;
-use ::{SynRule};
+use syntax::{SynRule};
 
 
 impl<'f> db::QExecutor<'f> for super::FindSynRule<'f> {

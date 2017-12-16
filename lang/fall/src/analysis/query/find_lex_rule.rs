@@ -1,5 +1,5 @@
 use analysis::db::{self, DB};
-use ::{LexRule};
+use syntax::{LexRule};
 
 
 impl<'f> db::QExecutor<'f> for super::FindLexRule<'f> {

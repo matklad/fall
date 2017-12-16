@@ -1,7 +1,7 @@
 use fall_tree::{AstNode, File, Node, TextRange, FileEdit};
 use fall_tree::search::{find_covering_node, ancestors};
 use fall_tree::search::ast;
-use ::{Expr, SynRule, SeqExpr, RefExpr};
+use syntax::{Expr, SynRule, SeqExpr, RefExpr};
 use super::ContextAction;
 
 

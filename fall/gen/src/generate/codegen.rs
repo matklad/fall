@@ -2,9 +2,9 @@ use serde_json;
 use tera::Context;
 
 use fall_tree::{Text, AstNode};
-use lang_fall::{FallFile, RefKind, SynRule, LexRule, Expr, BlockExpr, PratVariant, PrattOp,
-                CallKind, MethodDef, MethodKind, Arity, ChildKind, Parameter,
-                Analysis};
+use lang_fall::syntax::{FallFile, SynRule, LexRule, Expr, BlockExpr,
+                        MethodDef, Parameter};
+use lang_fall::{RefKind, CallKind, MethodKind, Analysis, PratVariant, PrattOp, Arity, ChildKind};
 
 use fall_parse as dst;
 
@@ -83,7 +83,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     node_type_name: scream(node.name()),
                     methods: node.methods()
                         .map(|method| self.gen_method(method))
-                        .collect::<Result<Vec<CtxMethod>>>()?
+                        .collect::<Result<Vec<CtxMethod>>>()?,
                 })
             }).collect::<Result<Vec<_>>>()?);
 
@@ -137,7 +137,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
             (true, Expr::BlockExpr(block)) => {
                 let pratt = dst::Expr::Pratt(Box::new(self.gen_pratt(block)?));
                 self.push_expr(pratt)
-            },
+            }
             (true, _) => unreachable!(),
             (false, body) => self.gen_expr(body)?
         };
@@ -159,7 +159,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     body,
                     replaceable: rule.is_replaceable(),
                 }
-            },
+            }
             (None, _, _) => {
                 assert_eq!(self.expressions.len() - 1, body.0 as usize);
                 self.expressions.pop().unwrap()
@@ -204,7 +204,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
                                 ty_ref,
                                 rule.token_text()
                                     .ok_or(format_err!("Missing contextual token text"))?
-                                    .to_string()
+                                    .to_string(),
                             )
                         } else {
                             dst::Expr::Token(ty_ref)
@@ -224,11 +224,11 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     CallKind::Any => dst::Expr::Any,
                     CallKind::Enter(idx, expr) => dst::Expr::Enter(
                         dst::Context(idx as u32),
-                        self.gen_expr(expr)?
+                        self.gen_expr(expr)?,
                     ),
                     CallKind::Exit(idx, expr) => dst::Expr::Exit(
                         dst::Context(idx as u32),
-                        self.gen_expr(expr)?
+                        self.gen_expr(expr)?,
                     ),
                     CallKind::IsIn(idx) => dst::Expr::IsIn(
                         dst::Context(idx as u32)
@@ -236,21 +236,21 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     CallKind::Not(expr) => dst::Expr::Not(self.gen_expr(expr)?),
                     CallKind::Layer(e1, e2) => dst::Expr::Layer(
                         self.gen_expr(e1)?,
-                        self.gen_expr(e2)?
+                        self.gen_expr(e2)?,
                     ),
                     CallKind::WithSkip(e1, e2) => dst::Expr::WithSkip(
                         self.gen_expr(e1)?,
-                        self.gen_expr(e2)?
+                        self.gen_expr(e2)?,
                     ),
                     CallKind::Inject(e1, e2) => dst::Expr::Inject(
                         self.gen_expr(e1)?,
-                        self.gen_expr(e2)?
+                        self.gen_expr(e2)?,
                     ),
                     CallKind::RuleCall(rule, args) => dst::Expr::Call(
                         self.syn_rule_ref(rule),
                         args.iter()
                             .map(|&(p, e)| Ok((self.param_ref(p), self.gen_expr(e)?)))
-                            .collect::<Result<Vec<_>>>()?
+                            .collect::<Result<Vec<_>>>()?,
                     ),
                     CallKind::PrevIs(tokens) => dst::Expr::PrevIs(
                         tokens.iter().map(|&r| self.syn_rule_ty(r).unwrap()).collect()
@@ -391,26 +391,26 @@ impl<'a, 'f> Codegen<'a, 'f> {
 struct CtxLexRule<'f> {
     ty: Text<'f>,
     re: String,
-    f: Option<Text<'f>>
+    f: Option<Text<'f>>,
 }
 
 #[derive(Serialize)]
 struct CtxAstNode<'f> {
     struct_name: String,
     node_type_name: String,
-    methods: Vec<CtxMethod<'f>>
+    methods: Vec<CtxMethod<'f>>,
 }
 
 #[derive(Serialize)]
 struct CtxAstClass {
     enum_name: String,
-    variants: Vec<(String, String)>
+    variants: Vec<(String, String)>,
 }
 
 #[derive(Serialize)]
 struct CtxMethod<'f> {
     name: Text<'f>,
     ret_type: String,
-    body: String
+    body: String,
 }
 

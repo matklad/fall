@@ -2,7 +2,8 @@ use fall_tree::{AstNode, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::search::find_leaf_at_offset;
 use fall_tree::search::ast;
 
-use ::*;
+use analysis::{FileWithAnalysis, Analysis};
+use syntax::{TestDef};
 
 mod api_impl;
 

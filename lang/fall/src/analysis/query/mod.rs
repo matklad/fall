@@ -4,7 +4,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 
 use super::db::Query;
-use ::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef};
+use syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef};
 
 
 #[derive(Debug)]

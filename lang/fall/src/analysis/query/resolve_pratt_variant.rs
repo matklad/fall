@@ -3,7 +3,7 @@ use super::{PratVariant, PrattOp};
 use fall_tree::AstNode;
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
-use ::Expr;
+use syntax::Expr;
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
     fn execute(self, _: &DB<'f>, d: &mut DiagnosticSink) -> Option<PratVariant<'f>> {

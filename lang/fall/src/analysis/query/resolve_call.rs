@@ -8,8 +8,9 @@ use fall_tree::AstNode;
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
 use analysis::query;
+use analysis::{RefKind, CallKind};
 
-use ::{CallExpr, RefKind, CallKind, Expr, IDENT};
+use syntax::{CallExpr, Expr, IDENT};
 
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
@@ -20,7 +21,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
             if n_expected != n_args {
                 d.error(
                     call.node(),
-                    format!("Wrong number of arguments, expected {}, got {}", n_expected, n_args)
+                    format!("Wrong number of arguments, expected {}, got {}", n_expected, n_args),
                 )
             }
         };
@@ -105,7 +106,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
                 if n_expected != n_args {
                     d.error(
                         call.node(),
-                        format!("Expected {} arguments, got {}", n_expected, n_args)
+                        format!("Expected {} arguments, got {}", n_expected, n_args),
                     )
                 }
 
@@ -118,7 +119,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
 
         d.error(
             child_of_type_exn(call.node(), IDENT),
-            "Unresolved reference"
+            "Unresolved reference",
         );
         None
     }
@@ -168,12 +169,12 @@ mod tests {
 
         check_resolved(
             "rule foo { <enter 'ctx1' a> <enter 'ctx2' b> <^is_in 'ctx2'> }",
-            "IsIn(1)"
+            "IsIn(1)",
         );
 
         check_diagnostics(
             "rule foo { <is_in foo>}",
-            "E foo: Context should be a single quoted string"
+            "E foo: Context should be a single quoted string",
         );
     }
 
@@ -186,7 +187,7 @@ mod tests {
     fn test_unresolved_call() {
         check_diagnostics(
             "rule foo { <abracadabra> foo}",
-            "E abracadabra: Unresolved reference"
+            "E abracadabra: Unresolved reference",
         );
     }
 
@@ -194,22 +195,22 @@ mod tests {
     fn wrong_arity() {
         check_diagnostics(
             "rule foo { <eof foo> }",
-            r#"E <eof foo>: Wrong number of arguments, expected 0, got 1"#
+            r#"E <eof foo>: Wrong number of arguments, expected 0, got 1"#,
         );
 
         check_diagnostics(
             "rule foo { <any foo foo> }",
-            "E <any foo foo>: Wrong number of arguments, expected 0, got 2"
+            "E <any foo foo>: Wrong number of arguments, expected 0, got 2",
         );
 
         check_diagnostics(
             "rule foo { <commit foo foo foo> }",
-            "E <commit foo foo foo>: Wrong number of arguments, expected 0, got 3"
+            "E <commit foo foo foo>: Wrong number of arguments, expected 0, got 3",
         );
 
         check_diagnostics(
             "rule foo { <not> foo }",
-            "E <not>: Wrong number of arguments, expected 1, got 0"
+            "E <not>: Wrong number of arguments, expected 1, got 0",
         );
     }
 
@@ -217,7 +218,7 @@ mod tests {
     fn check_prev_is() {
         check_resolved(
             "pub rule foo {} pub rule bar {} rule baz { <^prev_is foo bar> }",
-            "PrevIs([SynRule@[0; 15), SynRule@[16; 31)])"
+            "PrevIs([SynRule@[0; 15), SynRule@[16; 31)])",
         )
     }
 
@@ -225,11 +226,11 @@ mod tests {
     fn call_custom_rule() {
         check_resolved(
             "rule foo { <^bar a b>} rule bar(x, y) { }",
-            "RuleCall(SynRule@[22; 40), [(Parameter@[31; 32), RefExpr@[16; 17)), (Parameter@[34; 35), RefExpr@[18; 19))])"
+            "RuleCall(SynRule@[22; 40), [(Parameter@[31; 32), RefExpr@[16; 17)), (Parameter@[34; 35), RefExpr@[18; 19))])",
         );
         check_diagnostics(
             "rule foo { <bar <eof>>} rule bar(x, y) { }",
-            "E <bar <eof>>: Expected 2 arguments, got 1"
+            "E <bar <eof>>: Expected 2 arguments, got 1",
         );
     }
 

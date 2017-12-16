@@ -30,7 +30,7 @@ pub struct TestRenderer;
 
 impl TestRenderer {
     pub fn render_one(&mut self, file: &File, test: usize) -> String {
-        let file = lang_fall::FallFile::wrap(file.root()).unwrap();
+        let file = lang_fall::syntax::FallFile::wrap(file.root()).unwrap();
         let text = match file.tests().nth(test).and_then(|t| t.contents()) {
             None => return String::new(),
             Some(text) => text.to_string()

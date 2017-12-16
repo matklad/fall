@@ -1,6 +1,6 @@
 use fall_tree::{AstNode, File, Node, TextUnit, TextRange, FileEdit};
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
-use ::{PIPE, BlockExpr};
+use syntax::{PIPE, BlockExpr};
 use super::ContextAction;
 
 pub struct SwapAlternatives;

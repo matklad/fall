@@ -8,26 +8,23 @@ extern crate rental;
 
 extern crate fall_tree;
 extern crate fall_parse;
+pub extern crate lang_fall_syntax as syntax;
 
 use fall_tree::{AstNode, File};
 
-mod fall;
-mod ast_ext;
 mod analysis;
 pub mod editor_api;
 
 
-pub use self::fall::*;
-pub use self::fall::language as lang_fall;
 pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVariant, PrattOp,
                          MethodKind, Arity, ChildKind};
 
 pub fn parse<S: Into<String>>(text: S) -> File {
-    language().parse(text.into())
+    syntax::lang_fall().parse(text.into())
 }
 
-pub fn ast(file: &File) -> FallFile {
-    FallFile::wrap(file.root()).unwrap()
+pub fn ast(file: &File) -> syntax::FallFile {
+    syntax::FallFile::wrap(file.root()).unwrap()
 }
 
 #[cfg(test)]
@@ -35,10 +32,10 @@ mod test_util {
     use fall_tree::{File, TextUnit, TextRange};
 
     pub fn parse_with_caret(text: &str) -> (File, TextUnit) {
-        ::fall_tree::test_util::parse_with_caret(::lang_fall(), text, "^")
+        ::fall_tree::test_util::parse_with_caret(::syntax::lang_fall(), text, "^")
     }
 
     pub fn parse_with_range(text: &str) -> (File, TextRange) {
-        ::fall_tree::test_util::parse_with_range(::lang_fall(), text, "^")
+        ::fall_tree::test_util::parse_with_range(::syntax::lang_fall(), text, "^")
     }
 }

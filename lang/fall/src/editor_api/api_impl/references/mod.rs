@@ -1,12 +1,12 @@
 use fall_tree::{Node, TextUnit, TextRange, AstNode};
 use fall_tree::visitor::{visitor, process_node};
 use fall_tree::search::ast;
-use ::*;
-use analysis::CallKind;
+use analysis::{Analysis, RefKind, CallKind, MethodKind, ChildKind};
+use syntax::{RefExpr, CallExpr, MethodDef, SynRule, LexRule, Parameter, AstNodeDef, AstClassDef,
+             IDENT};
 
 mod refdec;
 
-use analysis::RefKind;
 use self::refdec::{Reference, Declaration};
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {

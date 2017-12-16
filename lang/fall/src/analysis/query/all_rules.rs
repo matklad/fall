@@ -4,7 +4,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 use analysis::diagnostics::DiagnosticSink;
 use analysis::db::{self, DB};
-use ::{SynRule};
+use syntax::{SynRule};
 
 impl<'f> db::OnceQExecutor<'f> for super::AllRules {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<HashMap<Text<'f>, SynRule<'f>>> {

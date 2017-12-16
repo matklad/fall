@@ -1,8 +1,8 @@
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 
-use ::*;
 use editor_api::FileStructureNode;
+use syntax::{SynRule, TokenizerDef, AstDef};
 
 
 pub fn structure(file: &File) -> Vec<FileStructureNode> {
@@ -38,7 +38,7 @@ pub fn structure(file: &File) -> Vec<FileStructureNode> {
 
 #[test]
 fn test_structure() {
-    let file = parse(r#"
+    let file = ::parse(r#"
 tokenizer { number r"\d+"}
 pub rule foo { bar }
 rule bar { number }

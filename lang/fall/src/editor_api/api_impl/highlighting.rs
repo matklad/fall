@@ -2,8 +2,8 @@ use fall_tree::{TextRange, Node, NodeType, tu, AstNode};
 use fall_tree::search::child_of_type;
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 
-use ::*;
-use analysis::{CallKind, RefKind};
+use analysis::{Analysis, CallKind, RefKind, MethodKind, ChildKind};
+use syntax::*;
 
 type Spans = Vec<(TextRange, &'static str)>;
 
