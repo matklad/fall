@@ -1,5 +1,8 @@
+import * as vscode from 'vscode'
+
 import {backend} from './backend'
 import {State} from './state'
+import {container} from './container'
 
 export default {
     status() {
@@ -7,8 +10,11 @@ export default {
         console.log(status)
     },
     
-    showSyntaxTree(state: State) {
+    async showSyntaxTree(state: State) {
         let tree = state.support.showSyntaxTree(state.getText())
-        console.log(tree)
+        container.textDocumentContentProvider.syntaxTree = tree
+        container.textDocumentContentProvider.eventEmitter.fire(container.uris.syntaxTree)
+        let document = await vscode.workspace.openTextDocument(container.uris.syntaxTree)
+        vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
     }
 }
