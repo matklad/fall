@@ -1,6 +1,5 @@
 extern crate serde;
 extern crate rand;
-extern crate quickcheck;
 extern crate itertools;
 extern crate proptest;
 

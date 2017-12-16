@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, tu, TextRange};
+use fall_tree::{NodeType, TextEdit, TextUnit, TextEditOp, tu, TextRange, ERROR};
 use lex_engine::Token;
 use ::{Expr, ExprRef};
 
@@ -82,15 +82,22 @@ pub(crate) fn salvage_segments(
             Event::Cached { key, n_events } => {
                 let start = text_pos;
                 let mut n_tokens = 0u32;
+                let mut has_error = false;
                 for _ in 0..n_events {
                     match *events.next().unwrap() {
                         Event::Token { n_raw_tokens, .. } => {
                             eat_tokens(&mut raw_token_pos, &mut text_pos, n_raw_tokens);
                             n_tokens += n_raw_tokens as u32;
                         }
+                        Event::Start { ty: ERROR, .. } => has_error = true,
                         _ => (),
                     }
                 }
+                if has_error {
+                    start_event += n_events;
+                    continue
+                }
+
                 let end = text_pos;
                 let range = TextRange::from_to(start, end);
 

@@ -77,7 +77,7 @@ pub fn language() -> &'static Language {
             ::fall_parse::LexRule::new(L_PAREN, "\\(", None),
             ::fall_parse::LexRule::new(R_PAREN, "\\)", None),
             ::fall_parse::LexRule::new(NUMBER, "\\d+", None),
-            ::fall_parse::LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'", None),
+            ::fall_parse::LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'?", None),
             ::fall_parse::LexRule::new(HASH_STRING, "r#*\"", Some(parse_raw_string)),
             ::fall_parse::LexRule::new(IDENT, "\\w+", None),
         ])

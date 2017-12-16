@@ -194,7 +194,7 @@ impl<'g> Parser<'g> {
             }
             let cur_len = self[pos].len;
             if leftover < cur_len {
-                panic!("Textual match split token in half")
+                return None;
             }
             leftover -= cur_len;
             n_tokens += 1;

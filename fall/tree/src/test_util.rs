@@ -45,6 +45,12 @@ pub fn check_syntax_ws(lang: &Language, input: &str, expected_tree: &str) {
     report_diff(expected_tree, &actual_tree);
 }
 
+pub fn check_equal_files(expected: &File, actual: &File) {
+    let expected = dump_file_ws(expected);
+    let actual = dump_file_ws(actual);
+    report_diff(&expected, &actual);
+}
+
 pub fn compare_trees(expected: &str, actual: &str) -> Changeset {
     Changeset::new(&expected, &actual, "\n")
 }

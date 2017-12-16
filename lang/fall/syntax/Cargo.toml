@@ -4,5 +4,6 @@ version = "0.1.0"
 
 [dependencies]
 regex = "0.2"
+proptest = "0.3"
 fall_tree = { path = "../../../fall/tree" }
 fall_parse = { path = "../../../fall/parse" }

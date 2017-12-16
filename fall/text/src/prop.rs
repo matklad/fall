@@ -35,15 +35,15 @@ pub fn arb_text_edit() -> BoxedStrategy<ArbTextEdit> {
 
 #[derive(Debug)]
 pub struct ArbTextEdit {
-    ops: Vec<(bool, TextRange)>,
+    pub ops: Vec<(bool, TextRange)>,
 }
 
 impl ArbTextEdit {
-    pub fn into_text_edit(self, text: Text) -> TextEdit {
+    pub fn as_text_edit(&self, text: Text) -> TextEdit {
         let len: TextUnit = text.len();
         let scale_range = |r: TextRange| scale_range(r, len);
         TextEdit {
-            ops: self.ops.into_iter().map(|(is_insert, range)| {
+            ops: self.ops.iter().map(|&(is_insert, range)| {
                 let range = scale_range(range);
                 if is_insert {
                     TextEditOp::Copy(range)

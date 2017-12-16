@@ -18,6 +18,12 @@ impl<'s> From<&'s str> for TextBuf {
     }
 }
 
+impl<'s> From<Text<'s>> for TextBuf {
+    fn from(s: Text<'s>) -> Self {
+        TextBuf { data: s.to_string() }
+    }
+}
+
 impl TextBuf {
     pub fn as_slice(&self) -> Text {
         Text {

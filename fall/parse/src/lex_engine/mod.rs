@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use fall_tree::{Text, tu, TextSuffix, TextEditOp, TextEdit, TextUnit, NodeType};
+use fall_tree::{Text, tu, TextSuffix, TextEditOp, TextEdit, TextUnit, NodeType, ERROR};
 
 mod regex;
 
@@ -36,6 +36,10 @@ pub fn relex<L: Lexer>(
     new_text: Text
 ) -> (Vec<Token>, usize)
 {
+    if old_tokens.iter().any(|&token| token.ty == ERROR) {
+        return (lex(lexer, new_text), 0);
+    }
+
     let mut old_tokens = old_tokens.iter().cloned();
     let mut old_len = tu(0);
 

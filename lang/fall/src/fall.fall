@@ -55,7 +55,7 @@ tokenizer {
 
   number r"\d+"
   // Raw literals like `r###"contains "a string" inside "###` are supported.
-  simple_string r#"'([^'\\]|\\.)*'"#
+  simple_string r#"'([^'\\]|\\.)*'?"#
 
   // Besides the name and the pattern, you can optionally provide
   // a name of a Rust function which will be used to parse the token.
