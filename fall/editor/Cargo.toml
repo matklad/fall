@@ -1,0 +1,6 @@
+[package]
+name = "fall_editor"
+version = "0.1.0"
+
+[dependencies]
+fall_tree = { path = "../tree" }

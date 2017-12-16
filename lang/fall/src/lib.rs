@@ -8,6 +8,7 @@ extern crate rental;
 
 extern crate fall_tree;
 extern crate fall_parse;
+extern crate fall_editor;
 pub extern crate lang_fall_syntax as syntax;
 
 use fall_tree::{AstNode, File};
@@ -25,6 +26,18 @@ pub fn parse<S: Into<String>>(text: S) -> File {
 
 pub fn ast(file: &File) -> syntax::FallFile {
     syntax::FallFile::wrap(file.root()).unwrap()
+}
+
+pub use self::editor::FALL_EDITOR_SUPPORT;
+
+mod editor {
+    use fall_editor::{EditorSupport, gen_syntax_tree};
+    use syntax::lang_fall;
+
+    pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
+        extension: "fall",
+        syntax_tree: Some(|text| gen_syntax_tree(lang_fall(), text)),
+    };
 }
 
 #[cfg(test)]

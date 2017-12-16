@@ -8,7 +8,7 @@ export default {
     },
     
     showSyntaxTree(state: State) {
-        let tree = state.support.showSyntaxTree()    
+        let tree = state.support.showSyntaxTree(state.getText())
         console.log(tree)
     }
 }

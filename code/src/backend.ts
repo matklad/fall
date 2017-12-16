@@ -6,15 +6,21 @@ export let backend = {
     status() {
          return native.status()
     },
-
 }
 
 export class LangSupport {
-    static forExtension(ext: string): LangSupport | null {
-        return new LangSupport()
+    sup;
+    constructor(sup) {
+        this.sup = sup
     }
 
-    showSyntaxTree(): string {
-        return "Hello"
+    static forExtension(ext: string): LangSupport | null {
+        let sup = native.support_for_extension(ext)
+        if (sup == null) return null
+        return new LangSupport(sup)
+    }
+
+    showSyntaxTree(text: string): string {
+        return this.sup.syntax_tree(text)
     }
 }

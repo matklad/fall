@@ -7,3 +7,4 @@ file = "*"
 elapsed = "*"
 fall_tree = { path = "../../fall/tree" }
 fall_parse = { path = "../../fall/parse" }
+fall_editor = { path = "../../fall/editor" }

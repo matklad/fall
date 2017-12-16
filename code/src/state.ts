@@ -5,7 +5,7 @@ export class State {
     editor: vscode.TextEditor
     support: LangSupport
 
-    constructor(editor: vscode.TextEditor, support: LangSupport) {
+    private constructor(editor: vscode.TextEditor, support: LangSupport) {
         this.editor = editor
         this.support = support
     }
@@ -18,5 +18,9 @@ export class State {
         let support = LangSupport.forExtension(extension)
         if (support == null) return null
         return new State(editor, support)
+    }
+
+    getText(): string {
+        return this.editor.document.getText()
     }
 }

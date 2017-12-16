@@ -16,3 +16,8 @@ neon-build = "0.1.22"
 
 [dependencies]
 neon = "0.1.22"
+
+fall_editor = { path = "../../fall/editor" }
+
+lang_fall = { path = "../../lang/fall" }
+lang_rust = { path = "../../lang/rust" }

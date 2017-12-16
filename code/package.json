@@ -38,8 +38,14 @@
             }
         ],
         "commands": [
-            { "command": "fall.status", "title": "Internal Status" },
-            { "command": "fall.showSyntaxTree", "title": "Show syntax tree" }
+            {
+                "command": "fall.status",
+                "title": "Internal Status"
+            },
+            {
+                "command": "fall.showSyntaxTree",
+                "title": "Show syntax tree"
+            }
         ]
     },
     "activationEvents": [
