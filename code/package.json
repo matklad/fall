@@ -10,6 +10,7 @@
         "vscode": "^1.18.0"
     },
     "devDependencies": {
+        "neon-cli": "^0.1.22",
         "typescript": "^2.6.2",
         "vscode": "^1.1.10",
         "@types/node": "^6.0.40"
@@ -17,6 +18,7 @@
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
+        "install": "neon build",
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
     "main": "./out/src/main",
@@ -26,6 +28,12 @@
                 "id": "fall",
                 "extensions": [
                     ".fall"
+                ]
+            },
+            {
+                "id": "rust",
+                "extensions": [
+                    ".rs"
                 ]
             }
         ],
