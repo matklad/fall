@@ -1,5 +1,7 @@
+extern crate serde;
 #[macro_use]
 extern crate neon;
+extern crate neon_serde;
 extern crate fall_editor;
 extern crate lang_rust;
 extern crate lang_fall;
@@ -13,6 +15,9 @@ use neon::task::Task;
 
 use fall_editor::{EditorSupport};
 
+mod support;
+use self::support::{arg1, ret};
+
 const LANGUAGES: &[EditorSupport] = &[
     lang_fall::FALL_EDITOR_SUPPORT,
     lang_rust::RUST_EDITOR_SUPPORT,
@@ -23,21 +28,17 @@ declare_types! {
     pub class JsSupport for EditorSupport {
         init(call) {
             let scope = call.scope;
-            let idx: Handle<JsInteger> = call.arguments.require(scope, 0)?.check::<JsInteger>()?;
-            let idx = idx.value() as usize;
+            let idx: usize = arg1(scope, &call.arguments)?;
             Ok(LANGUAGES[idx])
         }
 
         method syntax_tree(call) {
             let scope = call.scope;
-            let text = call.arguments.require(scope, 0)?.check::<JsString>()?.value();
+            let text: String = arg1(scope, &call.arguments)?;
             let tree = call.arguments.this(scope).grab(move |support| {
                 support.syntax_tree(&text)
             });
-            Ok(match tree {
-                None => JsNull::new().upcast(),
-                Some(tree) => JsString::new(scope, &tree).unwrap().upcast(),
-            })
+            ret(scope, tree)
         }
     }
 }
@@ -50,8 +51,7 @@ register_module!(m, {
 
 fn support_for_extension(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
-    let ext = call.arguments.require(scope, 0)?.check::<JsString>()?;
-    let ext = ext.value();
+    let ext: String = arg1(scope, &call.arguments)?;
     let idx = match LANGUAGES.iter().position(|s| s.extension == ext) {
         None => return Ok(JsNull::new().upcast()),
         Some(idx) => idx,
@@ -64,11 +64,7 @@ fn support_for_extension(call: Call) -> JsResult<JsValue> {
     Ok(sup.upcast())
 }
 
-fn status(call: Call) -> JsResult<JsString> {
+fn status(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
-    let result = JsString::new(scope, &"Hello from Rust").unwrap();
-    Ok(result)
+    ret(scope, "Hello from Rust")
 }
-
-
-

@@ -16,6 +16,9 @@ neon-build = "0.1.22"
 
 [dependencies]
 neon = "0.1.22"
+serde = "1.0"
+serde_derive = "1.0"
+neon-serde = { git = "https://github.com/GabrielCastro/neon-serde" }
 
 fall_editor = { path = "../../fall/editor" }
 
