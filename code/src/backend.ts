@@ -1,32 +1,47 @@
 import * as vscode from 'vscode'
-import { type } from 'os';
+import { reportDuration } from './profile'
+import { type } from 'os'
+import { log } from 'util';
 
 const native = require("../../native")
 
-export let backend = {
-    status() {
-         return native.status()
-    },
-}
-
 export class LangSupport {
-    sup;
-    constructor(sup) {
-        this.sup = sup
+    impl;
+    private constructor(impl) {
+        this.impl = impl
     }
 
     static forExtension(ext: string): LangSupport | null {
-        let sup = native.supportForExtension(ext)
-        if (sup == null) return null
-        return new LangSupport(sup)
+        let impl = native.supportForExtension(ext)
+        if (impl == null) return null
+        return new LangSupport(impl)
     }
 
     parse(text: string): VsFile {
-        return this.sup.parse(text)
+        return reportDuration("parse", () => new VsFile(this.impl.parse(text)))
     }
 }
 
-export type VsFile = {
-    syntaxTree(): string
-    highlight(): Array<[[number, number], string]>
+export class VsFile {
+    impl;
+    constructor(impl) {
+        this.impl = impl
+    }
+
+    edit(edits: Array<{insert: string, delete: [number, number]}>): VsFile {
+        let impl = reportDuration("reparse", () => this.impl.edit(edits))
+        return new VsFile(impl)
+    }
+
+    syntaxTree(): string {
+        return reportDuration("syntaxTree", () => this.impl.syntaxTree())
+    }
+
+    highlight(): Array<[[number, number], string]> {
+        return reportDuration("highlight", () => this.impl.highlight())
+    }
+
+    metrics(): string {
+        return this.impl.metrics()
+    }
 }

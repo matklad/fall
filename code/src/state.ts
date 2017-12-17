@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { backend, LangSupport, VsFile } from './backend'
+import { LangSupport, VsFile } from './backend'
 import { log } from 'util';
 
 export class State {

@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 import commands from './commands'
-import { backend, LangSupport } from './backend'
+import { LangSupport } from './backend'
 import { State } from './state'
 import { container } from './container'
 import { setHighlights } from './highlight'
@@ -33,16 +33,40 @@ export function activate(context: vscode.ExtensionContext) {
     log("Registered providers")
 
     vscode.workspace.onDidChangeTextDocument(event => {
-        changeEditor(vscode.window.activeTextEditor)
+        if (["fall", "rust-fall"].indexOf(event.document.languageId) != -1) {
+            if (event.contentChanges.length == 1) {
+                let edits = event.contentChanges.map((change) => {
+                    let start = event.document.offsetAt(change.range.start)
+                    return {
+                        "delete": [start, start + change.rangeLength],
+                        "insert": change.text
+                    }
+                })
+                log("Incremental reparse")
+                updateState(vscode.window.activeTextEditor, edits)
+            } else {
+                log("Full reparse")
+                resetState(vscode.window.activeTextEditor)
+            }
+        }
     }, null, context.subscriptions)
     log("Set up listeners")
 
-    vscode.window.onDidChangeActiveTextEditor(changeEditor)
-    changeEditor(vscode.window.activeTextEditor)
+    vscode.window.onDidChangeActiveTextEditor(resetState)
+    resetState(vscode.window.activeTextEditor)
     log("Extension activated")
 }
 
-function changeEditor(editor: vscode.TextEditor) {
+function updateState(editor: vscode.TextEditor, edits) {
+    if (current.editor != editor || current.file == null) {
+        resetState(editor)
+        return
+    }
+    current.file = current.file.edit(edits)
+    afterStateUpdate(current)
+}
+
+function resetState(editor: vscode.TextEditor) {
     if (editor == null) {
         current = null
         return
@@ -52,10 +76,13 @@ function changeEditor(editor: vscode.TextEditor) {
 }
 
 function afterStateUpdate(state: State) {
+    log("Start afterStateUpdate")
     let tdcp = container.textDocumentContentProvider
     tdcp.updateFile(current.file)
     tdcp.eventEmitter.fire(container.uris.syntaxTree)
+    tdcp.eventEmitter.fire(container.uris.status)
     setHighlights(state.editor, state.file.highlight())
+    log("Finish afterStateUpdate")
 }
 
 export function deactivate() { }

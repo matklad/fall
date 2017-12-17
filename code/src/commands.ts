@@ -1,19 +1,20 @@
 import * as vscode from 'vscode'
 
-import {backend} from './backend'
 import {State} from './state'
 import {container} from './container'
 
 export default {
-    status() {
-        let status = backend.status()
-        console.log(status)
+    async status() {
+        return openDoc(container.uris.status)
     },
-    
-    async showSyntaxTree(state: State) {
-        let tree = state.file.syntaxTree()
-        container.textDocumentContentProvider.eventEmitter.fire(container.uris.syntaxTree)
-        let document = await vscode.workspace.openTextDocument(container.uris.syntaxTree)
-        vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
+
+    async showSyntaxTree() {
+        return openDoc(container.uris.syntaxTree)
     }
+}
+
+async function openDoc(uri: vscode.Uri) {
+    container.textDocumentContentProvider.eventEmitter.fire(uri)
+    let document = await vscode.workspace.openTextDocument(uri)
+    vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
 }

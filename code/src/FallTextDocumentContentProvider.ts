@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { VsFile } from './backend'
-import { log } from 'util';
+import { profileResultsAsString } from './profile'
+import { log } from 'util'
 
 export class FallTextDocumentContentProvider implements vscode.TextDocumentContentProvider {
     file: VsFile
@@ -8,9 +9,17 @@ export class FallTextDocumentContentProvider implements vscode.TextDocumentConte
     public syntaxTree: string = "Not available"
 
     public provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
+        let file = this.file
+        if (file == null) return "Not available"
+
         if (uri.authority == 'syntaxtree') {
-            return this.file == null ? "Not availanle" : this.file.syntaxTree()
+            return file.syntaxTree()
         }
+
+        if (uri.authority == 'status') {
+            return file.metrics() + `\n${profileResultsAsString()}`
+        }
+
         log(`Bad uri: ${uri}`)
     }
 

@@ -15,7 +15,7 @@ pub struct File {
 }
 
 impl File {
-    pub fn new2<T: Into<TextBuf>>(
+    pub fn new<T: Into<TextBuf>>(
         lang: Language,
         text: T,
         metrics: Metrics,
@@ -23,7 +23,7 @@ impl File {
         builder: TreeBuilder,
     ) -> File {
         File {
-            imp: imp::new_file2(lang, text.into(), metrics, builder),
+            imp: imp::new_file(lang, text.into(), metrics, builder),
             incremental_data,
         }
     }
@@ -44,7 +44,7 @@ impl File {
         self.imp.metrics()
     }
 
-    pub fn edit(&self, edit: TextEdit) -> File {
+    pub fn edit(&self, edit: &TextEdit) -> File {
         self.language().reparse(self, edit)
     }
 

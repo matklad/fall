@@ -4,12 +4,13 @@ extern crate serde_derive;
 extern crate fall_tree;
 
 use std::sync::Arc;
-use fall_tree::{File, dump_file};
+use fall_tree::{File, dump_file, TextEdit};
 
 pub mod hl;
 
 use self::hl::Highlights;
 
+#[derive(Clone)]
 pub struct EditorFile {
     imp: Arc<EditorFileImpl>
 }
@@ -17,6 +18,10 @@ pub struct EditorFile {
 impl EditorFile {
     pub fn new<F: EditorFileImpl>(imp: F) -> EditorFile {
         EditorFile { imp: Arc::new(imp) }
+    }
+
+    pub fn edit(&self, edit: &TextEdit) -> EditorFile {
+        EditorFile { imp: self.imp.edit(edit).into() }
     }
 
     pub fn file(&self) -> &File {
@@ -30,10 +35,15 @@ impl EditorFile {
     pub fn highlight(&self) -> Highlights {
         self.imp.highlight()
     }
+
+    pub fn metrics(&self) -> String {
+        self.file().metrics().to_string()
+    }
 }
 
 pub trait EditorFileImpl: Sync + 'static {
     fn file(&self) -> &File;
+    fn edit(&self, edit: &TextEdit) -> Box<EditorFileImpl>;
     fn syntax_tree(&self) -> String;
     fn highlight(&self) -> Highlights;
 }

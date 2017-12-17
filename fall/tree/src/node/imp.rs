@@ -104,7 +104,7 @@ impl Index<NodeId> for FileImpl {
 }
 
 
-pub fn new_file2(lang: Language, text: TextBuf, metrics: Metrics, builder: TreeBuilder) -> FileImpl {
+pub fn new_file(lang: Language, text: TextBuf, metrics: Metrics, builder: TreeBuilder) -> FileImpl {
     FileImpl {
         lang,
         metrics,

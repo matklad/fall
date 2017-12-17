@@ -33,7 +33,7 @@ pub use self::editor::FALL_EDITOR_SUPPORT;
 mod editor {
     use analysis::{Analysis, FileWithAnalysis};
 
-    use fall_tree::File;
+    use fall_tree::{File, TextEdit};
     use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree};
     use fall_editor::hl::{self, Highlights};
     use syntax::lang_fall;
@@ -46,6 +46,11 @@ mod editor {
     impl EditorFileImpl for FileWithAnalysis {
         fn file(&self) -> &File {
             self.file()
+        }
+
+        fn edit(&self, edit: &TextEdit) -> Box<EditorFileImpl> {
+            let file = self.file().edit(edit);
+            Box::new(FileWithAnalysis::new(file))
         }
 
         fn syntax_tree(&self) -> String {

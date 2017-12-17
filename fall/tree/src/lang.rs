@@ -37,19 +37,19 @@ impl Language {
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
         let incremental = self.imp.parse(text.as_slice(), &metrics, &mut builder);
-        File::new2(self.clone(), text, metrics, incremental, builder)
+        File::new(self.clone(), text, metrics, incremental, builder)
     }
 
-    pub fn reparse(&self, file: &File, edit: TextEdit) -> File {
+    pub fn reparse(&self, file: &File, edit: &TextEdit) -> File {
         let new_text = edit.apply(file.text());
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
         let incremental = if let Some(incremental) = file.incremental_data() {
-            self.imp.reparse(incremental, &edit, new_text.as_slice(), &metrics, &mut builder)
+            self.imp.reparse(incremental, edit, new_text.as_slice(), &metrics, &mut builder)
         } else {
             self.imp.parse(new_text.as_slice(), &metrics, &mut builder)
         };
-        File::new2(self.clone(), new_text, metrics, incremental, builder)
+        File::new(self.clone(), new_text, metrics, incremental, builder)
     }
 
     pub fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
