@@ -9,18 +9,15 @@ import { setHighlights } from './highlight'
 import { log } from 'util'
 
 
-var current: State | null = null
-
-
 export function activate(context: vscode.ExtensionContext) {
     log("Activating extension")
     for (let name in commands) {
         let callback = commands[name]
         let cmd = vscode.commands.registerCommand("fall." + name, () => {
-            let state = current
-            if (current == null) return
+            let state = State.current
+            if (state == null) return
             log(`Command ${name}`)
-            return callback(current)
+            return callback(state)
         })
         context.subscriptions.push(cmd)
     }
@@ -28,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall', container.textDocumentContentProvider),
+        vscode.languages.registerDocumentSymbolProvider('fall', container.documetSymbolProvider),
     ]
     context.subscriptions.push(...providers)
     log("Registered providers")
@@ -58,27 +56,27 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function updateState(editor: vscode.TextEditor, edits) {
+    let current = State.current
     if (current.editor != editor || current.file == null) {
         resetState(editor)
         return
     }
-    current.file = current.file.edit(edits)
+    State.current.file = current.file.edit(edits)
     afterStateUpdate(current)
 }
 
 function resetState(editor: vscode.TextEditor) {
     if (editor == null) {
-        current = null
+        State.current = null
         return
     }
-    current = State.fromEditor(editor)
-    afterStateUpdate(current)
+    State.current = State.fromEditor(editor)
+    afterStateUpdate(State.current)
 }
 
 function afterStateUpdate(state: State) {
     log("Start afterStateUpdate")
     let tdcp = container.textDocumentContentProvider
-    tdcp.updateFile(current.file)
     tdcp.eventEmitter.fire(container.uris.syntaxTree)
     tdcp.eventEmitter.fire(container.uris.status)
     setHighlights(state.editor, state.file.highlight())

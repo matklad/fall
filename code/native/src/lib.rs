@@ -96,6 +96,12 @@ declare_types! {
             ret(scope, tree)
         }
 
+        method structure(call) {
+            let scope = call.scope;
+            let structure = call.arguments.this(scope).grab(|file| file.structure());
+            ret(scope, structure)
+        }
+
         method highlight(call) {
             let scope = call.scope;
             let highlights = call.arguments.this(scope).grab(move |file| {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
-import { randomBytes } from 'crypto';
-import { log } from 'util';
+import { toVsRange } from './range'
+import { log } from 'util'
 
 const decorations = (() => {
     const decor = (obj) => vscode.window.createTextEditorDecorationType({ color: obj })
@@ -21,13 +21,6 @@ const decorations = (() => {
         literal: decor("#DFAF8F"),
     }
 })()
-
-function toVsRange(doc: vscode.TextDocument, range: [number, number]) {
-    return new vscode.Range(
-        doc.positionAt(range[0]),
-        doc.positionAt(range[1]),
-    )    
-}
 
 export function setHighlights(
     editor: vscode.TextEditor,

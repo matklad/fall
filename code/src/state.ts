@@ -7,6 +7,8 @@ export class State {
     support: LangSupport
     file: VsFile
 
+    static current: State | null = null
+
     private constructor(editor: vscode.TextEditor, support: LangSupport, file: VsFile) {
         this.editor = editor
         this.support = support

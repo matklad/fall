@@ -4,7 +4,7 @@ extern crate serde_derive;
 extern crate fall_tree;
 
 use std::sync::Arc;
-use fall_tree::{File, dump_file, TextEdit};
+use fall_tree::{File, dump_file, TextEdit, TextRange};
 
 pub mod hl;
 
@@ -39,13 +39,22 @@ impl EditorFile {
     pub fn metrics(&self) -> String {
         self.file().metrics().to_string()
     }
+
+    pub fn structure(&self) -> Vec<FileStructureNode> {
+        self.imp.structure()
+    }
 }
 
 pub trait EditorFileImpl: Sync + 'static {
     fn file(&self) -> &File;
     fn edit(&self, edit: &TextEdit) -> Box<EditorFileImpl>;
     fn syntax_tree(&self) -> String;
-    fn highlight(&self) -> Highlights;
+    fn highlight(&self) -> Highlights {
+        Vec::new()
+    }
+    fn structure(&self) -> Vec<FileStructureNode> {
+        Vec::new()
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -58,6 +67,13 @@ impl EditorSupport {
     pub fn parse(&self, text: &str) -> EditorFile {
         (self.parse)(text)
     }
+}
+
+#[derive(Serialize, Debug)]
+pub struct FileStructureNode {
+    pub name: String,
+    pub range: TextRange,
+    pub children: Vec<FileStructureNode>
 }
 
 pub fn gen_syntax_tree(file: &File) -> String {

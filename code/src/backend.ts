@@ -37,6 +37,10 @@ export class VsFile {
         return reportDuration("syntaxTree", () => this.impl.syntaxTree())
     }
 
+    structure() {
+        return this.impl.structure()
+    }
+
     highlight(): Array<[[number, number], string]> {
         return reportDuration("highlight", () => this.impl.highlight())
     }

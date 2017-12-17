@@ -1,11 +1,11 @@
 use fall_tree::{File, AstNode};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
+use fall_editor::FileStructureNode;
 
-use editor_api::FileStructureNode;
 use syntax::{SynRule, TokenizerDef, AstDef};
 
 
-pub fn structure(file: &File) -> Vec<FileStructureNode> {
+pub(crate) fn structure(file: &File) -> Vec<FileStructureNode> {
     process_subtree_bottom_up(
         file.root(),
         visitor(Vec::new())
@@ -22,16 +22,16 @@ pub fn structure(file: &File) -> Vec<FileStructureNode> {
                 nodes.push(FileStructureNode {
                     name: "tokenizer".to_owned(),
                     range: tokenizer.node().range(),
-                    children: Vec::new()
+                    children: Vec::new(),
                 })
             })
             .visit::<AstDef, _>(|nodes, ast| {
                 nodes.push(FileStructureNode {
                     name: "ast".to_owned(),
                     range: ast.node().range(),
-                    children: Vec::new()
+                    children: Vec::new(),
                 })
-            })
+            }),
     )
 }
 

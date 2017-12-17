@@ -12,16 +12,6 @@ pub fn analyse(text: String) -> FileWithAnalysis {
     FileWithAnalysis::new(::parse(text))
 }
 
-pub fn tree_as_text(analysis: &Analysis) -> String {
-    dump_file(analysis.file())
-}
-
-pub fn highlight(analysis: &Analysis) -> hl::Highlights {
-    analysis.file().metrics().measure_time("highlight", || {
-        api_impl::highlighting::highlight(analysis)
-    })
-}
-
 pub fn extend_selection(analysis: &Analysis, range: TextRange) -> Option<TextRange> {
     api_impl::extend_selection::extend_selection(analysis.file(), range)
 }
@@ -32,17 +22,6 @@ pub fn context_actions(analysis: &Analysis, range: TextRange) -> Vec<&'static st
 
 pub fn apply_context_action(analysis: &Analysis, range: TextRange, action_id: &str) -> TextEdit {
     api_impl::actions::apply_context_action(analysis, range, action_id)
-}
-
-#[derive(Serialize, Debug)]
-pub struct FileStructureNode {
-    pub name: String,
-    pub range: TextRange,
-    pub children: Vec<FileStructureNode>
-}
-
-pub fn structure(analysis: &Analysis) -> Vec<FileStructureNode> {
-    api_impl::structure::structure(analysis.file())
 }
 
 #[derive(Serialize, Debug, Copy, Clone)]
