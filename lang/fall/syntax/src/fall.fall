@@ -106,7 +106,7 @@ pub rule syn_rule {
 
   // The body of the rule is enclosed in `{`,
   // see expression grammar below for details.
-  <layer 
+  <layer
     { '{' in_braces '}' | '{' {<not file_form_first> <any>}* }
     block_expr
   >
@@ -121,15 +121,15 @@ pub rule parameter { ident }
 
 test r"
 rule foo {
-  'struct' type_parameters? '{' 
+  'struct' type_parameters? '{'
     field_def*
   '}'
 }
 "
 
 #[pratt]
-rule expr { 
-  call_expr | ref_expr | block_expr 
+rule expr {
+  call_expr | ref_expr | block_expr
 | opt_expr | rep_expr
 }
 
@@ -154,12 +154,12 @@ pub rule block_expr {
   <block { seq_expr? {'|' seq_expr}* }>
 }
 
-#[postfix] 
+#[postfix]
 pub rule opt_expr {
   expr '?'
 }
 
-#[postfix] 
+#[postfix]
 pub rule rep_expr {
   expr '*'
 }
@@ -202,7 +202,7 @@ pub rule test_def { 'test' <commit> hash_string }
 
 
 pub rule attributes {
-    '#' '[' 
+    '#' '['
        <layer in_bracks <comma_list attribute>>
     ']'
 }
@@ -229,7 +229,7 @@ rule in_parens { <balanced '(' ')'> }
 rule in_bracks { <balanced '[' ']'> }
 
 rule balanced(bra, ket) {
-  { bra <balanced bra ket> ket 
+  { bra <balanced bra ket> ket
   | {<not ket> <any>}
   }*
 }
@@ -317,7 +317,7 @@ ast {
     parameters parameters?
   }
 
-  node parameters { 
+  node parameters {
     parameters parameter*
   }
 
@@ -336,7 +336,7 @@ ast {
 
   node attribute_value { }
 
-  node verbatim_def { 
+  node verbatim_def {
     literal_string hash_string.text
   }
 
@@ -367,7 +367,7 @@ ast {
     dot dot?
   }
 
-  node test_def { 
+  node test_def {
     literal_string hash_string?.text
   }
 
@@ -388,11 +388,11 @@ ast {
     alts expr*
   }
 
-  node opt_expr { 
+  node opt_expr {
     expr expr
   }
 
-  node rep_expr { 
+  node rep_expr {
     expr expr
   }
 

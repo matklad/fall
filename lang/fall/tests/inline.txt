@@ -1,5 +1,5 @@
 rule foo {
-  'struct' type_parameters? '{' 
+  'struct' type_parameters? '{'
     field_def*
   '}'
 }
