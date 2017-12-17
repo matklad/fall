@@ -20,7 +20,6 @@ export class State {
         let extension = filename.substr(idx + 1)
         let support = LangSupport.forExtension(extension)
         if (support == null) return null
-        log(`found support for ${editor.document.fileName.toString()}`)
         let file = support.parse(editor.document.getText())
         return new State(editor, support, file)
     }

@@ -9,10 +9,10 @@ extern crate lang_fall;
 
 use std::iter;
 
-use neon::vm::{Call, VmResult, JsResult, Lock, FunctionCall};
+use neon::vm::{Call, JsResult, Lock};
 use neon::mem::Handle;
 use neon::scope::Scope;
-use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction, JsUndefined};
+use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::js::class::{Class, JsClass};
 use neon::task::Task;
 
@@ -69,6 +69,14 @@ declare_types! {
                 vs_file.support.syntax_tree(&vs_file.file)
             });
             ret(scope, tree)
+        }
+
+        method highlight(call) {
+            let scope = call.scope;
+            let highlights = call.arguments.this(scope).grab(move |vs_file| {
+                vs_file.support.highlight(&vs_file.file)
+            });
+            ret(scope, highlights)
         }
 
         method change(call) {

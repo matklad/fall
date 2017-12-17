@@ -1,79 +1,70 @@
+use fall_editor::hl::{self, HlTag, Highlights};
 use fall_tree::{TextRange, Node, NodeType, tu, AstNode};
 use fall_tree::search::child_of_type;
-use fall_tree::visitor::{visitor, process_subtree_bottom_up};
+use fall_tree::visitor::process_subtree_bottom_up;
 
 use analysis::{Analysis, CallKind, RefKind, MethodKind, ChildKind};
 use syntax::*;
 
-type Spans = Vec<(TextRange, &'static str)>;
-
-pub(crate) fn highlight(analysis: &Analysis) -> Spans {
+pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
     process_subtree_bottom_up(
         analysis.ast().node(),
-        visitor(Vec::new())
-            .visit_nodes(&[EOL_COMMENT], |spans, node| {
-                colorize_node(node, "comment", spans)
-            })
-            .visit_nodes(&[HASH_STRING, SIMPLE_STRING], |spans, node| {
-                colorize_node(node, "string", spans)
-            })
-            .visit_nodes(&[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST], |spans, node| {
-                colorize_node(node, "keyword", spans)
-            })
-            .visit_nodes(&[ERROR], |spans, node| {
-                let range = if node.range().is_empty() {
-                    TextRange::from_len(node.range().start(), tu(1))
-                } else {
-                    node.range()
-                };
-                spans.push((range, "error"))
-            })
-            .visit_nodes(&[PARAMETER], |spans, node| colorize_node(node, "value_parameter", spans))
-            .visit::<LexRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "token", spans))
-            .visit::<SynRule, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-            .visit::<AstNodeDef, _>(|spans, rule| colorize_child(rule.node(), IDENT, "rule", spans))
-            .visit::<RefExpr, _>(|spans, ref_| {
+        hl::visitor(&[
+            (hl::COMMENT, &[EOL_COMMENT]),
+            (hl::STRING, &[HASH_STRING, SIMPLE_STRING]),
+            (hl::KEYWORD, &[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST]),
+            (hl::PARAMETER, &[PARAMETER]),
+            (hl::ATTRIBUTE, &[ATTRIBUTES])
+        ]).visit_nodes(&[ERROR], |hls, node| {
+            let range = if node.range().is_empty() {
+                TextRange::from_len(node.range().start(), tu(1))
+            } else {
+                node.range()
+            };
+            hls.push((range, hl::ERROR))
+        })
+            .visit::<LexRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::LITERAL, hls))
+            .visit::<SynRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstNodeDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<RefExpr, _>(|hls, ref_| {
                 let color = match analysis.resolve_reference(ref_) {
-                    Some(RefKind::Token(_)) => "token",
-                    Some(RefKind::RuleReference { .. }) => "rule",
-                    Some(RefKind::Param(..)) => "value_parameter",
+                    Some(RefKind::Token(_)) => hl::LITERAL,
+                    Some(RefKind::RuleReference { .. }) => hl::FUNCTION,
+                    Some(RefKind::Param(..)) => hl::PARAMETER,
                     None => return
                 };
-                colorize_node(ref_.node(), color, spans)
+                colorize_node(ref_.node(), color, hls)
             })
-            .visit::<MethodDef, _>(|spans, method| {
+            .visit::<MethodDef, _>(|hls, method| {
                 let color = match analysis.resolve_method(method) {
                     Some(MethodKind::NodeAccessor(child_kind, _)) => match child_kind {
-                        ChildKind::Token(..) => "token",
-                        ChildKind::AstClass(..) | ChildKind::AstNode(..) => "rule",
+                        ChildKind::Token(..) => hl::LITERAL,
+                        ChildKind::AstClass(..) | ChildKind::AstNode(..) => hl::FUNCTION,
                     },
                     None | Some(_) => return
                 };
-                colorize_child(method.selector().node(), IDENT, color, spans)
+                colorize_child(method.selector().node(), IDENT, color, hls)
             })
-            .visit::<CallExpr, _>(|spans, call| {
+            .visit::<CallExpr, _>(|hls, call| {
                 let color = match analysis.resolve_call(call) {
-                    None | Some(CallKind::RuleCall(..)) => "rule",
-                    Some(_) => "builtin"
+                    None | Some(CallKind::RuleCall(..)) => hl::FUNCTION,
+                    Some(_) => hl::BUILTIN
                 };
 
-                colorize_child(call.node(), IDENT, color, spans);
-                colorize_child(call.node(), L_ANGLE, color, spans);
-                colorize_child(call.node(), R_ANGLE, color, spans);
-            })
-            .visit::<Attributes, _>(|spans, attrs| {
-                colorize_node(attrs.node(), "meta", spans)
-            })
+                colorize_child(call.node(), IDENT, color, hls);
+                colorize_child(call.node(), L_ANGLE, color, hls);
+                colorize_child(call.node(), R_ANGLE, color, hls);
+            }),
     )
 }
 
-fn colorize_node(node: Node, color: &'static str, spans: &mut Spans) {
-    spans.push((node.range(), color))
+fn colorize_node(node: Node, tag: HlTag, spans: &mut Highlights) {
+    spans.push((node.range(), tag))
 }
 
-fn colorize_child(node: Node, child: NodeType, color: &'static str, spans: &mut Spans) {
+fn colorize_child(node: Node, child: NodeType, tag: HlTag, spans: &mut Highlights) {
     if let Some(child) = child_of_type(node, child) {
-        colorize_node(child, color, spans);
+        colorize_node(child, tag, spans);
     }
 }
 

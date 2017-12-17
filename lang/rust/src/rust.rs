@@ -599,3 +599,33 @@ fn parse_block_comment(s: &str) -> Option<usize> {
     Some(len)
 }
 
+use self::fall_tree::{AstNode, AstChildren, Node};
+use self::fall_tree::search::{child_of_type_exn, child_of_type};
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FnDef<'f> { node: Node<'f> }
+
+impl<'f> AstNode<'f> for FnDef<'f> {
+    fn wrap(node: Node<'f>) -> Option<Self> {
+        if node.ty() == FN_DEF {
+            Some(FnDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> Node<'f> { self.node }
+}
+
+impl<'f> FnDef<'f> {
+    pub fn name_ident(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == IDENT)
+    }
+}
+
+impl<'f> ::std::fmt::Debug for FnDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("FnDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}

@@ -28,4 +28,5 @@ export class LangSupport {
 
 export type VsFile = {
     syntaxTree(): string
+    highlight(): Array<[[number, number], string]>
 }

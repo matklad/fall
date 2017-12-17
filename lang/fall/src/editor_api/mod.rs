@@ -1,3 +1,4 @@
+use fall_editor::hl;
 use fall_tree::{AstNode, dump_file, TextRange, TextUnit, TextEdit};
 use fall_tree::search::find_leaf_at_offset;
 use fall_tree::search::ast;
@@ -20,7 +21,7 @@ pub fn tree_as_text(analysis: &Analysis) -> String {
     dump_file(analysis.file())
 }
 
-pub fn highlight(analysis: &Analysis) -> Vec<(TextRange, &'static str)> {
+pub fn highlight(analysis: &Analysis) -> hl::Highlights {
     analysis.file().metrics().measure_time("highlight", || {
         api_impl::highlighting::highlight(analysis)
     })

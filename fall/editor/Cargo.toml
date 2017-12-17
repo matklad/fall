@@ -3,4 +3,6 @@ name = "fall_editor"
 version = "0.1.0"
 
 [dependencies]
+serde = "1.*"
+serde_derive = "1.*"
 fall_tree = { path = "../tree" }

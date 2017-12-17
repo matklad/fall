@@ -31,7 +31,7 @@
                 ]
             },
             {
-                "id": "rust",
+                "id": "rust-fall",
                 "extensions": [
                     ".rs"
                 ]
@@ -49,6 +49,7 @@
         ]
     },
     "activationEvents": [
-        "onLanguage:fall"
+        "onLanguage:fall",
+        "onLanguage:rust-fall"
     ]
 }

@@ -1104,6 +1104,12 @@ rule balanced(bra, ket) {
 
 // END HELPERS
 
+ast {
+  node fn_def {
+    name_ident ident?
+  }
+}
+
 verbatim r##########"
 fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
     if !is_leading {

@@ -5,7 +5,8 @@ import commands from './commands'
 import { backend, LangSupport } from './backend'
 import { State } from './state'
 import { container } from './container'
-import { log } from 'util';
+import { setHighlights } from './highlight'
+import { log } from 'util'
 
 
 var current: State | null = null
@@ -18,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
         let cmd = vscode.commands.registerCommand("fall." + name, () => {
             let state = current
             if (current == null) return
-            log(`exec ${name}`)
+            log(`Command ${name}`)
             return callback(current)
         })
         context.subscriptions.push(cmd)
@@ -31,6 +32,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(...providers)
     log("Registered providers")
 
+    vscode.workspace.onDidChangeTextDocument(event => {
+        changeEditor(vscode.window.activeTextEditor)
+    }, null, context.subscriptions)
+    log("Set up listeners")
+
     vscode.window.onDidChangeActiveTextEditor(changeEditor)
     changeEditor(vscode.window.activeTextEditor)
     log("Extension activated")
@@ -42,6 +48,14 @@ function changeEditor(editor: vscode.TextEditor) {
         return
     }
     current = State.fromEditor(editor)
+    afterStateUpdate(current)
+}
+
+function afterStateUpdate(state: State) {
+    let tdcp = container.textDocumentContentProvider
+    tdcp.updateFile(current.file)
+    tdcp.eventEmitter.fire(container.uris.syntaxTree)
+    setHighlights(state.editor, state.file.highlight())
 }
 
 export function deactivate() { }

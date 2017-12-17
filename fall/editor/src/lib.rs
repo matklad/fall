@@ -1,12 +1,18 @@
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate fall_tree;
 
 use fall_tree::{File, Language, dump_file};
+
+pub mod hl;
 
 #[derive(Clone, Copy)]
 pub struct EditorSupport {
     pub extension: &'static str,
     pub parse: fn(text: &str) -> File,
     pub syntax_tree: Option<fn(file: &File) -> String>,
+    pub highlight: Option<fn(file: &File) -> hl::Highlights>,
 }
 
 impl EditorSupport {
@@ -17,6 +23,13 @@ impl EditorSupport {
     pub fn syntax_tree(&self, file: &File) -> Option<String> {
         let f = self.syntax_tree?;
         Some(f(file))
+    }
+
+    pub fn highlight(&self, file: &File) -> hl::Highlights {
+        match self.highlight {
+            None => Vec::new(),
+            Some(f) => f(file)
+        }
     }
 }
 

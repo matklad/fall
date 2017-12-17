@@ -3,7 +3,7 @@ use ::search::traversal;
 use {Node, NodeType, AstNode};
 
 pub fn visitor<'f, C>(ctx: C) -> VisitorBuilder<'f, C, EmptyVisitor<C>> {
-    VisitorBuilder { ctx, visitor: EmptyVisitor(PhantomData), n: PhantomData }
+    VisitorBuilder::new(ctx, EmptyVisitor(PhantomData))
 }
 
 pub fn process_subtree_bottom_up<'f, V, C>(node: Node<'f>, mut visitor: VisitorBuilder<'f, C, V>) -> C
@@ -24,6 +24,12 @@ pub struct VisitorBuilder<'f, C, V> {
     ctx: C,
     visitor: V,
     n: PhantomData<Node<'f>>,
+}
+
+impl<'f, C, V> VisitorBuilder<'f, C, V> {
+    pub fn new(ctx: C, visitor: V) -> VisitorBuilder<'f, C, V> {
+        VisitorBuilder { ctx, visitor, n: PhantomData}
+    }
 }
 
 impl<'f, C, V> VisitorBuilder<'f, C, V> {
