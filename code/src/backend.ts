@@ -22,6 +22,12 @@ export class LangSupport {
     }
 }
 
+interface FileStructureNode {
+    name: string,
+    range: [number, number],
+    children: [FileStructureNode]
+}
+
 export class VsFile {
     impl;
     constructor(impl) {
@@ -37,7 +43,7 @@ export class VsFile {
         return reportDuration("syntaxTree", () => this.impl.syntaxTree())
     }
 
-    structure() {
+    structure(): Array<FileStructureNode> {
         return this.impl.structure()
     }
 
