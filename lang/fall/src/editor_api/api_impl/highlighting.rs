@@ -74,30 +74,30 @@ rule m(f) {}
     file.analyse(|a| {
         let spans = highlight(a);
         let result = spans.into_iter().map(|(range, d)| {
-            format!("{}: {}", a.ast().node().text().slice(range), d)
+            format!("{}: {}", a.ast().node().text().slice(range), d.0)
         }).collect::<Vec<_>>().join("\n");
         assert_eq!(result, r##"tokenizer: keyword
 r"\d+": string
-number: token
+number: literal
 pub: keyword
 rule: keyword
-bar: rule
+bar: function
 eof: builtin
 <: builtin
 >: builtin
-abracadabra: rule
-<: rule
->: rule
-foo: rule
+abracadabra: function
+<: function
+>: function
+foo: function
 rule: keyword
-number: token
-foo: rule
-m: rule
-<: rule
->: rule
-bar: rule
+number: literal
+foo: function
+m: function
+<: function
+>: function
+bar: function
 rule: keyword
-f: value_parameter
-m: rule"##);
+f: parameter
+m: function"##);
     });
 }

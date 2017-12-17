@@ -192,7 +192,7 @@ fn incremental_reparse_is_equivalent_to_full_parse(
         let e = e.as_text_edit(current_text.as_slice());
         current_text = e.apply(current_text.as_slice());
 
-        current_file = lang_fall().reparse(&current_file, e);
+        current_file = lang_fall().reparse(&current_file, &e);
         let fresh_file = lang_fall().parse(current_text.as_slice());
 
         check_equal_files(&fresh_file, &current_file);

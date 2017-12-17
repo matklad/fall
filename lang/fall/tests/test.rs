@@ -33,7 +33,7 @@ fn relex_test() {
         };
         text = edit.apply(text.as_slice());
         eprintln!("text = {}", text);
-        file = file.edit(edit);
+        file = file.edit(&edit);
         let fresh_file = lang_fall::parse(text.to_string());
         report_diff(&dump_file_ws(&fresh_file), &dump_file_ws(&file));
     }
@@ -61,7 +61,7 @@ fn reparse_test() {
             b.build()
         };
         text = edit.apply(text.as_slice());
-        file = file.edit(edit);
+        file = file.edit(&edit);
         let fresh_file = lang_fall::parse(text.to_string());
         report_diff(&dump_file_ws(&fresh_file), &dump_file_ws(&file));
     }
