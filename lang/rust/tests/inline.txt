@@ -220,7 +220,7 @@ FILE
     SEMI ";"
 
 ----------------------------------------
-fn f() 
+fn f()
   where T: Clone + Copy, Foo: Bar
 {}
 
@@ -527,8 +527,8 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { 
-  let foo::bar = (); 
+fn main() {
+  let foo::bar = ();
   let S(foo, bar, .. ,) = ();
   let foo::Bar { ref x, y: _, .. } = ();
 }
@@ -918,7 +918,7 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn foo() { 
+fn foo() {
     |x, y: i32,| 1 + 1;
     move || -> i32 { 92 };
 }
@@ -1078,9 +1078,9 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { 
+fn main() {
   let d;
-  let b: bool = true; 
+  let b: bool = true;
 }
 
 FILE
@@ -1115,8 +1115,8 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { 
-  if true { foo } else { bar } 
+fn main() {
+  if true { foo } else { bar }
   if 1 { 2 } else if 3 { 4 } else { 5 }
 }
 

@@ -72,9 +72,9 @@ tokenizer {
   slash_eq '/='
   percent '%'
   percent_eq '%='
-  plus '+' 
+  plus '+'
   plus_eq '+='
-  minus '-' 
+  minus '-'
   minus_eq '-='
   ampersand '&'
   ampersand_eq '&='
@@ -101,31 +101,31 @@ rule mod_contents {
   <with_skip mod_form_first mod_form>*
 }
 
-rule mod_form_first { 
-  'struct' | 'union' | 'enum' | 'use' | 'mod' 
+rule mod_form_first {
+  'struct' | 'union' | 'enum' | 'use' | 'mod'
 | 'impl' | 'trait'
 | impl_form_first
 }
 
-rule mod_form { 
-  <inject 
-    {outer_attributes visibility?} { 
-      impl_form | use_decl | extern_crate_decl | struct_def 
-    | enum_def | mod_def | impl_def | trait_def | extern_block 
-  }>  
+rule mod_form {
+  <inject
+    {outer_attributes visibility?} {
+      impl_form | use_decl | extern_crate_decl | struct_def
+    | enum_def | mod_def | impl_def | trait_def | extern_block
+  }>
 | macro_item
 }
 
 pub rule use_decl {
-  'use' <commit> { 
+  'use' <commit> {
     mod_path {alias | {'::' use_spec}?}
-  | '::'? use_spec 
+  | '::'? use_spec
   } ';'
 }
 
 pub rule use_spec {
   '*'
-| <block <comma_list use_spec_entry>> 
+| <block <comma_list use_spec_entry>>
 }
 
 pub rule use_spec_entry {
@@ -159,7 +159,7 @@ rule ret_type {
   '->' type_reference
 }
 
-pub rule linkage { 
+pub rule linkage {
   'extern' string?
 }
 
@@ -180,7 +180,7 @@ pub rule self_parameter {
 }
 
 pub rule struct_def {
-  {'struct' | 'union'} <commit> 
+  {'struct' | 'union'} <commit>
   ident type_parameters? {
     <block <comma_list struct_field>>
   | ';'
@@ -202,7 +202,7 @@ pub rule enum_def {
 }
 
 pub rule enum_variant {
-  ident <commit> 
+  ident <commit>
   { '=' expr
   | <in_parens <comma_list tuple_field>>
   | <block <comma_list struct_field>>
@@ -210,12 +210,12 @@ pub rule enum_variant {
 }
 
 pub rule mod_def {
-  'mod' <commit> 
+  'mod' <commit>
   ident { ';' | <block mod_contents> }
 }
 
 pub rule impl_def {
-  'impl' <commit> 
+  'impl' <commit>
   type_parameters?
   {type_reference {'for' type_reference}? }
   members
@@ -254,7 +254,7 @@ rule impl_form_first {
 }
 
 pub rule type_def {
-  'type' <commit> 
+  'type' <commit>
   ident type_parameters?
   {'=' type_reference}?
   ';'
@@ -336,7 +336,7 @@ pub rule where_clause {
 }
 
 test r"
-fn f() 
+fn f()
   where T: Clone + Copy, Foo: Bar
 {}
 "
@@ -366,16 +366,16 @@ pub rule qualified_path {
 }
 
 rule path_segment {
-  { ident | 'self' | 'super' } 
+  { ident | 'self' | 'super' }
   { type_arguments | <is_in 'type_path'> fn_trait_sugar}?
 }
 
 pub rule type_arguments {
-  { <is_in 'type_path'> | <is_in 'expr_path'> '::' } 
+  { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
   <in_angles {
     <comma_list lifetime>
     <comma_list type_reference>
-  }> 
+  }>
 }
 
 pub rule fn_trait_sugar {
@@ -387,7 +387,7 @@ pub rule alias { 'as' ident }
 // START TYPES
 
 rule type_reference {
-  path_type | reference_type 
+  path_type | reference_type
 | placeholder_type | unit_type | paren_type | never_type
 | array_type
 | fn_pointer_type
@@ -419,7 +419,7 @@ pub rule paren_type {
 }
 
 #[replaces]
-pub rule tuple_type { 
+pub rule tuple_type {
   ',' <comma_list type_reference>
 }
 
@@ -430,7 +430,7 @@ type T = (A,);
 type T = (A, B);
 "
 
-pub rule never_type { 
+pub rule never_type {
   '!'
 }
 
@@ -502,8 +502,8 @@ pub rule struct_pattern_field {
 }
 
 test r"
-fn main() { 
-  let foo::bar = (); 
+fn main() {
+  let foo::bar = ();
   let S(foo, bar, .. ,) = ();
   let foo::Bar { ref x, y: _, .. } = ();
 }"
@@ -559,7 +559,7 @@ fn main() { let &mut foo = bar; }
 // START EXPRESSIONS
 
 #[pratt]
-pub rule expr { 
+pub rule expr {
   literal | path_expr | unit_expr | paren_expr | array_literal
 | lambda_expr | return_expr
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
@@ -569,18 +569,18 @@ pub rule expr {
 
 | reference_expr | dereference_expr | negation_expr | not_expr
 
-| product_expr | sum_expr 
+| product_expr | sum_expr
 | bit_shift
 | bit_and | bit_xor | bit_or
-| comparison 	
+| comparison
 | logical_and | logical_or
 | range_expr | prefix_range_expr | postfix_range_expr | full_range_expr
 | assignment_expr
 }
 
 rule expr_first {
-  literal | ident | 'self' | 'super' | '<' | '::' | '(' | '[' | '|' 
-| 'return' | '{' | 'if' | 'while' | 'loop' | 'for' | 'match' 
+  literal | ident | 'self' | 'super' | '<' | '::' | '(' | '[' | '|'
+| 'return' | '{' | 'if' | 'while' | 'loop' | 'for' | 'match'
 | '&' | '*' | '-' | '!' | '..' | '...'
 }
 
@@ -673,11 +673,11 @@ pub rule lambda_expr {
 }
 
 rule lambda_arg {
-  lambda_value_param <commit> {',' | <not <not '|'>>} 
+  lambda_value_param <commit> {',' | <not <not '|'>>}
 }
 
 test r"
-fn foo() { 
+fn foo() {
     |x, y: i32,| 1 + 1;
     move || -> i32 { 92 };
 }
@@ -729,12 +729,12 @@ pub rule type_ascription {
 
 pub rule initializer {
   '=' expr
-}  
+}
 
 test r"
-fn main() { 
+fn main() {
   let d;
-  let b: bool = true; 
+  let b: bool = true;
 }
 "
 
@@ -748,30 +748,30 @@ pub rule expr_stmt {
 
 #[atom]
 pub rule if_expr {
-  'if' <commit>  
-    block_condition block_expr 
+  'if' <commit>
+    block_condition block_expr
     {'else' {block_expr | if_expr}}?
 }
 
 test r"
-fn main() { 
-  if true { foo } else { bar } 
+fn main() {
+  if true { foo } else { bar }
   if 1 { 2 } else if 3 { 4 } else { 5 }
 }
 "
 
 #[atom]
 pub rule while_expr {
-  label? 'while' <commit>  
-    block_condition block_expr 
+  label? 'while' <commit>
+    block_condition block_expr
     }
 
 test r"
 fn main() { 'w: while true {} }
-"    
+"
 
 rule block_condition {
-  {'let' <commit> pattern '='}? no_struct_literal_expr 
+  {'let' <commit> pattern '='}? no_struct_literal_expr
 }
 
 rule no_struct_literal_expr {
@@ -797,7 +797,7 @@ fn main() { 'pool: loop { 92 }}
 
 #[atom]
 pub rule for_expr {
-  label? 'for' <commit> 
+  label? 'for' <commit>
   pattern 'in' no_struct_literal_expr block_expr
 }
 
@@ -815,8 +815,8 @@ pub rule match_expr {
 }
 
 pub rule match_arm {
-  match_arm_pattern <commit> 
-  '=>' expr 
+  match_arm_pattern <commit>
+  '=>' expr
   {',' | <eof> | prev_is_block}
 }
 
@@ -824,7 +824,7 @@ rule match_arm_pattern {
   pattern {'|' pattern}* guard?
 }
 
-pub rule guard { 
+pub rule guard {
   'if' expr
 }
 
@@ -861,9 +861,9 @@ fn main() {
 
 #[postfix]
 pub rule method_call_expr {
-  expr { 
+  expr {
     '.' ident <enter 'expr_path' type_arguments>?
-    call_args   
+    call_args
   }
 }
 
@@ -1003,7 +1003,7 @@ pub rule postfix_range_expr {
 }
 
 #[atom, type(range_expr)]
-pub rule full_range_expr { 
+pub rule full_range_expr {
   '..' <not expr_first>
 }
 
@@ -1048,8 +1048,8 @@ rule outer_attributes {
 }
 
 pub rule attr_value {
-  ident <commit> 
-  { '=' expr 
+  ident <commit>
+  { '=' expr
   | <in_parens <comma_list attr_value>>
   }?
 }
@@ -1064,7 +1064,7 @@ pub rule block_macro {
 
 pub rule line_macro {
   ident '!' ident? {
-    '(' tt* ')' 
+    '(' tt* ')'
   | '[' tt* ']'
   }
 }
@@ -1090,8 +1090,8 @@ rule in_angles(p) { <balanced_layer '<' '>' p> }
 rule in_bracks(p) { <balanced_layer '[' ']' p> }
 
 rule balanced_layer(bra, ket, contents) {
-  bra <commit> 
-    <layer <balanced bra ket> contents> 
+  bra <commit>
+    <layer <balanced bra ket> contents>
   ket
 }
 
