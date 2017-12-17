@@ -107,6 +107,7 @@ rule mod_form_first {
 | impl_form_first
 }
 
+#[cached]
 rule mod_form {
   <inject
     {outer_attributes visibility?} {

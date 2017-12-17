@@ -6,8 +6,9 @@ extern crate lang_rust;
 use std::path::{Path, PathBuf};
 
 use fall_tree::test_util::{check_syntax_ws, check_syntax, check_directory, check_inline_tests};
-use fall_tree::{TextRange, tu};
-use lang_rust::lang_rust;
+use fall_tree::{TextRange, tu, FileEdit};
+use fall_tree::search::ast;
+use lang_rust::{lang_rust, FnDef};
 
 #[test]
 fn inline_tests() {
@@ -175,6 +176,39 @@ FILE
     IDENT "B"
     SEMI ";"
   WHITESPACE "\n    ""#)
+}
+
+
+#[test]
+fn incremental() {
+    let code = r#"
+struct Foo {
+    foo: u32
+}
+
+#[test]
+fn bar() {}
+
+trait T {
+
+}
+    "#;
+
+    let file = lang_rust().parse(code);
+    let full_tics = file.metrics().get("parsing ticks").unwrap();
+    assert!(1000 < full_tics && full_tics < 1500);
+
+    let node = file.root();
+    let fun = ast::descendants_of_type::<FnDef>(node).pop().unwrap();
+    let mut edit = FileEdit::new(&file);
+    edit.replace_with_text(
+        fun.name_ident().unwrap(),
+        "baz".to_string(),
+    );
+    let edit = edit.into_text_edit();
+    let file = lang_rust().reparse(&file, &edit);
+    let incremental_tics = file.metrics().get("parsing ticks").unwrap();
+    assert!(incremental_tics < 1000, "too many ticks: {}", incremental_tics);
 }
 
 

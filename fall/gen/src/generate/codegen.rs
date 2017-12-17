@@ -160,10 +160,15 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     replaceable: rule.is_replaceable(),
                 }
             }
-            (None, _, _) => {
+            (None, false, true) => {
+                assert_eq!(self.expressions.len() - 1, body.0 as usize);
+                dst::Expr::Cached(body)
+            }
+            (None, false, false) => {
                 assert_eq!(self.expressions.len() - 1, body.0 as usize);
                 self.expressions.pop().unwrap()
             }
+            _ => unreachable!(),
         };
 
         Ok(body)
