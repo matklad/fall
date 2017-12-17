@@ -3,40 +3,53 @@ extern crate serde;
 extern crate serde_derive;
 extern crate fall_tree;
 
-use fall_tree::{File, Language, dump_file};
+use std::sync::Arc;
+use fall_tree::{File, dump_file};
 
 pub mod hl;
+
+use self::hl::Highlights;
+
+pub struct EditorFile {
+    imp: Arc<EditorFileImpl>
+}
+
+impl EditorFile {
+    pub fn new<F: EditorFileImpl>(imp: F) -> EditorFile {
+        EditorFile { imp: Arc::new(imp) }
+    }
+
+    pub fn file(&self) -> &File {
+        self.imp.file()
+    }
+
+    pub fn syntax_tree(&self) -> String {
+        self.imp.syntax_tree()
+    }
+
+    pub fn highlight(&self) -> Highlights {
+        self.imp.highlight()
+    }
+}
+
+pub trait EditorFileImpl: Sync + 'static {
+    fn file(&self) -> &File;
+    fn syntax_tree(&self) -> String;
+    fn highlight(&self) -> Highlights;
+}
 
 #[derive(Clone, Copy)]
 pub struct EditorSupport {
     pub extension: &'static str,
-    pub parse: fn(text: &str) -> File,
-    pub syntax_tree: Option<fn(file: &File) -> String>,
-    pub highlight: Option<fn(file: &File) -> hl::Highlights>,
+    pub parse: fn(text: &str) -> EditorFile,
 }
 
 impl EditorSupport {
-    pub fn parse(&self, text: &str) -> File {
+    pub fn parse(&self, text: &str) -> EditorFile {
         (self.parse)(text)
     }
-
-    pub fn syntax_tree(&self, file: &File) -> Option<String> {
-        let f = self.syntax_tree?;
-        Some(f(file))
-    }
-
-    pub fn highlight(&self, file: &File) -> hl::Highlights {
-        match self.highlight {
-            None => Vec::new(),
-            Some(f) => f(file)
-        }
-    }
 }
 
-pub fn gen_parse(lang: &Language, text: &str) -> File {
-    lang.parse(text)
-}
-
-pub fn gen_syntax_tree(lang: &Language, file: &File) -> String {
+pub fn gen_syntax_tree(file: &File) -> String {
     dump_file(&file)
 }

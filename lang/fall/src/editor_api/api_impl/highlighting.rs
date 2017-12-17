@@ -15,14 +15,7 @@ pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
             (hl::KEYWORD, &[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST]),
             (hl::PARAMETER, &[PARAMETER]),
             (hl::ATTRIBUTE, &[ATTRIBUTES])
-        ]).visit_nodes(&[ERROR], |hls, node| {
-            let range = if node.range().is_empty() {
-                TextRange::from_len(node.range().start(), tu(1))
-            } else {
-                node.range()
-            };
-            hls.push((range, hl::ERROR))
-        })
+        ])
             .visit::<LexRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::LITERAL, hls))
             .visit::<SynRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
             .visit::<AstNodeDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))

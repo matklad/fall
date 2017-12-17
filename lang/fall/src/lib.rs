@@ -31,23 +31,30 @@ pub fn ast(file: &File) -> syntax::FallFile {
 pub use self::editor::FALL_EDITOR_SUPPORT;
 
 mod editor {
-    use analysis::Analysis;
+    use analysis::{Analysis, FileWithAnalysis};
 
     use fall_tree::File;
-    use fall_editor::{EditorSupport, gen_parse, gen_syntax_tree, hl};
+    use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree};
+    use fall_editor::hl::{self, Highlights};
     use syntax::lang_fall;
 
     pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
         extension: "fall",
-        parse: |text| gen_parse(lang_fall(), text),
-        syntax_tree: Some(|file| gen_syntax_tree(lang_fall(), file)),
-        highlight: Some(highlight),
+        parse: |text| EditorFile::new(FileWithAnalysis::new(lang_fall().parse(text))),
     };
 
-    fn highlight(file: &File) -> hl::Highlights {
-        let ast = ::ast(file);
-        let a = Analysis::new(ast);
-        ::editor_api::highlight(&a)
+    impl EditorFileImpl for FileWithAnalysis {
+        fn file(&self) -> &File {
+            self.file()
+        }
+
+        fn syntax_tree(&self) -> String {
+            gen_syntax_tree(self.file())
+        }
+
+        fn highlight(&self) -> Highlights {
+            self.analyse(|a| ::editor_api::highlight(a))
+        }
     }
 }
 

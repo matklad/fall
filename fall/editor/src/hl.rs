@@ -1,4 +1,4 @@
-use fall_tree::{TextRange, NodeType, Node};
+use fall_tree::{TextRange, NodeType, Node, tu, ERROR as ERROR_TY};
 
 use fall_tree::visitor::{Visit, VisitorBuilder};
 
@@ -29,6 +29,15 @@ impl<'f> Visit<'f> for HlVisitor {
     type Context = Highlights;
 
     fn visit(&mut self, ctx: &mut Highlights, node: Node<'f>) {
+        if node.ty() == ERROR_TY {
+            let range = if node.range().is_empty() {
+                TextRange::from_len(node.range().start(), tu(1))
+            } else {
+                node.range()
+            };
+            ctx.push((range, ERROR));
+            return;
+        }
         for &(tag, tys) in self.0.iter() {
             for &ty in tys.iter() {
                 if node.ty() == ty {

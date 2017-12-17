@@ -16,8 +16,7 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::js::class::{Class, JsClass};
 use neon::task::Task;
 
-use fall_tree::File;
-use fall_editor::{EditorSupport};
+use fall_editor::{EditorSupport, EditorFile};
 
 mod support;
 use self::support::{arg1, ret};
@@ -26,11 +25,6 @@ const LANGUAGES: &[EditorSupport] = &[
     lang_fall::FALL_EDITOR_SUPPORT,
     lang_rust::RUST_EDITOR_SUPPORT,
 ];
-
-pub struct VsFile {
-    file: File,
-    support: EditorSupport,
-}
 
 declare_types! {
     pub class JsSupport for EditorSupport {
@@ -53,28 +47,27 @@ declare_types! {
         }
     }
 
-    pub class JsFile for VsFile {
+    pub class JsFile for EditorFile {
         init(call) {
             let scope = call.scope;
             let mut support = call.arguments.require(scope, 0)?.check::<JsSupport>()?;
             let text = call.arguments.require(scope, 1)?.check::<JsString>()?.value();
             let file = support.grab(move |support| support.parse(&text));
-            let support = support.grab(|support| *support);
-            Ok(VsFile {file, support })
+            Ok(file)
         }
 
         method syntaxTree(call) {
             let scope = call.scope;
-            let tree = call.arguments.this(scope).grab(move |vs_file| {
-                vs_file.support.syntax_tree(&vs_file.file)
+            let tree = call.arguments.this(scope).grab(move |file| {
+                file.syntax_tree()
             });
             ret(scope, tree)
         }
 
         method highlight(call) {
             let scope = call.scope;
-            let highlights = call.arguments.this(scope).grab(move |vs_file| {
-                vs_file.support.highlight(&vs_file.file)
+            let highlights = call.arguments.this(scope).grab(move |file| {
+                file.highlight()
             });
             ret(scope, highlights)
         }
