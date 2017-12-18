@@ -147,7 +147,6 @@ declare_types! {
 }
 
 register_module!(m, {
-    m.export("status", status)?;
     m.export("supportForExtension", support_for_extension)?;
     Ok(())
 });
@@ -165,11 +164,6 @@ fn support_for_extension(call: Call) -> JsResult<JsValue> {
     let constructor: Handle<JsFunction<JsSupport>> = class.constructor(scope)?;
     let sup = constructor.construct::<_, JsValue, _>(scope, ::std::iter::once(arg))?;
     Ok(sup.upcast())
-}
-
-fn status(call: Call) -> JsResult<JsValue> {
-    let scope = call.scope;
-    ret(scope, "Hello from Rust")
 }
 
 #[derive(Serialize, Deserialize)]
