@@ -18,12 +18,12 @@ use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
 use neon::js::class::{Class, JsClass};
 use neon::task::Task;
 
-use fall_tree::{TextEditBuilder, Text, TextRange, TextEdit};
+use fall_tree::{TextEditBuilder, Text, TextRange, TextEdit, TextEditOp, tu};
 use fall_editor::{EditorSupport, EditorFile};
 
 mod support;
 
-use self::support::{arg1, ret};
+use self::support::{arg1, arg2, ret};
 use neon_serde::from_value;
 
 const LANGUAGES: &[EditorSupport] = &[
@@ -128,6 +128,21 @@ declare_types! {
             });
             ret(scope, metrics)
         }
+
+        method contextActions(call) {
+            let scope = call.scope;
+            let range: TextRange = arg1(scope, &call.arguments)?;
+            let actions = call.arguments.this(scope).grab(|file| file.context_actions(range));
+            ret(scope, actions)
+        }
+
+        method applyContextAction(call) {
+            let scope = call.scope;
+            let (range, id): (TextRange, String) = arg2(scope, &call.arguments)?;
+            let edit = call.arguments.this(scope).grab(move |file| file.apply_context_action(range, &id));
+            let edit = edit.map(to_vs_edits).unwrap_or_default();
+            ret(scope, edit)
+        }
     }
 }
 
@@ -169,4 +184,25 @@ fn from_vs_edits(text: Text, edits: Vec<VsEdit>) -> TextEdit {
         edit.replace(e.delete, e.insert)
     }
     edit.build()
+}
+
+fn to_vs_edits(edit: TextEdit) -> Vec<VsEdit> {
+    let mut result = Vec::new();
+    let mut offset = tu(0);
+    for op in edit.ops {
+        match op {
+            TextEditOp::Copy(range) => {
+                if range.start() != offset {
+                    let range = TextRange::from_to(offset, range.start());
+                    result.push(VsEdit { delete: range, insert: String::new() })
+                }
+                offset = range.end();
+            }
+            TextEditOp::Insert(text) => {
+                let range = TextRange::from_len(offset, tu(0));
+                result.push(VsEdit { delete: range, insert: text.to_string() })
+            }
+        }
+    }
+    return result;
 }

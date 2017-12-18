@@ -62,6 +62,12 @@ impl EditorFile {
     pub fn extend_selection(&self, range: TextRange) -> Option<TextRange> {
         self.imp.extend_selection(range)
     }
+    pub fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
+        self.imp.context_actions(range)
+    }
+    pub fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
+        self.imp.apply_context_action(range, id)
+    }
 }
 
 pub trait EditorFileImpl: Sync + 'static {
@@ -79,6 +85,12 @@ pub trait EditorFileImpl: Sync + 'static {
     }
     fn extend_selection(&self, range: TextRange) -> Option<TextRange> {
         extend_selection::extend_selection(self.file(), range)
+    }
+    fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
+        Vec::new()
+    }
+    fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
+        None
     }
 }
 

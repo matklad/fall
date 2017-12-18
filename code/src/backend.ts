@@ -34,13 +34,18 @@ export interface FallDiagnostic {
     message: string
 }
 
+export interface Edit {
+    insert: string
+    delete: [number, number]
+}
+
 export class VsFile {
     impl;
     constructor(impl) {
         this.impl = impl
     }
 
-    edit(edits: Array<{insert: string, delete: [number, number]}>): VsFile {
+    edit(edits: Array<Edit>): VsFile {
         let impl = reportDuration("reparse", () => this.impl.edit(edits))
         return new VsFile(impl)
     }
@@ -63,6 +68,14 @@ export class VsFile {
 
     extendSelection(range: [number, number]): [number, number] | null {
         return this.impl.extendSelection(range)
+    }
+
+    contextActions(range: [number, number]): Array<string> {
+        return this.impl.contextActions(range)
+    }
+
+    applyContextAction(range: [number, number], id: string): Array<Edit> {
+        return this.impl.applyContextAction(range, id)
     }
 
     metrics(): string {

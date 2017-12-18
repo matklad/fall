@@ -12,14 +12,6 @@ pub fn analyse(text: String) -> FileWithAnalysis {
     FileWithAnalysis::new(::parse(text))
 }
 
-pub fn context_actions(analysis: &Analysis, range: TextRange) -> Vec<&'static str> {
-    api_impl::actions::context_actions(analysis, range)
-}
-
-pub fn apply_context_action(analysis: &Analysis, range: TextRange, action_id: &str) -> TextEdit {
-    api_impl::actions::apply_context_action(analysis, range, action_id)
-}
-
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {
     api_impl::references::resolve_reference(analysis, offset)
 }

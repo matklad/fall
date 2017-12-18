@@ -1,12 +1,13 @@
 use analysis::{Analysis, FileWithAnalysis};
 
-use fall_tree::{File, TextEdit};
+use fall_tree::{File, TextEdit, TextRange};
 use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
 use fall_editor::hl::Highlights;
 use syntax::lang_fall;
 
 mod highlighting;
 mod structure;
+mod actions;
 
 pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
     extension: "fall",
@@ -37,6 +38,15 @@ impl EditorFileImpl for FileWithAnalysis {
 
     fn diagnostics(&self) -> Vec<Diagnostic> {
         self.record_analysis("diagnostics", |a| a.collect_all_diagnostics())
+    }
+
+    fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
+        self.record_analysis("context_actions", |a| actions::context_actions(a, range))
+    }
+
+    fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
+        let edit = self.analyse(|a| actions::apply_context_action(a, range, id));
+        Some(edit)
     }
 }
 

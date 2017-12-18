@@ -14,11 +14,11 @@ export function activate(context: vscode.ExtensionContext) {
     log("Activating extension")
     for (let name in commands) {
         let callback = commands[name]
-        let cmd = vscode.commands.registerCommand("fall." + name, () => {
+        let cmd = vscode.commands.registerCommand("fall." + name, (...args) => {
             let state = State.current
             if (state == null) return
             log(`Command ${name}`)
-            return callback(state)
+            return callback(state, ...args)
         })
         context.subscriptions.push(cmd)
     }
@@ -27,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall', container.textDocumentContentProvider),
         vscode.languages.registerDocumentSymbolProvider('fall', container.documetSymbolProvider),
+        vscode.languages.registerCodeActionsProvider('fall', container.codeActionProvider),
     ]
     context.subscriptions.push(...providers)
     log("Registered providers")
