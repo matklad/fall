@@ -22,10 +22,16 @@ export class LangSupport {
     }
 }
 
-interface FileStructureNode {
-    name: string,
-    range: [number, number],
+export interface FileStructureNode {
+    name: string
+    range: [number, number]
     children: [FileStructureNode]
+}
+
+export interface FallDiagnostic {
+    range: [number, number]
+    severity: string
+    message: string
 }
 
 export class VsFile {
@@ -49,6 +55,10 @@ export class VsFile {
 
     highlight(): Array<[[number, number], string]> {
         return reportDuration("highlight", () => this.impl.highlight())
+    }
+
+    diagnostics(): Array<FallDiagnostic> {
+        return reportDuration("diagnostics", () => this.impl.diagnostics())
     }
 
     metrics(): string {

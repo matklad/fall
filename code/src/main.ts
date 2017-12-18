@@ -6,6 +6,7 @@ import { LangSupport } from './backend'
 import { State } from './state'
 import { container } from './container'
 import { setHighlights } from './highlight'
+import { setDiagnostics } from './diagnostics'
 import { log } from 'util'
 
 
@@ -80,6 +81,7 @@ function afterStateUpdate(state: State) {
     tdcp.eventEmitter.fire(container.uris.syntaxTree)
     tdcp.eventEmitter.fire(container.uris.status)
     setHighlights(state.editor, state.file.highlight())
+    setDiagnostics(state.editor.document, state.file.diagnostics())
     log("Finish afterStateUpdate")
 }
 

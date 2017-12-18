@@ -1,5 +1,5 @@
 use fall_editor::hl;
-use fall_tree::{AstNode, dump_file, TextRange, TextUnit, TextEdit};
+use fall_tree::{AstNode, TextRange, TextUnit, TextEdit};
 use fall_tree::search::find_leaf_at_offset;
 use fall_tree::search::ast;
 
@@ -22,22 +22,6 @@ pub fn context_actions(analysis: &Analysis, range: TextRange) -> Vec<&'static st
 
 pub fn apply_context_action(analysis: &Analysis, range: TextRange, action_id: &str) -> TextEdit {
     api_impl::actions::apply_context_action(analysis, range, action_id)
-}
-
-#[derive(Serialize, Debug, Copy, Clone)]
-pub enum Severity { Error, Warning }
-
-#[derive(Serialize, Debug, Clone)]
-pub struct Diagnostic {
-    pub range: TextRange,
-    pub severity: Severity,
-    pub message: String
-}
-
-pub fn diagnostics(analysis: &Analysis) -> Vec<Diagnostic> {
-    analysis.file().metrics().measure_time("diagnostics", || {
-        analysis.collect_all_diagnostics()
-    })
 }
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {

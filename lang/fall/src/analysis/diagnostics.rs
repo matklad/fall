@@ -1,6 +1,6 @@
 use fall_tree::Node;
 
-use editor_api::{Diagnostic, Severity};
+use fall_editor::{Diagnostic, Severity};
 
 pub (crate) struct DiagnosticSink<'d> {
     diagnostics: &'d mut Vec<Diagnostic>

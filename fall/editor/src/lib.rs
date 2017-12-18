@@ -10,6 +10,23 @@ pub mod hl;
 
 use self::hl::Highlights;
 
+#[derive(Serialize, Debug)]
+pub struct FileStructureNode {
+    pub name: String,
+    pub range: TextRange,
+    pub children: Vec<FileStructureNode>
+}
+
+#[derive(Serialize, Debug, Copy, Clone)]
+pub enum Severity { Error, Warning }
+
+#[derive(Serialize, Debug, Clone)]
+pub struct Diagnostic {
+    pub range: TextRange,
+    pub severity: Severity,
+    pub message: String
+}
+
 #[derive(Clone)]
 pub struct EditorFile {
     imp: Arc<EditorFileImpl>
@@ -23,25 +40,23 @@ impl EditorFile {
     pub fn edit(&self, edit: &TextEdit) -> EditorFile {
         EditorFile { imp: self.imp.edit(edit).into() }
     }
-
     pub fn file(&self) -> &File {
         self.imp.file()
     }
-
     pub fn syntax_tree(&self) -> String {
         self.imp.syntax_tree()
     }
-
     pub fn highlight(&self) -> Highlights {
         self.imp.highlight()
     }
-
     pub fn metrics(&self) -> String {
         self.file().metrics().to_string()
     }
-
     pub fn structure(&self) -> Vec<FileStructureNode> {
         self.imp.structure()
+    }
+    pub fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.imp.diagnostics()
     }
 }
 
@@ -53,6 +68,9 @@ pub trait EditorFileImpl: Sync + 'static {
         Vec::new()
     }
     fn structure(&self) -> Vec<FileStructureNode> {
+        Vec::new()
+    }
+    fn diagnostics(&self) -> Vec<Diagnostic> {
         Vec::new()
     }
 }
@@ -67,13 +85,6 @@ impl EditorSupport {
     pub fn parse(&self, text: &str) -> EditorFile {
         (self.parse)(text)
     }
-}
-
-#[derive(Serialize, Debug)]
-pub struct FileStructureNode {
-    pub name: String,
-    pub range: TextRange,
-    pub children: Vec<FileStructureNode>
 }
 
 pub fn gen_syntax_tree(file: &File) -> String {

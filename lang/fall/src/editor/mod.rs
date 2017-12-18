@@ -1,8 +1,8 @@
 use analysis::{Analysis, FileWithAnalysis};
 
 use fall_tree::{File, TextEdit};
-use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree, FileStructureNode};
-use fall_editor::hl::{self, Highlights};
+use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
+use fall_editor::hl::Highlights;
 use syntax::lang_fall;
 
 mod highlighting;
@@ -28,15 +28,22 @@ impl EditorFileImpl for FileWithAnalysis {
     }
 
     fn highlight(&self) -> Highlights {
-        self.analyse(|a| {
-            a.file().metrics().measure_time("highlight", || {
-                highlighting::highlight(a)
-            })
-        })
+        self.record_analysis("highlight", |a| highlighting::highlight(a))
     }
 
     fn structure(&self) -> Vec<FileStructureNode> {
         structure::structure(self.file())
     }
+
+    fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.record_analysis("diagnostics", |a| a.collect_all_diagnostics())
+    }
 }
 
+impl FileWithAnalysis {
+    fn record_analysis<R, F: FnOnce(&Analysis) -> R>(&self, tag: &'static str, f: F) -> R {
+        self.analyse(|a| {
+            self.file().metrics().measure_time(tag, || f(a))
+        })
+    }
+}

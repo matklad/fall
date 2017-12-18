@@ -104,10 +104,14 @@ declare_types! {
 
         method highlight(call) {
             let scope = call.scope;
-            let highlights = call.arguments.this(scope).grab(move |file| {
-                file.highlight()
-            });
+            let highlights = call.arguments.this(scope).grab(move |file| file.highlight());
             ret(scope, highlights)
+        }
+
+        method diagnostics(call) {
+            let scope = call.scope;
+            let diagnostics = call.arguments.this(scope).grab(|file| file.diagnostics());
+            ret(scope, diagnostics)
         }
 
         method metrics(call) {
