@@ -28,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.registerTextDocumentContentProvider('fall', container.textDocumentContentProvider),
         vscode.languages.registerDocumentSymbolProvider('fall', container.documetSymbolProvider),
         vscode.languages.registerCodeActionsProvider('fall', container.codeActionProvider),
+        vscode.languages.registerDocumentFormattingEditProvider('fall', container.documentFormattingEditProvider),
     ]
     context.subscriptions.push(...providers)
     log("Registered providers")

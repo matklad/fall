@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import { FallTextDocumentContentProvider } from './FallTextDocumentContentProvider'
 import { FallDocumentSymbolProvider } from './FallDocumentSymbolProvider'
 import { FallCodeActionProvider } from './FallCodeActionProvider'
+import { FallDocumentFormattingEditProvider } from './FallDocumentFormattingEditProvider'
 
 export let container = {
     uris: {
@@ -10,5 +11,6 @@ export let container = {
     },
     textDocumentContentProvider: new FallTextDocumentContentProvider(),
     documetSymbolProvider: new FallDocumentSymbolProvider(),
-    codeActionProvider: new FallCodeActionProvider()
+    codeActionProvider: new FallCodeActionProvider(),
+    documentFormattingEditProvider: new FallDocumentFormattingEditProvider()
 }

@@ -8,6 +8,7 @@ use syntax::lang_fall;
 mod highlighting;
 mod structure;
 mod actions;
+mod formatter;
 
 pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
     extension: "fall",
@@ -47,6 +48,10 @@ impl EditorFileImpl for FileWithAnalysis {
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
         let edit = self.analyse(|a| actions::apply_context_action(a, range, id));
         Some(edit)
+    }
+
+    fn reformat(&self) -> TextEdit {
+        formatter::reformat(self.file())
     }
 }
 

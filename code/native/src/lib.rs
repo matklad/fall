@@ -143,6 +143,13 @@ declare_types! {
             let edit = edit.map(to_vs_edits).unwrap_or_default();
             ret(scope, edit)
         }
+
+        method reformat(call) {
+            let scope = call.scope;
+            let edit = call.arguments.this(scope).grab(|file| file.reformat());
+            let edit = to_vs_edits(edit);
+            ret(scope, edit)
+        }
     }
 }
 

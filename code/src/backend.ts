@@ -78,6 +78,10 @@ export class VsFile {
         return this.impl.applyContextAction(range, id)
     }
 
+    reformat(): Array<Edit> {
+        return this.impl.reformat()
+    }
+
     metrics(): string {
         return this.impl.metrics()
     }

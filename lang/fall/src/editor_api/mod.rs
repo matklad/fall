@@ -6,22 +6,18 @@ use fall_tree::search::ast;
 use analysis::{FileWithAnalysis, Analysis};
 use syntax::{TestDef};
 
-mod api_impl;
+mod references;
 
 pub fn analyse(text: String) -> FileWithAnalysis {
     FileWithAnalysis::new(::parse(text))
 }
 
 pub fn resolve_reference(analysis: &Analysis, offset: TextUnit) -> Option<TextRange> {
-    api_impl::references::resolve_reference(analysis, offset)
+    references::resolve_reference(analysis, offset)
 }
 
 pub fn find_usages(analysis: &Analysis, offset: TextUnit) -> Vec<TextRange> {
-    api_impl::references::find_usages(analysis, offset)
-}
-
-pub fn reformat(analysis: &Analysis) -> TextEdit {
-    api_impl::formatter::reformat(analysis.file())
+    references::find_usages(analysis, offset)
 }
 
 pub fn test_at_offset(analysis: &Analysis, offset: TextUnit) -> Option<usize> {

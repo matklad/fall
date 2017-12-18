@@ -4,7 +4,7 @@ extern crate serde_derive;
 extern crate fall_tree;
 
 use std::sync::Arc;
-use fall_tree::{File, dump_file, TextEdit, TextRange};
+use fall_tree::{File, dump_file, TextEdit, TextRange, FileEdit};
 
 pub mod hl;
 mod extend_selection;
@@ -68,6 +68,9 @@ impl EditorFile {
     pub fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
         self.imp.apply_context_action(range, id)
     }
+    pub fn reformat(&self) -> TextEdit {
+        self.imp.reformat()
+    }
 }
 
 pub trait EditorFileImpl: Sync + 'static {
@@ -91,6 +94,9 @@ pub trait EditorFileImpl: Sync + 'static {
     }
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
         None
+    }
+    fn reformat(&self) -> TextEdit {
+        FileEdit::new(self.file()).into_text_edit()
     }
 }
 
