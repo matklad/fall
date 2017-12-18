@@ -61,6 +61,10 @@ export class VsFile {
         return reportDuration("diagnostics", () => this.impl.diagnostics())
     }
 
+    extendSelection(range: [number, number]): [number, number] | null {
+        return this.impl.extendSelection(range)
+    }
+
     metrics(): string {
         return this.impl.metrics()
     }

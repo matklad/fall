@@ -7,6 +7,7 @@ use std::sync::Arc;
 use fall_tree::{File, dump_file, TextEdit, TextRange};
 
 pub mod hl;
+mod extend_selection;
 
 use self::hl::Highlights;
 
@@ -58,6 +59,9 @@ impl EditorFile {
     pub fn diagnostics(&self) -> Vec<Diagnostic> {
         self.imp.diagnostics()
     }
+    pub fn extend_selection(&self, range: TextRange) -> Option<TextRange> {
+        self.imp.extend_selection(range)
+    }
 }
 
 pub trait EditorFileImpl: Sync + 'static {
@@ -72,6 +76,9 @@ pub trait EditorFileImpl: Sync + 'static {
     }
     fn diagnostics(&self) -> Vec<Diagnostic> {
         Vec::new()
+    }
+    fn extend_selection(&self, range: TextRange) -> Option<TextRange> {
+        extend_selection::extend_selection(self.file(), range)
     }
 }
 

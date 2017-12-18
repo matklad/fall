@@ -12,10 +12,6 @@ pub fn analyse(text: String) -> FileWithAnalysis {
     FileWithAnalysis::new(::parse(text))
 }
 
-pub fn extend_selection(analysis: &Analysis, range: TextRange) -> Option<TextRange> {
-    api_impl::extend_selection::extend_selection(analysis.file(), range)
-}
-
 pub fn context_actions(analysis: &Analysis, range: TextRange) -> Vec<&'static str> {
     api_impl::actions::context_actions(analysis, range)
 }

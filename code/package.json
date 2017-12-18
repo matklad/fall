@@ -45,8 +45,25 @@
             {
                 "command": "fall.showSyntaxTree",
                 "title": "Show syntax tree"
+            },
+            {
+                "command": "fall.semanticSelection",
+                "title": "Semantic Selection"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "fall.semanticSelection",
+                "key": "shift+alt+right",
+                "when": "editorTextFocus && editorLangId == fall"
+            },
+            {
+                "command": "fall.semanticSelection",
+                "key": "shift+alt+right",
+                "when": "editorTextFocus && editorLangId == rust-fall"
             }
         ]
+
     },
     "activationEvents": [
         "onLanguage:fall",

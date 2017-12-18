@@ -114,6 +114,13 @@ declare_types! {
             ret(scope, diagnostics)
         }
 
+        method extendSelection(call) {
+            let scope = call.scope;
+            let range: TextRange = arg1(scope, &call.arguments)?;
+            let range = call.arguments.this(scope).grab(|file| file.extend_selection(range));
+            ret(scope, range)
+        }
+
         method metrics(call) {
             let scope = call.scope;
             let metrics = call.arguments.this(scope).grab(move |file| {
