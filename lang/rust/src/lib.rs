@@ -7,21 +7,14 @@ mod rust;
 pub use self::rust::*;
 pub use self::rust::language as lang_rust;
 
-pub use self::editor::RUST_EDITOR_SUPPORT;
-
-mod editor {
+pub mod editor {
     use fall_tree::{File, TextEdit};
     use fall_tree::visitor::process_subtree_bottom_up;
-    use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree};
+    use fall_editor::{EditorFileImpl, gen_syntax_tree};
     use fall_editor::hl::{self, Highlights};
     use *;
 
-    pub const RUST_EDITOR_SUPPORT: EditorSupport = EditorSupport {
-        extension: "rs",
-        parse: |text| EditorFile::new(RustEditorFile::new(lang_rust().parse(text))),
-    };
-
-    struct RustEditorFile {
+    pub struct RustEditorFile {
         file: File
     }
 
@@ -32,12 +25,16 @@ mod editor {
     }
 
     impl EditorFileImpl for RustEditorFile {
-        fn file(&self) -> &File {
-            &self.file
+        fn parse(text: &str) -> Self {
+            RustEditorFile::new(lang_rust().parse(text))
         }
 
-        fn edit(&self, edit: &TextEdit) -> Box<EditorFileImpl> {
-            Box::new(RustEditorFile::new(self.file.edit(edit)))
+        fn edit(&self, edit: &TextEdit) -> Self {
+            RustEditorFile::new(self.file.edit(edit))
+        }
+
+        fn file(&self) -> &File {
+            &self.file
         }
 
         fn syntax_tree(&self) -> String {

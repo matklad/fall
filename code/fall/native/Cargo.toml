@@ -1,0 +1,20 @@
+[package]
+name = "fall_backend"
+version = "0.1.0"
+authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
+license = "MIT"
+build = "build.rs"
+
+[workspace]
+
+[lib]
+name = "fall_backend"
+crate-type = ["dylib"]
+
+[build-dependencies]
+neon-build = "0.1.22"
+
+[dependencies]
+neon = "0.1.22"
+generic_backend = { path = "../../generic_backend" }
+lang_fall = { path = "../../../lang/fall" }

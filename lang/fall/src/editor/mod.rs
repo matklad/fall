@@ -1,7 +1,7 @@
-use analysis::{Analysis, FileWithAnalysis};
+use analysis::Analysis;
 
 use fall_tree::{File, TextEdit, TextRange};
-use fall_editor::{EditorSupport, EditorFile, EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
+use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
 use fall_editor::hl::Highlights;
 use syntax::lang_fall;
 
@@ -10,20 +10,22 @@ mod structure;
 mod actions;
 mod formatter;
 
-pub const FALL_EDITOR_SUPPORT: EditorSupport = EditorSupport {
-    extension: "fall",
-    parse: |text| EditorFile::new(FileWithAnalysis::new(lang_fall().parse(text))),
-};
+pub use analysis::FileWithAnalysis;
 
 impl EditorFileImpl for FileWithAnalysis {
+    fn parse(text: &str) -> Self {
+        FileWithAnalysis::new(lang_fall().parse(text))
+    }
+
+    fn edit(&self, edit: &TextEdit) -> Self {
+        let file = self.file().edit(edit);
+        FileWithAnalysis::new(file)
+    }
+
     fn file(&self) -> &File {
         self.file()
     }
 
-    fn edit(&self, edit: &TextEdit) -> Box<EditorFileImpl> {
-        let file = self.file().edit(edit);
-        Box::new(FileWithAnalysis::new(file))
-    }
 
     fn syntax_tree(&self) -> String {
         gen_syntax_tree(self.file())

@@ -28,8 +28,7 @@ pub fn ast(file: &File) -> syntax::FallFile {
     syntax::FallFile::wrap(file.root()).unwrap()
 }
 
-mod editor;
-pub use self::editor::FALL_EDITOR_SUPPORT;
+pub mod editor;
 
 
 #[cfg(test)]
