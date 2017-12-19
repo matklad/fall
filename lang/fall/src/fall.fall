@@ -28,6 +28,7 @@ tokenizer {
   // it in Fall to avoid clashes with keywords in the target language.
   #[contextual] node 'node'
   #[contextual] class 'class'
+  #[contextual] class 'trait'
   #[contextual] tokenizer 'tokenizer'
   #[contextual] rule 'rule'
   #[contextual] verbatim 'verbatim'
@@ -52,6 +53,7 @@ tokenizer {
   r_angle '>'
   l_paren '('
   r_paren ')'
+  colon ':'
 
   number r"\d+"
   // Raw literals like `r###"contains "a string" inside "###` are supported.
@@ -258,16 +260,22 @@ pub rule ast_def {
   'ast' <commit> '{'
     <with_skip
       {'node' | 'class'}
-      {ast_node_def | ast_class_def}>*
+      {ast_node_def | ast_class_def | ast_trait_def}>*
   '}'
 }
 
 pub rule ast_node_def {
-  'node' <commit> ident <block method_def*>
+  'node' <commit>
+  ident {':' ident}
+  <block method_def*>
 }
 
 pub rule ast_class_def {
   'class' <commit> ident <block ident*>
+}
+
+pub rule ast_trait_def {
+  'trait' <commit> ident <block method_def*>
 }
 
 pub rule method_def { ident ast_selector }
@@ -353,6 +361,12 @@ ast {
 
   node ast_class_def {
     name_ident ident
+  }
+
+  node ast_trait_def {
+    name_ident ident
+    name ident.text
+    methods method_def*
   }
 
   node method_def {

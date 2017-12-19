@@ -7,54 +7,57 @@ pub const WHITESPACE: rt::NodeType = rt::NodeType(100);
 pub const EOL_COMMENT: rt::NodeType = rt::NodeType(101);
 pub const NODE: rt::NodeType = rt::NodeType(102);
 pub const CLASS: rt::NodeType = rt::NodeType(103);
-pub const TOKENIZER: rt::NodeType = rt::NodeType(104);
-pub const RULE: rt::NodeType = rt::NodeType(105);
-pub const VERBATIM: rt::NodeType = rt::NodeType(106);
-pub const AST: rt::NodeType = rt::NodeType(107);
-pub const PUB: rt::NodeType = rt::NodeType(108);
-pub const TEST: rt::NodeType = rt::NodeType(109);
-pub const EQ: rt::NodeType = rt::NodeType(110);
-pub const PIPE: rt::NodeType = rt::NodeType(111);
-pub const STAR: rt::NodeType = rt::NodeType(112);
-pub const QUESTION: rt::NodeType = rt::NodeType(113);
-pub const DOT: rt::NodeType = rt::NodeType(114);
-pub const COMMA: rt::NodeType = rt::NodeType(115);
-pub const HASH: rt::NodeType = rt::NodeType(116);
-pub const L_CURLY: rt::NodeType = rt::NodeType(117);
-pub const R_CURLY: rt::NodeType = rt::NodeType(118);
-pub const L_SQUARE: rt::NodeType = rt::NodeType(119);
-pub const R_SQUARE: rt::NodeType = rt::NodeType(120);
-pub const L_ANGLE: rt::NodeType = rt::NodeType(121);
-pub const R_ANGLE: rt::NodeType = rt::NodeType(122);
-pub const L_PAREN: rt::NodeType = rt::NodeType(123);
-pub const R_PAREN: rt::NodeType = rt::NodeType(124);
-pub const NUMBER: rt::NodeType = rt::NodeType(125);
-pub const SIMPLE_STRING: rt::NodeType = rt::NodeType(126);
-pub const HASH_STRING: rt::NodeType = rt::NodeType(127);
-pub const IDENT: rt::NodeType = rt::NodeType(128);
-pub const FALL_FILE: rt::NodeType = rt::NodeType(129);
-pub const SYN_RULE: rt::NodeType = rt::NodeType(130);
-pub const PARAMETERS: rt::NodeType = rt::NodeType(131);
-pub const PARAMETER: rt::NodeType = rt::NodeType(132);
-pub const REF_EXPR: rt::NodeType = rt::NodeType(133);
-pub const SEQ_EXPR: rt::NodeType = rt::NodeType(134);
-pub const BLOCK_EXPR: rt::NodeType = rt::NodeType(135);
-pub const OPT_EXPR: rt::NodeType = rt::NodeType(136);
-pub const REP_EXPR: rt::NodeType = rt::NodeType(137);
-pub const CALL_EXPR: rt::NodeType = rt::NodeType(138);
-pub const TOKENIZER_DEF: rt::NodeType = rt::NodeType(139);
-pub const LEX_RULE: rt::NodeType = rt::NodeType(140);
-pub const TEST_DEF: rt::NodeType = rt::NodeType(141);
-pub const ATTRIBUTES: rt::NodeType = rt::NodeType(142);
-pub const ATTRIBUTE: rt::NodeType = rt::NodeType(143);
-pub const ATTRIBUTE_VALUE: rt::NodeType = rt::NodeType(144);
-pub const STRING: rt::NodeType = rt::NodeType(145);
-pub const VERBATIM_DEF: rt::NodeType = rt::NodeType(146);
-pub const AST_DEF: rt::NodeType = rt::NodeType(147);
-pub const AST_NODE_DEF: rt::NodeType = rt::NodeType(148);
-pub const AST_CLASS_DEF: rt::NodeType = rt::NodeType(149);
-pub const METHOD_DEF: rt::NodeType = rt::NodeType(150);
-pub const AST_SELECTOR: rt::NodeType = rt::NodeType(151);
+pub const CLASS: rt::NodeType = rt::NodeType(104);
+pub const TOKENIZER: rt::NodeType = rt::NodeType(105);
+pub const RULE: rt::NodeType = rt::NodeType(106);
+pub const VERBATIM: rt::NodeType = rt::NodeType(107);
+pub const AST: rt::NodeType = rt::NodeType(108);
+pub const PUB: rt::NodeType = rt::NodeType(109);
+pub const TEST: rt::NodeType = rt::NodeType(110);
+pub const EQ: rt::NodeType = rt::NodeType(111);
+pub const PIPE: rt::NodeType = rt::NodeType(112);
+pub const STAR: rt::NodeType = rt::NodeType(113);
+pub const QUESTION: rt::NodeType = rt::NodeType(114);
+pub const DOT: rt::NodeType = rt::NodeType(115);
+pub const COMMA: rt::NodeType = rt::NodeType(116);
+pub const HASH: rt::NodeType = rt::NodeType(117);
+pub const L_CURLY: rt::NodeType = rt::NodeType(118);
+pub const R_CURLY: rt::NodeType = rt::NodeType(119);
+pub const L_SQUARE: rt::NodeType = rt::NodeType(120);
+pub const R_SQUARE: rt::NodeType = rt::NodeType(121);
+pub const L_ANGLE: rt::NodeType = rt::NodeType(122);
+pub const R_ANGLE: rt::NodeType = rt::NodeType(123);
+pub const L_PAREN: rt::NodeType = rt::NodeType(124);
+pub const R_PAREN: rt::NodeType = rt::NodeType(125);
+pub const COLON: rt::NodeType = rt::NodeType(126);
+pub const NUMBER: rt::NodeType = rt::NodeType(127);
+pub const SIMPLE_STRING: rt::NodeType = rt::NodeType(128);
+pub const HASH_STRING: rt::NodeType = rt::NodeType(129);
+pub const IDENT: rt::NodeType = rt::NodeType(130);
+pub const FALL_FILE: rt::NodeType = rt::NodeType(131);
+pub const SYN_RULE: rt::NodeType = rt::NodeType(132);
+pub const PARAMETERS: rt::NodeType = rt::NodeType(133);
+pub const PARAMETER: rt::NodeType = rt::NodeType(134);
+pub const REF_EXPR: rt::NodeType = rt::NodeType(135);
+pub const SEQ_EXPR: rt::NodeType = rt::NodeType(136);
+pub const BLOCK_EXPR: rt::NodeType = rt::NodeType(137);
+pub const OPT_EXPR: rt::NodeType = rt::NodeType(138);
+pub const REP_EXPR: rt::NodeType = rt::NodeType(139);
+pub const CALL_EXPR: rt::NodeType = rt::NodeType(140);
+pub const TOKENIZER_DEF: rt::NodeType = rt::NodeType(141);
+pub const LEX_RULE: rt::NodeType = rt::NodeType(142);
+pub const TEST_DEF: rt::NodeType = rt::NodeType(143);
+pub const ATTRIBUTES: rt::NodeType = rt::NodeType(144);
+pub const ATTRIBUTE: rt::NodeType = rt::NodeType(145);
+pub const ATTRIBUTE_VALUE: rt::NodeType = rt::NodeType(146);
+pub const STRING: rt::NodeType = rt::NodeType(147);
+pub const VERBATIM_DEF: rt::NodeType = rt::NodeType(148);
+pub const AST_DEF: rt::NodeType = rt::NodeType(149);
+pub const AST_NODE_DEF: rt::NodeType = rt::NodeType(150);
+pub const AST_CLASS_DEF: rt::NodeType = rt::NodeType(151);
+pub const AST_TRAIT_DEF: rt::NodeType = rt::NodeType(152);
+pub const METHOD_DEF: rt::NodeType = rt::NodeType(153);
+pub const AST_SELECTOR: rt::NodeType = rt::NodeType(154);
 
 
 pub fn language() -> &'static rt::Language {
@@ -77,6 +80,7 @@ pub fn language() -> &'static rt::Language {
             ::fall_parse::LexRule::new(R_ANGLE, ">", None),
             ::fall_parse::LexRule::new(L_PAREN, "\\(", None),
             ::fall_parse::LexRule::new(R_PAREN, "\\)", None),
+            ::fall_parse::LexRule::new(COLON, ":", None),
             ::fall_parse::LexRule::new(NUMBER, "\\d+", None),
             ::fall_parse::LexRule::new(SIMPLE_STRING, "\'([^\'\\\\]|\\\\.)*\'?", None),
             ::fall_parse::LexRule::new(HASH_STRING, "r#*\"", Some(parse_raw_string)),
@@ -85,12 +89,12 @@ pub fn language() -> &'static rt::Language {
     }
 
     fn create_parser_definition() -> ::fall_parse::ParserDefinition {
-        let parser_json = r##"[{"Pub":{"ty":30,"body":36,"replaceable":false}},{"Or":[38,40,42,44,46,48,50]},{"Or":[51,52,53,54,55]},{"Pub":{"ty":31,"body":76,"replaceable":false}},{"Pub":{"ty":32,"body":82,"replaceable":false}},{"Pub":{"ty":33,"body":85,"replaceable":false}},{"Pratt":{"atoms":[12,7,9],"prefixes":[],"infixes":[{"ty":37,"op":86,"priority":999,"has_rhs":false},{"ty":38,"op":87,"priority":999,"has_rhs":false}]}},{"Pub":{"ty":34,"body":92,"replaceable":false}},{"Pub":{"ty":35,"body":95,"replaceable":false}},{"Pub":{"ty":36,"body":105,"replaceable":false}},{"Pub":{"ty":37,"body":108,"replaceable":false}},{"Pub":{"ty":38,"body":111,"replaceable":false}},{"Pub":{"ty":39,"body":117,"replaceable":false}},{"Pub":{"ty":40,"body":122,"replaceable":false}},{"Pub":{"ty":41,"body":127,"replaceable":false}},{"Pub":{"ty":42,"body":131,"replaceable":false}},{"Pub":{"ty":43,"body":138,"replaceable":false}},{"Pub":{"ty":44,"body":146,"replaceable":false}},{"Pub":{"ty":45,"body":151,"replaceable":false}},{"Pub":{"ty":46,"body":156,"replaceable":false}},{"Or":[166]},{"Or":[171]},{"Or":[175]},{"Or":[179]},{"Or":[183]},{"Or":[198]},{"Pub":{"ty":47,"body":202,"replaceable":false}},{"Pub":{"ty":48,"body":217,"replaceable":false}},{"Pub":{"ty":49,"body":223,"replaceable":false}},{"Pub":{"ty":50,"body":230,"replaceable":false}},{"Pub":{"ty":51,"body":233,"replaceable":false}},{"Pub":{"ty":52,"body":237,"replaceable":false}},{"Or":[241,244,246,248]},{"WithSkip":[1,2]},{"Rep":33},{"And":[[34],null]},{"Or":[35]},{"ContextualToken":[5,"tokenizer"]},{"And":[[37],null]},{"ContextualToken":[9,"pub"]},{"And":[[39],null]},{"ContextualToken":[6,"rule"]},{"And":[[41],null]},{"Token":17},{"And":[[43],null]},{"ContextualToken":[7,"verbatim"]},{"And":[[45],null]},{"ContextualToken":[8,"ast"]},{"And":[[47],null]},{"ContextualToken":[10,"test"]},{"And":[[49],null]},{"And":[[13],null]},{"And":[[3],null]},{"And":[[26],null]},{"And":[[27],null]},{"And":[[15],null]},{"Opt":16},{"ContextualToken":[9,"pub"]},{"Opt":57},{"ContextualToken":[6,"rule"]},{"Token":29},{"Opt":4},{"Token":18},{"Token":19},{"And":[[62,22,63],null]},{"Token":18},{"Not":1},"Any",{"And":[[66,67],null]},{"Or":[68]},{"Rep":69},{"And":[[65,70],null]},{"Or":[64,71]},{"Layer":[72,9]},{"And":[[56,58,59,60,61,73],3]},{"Or":[74]},{"Cached":75},{"Token":24},{"Call":[20,[[0,5]]]},{"Layer":[23,78]},{"Token":25},{"And":[[77,79,80],null]},{"Or":[81]},{"Token":29},{"And":[[83],null]},{"Or":[84]},{"Token":14},{"Token":13},{"Token":29},{"And":[[88],null]},{"Token":27},{"And":[[90],null]},{"Or":[89,91]},{"Rep":6},{"And":[[93],null]},{"Or":[94]},{"Opt":8},{"Token":12},{"And":[[97,8],null]},{"Or":[98]},{"Rep":99},{"And":[[96,100],null]},{"Or":[101]},{"Call":[21,[[1,102]]]},{"And":[[103],null]},{"Or":[104]},{"Token":14},{"And":[[6,106],null]},{"Or":[107]},{"Token":13},{"And":[[6,109],null]},{"Or":[110]},{"Token":22},{"Token":29},{"Rep":6},{"Token":23},{"And":[[112,113,114,115],null]},{"Or":[116]},{"ContextualToken":[5,"tokenizer"]},{"Rep":14},{"Call":[21,[[1,119]]]},{"And":[[118,120],1]},{"Or":[121]},{"Opt":16},{"Token":29},{"Opt":19},{"And":[[123,124,19,125],2]},{"Or":[126]},{"ContextualToken":[10,"test"]},{"Token":28},{"And":[[128,129],1]},{"Or":[130]},{"Token":17},{"Token":20},{"Call":[20,[[0,17]]]},{"Layer":[24,134]},{"Token":21},{"And":[[132,133,135,136],null]},{"Or":[137]},{"Token":29},{"Token":24},{"Token":25},{"And":[[140,18,141],null]},{"Or":[142]},{"Opt":143},{"And":[[139,144],null]},{"Or":[145]},{"Token":26},{"And":[[147],null]},{"Token":29},{"And":[[149],null]},{"Or":[148,150]},{"Token":27},{"And":[[152],null]},{"Token":28},{"And":[[154],null]},{"Or":[153,155]},{"Var":0},"Eof",{"And":[[158],null]},{"Token":16},{"And":[[160],null]},{"Or":[159,161]},{"And":[[157,162],1]},{"Or":[163]},{"Rep":164},{"And":[[165],null]},{"Token":18},{"Var":1},{"Layer":[22,168]},{"Token":19},{"And":[[167,169,170],1]},{"Token":18},{"Token":19},{"Call":[25,[[2,172],[3,173]]]},{"And":[[174],null]},{"Token":24},{"Token":25},{"Call":[25,[[2,176],[3,177]]]},{"And":[[178],null]},{"Token":20},{"Token":21},{"Call":[25,[[2,180],[3,181]]]},{"And":[[182],null]},{"Var":2},{"Var":2},{"Var":3},{"Call":[25,[[2,185],[3,186]]]},{"Var":3},{"And":[[184,187,188],null]},{"Var":3},{"Not":190},"Any",{"And":[[191,192],null]},{"Or":[193]},{"And":[[194],null]},{"Or":[189,195]},{"Rep":196},{"And":[[197],null]},{"ContextualToken":[7,"verbatim"]},{"Token":28},{"And":[[199,200],1]},{"Or":[201]},{"ContextualToken":[8,"ast"]},{"Token":18},{"ContextualToken":[3,"node"]},{"And":[[205],null]},{"ContextualToken":[4,"class"]},{"And":[[207],null]},{"Or":[206,208]},{"And":[[28],null]},{"And":[[29],null]},{"Or":[210,211]},{"WithSkip":[209,212]},{"Rep":213},{"Token":19},{"And":[[203,204,214,215],1]},{"Or":[216]},{"ContextualToken":[3,"node"]},{"Token":29},{"Rep":30},{"Call":[21,[[1,220]]]},{"And":[[218,219,221],1]},{"Or":[222]},{"ContextualToken":[4,"class"]},{"Token":29},{"Token":29},{"Rep":226},{"Call":[21,[[1,227]]]},{"And":[[224,225,228],1]},{"Or":[229]},{"Token":29},{"And":[[231,31],null]},{"Or":[232]},{"Token":29},{"Opt":32},{"And":[[234,235],null]},{"Or":[236]},{"Token":14},{"Token":15},{"Token":29},{"And":[[238,239,240],null]},{"Token":15},{"Token":29},{"And":[[242,243],null]},{"Token":13},{"And":[[245],null]},{"Token":14},{"And":[[247],null]}]"##;
+        let parser_json = r##"[{"Pub":{"ty":32,"body":37,"replaceable":false}},{"Or":[39,41,43,45,47,49,51]},{"Or":[52,53,54,55,56]},{"Pub":{"ty":33,"body":77,"replaceable":false}},{"Pub":{"ty":34,"body":83,"replaceable":false}},{"Pub":{"ty":35,"body":86,"replaceable":false}},{"Pratt":{"atoms":[12,7,9],"prefixes":[],"infixes":[{"ty":39,"op":87,"priority":999,"has_rhs":false},{"ty":40,"op":88,"priority":999,"has_rhs":false}]}},{"Pub":{"ty":36,"body":93,"replaceable":false}},{"Pub":{"ty":37,"body":96,"replaceable":false}},{"Pub":{"ty":38,"body":106,"replaceable":false}},{"Pub":{"ty":39,"body":109,"replaceable":false}},{"Pub":{"ty":40,"body":112,"replaceable":false}},{"Pub":{"ty":41,"body":118,"replaceable":false}},{"Pub":{"ty":42,"body":123,"replaceable":false}},{"Pub":{"ty":43,"body":128,"replaceable":false}},{"Pub":{"ty":44,"body":132,"replaceable":false}},{"Pub":{"ty":45,"body":139,"replaceable":false}},{"Pub":{"ty":46,"body":147,"replaceable":false}},{"Pub":{"ty":47,"body":152,"replaceable":false}},{"Pub":{"ty":48,"body":157,"replaceable":false}},{"Or":[167]},{"Or":[172]},{"Or":[176]},{"Or":[180]},{"Or":[184]},{"Or":[199]},{"Pub":{"ty":49,"body":203,"replaceable":false}},{"Pub":{"ty":50,"body":219,"replaceable":false}},{"Pub":{"ty":51,"body":229,"replaceable":false}},{"Pub":{"ty":52,"body":236,"replaceable":false}},{"Pub":{"ty":53,"body":242,"replaceable":false}},{"Pub":{"ty":54,"body":245,"replaceable":false}},{"Pub":{"ty":55,"body":249,"replaceable":false}},{"Or":[253,256,258,260]},{"WithSkip":[1,2]},{"Rep":34},{"And":[[35],null]},{"Or":[36]},{"ContextualToken":[6,"tokenizer"]},{"And":[[38],null]},{"ContextualToken":[10,"pub"]},{"And":[[40],null]},{"ContextualToken":[7,"rule"]},{"And":[[42],null]},{"Token":18},{"And":[[44],null]},{"ContextualToken":[8,"verbatim"]},{"And":[[46],null]},{"ContextualToken":[9,"ast"]},{"And":[[48],null]},{"ContextualToken":[11,"test"]},{"And":[[50],null]},{"And":[[13],null]},{"And":[[3],null]},{"And":[[26],null]},{"And":[[27],null]},{"And":[[15],null]},{"Opt":16},{"ContextualToken":[10,"pub"]},{"Opt":58},{"ContextualToken":[7,"rule"]},{"Token":31},{"Opt":4},{"Token":19},{"Token":20},{"And":[[63,22,64],null]},{"Token":19},{"Not":1},"Any",{"And":[[67,68],null]},{"Or":[69]},{"Rep":70},{"And":[[66,71],null]},{"Or":[65,72]},{"Layer":[73,9]},{"And":[[57,59,60,61,62,74],3]},{"Or":[75]},{"Cached":76},{"Token":25},{"Call":[20,[[0,5]]]},{"Layer":[23,79]},{"Token":26},{"And":[[78,80,81],null]},{"Or":[82]},{"Token":31},{"And":[[84],null]},{"Or":[85]},{"Token":15},{"Token":14},{"Token":31},{"And":[[89],null]},{"Token":29},{"And":[[91],null]},{"Or":[90,92]},{"Rep":6},{"And":[[94],null]},{"Or":[95]},{"Opt":8},{"Token":13},{"And":[[98,8],null]},{"Or":[99]},{"Rep":100},{"And":[[97,101],null]},{"Or":[102]},{"Call":[21,[[1,103]]]},{"And":[[104],null]},{"Or":[105]},{"Token":15},{"And":[[6,107],null]},{"Or":[108]},{"Token":14},{"And":[[6,110],null]},{"Or":[111]},{"Token":23},{"Token":31},{"Rep":6},{"Token":24},{"And":[[113,114,115,116],null]},{"Or":[117]},{"ContextualToken":[6,"tokenizer"]},{"Rep":14},{"Call":[21,[[1,120]]]},{"And":[[119,121],1]},{"Or":[122]},{"Opt":16},{"Token":31},{"Opt":19},{"And":[[124,125,19,126],2]},{"Or":[127]},{"ContextualToken":[11,"test"]},{"Token":30},{"And":[[129,130],1]},{"Or":[131]},{"Token":18},{"Token":21},{"Call":[20,[[0,17]]]},{"Layer":[24,135]},{"Token":22},{"And":[[133,134,136,137],null]},{"Or":[138]},{"Token":31},{"Token":25},{"Token":26},{"And":[[141,18,142],null]},{"Or":[143]},{"Opt":144},{"And":[[140,145],null]},{"Or":[146]},{"Token":28},{"And":[[148],null]},{"Token":31},{"And":[[150],null]},{"Or":[149,151]},{"Token":29},{"And":[[153],null]},{"Token":30},{"And":[[155],null]},{"Or":[154,156]},{"Var":0},"Eof",{"And":[[159],null]},{"Token":17},{"And":[[161],null]},{"Or":[160,162]},{"And":[[158,163],1]},{"Or":[164]},{"Rep":165},{"And":[[166],null]},{"Token":19},{"Var":1},{"Layer":[22,169]},{"Token":20},{"And":[[168,170,171],1]},{"Token":19},{"Token":20},{"Call":[25,[[2,173],[3,174]]]},{"And":[[175],null]},{"Token":25},{"Token":26},{"Call":[25,[[2,177],[3,178]]]},{"And":[[179],null]},{"Token":21},{"Token":22},{"Call":[25,[[2,181],[3,182]]]},{"And":[[183],null]},{"Var":2},{"Var":2},{"Var":3},{"Call":[25,[[2,186],[3,187]]]},{"Var":3},{"And":[[185,188,189],null]},{"Var":3},{"Not":191},"Any",{"And":[[192,193],null]},{"Or":[194]},{"And":[[195],null]},{"Or":[190,196]},{"Rep":197},{"And":[[198],null]},{"ContextualToken":[8,"verbatim"]},{"Token":30},{"And":[[200,201],1]},{"Or":[202]},{"ContextualToken":[9,"ast"]},{"Token":19},{"ContextualToken":[3,"node"]},{"And":[[206],null]},{"ContextualToken":[4,"class"]},{"And":[[208],null]},{"Or":[207,209]},{"And":[[28],null]},{"And":[[29],null]},{"And":[[30],null]},{"Or":[211,212,213]},{"WithSkip":[210,214]},{"Rep":215},{"Token":20},{"And":[[204,205,216,217],1]},{"Or":[218]},{"ContextualToken":[3,"node"]},{"Token":31},{"Token":27},{"Token":31},{"And":[[222,223],null]},{"Or":[224]},{"Rep":31},{"Call":[21,[[1,226]]]},{"And":[[220,221,225,227],1]},{"Or":[228]},{"ContextualToken":[4,"class"]},{"Token":31},{"Token":31},{"Rep":232},{"Call":[21,[[1,233]]]},{"And":[[230,231,234],1]},{"Or":[235]},{"ContextualToken":[4,"trait"]},{"Token":31},{"Rep":31},{"Call":[21,[[1,239]]]},{"And":[[237,238,240],1]},{"Or":[241]},{"Token":31},{"And":[[243,32],null]},{"Or":[244]},{"Token":31},{"Opt":33},{"And":[[246,247],null]},{"Or":[248]},{"Token":15},{"Token":16},{"Token":31},{"And":[[250,251,252],null]},{"Token":16},{"Token":31},{"And":[[254,255],null]},{"Token":14},{"And":[[257],null]},{"Token":15},{"And":[[259],null]}]"##;
 
         ::fall_parse::ParserDefinition {
             node_types: vec![
                 ERROR,
-                WHITESPACE, EOL_COMMENT, NODE, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, OPT_EXPR, REP_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, METHOD_DEF, AST_SELECTOR,
+                WHITESPACE, EOL_COMMENT, NODE, CLASS, CLASS, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, COLON, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, OPT_EXPR, REP_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, AST_TRAIT_DEF, METHOD_DEF, AST_SELECTOR,
             ],
             syntactical_rules: serde_json::from_str(parser_json).unwrap(),
             
@@ -132,6 +136,7 @@ pub fn language() -> &'static rt::Language {
                         EOL_COMMENT => NodeTypeInfo { name: "EOL_COMMENT", whitespace_like: true },
                         NODE => NodeTypeInfo { name: "NODE", whitespace_like: false },
                         CLASS => NodeTypeInfo { name: "CLASS", whitespace_like: false },
+                        CLASS => NodeTypeInfo { name: "CLASS", whitespace_like: false },
                         TOKENIZER => NodeTypeInfo { name: "TOKENIZER", whitespace_like: false },
                         RULE => NodeTypeInfo { name: "RULE", whitespace_like: false },
                         VERBATIM => NodeTypeInfo { name: "VERBATIM", whitespace_like: false },
@@ -153,6 +158,7 @@ pub fn language() -> &'static rt::Language {
                         R_ANGLE => NodeTypeInfo { name: "R_ANGLE", whitespace_like: false },
                         L_PAREN => NodeTypeInfo { name: "L_PAREN", whitespace_like: false },
                         R_PAREN => NodeTypeInfo { name: "R_PAREN", whitespace_like: false },
+                        COLON => NodeTypeInfo { name: "COLON", whitespace_like: false },
                         NUMBER => NodeTypeInfo { name: "NUMBER", whitespace_like: false },
                         SIMPLE_STRING => NodeTypeInfo { name: "SIMPLE_STRING", whitespace_like: false },
                         HASH_STRING => NodeTypeInfo { name: "HASH_STRING", whitespace_like: false },
@@ -178,6 +184,7 @@ pub fn language() -> &'static rt::Language {
                         AST_DEF => NodeTypeInfo { name: "AST_DEF", whitespace_like: false },
                         AST_NODE_DEF => NodeTypeInfo { name: "AST_NODE_DEF", whitespace_like: false },
                         AST_CLASS_DEF => NodeTypeInfo { name: "AST_CLASS_DEF", whitespace_like: false },
+                        AST_TRAIT_DEF => NodeTypeInfo { name: "AST_TRAIT_DEF", whitespace_like: false },
                         METHOD_DEF => NodeTypeInfo { name: "METHOD_DEF", whitespace_like: false },
                         AST_SELECTOR => NodeTypeInfo { name: "AST_SELECTOR", whitespace_like: false },
                         _ => panic!("Unknown NodeType: {:?}", ty)
@@ -587,6 +594,39 @@ impl<'f> AstClassDef<'f> {
 impl<'f> ::std::fmt::Debug for AstClassDef<'f> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.write_str("AstClassDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct AstTraitDef<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for AstTraitDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == AST_TRAIT_DEF {
+            Some(AstTraitDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> AstTraitDef<'f> {
+    pub fn name_ident(&self) -> Node<'f> {
+        self.node().children().find(|n| n.ty() == IDENT).unwrap()
+    }
+    pub fn name(&self) -> Text<'f> {
+        rt::child_of_type_exn(self.node, IDENT).text()
+    }
+    pub fn methods(&self) -> rt::AstChildren<'f, MethodDef<'f>> {
+        rt::AstChildren::new(self.node.children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for AstTraitDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("AstTraitDef@")?;
         self.node().range().fmt(f)?;
         Ok(())
     }
