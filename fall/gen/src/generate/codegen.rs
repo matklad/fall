@@ -94,6 +94,15 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     variants: class.variants().map(|variant| (scream(variant), camel(variant))).collect(),
                 }
             }).collect::<Vec<_>>());
+
+            context.add("ast_traits", &ast.ast_traits().map(|trait_| {
+                Ok(CtxAstTrait {
+                    trait_name: camel(trait_.name()),
+                    methods: trait_.methods()
+                        .map(|method| self.gen_method(method))
+                        .collect::<Result<Vec<CtxMethod>>>()?,
+                })
+            }).collect::<Result<Vec<_>>>()?);
         }
 
         Ok(context)
@@ -411,6 +420,12 @@ struct CtxAstNode<'f> {
 struct CtxAstClass {
     enum_name: String,
     variants: Vec<(String, String)>,
+}
+
+#[derive(Serialize)]
+struct CtxAstTrait<'f> {
+    trait_name: String,
+    methods: Vec<CtxMethod<'f>>,
 }
 
 #[derive(Serialize)]

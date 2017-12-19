@@ -72,6 +72,7 @@ macro_rules! declare_editor_file_class {
                             let edits = call.arguments.require(scope, 1)?;
                             let edits: Vec<$crate::VsEdit> = $crate::neon_serde::from_value(scope, edits)?;
                             file.grab(|file| {
+                                use $crate::fall_editor::EditorFileImpl;
                                 let edit = $crate::from_vs_edits(file.file().text(), edits);
                                 $crate::EditorFile::edit(file, &edit)
                             })

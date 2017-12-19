@@ -1135,9 +1135,9 @@ rule balanced(bra, ket) {
 // END HELPERS
 
 ast {
-  trait declaration {
-     name_ident ident?
-     name ident?.text
+  trait name_owner {
+    name_ident ident?
+    name ident?.text
   }
 
   node fn_def {

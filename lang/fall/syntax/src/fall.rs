@@ -529,6 +529,9 @@ impl<'f> AstDef<'f> {
     pub fn ast_classes(&self) -> rt::AstChildren<'f, AstClassDef<'f>> {
         rt::AstChildren::new(self.node.children())
     }
+    pub fn ast_traits(&self) -> rt::AstChildren<'f, AstTraitDef<'f>> {
+        rt::AstChildren::new(self.node.children())
+    }
 }
 
 impl<'f> ::std::fmt::Debug for AstDef<'f> {

@@ -629,3 +629,10 @@ impl<'f> ::std::fmt::Debug for FnDef<'f> {
         Ok(())
     }
 }
+
+
+
+pub trait NameOwner<'f>: rt::AstNode<'f> {
+    fn name_ident(&self) -> Option<Node<'f>>;
+    fn name(&self) -> Option<Text<'f>>;
+}

@@ -355,6 +355,7 @@ ast {
   node ast_def {
     ast_nodes ast_node_def*
     ast_classes ast_class_def*
+    ast_traits ast_trait_def*
   }
 
   node ast_node_def {
