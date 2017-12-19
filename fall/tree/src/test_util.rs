@@ -76,11 +76,17 @@ pub fn check_inline_tests(lang: &Language, grammar: &Path, test_data: &Path) {
     let tests = collect_tests(&grammar);
     let expected = render_tests(lang, &tests);
     let actual = file::get_text(test_data).unwrap_or(String::new());
+
     if expected != actual {
         if rewrite {
             file::put_text(test_data, expected).unwrap();
         } else {
-            report_diff(&expected, &actual)
+            let separator = "----------------------------------------";
+            for (e, a) in expected.split(separator).zip(actual.split(separator)) {
+                if e != a {
+                    report_diff(&e, &a)
+                }
+            }
         }
     }
 }

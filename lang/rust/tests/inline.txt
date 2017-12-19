@@ -220,6 +220,27 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+pub struct X;
+pub(crate) struct Y;
+
+FILE
+  STRUCT_DEF
+    VISIBILITY
+      PUB "pub"
+    STRUCT "struct"
+    IDENT "X"
+    SEMI ";"
+  STRUCT_DEF
+    VISIBILITY
+      PUB "pub"
+      L_PAREN "("
+      CRATE "crate"
+      R_PAREN ")"
+    STRUCT "struct"
+    IDENT "Y"
+    SEMI ";"
+
+----------------------------------------
 fn f()
   where T: Clone + Copy, Foo: Bar
 {}
