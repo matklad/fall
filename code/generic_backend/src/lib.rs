@@ -12,7 +12,6 @@ use std::sync::Arc;
 
 use neon::vm::{Call, JsResult, Lock};
 use neon::mem::Handle;
-use neon::scope::Scope;
 use neon::js::{JsString, JsValue, JsFunction};
 use neon::js::class::{Class, JsClass};
 
@@ -59,7 +58,6 @@ macro_rules! declare_editor_file_class {
         declare_types! {
             pub class $cls for EditorFileHack {
                 init(call) {
-                    use $crate::fall_editor::EditorFileImpl;
                     use $crate::neon::js::{JsString};
                     use $crate::neon::mem::Handle;
                     use $crate::neon::vm::Lock;
