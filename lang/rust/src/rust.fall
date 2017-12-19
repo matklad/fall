@@ -198,7 +198,7 @@ pub rule tuple_field {
 }
 
 pub rule enum_def {
-  'enum' <commit> ident
+  'enum' <commit> ident type_parameters?
   <block <comma_list enum_variant>>
 }
 
