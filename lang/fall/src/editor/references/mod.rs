@@ -124,7 +124,7 @@ impl<'f> From<AstClassDef<'f>> for Declaration<'f> {
 fn test_find_refs() {
     use fall_tree::tu;
 
-    let file = ::editor_api::analyse(r#####"
+    let file = ::analyse(r#####"
 tokenizer {
   #[skip] whitespace r"\s+"
 

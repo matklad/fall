@@ -63,7 +63,7 @@ fn colorize_child(node: Node, child: NodeType, tag: HlTag, spans: &mut Highlight
 
 #[test]
 fn test_highlighting() {
-    let file = ::editor_api::analyse(r####"
+    let file = ::analyse(r####"
 tokenizer { number r"\d+"}
 pub rule foo { bar <eof> <abracadabra> }
 rule bar { number <m foo> }

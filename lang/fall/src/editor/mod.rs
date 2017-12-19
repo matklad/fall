@@ -90,3 +90,22 @@ impl FileWithAnalysis {
         })
     }
 }
+
+#[test]
+fn test_extend_selection() {
+    use fall_tree::tu;
+
+    let file = ::analyse(r####"
+tokenizer { number r"\d+"}
+pub rule foo { bar }
+rule bar { number }
+"####);
+    let s1 = file.extend_selection(TextRange::from_len(tu(44), tu(0)))
+        .unwrap();
+    let s2 = file.extend_selection(s1).unwrap();
+    let s3 = file.extend_selection(s2).unwrap();
+    assert_eq!(
+        format!("{:?}", (s1, s2, s3)),
+        "([43; 46), [41; 48), [28; 48))"
+    );
+}

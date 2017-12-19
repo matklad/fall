@@ -110,11 +110,11 @@ fn analysis_is_sync() {
 
 #[cfg(test)]
 fn check_diagnostics(code: &str, expected_diagnostics: &str) {
-    use editor_api::Severity;
+    use fall_editor::Severity;
     use fall_tree::ERROR;
     use fall_tree::test_util::report_diff;
     use fall_tree::search::subtree;
-    let file = ::editor_api::analyse(code.to_string());
+    let file = ::analyse(code.to_string());
 
     for node in subtree(file.file().root()) {
         if node.ty() == ERROR {

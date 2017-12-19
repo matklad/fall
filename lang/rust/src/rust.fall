@@ -328,8 +328,13 @@ struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
 
 
 pub rule visibility {
-  'pub'
+  'pub' <in_parens 'crate'>?
 }
+
+test r"
+pub struct X;
+pub(crate) struct Y;
+"
 
 pub rule where_clause {
   'where' <commit>

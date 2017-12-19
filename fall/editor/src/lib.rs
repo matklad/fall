@@ -3,7 +3,6 @@ extern crate serde;
 extern crate serde_derive;
 extern crate fall_tree;
 
-use std::sync::Arc;
 use fall_tree::{File, dump_file, TextEdit, TextRange, FileEdit};
 
 pub mod hl;
