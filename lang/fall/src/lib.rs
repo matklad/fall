@@ -2,8 +2,6 @@ extern crate itertools;
 extern crate regex;
 extern crate serde;
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate rental;
 
 extern crate fall_tree;

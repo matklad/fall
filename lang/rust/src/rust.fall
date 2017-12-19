@@ -359,7 +359,7 @@ const C: Fn(i32, i64) -> () = foo;
 
 #[pratt]
 pub rule path {
-  unqualified_path | qualified_path
+  unqualified_path | qualified_path | trait_projection_path
 }
 
 #[atom, type(path)]
@@ -371,6 +371,15 @@ pub rule unqualified_path {
 pub rule qualified_path {
   path {'::' path_segment}
 }
+
+#[atom]
+pub rule trait_projection_path {
+  <in_angles {type_reference 'as' type_reference}>
+  '::' path_segment
+}
+test r"
+type T = <Q as Foo<'f>>::Result;
+"
 
 rule path_segment {
   { ident | 'self' | 'super' }

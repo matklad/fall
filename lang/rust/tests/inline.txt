@@ -349,6 +349,33 @@ FILE
     SEMI ";"
 
 ----------------------------------------
+type T = <Q as Foo<'f>>::Result;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    PATH_TYPE
+      TRAIT_PROJECTION_PATH
+        L_ANGLE "<"
+        PATH_TYPE
+          PATH
+            IDENT "Q"
+        AS "as"
+        PATH_TYPE
+          PATH
+            IDENT "Foo"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              LIFETIME "\'f"
+              R_ANGLE ">"
+        R_ANGLE ">"
+        COLONCOLON "::"
+        IDENT "Result"
+    SEMI ";"
+
+----------------------------------------
 type T = X<Foo, Bar>;
 
 FILE
