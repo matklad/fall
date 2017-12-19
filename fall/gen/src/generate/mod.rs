@@ -13,16 +13,17 @@ pub fn generate(analysis: &Analysis) -> Result<String> {
 }
 
 const TEMPLATE: &'static str = r#####"
+use fall_parse::runtime as rt;
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, TextEdit, TreeBuilder};
+use self::fall_tree::{Text, NodeTypeInfo, Metrics, TextEdit, TreeBuilder};
 pub use self::fall_tree::ERROR;
 
 {% for node_type in node_types %}
-pub const {{ node_type.0 | upper }}: NodeType = NodeType({{ 100 + loop.index0 }});
+pub const {{ node_type.0 | upper }}: rt::NodeType = rt::NodeType({{ 100 + loop.index0 }});
 {% endfor %}
 
 
-pub fn language() -> &'static Language {
+pub fn language() -> &'static rt::Language {
     fn create_lexer() -> ::fall_parse::RegexLexer {
         ::fall_parse::RegexLexer::new(vec![
             {% for rule in lex_rules %}
@@ -48,12 +49,12 @@ pub fn language() -> &'static Language {
     }
 
     lazy_static! {
-        static ref LANG: Language = {
+        static ref LANG: rt::Language = {
             use fall_parse::{ParserDefinition, parse, reparse};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
-            impl LanguageImpl for Impl {
+            impl rt::LanguageImpl for Impl {
                 fn parse(
                     &self,
                     text: Text,
@@ -100,22 +101,19 @@ pub fn language() -> &'static Language {
 {% endif %}
 
 {% if ast_nodes is defined %}
-use self::fall_tree::{AstNode, AstChildren, Node};
-use self::fall_tree::search::{child_of_type_exn, child_of_type};
-
 {% for node in ast_nodes %}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct {{ node.struct_name }}<'f> { node: Node<'f> }
+pub struct {{ node.struct_name }}<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for {{ node.struct_name }}<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for {{ node.struct_name }}<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == {{ node.node_type_name }} {
             Some({{ node.struct_name }} { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> {{ node.struct_name }}<'f> {
@@ -143,8 +141,8 @@ pub enum {{ class.enum_name }}<'f> {
     {% endfor %}
 }
 
-impl<'f> AstNode<'f> for {{ class.enum_name }}<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for {{ class.enum_name }}<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         {% for v in class.variants %}
         if let Some(n) = {{ v.1 }}::wrap(node) {
             return Some({{ class.enum_name }}::{{ v.1 }}(n))
@@ -153,7 +151,7 @@ impl<'f> AstNode<'f> for {{ class.enum_name }}<'f> {
         None
     }
 
-    fn node(self) -> Node<'f> {
+    fn node(self) -> rt::Node<'f> {
         match self {
             {% for v in class.variants %}
                 {{ class.enum_name }}::{{ v.1 }}(n) => n.node(),
@@ -169,11 +167,10 @@ impl<'f> ::std::fmt::Debug for {{ class.enum_name }}<'f> {
                 {{ class.enum_name }}::{{ v.1 }}(..) => "{{ v.1 }}@",
             {% endfor %}
         })?;
-        AstNode::node(*self).range().fmt(f)?;
+        rt::AstNode::node(*self).range().fmt(f)?;
         Ok(())
     }
 }
 {% endfor %}
-
 {% endif %}
 "#####;

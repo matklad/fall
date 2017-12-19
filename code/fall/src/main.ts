@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("fall-fall.renderTest", async (test_n, file) => {
             tdcp.test_n = test_n
+            tdcp.eventEmitter.fire(tdcp.uri)
             let document = await vscode.workspace.openTextDocument(tdcp.uri)
             return vscode.window.showTextDocument(document, vscode.ViewColumn.Two, true)
         })

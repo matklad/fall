@@ -251,5 +251,7 @@ pub mod runtime {
     pub use serde_json;
     pub use regex;
     pub use fall_tree;
+    pub use fall_tree::{AstNode, AstChildren, Node, NodeType, Language, LanguageImpl};
+    pub use fall_tree::search::{child_of_type, child_of_type_exn};
     pub use lazy_static::*;
 }

@@ -1,16 +1,17 @@
+use fall_parse::runtime as rt;
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, TextEdit, TreeBuilder};
+use self::fall_tree::{Text, NodeTypeInfo, Metrics, TextEdit, TreeBuilder};
 pub use self::fall_tree::ERROR;
 
-pub const WHITESPACE: NodeType = NodeType(100);
-pub const LPAREN: NodeType = NodeType(101);
-pub const RPAREN: NodeType = NodeType(102);
-pub const ATOM: NodeType = NodeType(103);
-pub const FILE: NodeType = NodeType(104);
-pub const LIST: NodeType = NodeType(105);
+pub const WHITESPACE: rt::NodeType = rt::NodeType(100);
+pub const LPAREN: rt::NodeType = rt::NodeType(101);
+pub const RPAREN: rt::NodeType = rt::NodeType(102);
+pub const ATOM: rt::NodeType = rt::NodeType(103);
+pub const FILE: rt::NodeType = rt::NodeType(104);
+pub const LIST: rt::NodeType = rt::NodeType(105);
 
 
-pub fn language() -> &'static Language {
+pub fn language() -> &'static rt::Language {
     fn create_lexer() -> ::fall_parse::RegexLexer {
         ::fall_parse::RegexLexer::new(vec![
             ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
@@ -35,12 +36,12 @@ pub fn language() -> &'static Language {
     }
 
     lazy_static! {
-        static ref LANG: Language = {
+        static ref LANG: rt::Language = {
             use fall_parse::{ParserDefinition, parse, reparse};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
-            impl LanguageImpl for Impl {
+            impl rt::LanguageImpl for Impl {
                 fn parse(
                     &self,
                     text: Text,

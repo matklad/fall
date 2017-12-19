@@ -1494,6 +1494,77 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+fn main() {
+  foo();
+  let x = foo();
+  {}();
+  match x { 1 => {}() => 2 }
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      EXPR_STMT
+        CALL_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "foo"
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      LET_STMT
+        LET "let"
+        PATH_PATTERN
+          PATH
+            IDENT "x"
+        INITIALIZER
+          EQ "="
+          CALL_EXPR
+            PATH_EXPR
+              PATH
+                IDENT "foo"
+            L_PAREN "("
+            R_PAREN ")"
+        SEMI ";"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
+      EXPR_STMT
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
+        SEMI ";"
+      MATCH_EXPR
+        MATCH "match"
+        PATH_EXPR
+          PATH
+            IDENT "x"
+        L_CURLY "{"
+        MATCH_ARM
+          LITERAL_PATTERN
+            LITERAL
+              NUMBER "1"
+          FAT_ARROW "=>"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
+        MATCH_ARM
+          UNIT_PATTERN
+            L_PAREN "("
+            R_PAREN ")"
+          FAT_ARROW "=>"
+          LITERAL
+            NUMBER "2"
+        R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
 fn main() { foo() }
 
 FILE

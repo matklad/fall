@@ -1,26 +1,27 @@
+use fall_parse::runtime as rt;
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, TextEdit, TreeBuilder};
+use self::fall_tree::{Text, NodeTypeInfo, Metrics, TextEdit, TreeBuilder};
 pub use self::fall_tree::ERROR;
 
-pub const WHITESPACE: NodeType = NodeType(100);
-pub const LBRACE: NodeType = NodeType(101);
-pub const RBRACE: NodeType = NodeType(102);
-pub const LBRACK: NodeType = NodeType(103);
-pub const RBRACK: NodeType = NodeType(104);
-pub const COLON: NodeType = NodeType(105);
-pub const COMMA: NodeType = NodeType(106);
-pub const NULL: NodeType = NodeType(107);
-pub const BOOL: NodeType = NodeType(108);
-pub const STRING: NodeType = NodeType(109);
-pub const NUMBER: NodeType = NodeType(110);
-pub const FILE: NodeType = NodeType(111);
-pub const OBJECT: NodeType = NodeType(112);
-pub const FIELD: NodeType = NodeType(113);
-pub const ARRAY: NodeType = NodeType(114);
-pub const PRIMITIVE: NodeType = NodeType(115);
+pub const WHITESPACE: rt::NodeType = rt::NodeType(100);
+pub const LBRACE: rt::NodeType = rt::NodeType(101);
+pub const RBRACE: rt::NodeType = rt::NodeType(102);
+pub const LBRACK: rt::NodeType = rt::NodeType(103);
+pub const RBRACK: rt::NodeType = rt::NodeType(104);
+pub const COLON: rt::NodeType = rt::NodeType(105);
+pub const COMMA: rt::NodeType = rt::NodeType(106);
+pub const NULL: rt::NodeType = rt::NodeType(107);
+pub const BOOL: rt::NodeType = rt::NodeType(108);
+pub const STRING: rt::NodeType = rt::NodeType(109);
+pub const NUMBER: rt::NodeType = rt::NodeType(110);
+pub const FILE: rt::NodeType = rt::NodeType(111);
+pub const OBJECT: rt::NodeType = rt::NodeType(112);
+pub const FIELD: rt::NodeType = rt::NodeType(113);
+pub const ARRAY: rt::NodeType = rt::NodeType(114);
+pub const PRIMITIVE: rt::NodeType = rt::NodeType(115);
 
 
-pub fn language() -> &'static Language {
+pub fn language() -> &'static rt::Language {
     fn create_lexer() -> ::fall_parse::RegexLexer {
         ::fall_parse::RegexLexer::new(vec![
             ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
@@ -52,12 +53,12 @@ pub fn language() -> &'static Language {
     }
 
     lazy_static! {
-        static ref LANG: Language = {
+        static ref LANG: rt::Language = {
             use fall_parse::{ParserDefinition, parse, reparse};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
-            impl LanguageImpl for Impl {
+            impl rt::LanguageImpl for Impl {
                 fn parse(
                     &self,
                     text: Text,

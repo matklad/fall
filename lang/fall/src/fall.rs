@@ -1,62 +1,63 @@
+use fall_parse::runtime as rt;
 use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeType, NodeTypeInfo, Language, LanguageImpl, Metrics, TextEdit, TreeBuilder};
+use self::fall_tree::{Text, NodeTypeInfo, Metrics, TextEdit, TreeBuilder};
 pub use self::fall_tree::ERROR;
 
-pub const WHITESPACE: NodeType = NodeType(100);
-pub const EOL_COMMENT: NodeType = NodeType(101);
-pub const NODE: NodeType = NodeType(102);
-pub const CLASS: NodeType = NodeType(103);
-pub const TOKENIZER: NodeType = NodeType(104);
-pub const RULE: NodeType = NodeType(105);
-pub const VERBATIM: NodeType = NodeType(106);
-pub const AST: NodeType = NodeType(107);
-pub const PUB: NodeType = NodeType(108);
-pub const TEST: NodeType = NodeType(109);
-pub const EQ: NodeType = NodeType(110);
-pub const PIPE: NodeType = NodeType(111);
-pub const STAR: NodeType = NodeType(112);
-pub const QUESTION: NodeType = NodeType(113);
-pub const DOT: NodeType = NodeType(114);
-pub const COMMA: NodeType = NodeType(115);
-pub const HASH: NodeType = NodeType(116);
-pub const L_CURLY: NodeType = NodeType(117);
-pub const R_CURLY: NodeType = NodeType(118);
-pub const L_SQUARE: NodeType = NodeType(119);
-pub const R_SQUARE: NodeType = NodeType(120);
-pub const L_ANGLE: NodeType = NodeType(121);
-pub const R_ANGLE: NodeType = NodeType(122);
-pub const L_PAREN: NodeType = NodeType(123);
-pub const R_PAREN: NodeType = NodeType(124);
-pub const NUMBER: NodeType = NodeType(125);
-pub const SIMPLE_STRING: NodeType = NodeType(126);
-pub const HASH_STRING: NodeType = NodeType(127);
-pub const IDENT: NodeType = NodeType(128);
-pub const FALL_FILE: NodeType = NodeType(129);
-pub const SYN_RULE: NodeType = NodeType(130);
-pub const PARAMETERS: NodeType = NodeType(131);
-pub const PARAMETER: NodeType = NodeType(132);
-pub const REF_EXPR: NodeType = NodeType(133);
-pub const SEQ_EXPR: NodeType = NodeType(134);
-pub const BLOCK_EXPR: NodeType = NodeType(135);
-pub const OPT_EXPR: NodeType = NodeType(136);
-pub const REP_EXPR: NodeType = NodeType(137);
-pub const CALL_EXPR: NodeType = NodeType(138);
-pub const TOKENIZER_DEF: NodeType = NodeType(139);
-pub const LEX_RULE: NodeType = NodeType(140);
-pub const TEST_DEF: NodeType = NodeType(141);
-pub const ATTRIBUTES: NodeType = NodeType(142);
-pub const ATTRIBUTE: NodeType = NodeType(143);
-pub const ATTRIBUTE_VALUE: NodeType = NodeType(144);
-pub const STRING: NodeType = NodeType(145);
-pub const VERBATIM_DEF: NodeType = NodeType(146);
-pub const AST_DEF: NodeType = NodeType(147);
-pub const AST_NODE_DEF: NodeType = NodeType(148);
-pub const AST_CLASS_DEF: NodeType = NodeType(149);
-pub const METHOD_DEF: NodeType = NodeType(150);
-pub const AST_SELECTOR: NodeType = NodeType(151);
+pub const WHITESPACE: rt::NodeType = rt::NodeType(100);
+pub const EOL_COMMENT: rt::NodeType = rt::NodeType(101);
+pub const NODE: rt::NodeType = rt::NodeType(102);
+pub const CLASS: rt::NodeType = rt::NodeType(103);
+pub const TOKENIZER: rt::NodeType = rt::NodeType(104);
+pub const RULE: rt::NodeType = rt::NodeType(105);
+pub const VERBATIM: rt::NodeType = rt::NodeType(106);
+pub const AST: rt::NodeType = rt::NodeType(107);
+pub const PUB: rt::NodeType = rt::NodeType(108);
+pub const TEST: rt::NodeType = rt::NodeType(109);
+pub const EQ: rt::NodeType = rt::NodeType(110);
+pub const PIPE: rt::NodeType = rt::NodeType(111);
+pub const STAR: rt::NodeType = rt::NodeType(112);
+pub const QUESTION: rt::NodeType = rt::NodeType(113);
+pub const DOT: rt::NodeType = rt::NodeType(114);
+pub const COMMA: rt::NodeType = rt::NodeType(115);
+pub const HASH: rt::NodeType = rt::NodeType(116);
+pub const L_CURLY: rt::NodeType = rt::NodeType(117);
+pub const R_CURLY: rt::NodeType = rt::NodeType(118);
+pub const L_SQUARE: rt::NodeType = rt::NodeType(119);
+pub const R_SQUARE: rt::NodeType = rt::NodeType(120);
+pub const L_ANGLE: rt::NodeType = rt::NodeType(121);
+pub const R_ANGLE: rt::NodeType = rt::NodeType(122);
+pub const L_PAREN: rt::NodeType = rt::NodeType(123);
+pub const R_PAREN: rt::NodeType = rt::NodeType(124);
+pub const NUMBER: rt::NodeType = rt::NodeType(125);
+pub const SIMPLE_STRING: rt::NodeType = rt::NodeType(126);
+pub const HASH_STRING: rt::NodeType = rt::NodeType(127);
+pub const IDENT: rt::NodeType = rt::NodeType(128);
+pub const FALL_FILE: rt::NodeType = rt::NodeType(129);
+pub const SYN_RULE: rt::NodeType = rt::NodeType(130);
+pub const PARAMETERS: rt::NodeType = rt::NodeType(131);
+pub const PARAMETER: rt::NodeType = rt::NodeType(132);
+pub const REF_EXPR: rt::NodeType = rt::NodeType(133);
+pub const SEQ_EXPR: rt::NodeType = rt::NodeType(134);
+pub const BLOCK_EXPR: rt::NodeType = rt::NodeType(135);
+pub const OPT_EXPR: rt::NodeType = rt::NodeType(136);
+pub const REP_EXPR: rt::NodeType = rt::NodeType(137);
+pub const CALL_EXPR: rt::NodeType = rt::NodeType(138);
+pub const TOKENIZER_DEF: rt::NodeType = rt::NodeType(139);
+pub const LEX_RULE: rt::NodeType = rt::NodeType(140);
+pub const TEST_DEF: rt::NodeType = rt::NodeType(141);
+pub const ATTRIBUTES: rt::NodeType = rt::NodeType(142);
+pub const ATTRIBUTE: rt::NodeType = rt::NodeType(143);
+pub const ATTRIBUTE_VALUE: rt::NodeType = rt::NodeType(144);
+pub const STRING: rt::NodeType = rt::NodeType(145);
+pub const VERBATIM_DEF: rt::NodeType = rt::NodeType(146);
+pub const AST_DEF: rt::NodeType = rt::NodeType(147);
+pub const AST_NODE_DEF: rt::NodeType = rt::NodeType(148);
+pub const AST_CLASS_DEF: rt::NodeType = rt::NodeType(149);
+pub const METHOD_DEF: rt::NodeType = rt::NodeType(150);
+pub const AST_SELECTOR: rt::NodeType = rt::NodeType(151);
 
 
-pub fn language() -> &'static Language {
+pub fn language() -> &'static rt::Language {
     fn create_lexer() -> ::fall_parse::RegexLexer {
         ::fall_parse::RegexLexer::new(vec![
             ::fall_parse::LexRule::new(WHITESPACE, "\\s+", None),
@@ -98,12 +99,12 @@ pub fn language() -> &'static Language {
     }
 
     lazy_static! {
-        static ref LANG: Language = {
+        static ref LANG: rt::Language = {
             use fall_parse::{ParserDefinition, parse, reparse};
             use std::any::Any;
 
             struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
-            impl LanguageImpl for Impl {
+            impl rt::LanguageImpl for Impl {
                 fn parse(
                     &self,
                     text: Text,
@@ -202,38 +203,35 @@ fn parse_raw_string(s: &str) -> Option<usize> {
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
 }
 
-use self::fall_tree::{AstNode, AstChildren, Node};
-use self::fall_tree::search::{child_of_type_exn, child_of_type};
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FallFile<'f> { node: Node<'f> }
+pub struct FallFile<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for FallFile<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for FallFile<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == FALL_FILE {
             Some(FallFile { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> FallFile<'f> {
     pub fn tokenizer_def(&self) -> Option<TokenizerDef<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
-    pub fn syn_rules(&self) -> AstChildren<'f, SynRule<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn syn_rules(&self) -> rt::AstChildren<'f, SynRule<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
     pub fn verbatim_def(&self) -> Option<VerbatimDef<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
     pub fn ast_def(&self) -> Option<AstDef<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
-    pub fn tests(&self) -> AstChildren<'f, TestDef<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn tests(&self) -> rt::AstChildren<'f, TestDef<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -245,22 +243,22 @@ impl<'f> ::std::fmt::Debug for FallFile<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TokenizerDef<'f> { node: Node<'f> }
+pub struct TokenizerDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for TokenizerDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for TokenizerDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == TOKENIZER_DEF {
             Some(TokenizerDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> TokenizerDef<'f> {
-    pub fn lex_rules(&self) -> AstChildren<'f, LexRule<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn lex_rules(&self) -> rt::AstChildren<'f, LexRule<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -272,25 +270,25 @@ impl<'f> ::std::fmt::Debug for TokenizerDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct LexRule<'f> { node: Node<'f> }
+pub struct LexRule<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for LexRule<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for LexRule<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == LEX_RULE {
             Some(LexRule { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> LexRule<'f> {
     pub fn attributes(&self) -> Option<Attributes<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
     pub fn node_type(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
 }
 
@@ -302,34 +300,34 @@ impl<'f> ::std::fmt::Debug for LexRule<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SynRule<'f> { node: Node<'f> }
+pub struct SynRule<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for SynRule<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for SynRule<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == SYN_RULE {
             Some(SynRule { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> SynRule<'f> {
     pub fn attributes(&self) -> Option<Attributes<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
     pub fn name_ident(&self) -> Option<Node<'f>> {
         self.node().children().find(|n| n.ty() == IDENT)
     }
     pub fn name(&self) -> Option<Text<'f>> {
-        child_of_type(self.node, IDENT).map(|n| n.text())
+        rt::child_of_type(self.node, IDENT).map(|n| n.text())
     }
     pub fn body(&self) -> Expr<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node.children()).next().unwrap()
     }
     pub fn parameters(&self) -> Option<Parameters<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
 }
 
@@ -341,22 +339,22 @@ impl<'f> ::std::fmt::Debug for SynRule<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Parameters<'f> { node: Node<'f> }
+pub struct Parameters<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for Parameters<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for Parameters<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == PARAMETERS {
             Some(Parameters { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> Parameters<'f> {
-    pub fn parameters(&self) -> AstChildren<'f, Parameter<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn parameters(&self) -> rt::AstChildren<'f, Parameter<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -368,22 +366,22 @@ impl<'f> ::std::fmt::Debug for Parameters<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Parameter<'f> { node: Node<'f> }
+pub struct Parameter<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for Parameter<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for Parameter<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == PARAMETER {
             Some(Parameter { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> Parameter<'f> {
     pub fn name(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
 }
 
@@ -395,22 +393,22 @@ impl<'f> ::std::fmt::Debug for Parameter<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Attributes<'f> { node: Node<'f> }
+pub struct Attributes<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for Attributes<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for Attributes<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == ATTRIBUTES {
             Some(Attributes { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> Attributes<'f> {
-    pub fn attributes(&self) -> AstChildren<'f, Attribute<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn attributes(&self) -> rt::AstChildren<'f, Attribute<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -422,25 +420,25 @@ impl<'f> ::std::fmt::Debug for Attributes<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Attribute<'f> { node: Node<'f> }
+pub struct Attribute<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for Attribute<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for Attribute<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == ATTRIBUTE {
             Some(Attribute { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> Attribute<'f> {
     pub fn name(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
     pub fn value(&self) -> Option<AttributeValue<'f>> {
-        AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node.children()).next()
     }
 }
 
@@ -452,17 +450,17 @@ impl<'f> ::std::fmt::Debug for Attribute<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AttributeValue<'f> { node: Node<'f> }
+pub struct AttributeValue<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for AttributeValue<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for AttributeValue<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == ATTRIBUTE_VALUE {
             Some(AttributeValue { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> AttributeValue<'f> {
@@ -477,22 +475,22 @@ impl<'f> ::std::fmt::Debug for AttributeValue<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct VerbatimDef<'f> { node: Node<'f> }
+pub struct VerbatimDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for VerbatimDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for VerbatimDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == VERBATIM_DEF {
             Some(VerbatimDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> VerbatimDef<'f> {
     pub fn literal_string(&self) -> Text<'f> {
-        child_of_type_exn(self.node, HASH_STRING).text()
+        rt::child_of_type_exn(self.node, HASH_STRING).text()
     }
 }
 
@@ -504,25 +502,25 @@ impl<'f> ::std::fmt::Debug for VerbatimDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AstDef<'f> { node: Node<'f> }
+pub struct AstDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for AstDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for AstDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == AST_DEF {
             Some(AstDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> AstDef<'f> {
-    pub fn ast_nodes(&self) -> AstChildren<'f, AstNodeDef<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn ast_nodes(&self) -> rt::AstChildren<'f, AstNodeDef<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
-    pub fn ast_classes(&self) -> AstChildren<'f, AstClassDef<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn ast_classes(&self) -> rt::AstChildren<'f, AstClassDef<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -534,17 +532,17 @@ impl<'f> ::std::fmt::Debug for AstDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AstNodeDef<'f> { node: Node<'f> }
+pub struct AstNodeDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for AstNodeDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for AstNodeDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == AST_NODE_DEF {
             Some(AstNodeDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> AstNodeDef<'f> {
@@ -552,10 +550,10 @@ impl<'f> AstNodeDef<'f> {
         self.node().children().find(|n| n.ty() == IDENT).unwrap()
     }
     pub fn name(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn methods(&self) -> AstChildren<'f, MethodDef<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn methods(&self) -> rt::AstChildren<'f, MethodDef<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -567,17 +565,17 @@ impl<'f> ::std::fmt::Debug for AstNodeDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AstClassDef<'f> { node: Node<'f> }
+pub struct AstClassDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for AstClassDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for AstClassDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == AST_CLASS_DEF {
             Some(AstClassDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> AstClassDef<'f> {
@@ -594,25 +592,25 @@ impl<'f> ::std::fmt::Debug for AstClassDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct MethodDef<'f> { node: Node<'f> }
+pub struct MethodDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for MethodDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for MethodDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == METHOD_DEF {
             Some(MethodDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> MethodDef<'f> {
     pub fn name(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
     pub fn selector(&self) -> AstSelector<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node.children()).next().unwrap()
     }
 }
 
@@ -624,22 +622,22 @@ impl<'f> ::std::fmt::Debug for MethodDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AstSelector<'f> { node: Node<'f> }
+pub struct AstSelector<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for AstSelector<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for AstSelector<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == AST_SELECTOR {
             Some(AstSelector { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> AstSelector<'f> {
     pub fn child(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
     pub fn optional(&self) -> Option<Node<'f>> {
         self.node().children().find(|n| n.ty() == QUESTION)
@@ -660,22 +658,22 @@ impl<'f> ::std::fmt::Debug for AstSelector<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TestDef<'f> { node: Node<'f> }
+pub struct TestDef<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for TestDef<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for TestDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == TEST_DEF {
             Some(TestDef { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> TestDef<'f> {
     pub fn literal_string(&self) -> Option<Text<'f>> {
-        child_of_type(self.node, HASH_STRING).map(|n| n.text())
+        rt::child_of_type(self.node, HASH_STRING).map(|n| n.text())
     }
 }
 
@@ -687,17 +685,17 @@ impl<'f> ::std::fmt::Debug for TestDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct RefExpr<'f> { node: Node<'f> }
+pub struct RefExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for RefExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for RefExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == REF_EXPR {
             Some(RefExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> RefExpr<'f> {
@@ -712,25 +710,25 @@ impl<'f> ::std::fmt::Debug for RefExpr<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct CallExpr<'f> { node: Node<'f> }
+pub struct CallExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for CallExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for CallExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == CALL_EXPR {
             Some(CallExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> CallExpr<'f> {
     pub fn fn_name(&self) -> Text<'f> {
-        child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node, IDENT).text()
     }
-    pub fn args(&self) -> AstChildren<'f, Expr<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn args(&self) -> rt::AstChildren<'f, Expr<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -742,22 +740,22 @@ impl<'f> ::std::fmt::Debug for CallExpr<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct BlockExpr<'f> { node: Node<'f> }
+pub struct BlockExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for BlockExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for BlockExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == BLOCK_EXPR {
             Some(BlockExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> BlockExpr<'f> {
-    pub fn alts(&self) -> AstChildren<'f, Expr<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn alts(&self) -> rt::AstChildren<'f, Expr<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -769,22 +767,22 @@ impl<'f> ::std::fmt::Debug for BlockExpr<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct OptExpr<'f> { node: Node<'f> }
+pub struct OptExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for OptExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for OptExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == OPT_EXPR {
             Some(OptExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> OptExpr<'f> {
     pub fn expr(&self) -> Expr<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node.children()).next().unwrap()
     }
 }
 
@@ -796,22 +794,22 @@ impl<'f> ::std::fmt::Debug for OptExpr<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct RepExpr<'f> { node: Node<'f> }
+pub struct RepExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for RepExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for RepExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == REP_EXPR {
             Some(RepExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> RepExpr<'f> {
     pub fn expr(&self) -> Expr<'f> {
-        AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node.children()).next().unwrap()
     }
 }
 
@@ -823,22 +821,22 @@ impl<'f> ::std::fmt::Debug for RepExpr<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SeqExpr<'f> { node: Node<'f> }
+pub struct SeqExpr<'f> { node: rt::Node<'f> }
 
-impl<'f> AstNode<'f> for SeqExpr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for SeqExpr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if node.ty() == SEQ_EXPR {
             Some(SeqExpr { node })
         } else {
             None
         }
     }
-    fn node(self) -> Node<'f> { self.node }
+    fn node(self) -> rt::Node<'f> { self.node }
 }
 
 impl<'f> SeqExpr<'f> {
-    pub fn parts(&self) -> AstChildren<'f, Expr<'f>> {
-        AstChildren::new(self.node.children())
+    pub fn parts(&self) -> rt::AstChildren<'f, Expr<'f>> {
+        rt::AstChildren::new(self.node.children())
     }
 }
 
@@ -860,8 +858,8 @@ pub enum Expr<'f> {
     SeqExpr(SeqExpr<'f>),
 }
 
-impl<'f> AstNode<'f> for Expr<'f> {
-    fn wrap(node: Node<'f>) -> Option<Self> {
+impl<'f> rt::AstNode<'f> for Expr<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
         if let Some(n) = RefExpr::wrap(node) {
             return Some(Expr::RefExpr(n))
         }
@@ -883,7 +881,7 @@ impl<'f> AstNode<'f> for Expr<'f> {
         None
     }
 
-    fn node(self) -> Node<'f> {
+    fn node(self) -> rt::Node<'f> {
         match self {
             Expr::RefExpr(n) => n.node(),
             Expr::CallExpr(n) => n.node(),
@@ -905,7 +903,7 @@ impl<'f> ::std::fmt::Debug for Expr<'f> {
             Expr::RepExpr(..) => "RepExpr@",
             Expr::SeqExpr(..) => "SeqExpr@",
         })?;
-        AstNode::node(*self).range().fmt(f)?;
+        rt::AstNode::node(*self).range().fmt(f)?;
         Ok(())
     }
 }

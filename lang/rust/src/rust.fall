@@ -328,7 +328,7 @@ struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
 
 
 pub rule visibility {
-  'pub' <in_parens {'crate'|'super'}>?
+  'pub' <in_parens {'crate' | 'super'}>?
 }
 
 test r"
@@ -823,7 +823,7 @@ pub rule match_expr {
 
 pub rule match_arm {
   match_arm_pattern <commit>
-  '=>' expr
+  '=>' <enter 'stmt' expr>
   {',' | <eof> | prev_is_block}
 }
 
@@ -844,7 +844,6 @@ fn main() {
     }
 }
 "
-
 
 #[atom]
 pub rule block_macro_expr {
@@ -880,8 +879,20 @@ test r"
 
 #[postfix]
 pub rule call_expr {
-  expr call_args
+  expr {
+    {<is_in 'stmt'> <not prev_is_block> | <not <is_in 'stmt'>>}
+    call_args
+  }
 }
+
+test r"
+fn main() {
+  foo();
+  let x = foo();
+  {}();
+  match x { 1 => {}() => 2 }
+}
+"
 
 rule call_args {
   <without_restrictions <in_parens <comma_list value_argument>>>

@@ -9,9 +9,5 @@
         "sourceMap": true,
         "rootDir": "."
     },
-    "exclude": [
-        "node_modules",
-        "backend",
-        ".vscode-test"
-    ]
+    "include": [ "src/*.ts" ]
 }
