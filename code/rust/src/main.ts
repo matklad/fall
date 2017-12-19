@@ -8,7 +8,7 @@ const backend = require("../../native")
 
 
 export function activate(context: vscode.ExtensionContext) {
-    let plugin = createPlugin(backend, "rs", context.subscriptions)
+    let plugin = createPlugin(backend, "rs", context.subscriptions, true)
 
     let commands = [
         ["fall-rust.semanticSelection", "extendSelection"],

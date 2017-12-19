@@ -4,9 +4,6 @@ extern crate neon;
 extern crate generic_backend;
 extern crate lang_rust;
 
-use neon::vm::{Call, JsResult};
-use neon::js::JsValue;
-
 use lang_rust::editor::RustEditorFile;
 
 declare_editor_file_class! {

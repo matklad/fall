@@ -15,6 +15,10 @@ generate-parsers:
 update-test-data:
     rewrite_test_data=1 cargo test --all
 
-code:
-    cd code && npm install && ./node_modules/vsce/out/vsce package
-    code --install-extension ./code/fall-code-0.0.1.vsix
+code-rust:
+    cd code/rust && npm install && ./node_modules/vsce/out/vsce package
+    code --install-extension ./code/rust/fall-rust-0.0.1.vsix
+
+code-fall:
+    cd code/fall && npm install && ./node_modules/vsce/out/vsce package
+    code --install-extension ./code/fall/fall-fall-0.0.1.vsix

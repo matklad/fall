@@ -45,15 +45,7 @@ pub mod editor {
             process_subtree_bottom_up(
                 self.file.root(),
                 hl::visitor(
-                    &[
-                        (hl::KEYWORD, &[
-                            USE, IMPL, STRUCT, TRAIT, ENUM, UNION, FN, MOD, CRATE,
-                            PUB, LET, IF, ELSE, RETURN, FOR, WHILE, LOOP, WHERE, MATCH,
-                            EXTERN, SELF, SUPER,
-                        ]),
-                        (hl::STRING, &[STRING, RAW_STRING]),
-                        (hl::COMMENT, &[LINE_COMMENT, BLOCK_COMMENT]),
-                    ]
+                    &[]
                 ).visit::<FnDef, _>(|hls, fn_def| {
                     if let Some(ident) = fn_def.name_ident() {
                         hl::hl(ident, hl::FUNCTION, hls)
