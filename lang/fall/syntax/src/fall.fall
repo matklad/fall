@@ -28,6 +28,7 @@ tokenizer {
   // it in Fall to avoid clashes with keywords in the target language.
   #[contextual] node 'node'
   #[contextual] class 'class'
+  #[contextual] trait 'trait'
   #[contextual] tokenizer 'tokenizer'
   #[contextual] rule 'rule'
   #[contextual] verbatim 'verbatim'
@@ -43,6 +44,7 @@ tokenizer {
   question '?'
   dot '.'
   comma ','
+  colon ':'
   hash '#'
   l_curly '{'
   r_curly '}'
@@ -257,17 +259,27 @@ fn parse_raw_string(s: &str) -> Option<usize> {
 pub rule ast_def {
   'ast' <commit> '{'
     <with_skip
-      {'node' | 'class'}
-      {ast_node_def | ast_class_def}>*
+      {'node' | 'class' | 'trait'}
+      {ast_node_def | ast_class_def | ast_trait_def}>*
   '}'
 }
 
 pub rule ast_node_def {
-  'node' <commit> ident <block method_def*>
+  'node' <commit>
+  ident {':' ident}?
+  <block method_def*>
 }
 
 pub rule ast_class_def {
-  'class' <commit> ident <block ident*>
+  'class' <commit>
+  ident
+  <block ident*>
+}
+
+pub rule ast_trait_def {
+  'trait' <commit>
+  ident
+  <block method_def*>
 }
 
 pub rule method_def { ident ast_selector }
@@ -346,6 +358,12 @@ ast {
   }
 
   node ast_node_def {
+    name_ident ident
+    name ident.text
+    methods method_def*
+  }
+
+  node ast_trait_def {
     name_ident ident
     name ident.text
     methods method_def*

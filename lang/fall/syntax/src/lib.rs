@@ -61,6 +61,8 @@ pub use self::fall::{
     AST_CLASS_DEF,
     METHOD_DEF,
     AST_SELECTOR,
+    TRAIT,
+    AST_TRAIT_DEF,
 };
 
 pub use self::fall::{
@@ -77,6 +79,7 @@ pub use self::fall::{
     AstDef,
     AstNodeDef,
     AstClassDef,
+    AstTraitDef,
     MethodDef,
     AstSelector,
     TestDef,

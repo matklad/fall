@@ -12,13 +12,15 @@ pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
         hl::visitor(&[
             (hl::COMMENT, &[EOL_COMMENT]),
             (hl::STRING, &[HASH_STRING, SIMPLE_STRING]),
-            (hl::KEYWORD, &[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST]),
+            (hl::KEYWORD, &[RULE, VERBATIM, TOKENIZER, AST, NODE, CLASS, PUB, TEST, TRAIT]),
             (hl::PARAMETER, &[PARAMETER]),
             (hl::ATTRIBUTE, &[ATTRIBUTES])
         ])
             .visit::<LexRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::LITERAL, hls))
             .visit::<SynRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
             .visit::<AstNodeDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstTraitDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstClassDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
             .visit::<RefExpr, _>(|hls, ref_| {
                 let color = match analysis.resolve_reference(ref_) {
                     Some(RefKind::Token(_)) => hl::LITERAL,
