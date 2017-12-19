@@ -8,7 +8,7 @@ const backend = require("../../native")
 
 
 export function activate(context: vscode.ExtensionContext) {
-    let plugin = createPlugin(backend, "rs", context.subscriptions, true)
+    let plugin = createPlugin(backend, "rs", context.subscriptions)
 
     let commands = [
         ["fall-rust.semanticSelection", "extendSelection"],
@@ -22,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall-rs', plugin.textDocumentContentProvider),
+        vscode.languages.registerDocumentSymbolProvider('rust', plugin.documentSymbolsProvider),
+
     ]
     context.subscriptions.push(...providers)
 }

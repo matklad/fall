@@ -8,9 +8,9 @@ pub use self::rust::*;
 pub use self::rust::language as lang_rust;
 
 pub mod editor {
-    use fall_tree::{File, TextEdit};
-    use fall_tree::visitor::process_subtree_bottom_up;
-    use fall_editor::{EditorFileImpl, gen_syntax_tree};
+    use fall_tree::{File, TextEdit, AstNode};
+    use fall_tree::visitor::{process_subtree_bottom_up, visitor};
+    use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
     use fall_editor::hl::{self, Highlights};
     use *;
 
@@ -51,6 +51,22 @@ pub mod editor {
                         hl::hl(ident, hl::FUNCTION, hls)
                     }
                 }),
+            )
+        }
+
+        fn structure(&self) -> Vec<FileStructureNode> {
+            process_subtree_bottom_up(
+                self.file().root(),
+                visitor(Vec::new())
+                    .visit::<FnDef, _>(|nodes, fn_def| {
+                        if let Some(name_ident) = fn_def.name_ident() {
+                            nodes.push(FileStructureNode {
+                                name: name_ident.text().to_string(),
+                                range: fn_def.node().range(),
+                                children: Vec::new(),
+                            })
+                        }
+                    }),
             )
         }
     }
