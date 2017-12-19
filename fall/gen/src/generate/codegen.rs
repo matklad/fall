@@ -101,6 +101,12 @@ impl<'a, 'f> Codegen<'a, 'f> {
                     methods: trait_.methods()
                         .map(|method| self.gen_method(method))
                         .collect::<Result<Vec<CtxMethod>>>()?,
+                    impl_for: ast.ast_nodes()
+                        .filter(|&node| {
+                            self.analysis.ast_node_traits(node).contains(&trait_)
+                        })
+                        .map(|node| camel(node.name()))
+                        .collect(),
                 })
             }).collect::<Result<Vec<_>>>()?);
         }
@@ -426,6 +432,7 @@ struct CtxAstClass {
 struct CtxAstTrait<'f> {
     trait_name: String,
     methods: Vec<CtxMethod<'f>>,
+    impl_for: Vec<String>,
 }
 
 #[derive(Serialize)]

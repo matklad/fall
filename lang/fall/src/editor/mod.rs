@@ -30,7 +30,6 @@ impl EditorFileImpl for FileWithAnalysis {
         self.file()
     }
 
-
     fn syntax_tree(&self) -> String {
         gen_syntax_tree(self.file())
     }

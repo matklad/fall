@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use fall_tree::test_util::{check_syntax_ws, check_syntax, check_directory, check_inline_tests};
 use fall_tree::{TextRange, tu, FileEdit};
 use fall_tree::search::ast;
-use lang_rust::{lang_rust, FnDef};
+use lang_rust::{lang_rust, FnDef, NameOwner};
 
 #[test]
 fn inline_tests() {

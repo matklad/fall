@@ -23,6 +23,7 @@ pub(crate) struct DB<'f> {
     unused_rules: QMap<'f, query::UnusedRules>,
     resolve_pratt_variant: QMap<'f, query::ResolvePrattVariant<'f>>,
     resolve_method: QMap<'f, query::ResolveMethod<'f>>,
+    ast_node_traits: QMap<'f, query::AstNodeTraits<'f>>,
 }
 
 impl<'f> DB<'f> {
@@ -41,6 +42,7 @@ impl<'f> DB<'f> {
             unused_rules: Default::default(),
             resolve_pratt_variant: Default::default(),
             resolve_method: Default::default(),
+            ast_node_traits: Default::default(),
         }
     }
 }
@@ -169,5 +171,11 @@ impl<'f> QueryCache<'f, query::ResolvePrattVariant<'f>> for DB<'f> {
 impl<'f> QueryCache<'f, query::ResolveMethod<'f>> for DB<'f> {
     fn get_cache(&self) -> &QMap<'f, query::ResolveMethod<'f>> {
         &self.resolve_method
+    }
+}
+
+impl<'f> QueryCache<'f, query::AstNodeTraits<'f>> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::AstNodeTraits<'f>> {
+        &self.ast_node_traits
     }
 }

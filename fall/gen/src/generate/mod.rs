@@ -181,6 +181,9 @@ pub trait {{ trait_.trait_name }}<'f>: rt::AstNode<'f> {
     }
     {% endfor %}
 }
+{% for node in trait_.impl_for %}
+impl<'f> {{ trait_.trait_name }}<'f> for {{ node }}<'f> {}
+{% endfor %}
 {% endfor %}
 
 {% endif %}

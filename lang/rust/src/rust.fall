@@ -90,10 +90,14 @@ tokenizer {
   lifetime r"'\p{XID_Continue}*"
   bool r"true|false"
   number r"\d+"
-  string r#""([^"]|\\")*""#
+  string r#""(\\"|[^"])*""#
   raw_string r#"r#*""# 'parse_raw_string'
   ident r"(\p{XID_Start}|_)\p{XID_Continue}*"
 }
+
+test r###"
+fn main() { "\"" }
+"###
 
 pub rule file { mod_contents }
 
@@ -177,7 +181,7 @@ pub rule lambda_value_param {
 }
 
 pub rule self_parameter {
-  '&'? 'mut'? 'self' <commit> {':' type_reference}? {',' | <eof>}
+  borrow? 'self' <commit> {':' type_reference}? {',' | <eof>}
 }
 
 pub rule struct_def {
@@ -418,7 +422,7 @@ pub rule path_type {
 test r"type T = X<Foo, Bar>;"
 
 pub rule reference_type {
-  '&' lifetime?  'mut'? type_reference
+  borrow type_reference
 }
 test r"type T = &'static mut X;"
 
@@ -952,7 +956,10 @@ fn main() { 1 as u128; }
 "
 
 #[prefix]
-pub rule reference_expr { {'&' 'mut'?} expr }
+pub rule reference_expr { borrow expr }
+rule borrow {
+  '&' lifetime? 'mut'?
+}
 
 #[prefix]
 pub rule dereference_expr { '*' expr }
@@ -1042,7 +1049,9 @@ rule range_op {
 }
 
 rule infix_range_op {
-  range_op <not {'{' <is_in 'condition'>}>
+  range_op
+  <not <not expr_first>>
+  <not {'{' <is_in 'condition'>}>
 }
 
 test r"
@@ -1052,6 +1061,7 @@ fn main() {
           .. 1 + 2;
     1 + 2 .. ;
     for j in 1 .. { }
+    x[1..];
 }
 "
 
@@ -1140,9 +1150,10 @@ ast {
     name ident?.text
   }
 
-  node fn_def {
-    name_ident ident?
-  }
+  node fn_def: name_owner {}
+  node struct_def: name_owner {}
+  node enum_def: name_owner {}
+  node trait_def: name_owner {}
 }
 
 verbatim r##########"

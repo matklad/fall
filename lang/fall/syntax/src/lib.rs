@@ -25,6 +25,7 @@ pub use self::fall::{
     QUESTION,
     DOT,
     COMMA,
+    COLON,
     HASH,
     L_CURLY,
     R_CURLY,

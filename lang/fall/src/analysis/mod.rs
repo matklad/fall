@@ -2,7 +2,8 @@ use fall_tree::{File, AstNode};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 use fall_editor::{Diagnostic, Severity};
 
-use syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef};
+use std::sync::Arc;
+use syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef, AstNodeDef, AstTraitDef};
 
 mod diagnostics;
 mod db;
@@ -46,6 +47,10 @@ impl<'f> Analysis<'f> {
         self.db.get(query::ResolveMethod(method))
     }
 
+    pub fn ast_node_traits(&self, node: AstNodeDef<'f>) -> Arc<Vec<AstTraitDef<'f>>> {
+        self.db.get(query::AstNodeTraits(node))
+    }
+
     pub fn collect_all_diagnostics(&self) -> Vec<Diagnostic> {
         process_subtree_bottom_up(
             self.ast().node(),
@@ -53,6 +58,7 @@ impl<'f> Analysis<'f> {
                 .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
                 .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
                 .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
+                .visit::<AstNodeDef, _>(|_, rule| { self.db.get(query::AstNodeTraits(rule)); })
         );
         self.db.get(query::UnusedRules);
         self.db.get(query::AllLexRules);
@@ -165,5 +171,18 @@ fn test_lex_rule_diagnostics() {
        }
     ", "\
 E class 'trait': Duplicate token
+");
+}
+
+#[test]
+fn test_ast_diagnostics() {
+    check_diagnostics(r"
+       ast {
+           trait foo {}
+           node a: foo {}
+           node b: bar {}
+       }
+    ", "\
+E bar: Unresolved trait
 ");
 }

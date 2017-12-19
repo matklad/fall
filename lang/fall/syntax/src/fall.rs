@@ -226,19 +226,19 @@ impl<'f> rt::AstNode<'f> for FallFile<'f> {
 
 impl<'f> FallFile<'f> {
     pub fn tokenizer_def(&self) -> Option<TokenizerDef<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
     pub fn syn_rules(&self) -> rt::AstChildren<'f, SynRule<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
     pub fn verbatim_def(&self) -> Option<VerbatimDef<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
     pub fn ast_def(&self) -> Option<AstDef<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
     pub fn tests(&self) -> rt::AstChildren<'f, TestDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -265,7 +265,7 @@ impl<'f> rt::AstNode<'f> for TokenizerDef<'f> {
 
 impl<'f> TokenizerDef<'f> {
     pub fn lex_rules(&self) -> rt::AstChildren<'f, LexRule<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -292,10 +292,10 @@ impl<'f> rt::AstNode<'f> for LexRule<'f> {
 
 impl<'f> LexRule<'f> {
     pub fn attributes(&self) -> Option<Attributes<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
     pub fn node_type(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
 }
 
@@ -322,19 +322,19 @@ impl<'f> rt::AstNode<'f> for SynRule<'f> {
 
 impl<'f> SynRule<'f> {
     pub fn attributes(&self) -> Option<Attributes<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
     pub fn name_ident(&self) -> Option<Node<'f>> {
         self.node().children().find(|n| n.ty() == IDENT)
     }
     pub fn name(&self) -> Option<Text<'f>> {
-        rt::child_of_type(self.node, IDENT).map(|n| n.text())
+        rt::child_of_type(self.node(), IDENT).map(|n| n.text())
     }
     pub fn body(&self) -> Expr<'f> {
-        rt::AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node().children()).next().unwrap()
     }
     pub fn parameters(&self) -> Option<Parameters<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
 }
 
@@ -361,7 +361,7 @@ impl<'f> rt::AstNode<'f> for Parameters<'f> {
 
 impl<'f> Parameters<'f> {
     pub fn parameters(&self) -> rt::AstChildren<'f, Parameter<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -388,7 +388,7 @@ impl<'f> rt::AstNode<'f> for Parameter<'f> {
 
 impl<'f> Parameter<'f> {
     pub fn name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
 }
 
@@ -415,7 +415,7 @@ impl<'f> rt::AstNode<'f> for Attributes<'f> {
 
 impl<'f> Attributes<'f> {
     pub fn attributes(&self) -> rt::AstChildren<'f, Attribute<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -442,10 +442,10 @@ impl<'f> rt::AstNode<'f> for Attribute<'f> {
 
 impl<'f> Attribute<'f> {
     pub fn name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn value(&self) -> Option<AttributeValue<'f>> {
-        rt::AstChildren::new(self.node.children()).next()
+        rt::AstChildren::new(self.node().children()).next()
     }
 }
 
@@ -497,7 +497,7 @@ impl<'f> rt::AstNode<'f> for VerbatimDef<'f> {
 
 impl<'f> VerbatimDef<'f> {
     pub fn literal_string(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, HASH_STRING).text()
+        rt::child_of_type_exn(self.node(), HASH_STRING).text()
     }
 }
 
@@ -524,13 +524,13 @@ impl<'f> rt::AstNode<'f> for AstDef<'f> {
 
 impl<'f> AstDef<'f> {
     pub fn ast_nodes(&self) -> rt::AstChildren<'f, AstNodeDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
     pub fn ast_classes(&self) -> rt::AstChildren<'f, AstClassDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
     pub fn ast_traits(&self) -> rt::AstChildren<'f, AstTraitDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -560,10 +560,10 @@ impl<'f> AstNodeDef<'f> {
         self.node().children().find(|n| n.ty() == IDENT).unwrap()
     }
     pub fn name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn methods(&self) -> rt::AstChildren<'f, MethodDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -593,10 +593,10 @@ impl<'f> AstTraitDef<'f> {
         self.node().children().find(|n| n.ty() == IDENT).unwrap()
     }
     pub fn name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn methods(&self) -> rt::AstChildren<'f, MethodDef<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -650,10 +650,10 @@ impl<'f> rt::AstNode<'f> for MethodDef<'f> {
 
 impl<'f> MethodDef<'f> {
     pub fn name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn selector(&self) -> AstSelector<'f> {
-        rt::AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node().children()).next().unwrap()
     }
 }
 
@@ -680,7 +680,7 @@ impl<'f> rt::AstNode<'f> for AstSelector<'f> {
 
 impl<'f> AstSelector<'f> {
     pub fn child(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn optional(&self) -> Option<Node<'f>> {
         self.node().children().find(|n| n.ty() == QUESTION)
@@ -716,7 +716,7 @@ impl<'f> rt::AstNode<'f> for TestDef<'f> {
 
 impl<'f> TestDef<'f> {
     pub fn literal_string(&self) -> Option<Text<'f>> {
-        rt::child_of_type(self.node, HASH_STRING).map(|n| n.text())
+        rt::child_of_type(self.node(), HASH_STRING).map(|n| n.text())
     }
 }
 
@@ -768,10 +768,10 @@ impl<'f> rt::AstNode<'f> for CallExpr<'f> {
 
 impl<'f> CallExpr<'f> {
     pub fn fn_name(&self) -> Text<'f> {
-        rt::child_of_type_exn(self.node, IDENT).text()
+        rt::child_of_type_exn(self.node(), IDENT).text()
     }
     pub fn args(&self) -> rt::AstChildren<'f, Expr<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -798,7 +798,7 @@ impl<'f> rt::AstNode<'f> for BlockExpr<'f> {
 
 impl<'f> BlockExpr<'f> {
     pub fn alts(&self) -> rt::AstChildren<'f, Expr<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 
@@ -825,7 +825,7 @@ impl<'f> rt::AstNode<'f> for OptExpr<'f> {
 
 impl<'f> OptExpr<'f> {
     pub fn expr(&self) -> Expr<'f> {
-        rt::AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node().children()).next().unwrap()
     }
 }
 
@@ -852,7 +852,7 @@ impl<'f> rt::AstNode<'f> for RepExpr<'f> {
 
 impl<'f> RepExpr<'f> {
     pub fn expr(&self) -> Expr<'f> {
-        rt::AstChildren::new(self.node.children()).next().unwrap()
+        rt::AstChildren::new(self.node().children()).next().unwrap()
     }
 }
 
@@ -879,7 +879,7 @@ impl<'f> rt::AstNode<'f> for SeqExpr<'f> {
 
 impl<'f> SeqExpr<'f> {
     pub fn parts(&self) -> rt::AstChildren<'f, Expr<'f>> {
-        rt::AstChildren::new(self.node.children())
+        rt::AstChildren::new(self.node().children())
     }
 }
 

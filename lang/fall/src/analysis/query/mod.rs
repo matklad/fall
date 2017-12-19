@@ -4,7 +4,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 
 use super::db::Query;
-use syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef};
+use syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef, AstTraitDef};
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct AllLexRules;
@@ -37,23 +37,18 @@ impl<'f> Query<'f> for FindSynRule<'f> {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct UnusedRules;
-
+mod unused_rules;
 impl<'f> Query<'f> for UnusedRules {
     type Result = ();
 }
 
-mod unused_rules;
-
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct AllContexts;
-
+mod all_context_ids;
 impl<'f> Query<'f> for AllContexts {
     type Result = Arc<Vec<Text<'f>>>;
 }
-
-mod all_context_ids;
-
 
 #[derive(Copy, Clone)]
 pub enum RefKind<'f> {
@@ -64,12 +59,11 @@ pub enum RefKind<'f> {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct ResolveRefExpr<'f>(pub RefExpr<'f>);
-
+mod resolve_ref_expr;
 impl<'f> Query<'f> for ResolveRefExpr<'f> {
     type Result = Option<RefKind<'f>>;
 }
 
-mod resolve_ref_expr;
 
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -93,12 +87,11 @@ pub enum CallKind<'f> {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct ResolveCall<'f>(pub CallExpr<'f>);
-
+mod resolve_call;
 impl<'f> Query<'f> for ResolveCall<'f> {
     type Result = Option<CallKind<'f>>;
 }
 
-mod resolve_call;
 
 
 #[derive(Copy, Clone)]
@@ -118,12 +111,11 @@ pub struct PrattOp<'f> {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct ResolvePrattVariant<'f>(pub SynRule<'f>);
-
+mod resolve_pratt_variant;
 impl<'f> Query<'f> for ResolvePrattVariant<'f> {
     type Result = Option<PratVariant<'f>>;
 }
 
-mod resolve_pratt_variant;
 
 #[derive(Copy, Clone)]
 pub enum Arity {
@@ -147,9 +139,15 @@ pub enum MethodKind<'f> {
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct ResolveMethod<'f>(pub MethodDef<'f>);
-
+mod resolve_method;
 impl<'f> Query<'f> for ResolveMethod<'f> {
     type Result = Option<MethodKind<'f>>;
 }
 
-mod resolve_method;
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
+pub(crate) struct AstNodeTraits<'f>(pub AstNodeDef<'f>);
+mod ast_node_traits;
+impl<'f> Query<'f> for AstNodeTraits<'f> {
+    type Result = Arc<Vec<AstTraitDef<'f>>>;
+}
+

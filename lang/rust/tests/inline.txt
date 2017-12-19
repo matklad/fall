@@ -1,3 +1,18 @@
+fn main() { "\"" }
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LITERAL
+        STRING "\"\\\"\""
+      R_CURLY "}"
+
+----------------------------------------
 use abi::{self, Abi};
 
 FILE
@@ -1740,6 +1755,7 @@ fn main() {
           .. 1 + 2;
     1 + 2 .. ;
     for j in 1 .. { }
+    x[1..];
 }
 
 FILE
@@ -1793,21 +1809,33 @@ FILE
             LITERAL
               NUMBER "2"
           DOTDOT ".."
-          ERROR ""
         SEMI ";"
-      FOR_EXPR
-        FOR "for"
-        PATH_PATTERN
-          PATH
-            IDENT "j"
-        IN "in"
-        RANGE_EXPR
-          LITERAL
-            NUMBER "1"
-          DOTDOT ".."
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
+      EXPR_STMT
+        FOR_EXPR
+          FOR "for"
+          PATH_PATTERN
+            PATH
+              IDENT "j"
+          IN "in"
+          RANGE_EXPR
+            LITERAL
+              NUMBER "1"
+            DOTDOT ".."
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
+      EXPR_STMT
+        INDEX_EXPR
+          PATH_EXPR
+            PATH
+              IDENT "x"
+          L_BRACK "["
+          RANGE_EXPR
+            LITERAL
+              NUMBER "1"
+            DOTDOT ".."
+          R_BRACK "]"
+        SEMI ";"
       R_CURLY "}"
 
 ----------------------------------------
