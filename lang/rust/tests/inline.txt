@@ -63,7 +63,7 @@ FILE
 
 ----------------------------------------
 impl Node {}
-impl<'f> ::Debug for Node<'f> { }
+impl<'f> ::Debug for Node<'f> where Self: 'static { }
 
 FILE
   IMPL_DEF
@@ -93,12 +93,22 @@ FILE
           L_ANGLE "<"
           LIFETIME "\'f"
           R_ANGLE ">"
+    WHERE_CLAUSE
+      WHERE "where"
+      PATH_TYPE
+        PATH
+          IDENT "Self"
+      COLON ":"
+      TYPE_BOUND
+        LIFETIME "\'static"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
 
 ----------------------------------------
-pub trait T<X> {}
+pub trait T<X>: Clone
+  where X: Clone
+{}
 
 FILE
   TRAIT_DEF
@@ -111,6 +121,21 @@ FILE
       TYPE_PARAMETER
         IDENT "X"
       R_ANGLE ">"
+    COLON ":"
+    TYPE_BOUND
+      PATH_TYPE
+        PATH
+          IDENT "Clone"
+    WHERE_CLAUSE
+      WHERE "where"
+      PATH_TYPE
+        PATH
+          IDENT "X"
+      COLON ":"
+      TYPE_BOUND
+        PATH_TYPE
+          PATH
+            IDENT "Clone"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"

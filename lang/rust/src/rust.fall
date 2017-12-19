@@ -219,22 +219,25 @@ pub rule impl_def {
   'impl' <commit>
   type_parameters?
   {type_reference {'for' type_reference}? }
+  where_clause?
   members
 }
 
 test r"
 impl Node {}
-impl<'f> ::Debug for Node<'f> { }
+impl<'f> ::Debug for Node<'f> where Self: 'static { }
 "
 
 pub rule trait_def {
   outer_attributes visibility? 'trait' <commit>
-  ident type_parameters?
+  ident type_parameters? type_bounds? where_clause?
   members
 }
 
 test r"
-pub trait T<X> {}
+pub trait T<X>: Clone
+  where X: Clone
+{}
 "
 
 pub rule members {
@@ -308,7 +311,7 @@ pub rule type_parameter {
 
 rule type_bounds {
   ':' {
-    type_bound <commit> {'+' | <eof> | <not <not ','>> | <not <not '{'>>}
+    type_bound <commit> {'+' | <eof> | <not <not {','|'{'|'where' }>>}
   }*
 }
 
