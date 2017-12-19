@@ -55,6 +55,7 @@ impl<'f> Analysis<'f> {
                 .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
         );
         self.db.get(query::UnusedRules);
+        self.db.get(query::AllLexRules);
 
         let mut result = self.db.diagnostics.lock().unwrap().clone();
         result.sort_by_key(|d| {
@@ -137,7 +138,7 @@ fn check_diagnostics(code: &str, expected_diagnostics: &str) {
 }
 
 #[test]
-fn test_diagnostics() {
+fn test_syn_rule_diagnostics() {
     check_diagnostics(r"
        pub rule foo { <eof x> }
        rule bar { foo <abracadabra>}
@@ -153,4 +154,16 @@ E <prev_is {foo}>: <prev_is> arguments must be public rules
 E dupe: Duplicate rule
 W baz: Unused rule
 W dupe: Unused rule");
+}
+
+#[test]
+fn test_lex_rule_diagnostics() {
+    check_diagnostics(r"
+       tokenizer {
+           class 'class'
+           class 'trait'
+       }
+    ", "\
+E class 'trait': Duplicate token
+");
 }

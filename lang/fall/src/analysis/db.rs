@@ -15,7 +15,8 @@ pub(crate) struct DB<'f> {
 
     //query_stack: Mutex<Vec<String>>,
 
-    all_rules: QMap<'f, query::AllRules>,
+    all_lex_rules: QMap<'f, query::AllLexRules>,
+    all_syn_rules: QMap<'f, query::AllSynRules>,
     all_contexts: QMap<'f, query::AllContexts>,
     resolve_ref_expr: QMap<'f, query::ResolveRefExpr<'f>>,
     resolve_call: QMap<'f, query::ResolveCall<'f>>,
@@ -32,7 +33,8 @@ impl<'f> DB<'f> {
 
             //query_stack: Default::default(),
 
-            all_rules: Default::default(),
+            all_lex_rules: Default::default(),
+            all_syn_rules: Default::default(),
             all_contexts: Default::default(),
             resolve_ref_expr: Default::default(),
             resolve_call: Default::default(),
@@ -122,10 +124,15 @@ impl<'f, Q> QExecutor<'f> for Q
     }
 }
 
+impl<'f> QueryCache<'f, query::AllLexRules> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::AllLexRules> {
+        &self.all_lex_rules
+    }
+}
 
-impl<'f> QueryCache<'f, query::AllRules> for DB<'f> {
-    fn get_cache(&self) -> &QMap<'f, query::AllRules> {
-        &self.all_rules
+impl<'f> QueryCache<'f, query::AllSynRules> for DB<'f> {
+    fn get_cache(&self) -> &QMap<'f, query::AllSynRules> {
+        &self.all_syn_rules
     }
 }
 

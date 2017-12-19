@@ -1,7 +1,6 @@
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 pub extern crate neon;
 pub extern crate neon_serde;
 extern crate fall_tree;

@@ -6,35 +6,33 @@ use fall_tree::Text;
 use super::db::Query;
 use syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef};
 
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
+pub(crate) struct AllLexRules;
+mod all_lex_rules;
+impl<'f> Query<'f> for AllLexRules {
+    type Result = Arc<HashMap<Text<'f>, LexRule<'f>>>;
+}
 
 #[derive(Debug)]
 pub(crate) struct FindLexRule<'f>(pub Text<'f>);
-
+mod find_lex_rule;
 impl<'f> Query<'f> for FindLexRule<'f> {
     type Result = Option<LexRule<'f>>;
 }
 
-mod find_lex_rule;
-
-
-#[derive(Debug)]
-pub(crate) struct FindSynRule<'f>(pub Text<'f>);
-
-impl<'f> Query<'f> for FindSynRule<'f> {
-    type Result = Option<SynRule<'f>>;
-}
-
-mod find_syn_rule;
-
-
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub(crate) struct AllRules;
-
-impl<'f> Query<'f> for AllRules {
+pub(crate) struct AllSynRules;
+mod all_syn_rules;
+impl<'f> Query<'f> for AllSynRules {
     type Result = Arc<HashMap<Text<'f>, SynRule<'f>>>;
 }
 
-mod all_rules;
+#[derive(Debug)]
+pub(crate) struct FindSynRule<'f>(pub Text<'f>);
+mod find_syn_rule;
+impl<'f> Query<'f> for FindSynRule<'f> {
+    type Result = Option<SynRule<'f>>;
+}
 
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
