@@ -176,7 +176,9 @@ impl<'f> ::std::fmt::Debug for {{ class.enum_name }}<'f> {
 {% for trait_ in ast_traits %}
 pub trait {{ trait_.trait_name }}<'f>: rt::AstNode<'f> {
     {% for method in trait_.methods %}
-    fn {{ method.name }}(&self) -> {{ method.ret_type }};
+    fn {{ method.name }}(&self) -> {{ method.ret_type }} {
+        {{ method.body }}
+    }
     {% endfor %}
 }
 {% endfor %}

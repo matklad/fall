@@ -350,11 +350,11 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 match arity {
                     Arity::Single =>
                         ("Text<'f>".to_owned(),
-                         format!("rt::child_of_type_exn(self.node, {}).text()", node_type)),
+                         format!("rt::child_of_type_exn(self.node(), {}).text()", node_type)),
 
                     Arity::Optional =>
                         ("Option<Text<'f>>".to_owned(),
-                         format!("rt::child_of_type(self.node, {}).map(|n| n.text())", node_type)),
+                         format!("rt::child_of_type(self.node(), {}).map(|n| n.text())", node_type)),
 
                     Arity::Many => unimplemented!(),
                 }
@@ -363,23 +363,23 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 match (kind, arity) {
                     (ChildKind::AstNode(n), Arity::Single) =>
                         (format!("{}<'f>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                         "rt::AstChildren::new(self.node().children()).next().unwrap()".to_owned()),
                     (ChildKind::AstNode(n), Arity::Optional) =>
                         (format!("Option<{}<'f>>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children()).next()".to_owned()),
+                         "rt::AstChildren::new(self.node().children()).next()".to_owned()),
                     (ChildKind::AstNode(n), Arity::Many) =>
                         (format!("rt::AstChildren<'f, {}<'f>>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children())".to_owned()),
+                         "rt::AstChildren::new(self.node().children())".to_owned()),
 
                     (ChildKind::AstClass(n), Arity::Single) =>
                         (format!("{}<'f>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children()).next().unwrap()".to_owned()),
+                         "rt::AstChildren::new(self.node().children()).next().unwrap()".to_owned()),
                     (ChildKind::AstClass(n), Arity::Optional) =>
                         (format!("Option<{}<'f>>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children()).next()".to_owned()),
+                         "rt::AstChildren::new(self.node().children()).next()".to_owned()),
                     (ChildKind::AstClass(n), Arity::Many) =>
                         (format!("rt::AstChildren<'f, {}<'f>>", camel(n.name())),
-                         "rt::AstChildren::new(self.node.children())".to_owned()),
+                         "rt::AstChildren::new(self.node().children())".to_owned()),
 
                     (ChildKind::Token(lex_rule), arity) => {
                         let node_type = scream(lex_rule.node_type());

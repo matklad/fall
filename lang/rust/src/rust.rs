@@ -633,6 +633,10 @@ impl<'f> ::std::fmt::Debug for FnDef<'f> {
 
 
 pub trait NameOwner<'f>: rt::AstNode<'f> {
-    fn name_ident(&self) -> Option<Node<'f>>;
-    fn name(&self) -> Option<Text<'f>>;
+    fn name_ident(&self) -> Option<Node<'f>> {
+        self.node().children().find(|n| n.ty() == IDENT)
+    }
+    fn name(&self) -> Option<Text<'f>> {
+        rt::child_of_type(self.node(), IDENT).map(|n| n.text())
+    }
 }
