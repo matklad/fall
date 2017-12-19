@@ -328,12 +328,13 @@ struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
 
 
 pub rule visibility {
-  'pub' <in_parens 'crate'>?
+  'pub' <in_parens {'crate'|'super'}>?
 }
 
 test r"
 pub struct X;
 pub(crate) struct Y;
+pub(super) struct Z;
 "
 
 pub rule where_clause {

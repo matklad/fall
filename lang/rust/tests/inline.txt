@@ -222,6 +222,7 @@ FILE
 ----------------------------------------
 pub struct X;
 pub(crate) struct Y;
+pub(super) struct Z;
 
 FILE
   STRUCT_DEF
@@ -238,6 +239,15 @@ FILE
       R_PAREN ")"
     STRUCT "struct"
     IDENT "Y"
+    SEMI ";"
+  STRUCT_DEF
+    VISIBILITY
+      PUB "pub"
+      L_PAREN "("
+      SUPER "super"
+      R_PAREN ")"
+    STRUCT "struct"
+    IDENT "Z"
     SEMI ";"
 
 ----------------------------------------
