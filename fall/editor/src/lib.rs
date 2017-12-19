@@ -54,10 +54,10 @@ pub trait EditorFileImpl: Sync + 'static {
         Vec::new()
     }
 
-    fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
+    fn context_actions(&self, _range: TextRange) -> Vec<&'static str> {
         Vec::new()
     }
-    fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
+    fn apply_context_action(&self, _range: TextRange, _id: &str) -> Option<TextEdit> {
         None
     }
 

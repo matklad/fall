@@ -16,5 +16,8 @@ neon-build = "0.1.22"
 
 [dependencies]
 neon = "0.1.22"
+lazy_static = "0.2"
 generic_backend = { path = "../../generic_backend" }
 lang_fall = { path = "../../../lang/fall" }
+fall_tree = { path = "../../../fall/tree" }
+fall_gen = { path = "../../../fall/gen" }

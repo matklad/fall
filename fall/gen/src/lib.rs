@@ -43,7 +43,7 @@ impl TestRenderer {
     }
 
     pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
-        let file = lang_fall::editor_api::analyse(grammar);
+        let file = lang_fall::analyse(grammar);
         let parser = match file.analyse(generate) {
             Ok(parser) => parser,
             Err(e) => return Ok(format!("error:\n{}", e))
@@ -63,8 +63,8 @@ impl TestRenderer {
             [workspace]
 
             [dependencies]
-            fall_tree = {{ path = "{fall_dir}/fall/tree" }}
-            fall_parse = {{ path = "{fall_dir}/fall/parse" }}
+            fall_tree = {{ path = "{fall_dir}/tree" }}
+            fall_parse = {{ path = "{fall_dir}/parse" }}
         "##, fall_dir = fall_dir().display()))?;
 
         put_text_if_changed(&base_dir.join("src").join("main.rs"), r##"

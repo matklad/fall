@@ -105,25 +105,25 @@ export class EditorFile {
         this.doc = doc
     }
 
-    metrics(): string { return this.backend.metrics(this.imp) }
-    syntaxTree(): string { return this.backend.syntaxTree(this.imp) }
+    metrics(): string { return this.call("metrics") }
+    syntaxTree(): string { return this.call("syntaxTree") }
     extendSelection(range_: vscode.Range): vscode.Range | null {
         let range = fromVsRange(this.doc, range_)
-        let exp = this.backend.extendSelection(this.imp, range)
+        let exp = this.call("extendSelection", range)
         if (exp == null) return null
         return toVsRange(this.doc, exp)
     }
 
-    structure(): Array<FileStructureNode> { return this.backend.structure(this.imp) }
+    structure(): Array<FileStructureNode> { return this.call("structure") }
     reformat(): Array<vscode.TextEdit> {
-        return this.backend.reformat(this.imp).map((op) => {
+        return this.call("reformat").map((op) => {
             return vscode.TextEdit.replace(toVsRange(this.doc, op.delete), op.insert)
         })
     }
 
-    highlight(): Array<[[number, number], string]> { return this.backend.highlight(this.imp) }
+    highlight(): Array<[[number, number], string]> { return this.call("highlight") }
     diagnostics(): Array<vscode.Diagnostic> {
-        return this.backend.diagnostics(this.imp).map((d) => {
+        return this.call("diagnostics").map((d) => {
             let range = toVsRange(this.doc, d.range)
             let severity = d.severity == "Error"
                 ? vscode.DiagnosticSeverity.Error
@@ -135,19 +135,24 @@ export class EditorFile {
 
     contextActions(range_: vscode.Range): Array<string> {
         let range = fromVsRange(this.doc, range_)
-        let result = this.backend.contextActions(this.imp, range)
+        let result = this.call("contextActions", this.imp, range)
         return result
     }
 
     applyContextAction(range_: vscode.Range, id: string) {
         let range = fromVsRange(this.doc, range_)
-        let edits = this.backend.applyContextAction(this.imp, range, id)
+        let edits = this.call("applyContextAction", range, id)
         let editor = vscode.window.activeTextEditor
         return editor.edit((builder) => {
             for (let op of edits) {
                 builder.replace(toVsRange(this.doc, op.delete), op.insert)
             }
         })
+    }
+
+    call(method: string, ...args) {
+        let result = this.backend[method](this.imp, ...args)
+        return result
     }
 }
 
@@ -344,7 +349,7 @@ function setHighlights(
     }
 }
 
-function toVsRange(doc: vscode.TextDocument, range: [number, number]): vscode.Range {
+export function toVsRange(doc: vscode.TextDocument, range: [number, number]): vscode.Range {
     return new vscode.Range(
         doc.positionAt(range[0]),
         doc.positionAt(range[1]),

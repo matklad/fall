@@ -1,14 +1,18 @@
 use analysis::Analysis;
 
-use fall_tree::{File, TextEdit, TextRange};
+use fall_tree::{File, TextEdit, TextRange, TextUnit, AstNode};
+use fall_tree::search::find_leaf_at_offset;
+use fall_tree::search::ast;
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
 use fall_editor::hl::Highlights;
 use syntax::lang_fall;
+use syntax::TestDef;
 
 mod highlighting;
 mod structure;
 mod actions;
 mod formatter;
+mod references;
 
 pub use analysis::FileWithAnalysis;
 
@@ -58,6 +62,28 @@ impl EditorFileImpl for FileWithAnalysis {
 }
 
 impl FileWithAnalysis {
+    pub fn resolve_reference(&self, offset: TextUnit) -> Option<TextRange> {
+        self.analyse(|a| references::resolve_reference(a, offset))
+    }
+
+    pub fn find_usages(&self, offset: TextUnit) -> Vec<TextRange> {
+        self.analyse(|a| references::find_usages(a, offset))
+    }
+
+    pub fn test_at_offset(&self, offset: TextUnit) -> Option<usize> {
+        self.analyse(|a| {
+            find_leaf_at_offset(a.ast().node(), offset)
+                .right_biased()
+                .and_then(ast::ancestor::<TestDef>)
+                .map(|test| {
+                    a.ast()
+                        .tests()
+                        .position(|t| t.node() == test.node())
+                        .unwrap()
+                })
+        })
+    }
+
     fn record_analysis<R, F: FnOnce(&Analysis) -> R>(&self, tag: &'static str, f: F) -> R {
         self.analyse(|a| {
             self.file().metrics().measure_time(tag, || f(a))

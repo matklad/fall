@@ -14,7 +14,6 @@ pub extern crate lang_fall_syntax as syntax;
 use fall_tree::{AstNode, File};
 
 mod analysis;
-pub mod editor_api;
 
 
 pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVariant, PrattOp,
@@ -22,6 +21,10 @@ pub use self::analysis::{Analysis, FileWithAnalysis, CallKind, RefKind, PratVari
 
 pub fn parse<S: Into<String>>(text: S) -> File {
     syntax::lang_fall().parse(text.into())
+}
+
+pub fn analyse<S: Into<String>>(text: S) -> FileWithAnalysis {
+    FileWithAnalysis::new(parse(text))
 }
 
 pub fn ast(file: &File) -> syntax::FallFile {

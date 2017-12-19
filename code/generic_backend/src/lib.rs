@@ -13,20 +13,24 @@ use std::sync::Arc;
 use neon::vm::{Call, JsResult, Lock};
 use neon::mem::Handle;
 use neon::scope::Scope;
-use neon::js::{JsString, JsInteger, JsNull, JsValue, JsFunction};
+use neon::js::{JsString, JsValue, JsFunction};
 use neon::js::class::{Class, JsClass};
-use neon::task::Task;
 
 use fall_tree::{TextEditBuilder, Text, TextRange, TextEdit, TextEditOp, tu};
 use fall_editor::EditorFileImpl;
 
 mod support;
 
-use self::support::{arg, ret};
-use neon_serde::from_value;
+pub use self::support::{arg, ret};
 
 pub struct EditorFile<I: EditorFileImpl> {
     imp: Arc<I>
+}
+
+impl<I: EditorFileImpl> Clone for EditorFile<I> {
+    fn clone(&self) -> Self {
+        EditorFile { imp: self.imp.clone() }
+    }
 }
 
 impl<I: EditorFileImpl> ::std::ops::Deref for EditorFile<I> {
@@ -164,7 +168,7 @@ pub fn diagnostics<I: EditorFileImpl, C: Class<Internals=EditorFile<I>>>(call: C
 pub fn context_actions<I: EditorFileImpl, C: Class<Internals=EditorFile<I>>>(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let mut editor_file = call.arguments.require(scope, 0)?.check::<C>()?;
-    let range: TextRange = arg(scope, &call.arguments, 1);
+    let range: TextRange = arg(scope, &call.arguments, 1)?;
     let result = editor_file.grab(|file| file.context_actions(range));
     ret(scope, result)
 }
