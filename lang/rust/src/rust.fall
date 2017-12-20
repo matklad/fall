@@ -156,7 +156,7 @@ pub rule fn_def {
 }
 
 test r"
-fn foo(&mut self: Box<Self>, x: i32) -> () {
+const unsafe fn foo(self, x: i32) -> () {
   ()
 }
 "
@@ -182,8 +182,12 @@ pub rule lambda_value_param {
 }
 
 pub rule self_parameter {
-  borrow? 'self' <commit> {':' type_reference}? {',' | <eof>}
+  {borrow | 'mut'}? 'self' <commit> {':' type_reference}? {',' | <eof>}
 }
+test r"
+fn foo(&mut self: Box<Self>) {}
+fn bar(mut self) {}
+"
 
 pub rule struct_def {
   {'struct' | 'union'} <commit>
@@ -258,7 +262,7 @@ rule impl_form {
 }
 
 rule impl_form_first {
-  'pub' | 'fn' | 'type' | 'const' | 'static'
+  'pub' | 'fn' | 'type' | 'const' | 'static' | 'unsafe'
 | '#' | 'extern' | {ident '!'}
 }
 

@@ -33,9 +33,45 @@ FILE
     SEMI ";"
 
 ----------------------------------------
-fn foo(&mut self: Box<Self>, x: i32) -> () {
+const unsafe fn foo(self, x: i32) -> () {
   ()
 }
+
+FILE
+  FN_DEF
+    CONST "const"
+    UNSAFE "unsafe"
+    FN "fn"
+    IDENT "foo"
+    L_PAREN "("
+    SELF_PARAMETER
+      SELF "self"
+      COMMA ","
+    VALUE_PARAM
+      PATH_PATTERN
+        PATH
+          PATH_SEGMENT
+            IDENT "x"
+      COLON ":"
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "i32"
+    R_PAREN ")"
+    THIN_ARROW "->"
+    UNIT_TYPE
+      L_PAREN "("
+      R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      UNIT_EXPR
+        L_PAREN "("
+        R_PAREN ")"
+      R_CURLY "}"
+
+----------------------------------------
+fn foo(&mut self: Box<Self>) {}
+fn bar(mut self) {}
 
 FILE
   FN_DEF
@@ -58,27 +94,20 @@ FILE
                   PATH_SEGMENT
                     IDENT "Self"
               R_ANGLE ">"
-      COMMA ","
-    VALUE_PARAM
-      PATH_PATTERN
-        PATH
-          PATH_SEGMENT
-            IDENT "x"
-      COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
     R_PAREN ")"
-    THIN_ARROW "->"
-    UNIT_TYPE
-      L_PAREN "("
-      R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      UNIT_EXPR
-        L_PAREN "("
-        R_PAREN ")"
+      R_CURLY "}"
+  FN_DEF
+    FN "fn"
+    IDENT "bar"
+    L_PAREN "("
+    SELF_PARAMETER
+      MUT "mut"
+      SELF "self"
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
       R_CURLY "}"
 
 ----------------------------------------
@@ -531,6 +560,22 @@ FILE
         PATH
           PATH_SEGMENT
             IDENT "X"
+    SEMI ";"
+
+----------------------------------------
+type T = *mut ();
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    POINTER_TYPE
+      STAR "*"
+      MUT "mut"
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------

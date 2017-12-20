@@ -43,7 +43,7 @@ fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionRe
 fn test_add_use_braces() {
     use fall_editor::check_context_action;
 
-    check_context_action::<RustEditorFile>("Add braces", r"
+    check_context_action::<::editor::RustEditorFile>("Add braces", r"
 use foo::^^bar;
 ", r"
 use foo::{bar};
@@ -106,7 +106,7 @@ fn add_impl_for<'f, T: NameOwner<'f> + TypeParametersOwner<'f>>(
 fn test_add_impl() {
     use fall_editor::check_context_action;
 
-    check_context_action::<RustEditorFile>("Add impl", r"
+    check_context_action::<::editor::RustEditorFile>("Add impl", r"
 struct ^^Foo<X, Y: Clone> {}
 ", r"
 struct Foo<X, Y: Clone> {}
