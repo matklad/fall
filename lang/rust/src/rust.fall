@@ -1163,7 +1163,9 @@ ast {
 
   node use_decl {
     path path?
+    spec use_spec?
   }
+  node use_spec {}
 }
 
 verbatim r##########"

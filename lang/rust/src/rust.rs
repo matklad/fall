@@ -777,11 +777,39 @@ impl<'f> UseDecl<'f> {
     pub fn path(&self) -> Option<Path<'f>> {
         rt::AstChildren::new(self.node().children()).next()
     }
+    pub fn spec(&self) -> Option<UseSpec<'f>> {
+        rt::AstChildren::new(self.node().children()).next()
+    }
 }
 
 impl<'f> ::std::fmt::Debug for UseDecl<'f> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.write_str("UseDecl@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct UseSpec<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for UseSpec<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == USE_SPEC {
+            Some(UseSpec { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> UseSpec<'f> {
+    
+}
+
+impl<'f> ::std::fmt::Debug for UseSpec<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("UseSpec@")?;
         self.node().range().fmt(f)?;
         Ok(())
     }
