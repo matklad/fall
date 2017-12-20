@@ -77,21 +77,6 @@ impl EditorFileImpl for RustEditorFile {
     }
 }
 
-fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
-    let use_decl: UseDecl = ast::node_at_offset(file.root(), offset)?;
-    let path = use_decl.path()?;
-    let last_segment = path.segment()?.node();
-    if use_decl.spec().is_some() {
-        return None;
-    }
-    if !apply {
-        return Some(ActionResult::Available);
-    }
-    let mut edit = FileEdit::new(&file);
-    edit.replace_with_text(last_segment, format!("{{{}}}", last_segment.text()));
-    Some(ActionResult::Applied(edit.into_text_edit()))
-}
-
 enum ActionResult {
     Available,
     Applied(TextEdit),
@@ -107,8 +92,24 @@ impl ActionResult {
     }
 }
 
+
+fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
+    let use_decl: UseDecl = ast::node_at_offset(file.root(), offset)?;
+    let path = use_decl.path()?;
+    let last_segment = path.segment()?.node();
+    if use_decl.spec().is_some() {
+        return None;
+    }
+    if !apply {
+        return Some(ActionResult::Available);
+    }
+    let mut edit = FileEdit::new(&file);
+    edit.replace_with_text(last_segment, format!("{{{}}}", last_segment.text()));
+    Some(ActionResult::Applied(edit.into_text_edit()))
+}
+
 #[test]
-fn test_extract_sub_seq() {
+fn test_add_use_braces() {
     use fall_editor::check_context_action;
 
     check_context_action::<RustEditorFile>("Add braces", r"
