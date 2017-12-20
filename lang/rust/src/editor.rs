@@ -65,7 +65,7 @@ impl EditorFileImpl for RustEditorFile {
         if add_use_braces(self.file(), range.start(), false).is_some() {
             return vec!["Add braces"];
         }
-        vec!["DUMMY"]
+        Vec::new()
     }
 
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
