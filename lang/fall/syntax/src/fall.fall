@@ -266,7 +266,7 @@ pub rule ast_def {
 
 pub rule ast_node_def {
   'node' <commit>
-  ident {':' ident}?
+  ident {':' {ident {',' | <not <not '{'>>}}*}?
   <block method_def*>
 }
 

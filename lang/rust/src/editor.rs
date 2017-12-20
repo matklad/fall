@@ -62,20 +62,30 @@ impl EditorFileImpl for RustEditorFile {
     }
 
     fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
-        if add_use_braces(self.file(), range.start(), false).is_some() {
-            return vec!["Add braces"];
+        let mut result = Vec::new();
+        for &(action_id, action) in ACTIONS.iter() {
+            if action(self.file(), range.start(), false).is_some() {
+                result.push(action_id)
+            }
         }
-        Vec::new()
+        result
     }
 
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
-        if id == "Add braces" {
-            let edit = add_use_braces(self.file(), range.start(), true)?.into_edit();
-            return Some(edit);
+        for &(action_id, action) in ACTIONS.iter() {
+            if action_id == id {
+                let edit = action(self.file(), range.start(), true)?.into_edit();
+                return Some(edit);
+            }
         }
         None
     }
 }
+
+const ACTIONS: &[(&str, fn(&File, TextUnit, bool) -> Option<ActionResult>)] = &[
+    ("Add braces", add_use_braces),
+    ("Add impl", add_impl)
+];
 
 enum ActionResult {
     Available,
@@ -116,5 +126,72 @@ fn test_add_use_braces() {
 use foo::^^bar;
 ", r"
 use foo::{bar};
+");
+}
+
+
+fn add_impl(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
+    None
+        .or_else(|| add_impl_for::<StructDef>(file, offset, apply))
+        .or_else(|| add_impl_for::<EnumDef>(file, offset, apply))
+}
+
+fn add_impl_for<'f, T: NameOwner<'f> + TypeParametersOwner<'f>>(
+    file: &'f File,
+    offset: TextUnit,
+    apply: bool,
+) -> Option<ActionResult> {
+    let decl: T = ast::node_at_offset(file.root(), offset)?;
+    let name = decl.name()?;
+    if !apply {
+        return Some(ActionResult::Available);
+    }
+    let mut result = String::new();
+    result += "\n\n";
+    result += "impl";
+    if let Some(params) = decl.type_parameters() {
+        result += params.node().text().to_string().as_str();
+    }
+    result += " ";
+    result += name.to_string().as_str();
+    if let Some(params) = decl.type_parameters() {
+        result += "<";
+        let mut first = true;
+        let mut add_comma = |result: &mut String| {
+            if !first {
+                result.push_str(", ")
+            }
+            first = false;
+        };
+        for lf in params.lifetime_parameters() {
+            add_comma(&mut result);
+            result += lf.lifetime().to_string().as_str();
+        }
+        for t in params.type_parameters() {
+            add_comma(&mut result);
+            result += t.name().unwrap().to_string().as_str();
+        }
+        result += ">";
+    }
+    result += " {\n\n}";
+
+    let mut edit = FileEdit::new(file);
+    edit.insert_text_after(decl.node(), result);
+    Some(ActionResult::Applied(edit.into_text_edit()))
+}
+
+
+#[test]
+fn test_add_impl() {
+    use fall_editor::check_context_action;
+
+    check_context_action::<RustEditorFile>("Add impl", r"
+struct ^^Foo<X, Y: Clone> {}
+", r"
+struct Foo<X, Y: Clone> {}
+
+impl<X, Y: Clone> Foo<X, Y> {
+
+}
 ");
 }

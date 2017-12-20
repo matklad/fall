@@ -705,6 +705,88 @@ impl<'f> ::std::fmt::Debug for TraitDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TypeParameters<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for TypeParameters<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == TYPE_PARAMETERS {
+            Some(TypeParameters { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> TypeParameters<'f> {
+    pub fn lifetime_parameters(&self) -> rt::AstChildren<'f, LifetimeParameter<'f>> {
+        rt::AstChildren::new(self.node().children())
+    }
+    pub fn type_parameters(&self) -> rt::AstChildren<'f, TypeParameter<'f>> {
+        rt::AstChildren::new(self.node().children())
+    }
+}
+
+impl<'f> ::std::fmt::Debug for TypeParameters<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TypeParameters@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TypeParameter<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for TypeParameter<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == TYPE_PARAMETER {
+            Some(TypeParameter { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> TypeParameter<'f> {
+    
+}
+
+impl<'f> ::std::fmt::Debug for TypeParameter<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TypeParameter@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LifetimeParameter<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for LifetimeParameter<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == LIFETIME_PARAMETER {
+            Some(LifetimeParameter { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> LifetimeParameter<'f> {
+    pub fn lifetime(&self) -> Text<'f> {
+        rt::child_of_type_exn(self.node(), LIFETIME).text()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for LifetimeParameter<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("LifetimeParameter@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Path<'f> { node: rt::Node<'f> }
 
 impl<'f> rt::AstNode<'f> for Path<'f> {
@@ -829,3 +911,11 @@ impl<'f> NameOwner<'f> for FnDef<'f> {}
 impl<'f> NameOwner<'f> for StructDef<'f> {}
 impl<'f> NameOwner<'f> for EnumDef<'f> {}
 impl<'f> NameOwner<'f> for TraitDef<'f> {}
+impl<'f> NameOwner<'f> for TypeParameter<'f> {}
+pub trait TypeParametersOwner<'f>: rt::AstNode<'f> {
+    fn type_parameters(&self) -> Option<TypeParameters<'f>> {
+        rt::AstChildren::new(self.node().children()).next()
+    }
+}
+impl<'f> TypeParametersOwner<'f> for StructDef<'f> {}
+impl<'f> TypeParametersOwner<'f> for EnumDef<'f> {}

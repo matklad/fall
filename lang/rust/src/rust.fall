@@ -1156,10 +1156,24 @@ ast {
     name ident?.text
   }
 
+  trait type_parameters_owner {
+    type_parameters type_parameters?
+  }
+
   node fn_def: name_owner {}
-  node struct_def: name_owner {}
-  node enum_def: name_owner {}
+  node struct_def: name_owner, type_parameters_owner {}
+  node enum_def: name_owner, type_parameters_owner {}
   node trait_def: name_owner {}
+
+
+  node type_parameters {
+    lifetime_parameters lifetime_parameter*
+    type_parameters type_parameter*
+  }
+  node type_parameter: name_owner {}
+  node lifetime_parameter {
+    lifetime lifetime.text
+  }
 
   node path {
     qualifier path?
