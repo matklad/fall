@@ -60,12 +60,11 @@ fn range_to_extract(parent: Node, range: TextRange) -> TextRange {
 
 #[cfg(test)]
 mod tests {
-    use super::super::check_context_action;
-
+    use fall_editor::check_context_action;
 
     #[test]
     fn test_extract_whole_seq() {
-        check_context_action(r#"["Extract Rule"]"#, "Extract Rule", r##"
+        check_context_action::<::FileWithAnalysis>("Extract Rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { ^bar baz^ }
 "##, r##"
@@ -80,7 +79,7 @@ rule new_rule {
 
     #[test]
     fn test_extract_sub_seq() {
-        check_context_action(r#"["Extract Rule"]"#, "Extract Rule", r##"
+        check_context_action::<::FileWithAnalysis>("Extract Rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { foo ^bar baz^ quux }
 "##, r##"

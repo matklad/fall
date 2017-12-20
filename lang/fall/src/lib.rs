@@ -39,8 +39,4 @@ mod test_util {
     pub fn parse_with_caret(text: &str) -> (File, TextUnit) {
         ::fall_tree::test_util::parse_with_caret(::syntax::lang_fall(), text, "^")
     }
-
-    pub fn parse_with_range(text: &str) -> (File, TextRange) {
-        ::fall_tree::test_util::parse_with_range(::syntax::lang_fall(), text, "^")
-    }
 }

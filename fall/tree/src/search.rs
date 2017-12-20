@@ -133,9 +133,9 @@ pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
 }
 
 pub mod ast {
-    use {Node, AstNode};
+    use {Node, AstNode, TextUnit};
     use visitor::{visitor, process_subtree_bottom_up};
-    use super::ancestors;
+    use super::{ancestors, find_leaf_at_offset, LeafAtOffset};
 
     pub fn ancestor<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
         ancestors(node)
@@ -153,6 +153,14 @@ pub mod ast {
             visitor(Vec::new())
                 .visit::<N, _>(|acc, node| acc.push(node))
         )
+    }
+
+    pub fn node_at_offset<'f, T: AstNode<'f>>(node: Node<'f>, offset: TextUnit) -> Option<T> {
+        match find_leaf_at_offset(node, offset) {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => ancestor(node),
+            LeafAtOffset::Between(left, right) => ancestor(left).or_else(|| ancestor(right)),
+        }
     }
 }
 

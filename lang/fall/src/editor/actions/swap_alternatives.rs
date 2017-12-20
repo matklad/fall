@@ -51,11 +51,11 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
 
 #[cfg(test)]
 mod tests {
-    use super::super::check_context_action;
+    use fall_editor::check_context_action;
 
     #[test]
     fn test_swap_alternatives() {
-        check_context_action(r#"["Swap Alternatives"]"#, "Swap Alternatives", r##"
+        check_context_action::<::FileWithAnalysis>("Swap Alternatives", r##"
 tokenizer { number r"\d+"}
 pub rule foo { bar ^^| baz }
 "##, r##"
@@ -64,7 +64,3 @@ pub rule foo { baz | bar }
 "##);
     }
 }
-
-
-
-

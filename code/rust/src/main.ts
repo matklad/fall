@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall-rs', plugin.textDocumentContentProvider),
         vscode.languages.registerDocumentSymbolProvider('rust', plugin.documentSymbolsProvider),
-
+        vscode.languages.registerCodeActionsProvider('rust', plugin.codeActionProvider),
     ]
     context.subscriptions.push(...providers)
 }

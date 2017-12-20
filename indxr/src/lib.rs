@@ -1,9 +1,9 @@
-// use std::path::PathBuf;
+use std::path::PathBuf;
 
-// struct IndexedFiles {
-//     roots: Vec<PathBuf>,
-//     filter: Box<Fn(&Path)>,
-// }
+struct IndexedFiles {
+    roots: Vec<PathBuf>,
+    filter: Box<Fn(&Path)>,
+}
 
 
 #[cfg(test)]

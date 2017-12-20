@@ -135,7 +135,7 @@ export class EditorFile {
 
     contextActions(range_: vscode.Range): Array<string> {
         let range = fromVsRange(this.doc, range_)
-        let result = this.call("contextActions", this.imp, range)
+        let result = this.call("contextActions", range)
         return result
     }
 

@@ -13,7 +13,7 @@ pub fn parse_with_caret(lang: &Language, input: &str, caret: &str) -> (File, Tex
     (lang.parse(input), tu(offset as u32))
 }
 
-pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, TextRange) {
+pub fn extract_range(input: &str, caret: &str) -> (String, TextRange) {
     let left_offset = input.find(caret).expect(
         &format!("No caret ({}) in\n{}\n", caret, input)
     );
@@ -24,12 +24,16 @@ pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, Tex
     let input = input[..left_offset].to_string()
         + &input[mid_offset..right_offset]
         + &input[right_offset + caret.len()..];
-
-    let file = lang.parse(input);
     let range = TextRange::from_to(
         tu(left_offset as u32),
         tu((right_offset - caret.len()) as u32),
     );
+    (input, range)
+}
+
+pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, TextRange) {
+    let (input, range) = extract_range(input, caret);
+    let file = lang.parse(input);
     (file, range)
 }
 
