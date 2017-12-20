@@ -447,7 +447,46 @@ FILE
     SEMI ";"
 
 ----------------------------------------
-type T = X<Foo, Bar>;
+type T = Box<Iterator<Item=T + 'static> + Send>;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "T"
+    EQ "="
+    PATH_TYPE
+      PATH
+        PATH_SEGMENT
+          IDENT "Box"
+          TYPE_ARGUMENTS
+            L_ANGLE "<"
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Iterator"
+                  TYPE_ARGUMENTS
+                    L_ANGLE "<"
+                    IDENT "Item"
+                    EQ "="
+                    PATH_TYPE
+                      PATH
+                        PATH_SEGMENT
+                          IDENT "T"
+                    PLUS "+"
+                    TYPE_BOUND
+                      LIFETIME "\'static"
+                    R_ANGLE ">"
+            PLUS "+"
+            TYPE_BOUND
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "Send"
+            R_ANGLE ">"
+    SEMI ";"
+
+----------------------------------------
+type T = X<'a, Foo, Bar=Baz>;
 
 FILE
   TYPE_DEF
@@ -460,15 +499,19 @@ FILE
           IDENT "X"
           TYPE_ARGUMENTS
             L_ANGLE "<"
+            LIFETIME "\'a"
+            COMMA ","
             PATH_TYPE
               PATH
                 PATH_SEGMENT
                   IDENT "Foo"
             COMMA ","
+            IDENT "Bar"
+            EQ "="
             PATH_TYPE
               PATH
                 PATH_SEGMENT
-                  IDENT "Bar"
+                  IDENT "Baz"
             R_ANGLE ">"
     SEMI ";"
 

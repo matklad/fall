@@ -320,7 +320,7 @@ rule type_bounds {
 }
 
 pub rule type_bound {
-  lifetime | type_reference
+  lifetime | path_type
 }
 
 pub rule lifetime_parameter {
@@ -397,7 +397,8 @@ pub rule type_arguments {
   { <is_in 'type_path'> | <is_in 'expr_path'> '::' }
   <in_angles {
     <comma_list lifetime>
-    <comma_list type_reference>
+    <comma_list {<not {ident '='}> type_reference}>
+    <comma_list {ident '=' type_reference}>
   }>
 }
 
@@ -410,6 +411,11 @@ pub rule alias { 'as' ident }
 // START TYPES
 
 rule type_reference {
+  any_type {'+' type_bound}*
+}
+test r"type T = Box<Iterator<Item=T + 'static> + Send>;"
+
+rule any_type {
   path_type | reference_type
 | placeholder_type | unit_type | paren_type | never_type
 | array_type
@@ -419,7 +425,7 @@ rule type_reference {
 pub rule path_type {
   type_path
 }
-test r"type T = X<Foo, Bar>;"
+test r"type T = X<'a, Foo, Bar=Baz>;"
 
 pub rule reference_type {
   borrow type_reference
