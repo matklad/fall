@@ -18,7 +18,8 @@ FILE
       TUPLE_FIELD
         PATH_TYPE
           PATH
-            IDENT "i32"
+            PATH_SEGMENT
+              IDENT "i32"
       R_PAREN ")"
     COMMA ","
     ENUM_VARIANT
@@ -29,7 +30,8 @@ FILE
         COLON ":"
         PATH_TYPE
           PATH
-            IDENT "i32"
+            PATH_SEGMENT
+              IDENT "i32"
       COMMA ","
       R_CURLY "}"
     R_CURLY "}"

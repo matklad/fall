@@ -19,7 +19,8 @@ FILE
   USE_DECL
     USE "use"
     PATH
-      IDENT "abi"
+      PATH_SEGMENT
+        IDENT "abi"
     COLONCOLON "::"
     USE_SPEC
       L_CURLY "{"
@@ -48,22 +49,26 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "Box"
-          TYPE_ARGUMENTS
-            L_ANGLE "<"
-            PATH_TYPE
-              PATH
-                IDENT "Self"
-            R_ANGLE ">"
+          PATH_SEGMENT
+            IDENT "Box"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "Self"
+              R_ANGLE ">"
       COMMA ","
     VALUE_PARAM
       PATH_PATTERN
         PATH
-          IDENT "x"
+          PATH_SEGMENT
+            IDENT "x"
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "i32"
+          PATH_SEGMENT
+            IDENT "i32"
     R_PAREN ")"
     THIN_ARROW "->"
     UNIT_TYPE
@@ -85,7 +90,8 @@ FILE
     IMPL "impl"
     PATH_TYPE
       PATH
-        IDENT "Node"
+        PATH_SEGMENT
+          IDENT "Node"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
@@ -99,20 +105,23 @@ FILE
     PATH_TYPE
       PATH
         COLONCOLON "::"
-        IDENT "Debug"
+        PATH_SEGMENT
+          IDENT "Debug"
     FOR "for"
     PATH_TYPE
       PATH
-        IDENT "Node"
-        TYPE_ARGUMENTS
-          L_ANGLE "<"
-          LIFETIME "\'f"
-          R_ANGLE ">"
+        PATH_SEGMENT
+          IDENT "Node"
+          TYPE_ARGUMENTS
+            L_ANGLE "<"
+            LIFETIME "\'f"
+            R_ANGLE ">"
     WHERE_CLAUSE
       WHERE "where"
       PATH_TYPE
         PATH
-          IDENT "Self"
+          PATH_SEGMENT
+            IDENT "Self"
       COLON ":"
       TYPE_BOUND
         LIFETIME "\'static"
@@ -140,17 +149,20 @@ FILE
     TYPE_BOUND
       PATH_TYPE
         PATH
-          IDENT "Clone"
+          PATH_SEGMENT
+            IDENT "Clone"
     WHERE_CLAUSE
       WHERE "where"
       PATH_TYPE
         PATH
-          IDENT "X"
+          PATH_SEGMENT
+            IDENT "X"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
           PATH
-            IDENT "Clone"
+            PATH_SEGMENT
+              IDENT "Clone"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
@@ -167,7 +179,8 @@ FILE
     COLON ":"
     PATH_TYPE
       PATH
-        IDENT "i32"
+        PATH_SEGMENT
+          IDENT "i32"
     EQ "="
     LITERAL
       NUMBER "0"
@@ -209,7 +222,8 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "i32"
+          PATH_SEGMENT
+            IDENT "i32"
       SEMI ";"
     FN_DEF
       FN "fn"
@@ -248,7 +262,8 @@ FILE
         TYPE_BOUND
           PATH_TYPE
             PATH
-              IDENT "Clone"
+              PATH_SEGMENT
+                IDENT "Clone"
         PLUS "+"
       COMMA ","
       TYPE_PARAMETER
@@ -305,26 +320,31 @@ FILE
       WHERE "where"
       PATH_TYPE
         PATH
-          IDENT "T"
+          PATH_SEGMENT
+            IDENT "T"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
           PATH
-            IDENT "Clone"
+            PATH_SEGMENT
+              IDENT "Clone"
       PLUS "+"
       TYPE_BOUND
         PATH_TYPE
           PATH
-            IDENT "Copy"
+            PATH_SEGMENT
+              IDENT "Copy"
       COMMA ","
       PATH_TYPE
         PATH
-          IDENT "Foo"
+          PATH_SEGMENT
+            IDENT "Foo"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
           PATH
-            IDENT "Bar"
+            PATH_SEGMENT
+              IDENT "Bar"
     BLOCK_EXPR
       L_CURLY "{"
       R_CURLY "}"
@@ -340,26 +360,30 @@ FILE
     COLON ":"
     PATH_TYPE
       PATH
-        IDENT "Foo"
-        TYPE_ARGUMENTS
-          L_ANGLE "<"
-          PATH_TYPE
-            PATH
-              IDENT "Bar"
-          R_ANGLE ">"
+        PATH_SEGMENT
+          IDENT "Foo"
+          TYPE_ARGUMENTS
+            L_ANGLE "<"
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Bar"
+            R_ANGLE ">"
     EQ "="
     PATH_EXPR
       PATH
-        IDENT "foo"
-        TYPE_ARGUMENTS
-          COLONCOLON "::"
-          L_ANGLE "<"
-          LIFETIME "\'bar"
-          COMMA ","
-          PATH_TYPE
-            PATH
-              IDENT "Baz"
-          R_ANGLE ">"
+        PATH_SEGMENT
+          IDENT "foo"
+          TYPE_ARGUMENTS
+            COLONCOLON "::"
+            L_ANGLE "<"
+            LIFETIME "\'bar"
+            COMMA ","
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Baz"
+            R_ANGLE ">"
     SEMI ";"
   CONST_DEF
     CONST "const"
@@ -367,25 +391,29 @@ FILE
     COLON ":"
     PATH_TYPE
       PATH
-        IDENT "Fn"
-        FN_TRAIT_SUGAR
-          L_PAREN "("
-          PATH_TYPE
-            PATH
-              IDENT "i32"
-          COMMA ","
-          PATH_TYPE
-            PATH
-              IDENT "i64"
-          R_PAREN ")"
-          THIN_ARROW "->"
-          UNIT_TYPE
+        PATH_SEGMENT
+          IDENT "Fn"
+          FN_TRAIT_SUGAR
             L_PAREN "("
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i32"
+            COMMA ","
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i64"
             R_PAREN ")"
+            THIN_ARROW "->"
+            UNIT_TYPE
+              L_PAREN "("
+              R_PAREN ")"
     EQ "="
     PATH_EXPR
       PATH
-        IDENT "foo"
+        PATH_SEGMENT
+          IDENT "foo"
     SEMI ";"
 
 ----------------------------------------
@@ -401,18 +429,21 @@ FILE
         L_ANGLE "<"
         PATH_TYPE
           PATH
-            IDENT "Q"
+            PATH_SEGMENT
+              IDENT "Q"
         AS "as"
         PATH_TYPE
           PATH
-            IDENT "Foo"
-            TYPE_ARGUMENTS
-              L_ANGLE "<"
-              LIFETIME "\'f"
-              R_ANGLE ">"
+            PATH_SEGMENT
+              IDENT "Foo"
+              TYPE_ARGUMENTS
+                L_ANGLE "<"
+                LIFETIME "\'f"
+                R_ANGLE ">"
         R_ANGLE ">"
         COLONCOLON "::"
-        IDENT "Result"
+        PATH_SEGMENT
+          IDENT "Result"
     SEMI ";"
 
 ----------------------------------------
@@ -425,17 +456,20 @@ FILE
     EQ "="
     PATH_TYPE
       PATH
-        IDENT "X"
-        TYPE_ARGUMENTS
-          L_ANGLE "<"
-          PATH_TYPE
-            PATH
-              IDENT "Foo"
-          COMMA ","
-          PATH_TYPE
-            PATH
-              IDENT "Bar"
-          R_ANGLE ">"
+        PATH_SEGMENT
+          IDENT "X"
+          TYPE_ARGUMENTS
+            L_ANGLE "<"
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Foo"
+            COMMA ","
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Bar"
+            R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------
@@ -452,7 +486,8 @@ FILE
       MUT "mut"
       PATH_TYPE
         PATH
-          IDENT "X"
+          PATH_SEGMENT
+            IDENT "X"
     SEMI ";"
 
 ----------------------------------------
@@ -490,7 +525,8 @@ FILE
       L_PAREN "("
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
       R_PAREN ")"
     SEMI ";"
   TYPE_DEF
@@ -501,7 +537,8 @@ FILE
       L_PAREN "("
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
       COMMA ","
       R_PAREN ")"
     SEMI ";"
@@ -513,11 +550,13 @@ FILE
       L_PAREN "("
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
       COMMA ","
       PATH_TYPE
         PATH
-          IDENT "B"
+          PATH_SEGMENT
+            IDENT "B"
       R_PAREN ")"
     SEMI ";"
 
@@ -584,16 +623,19 @@ FILE
       VALUE_PARAM
         PATH_TYPE
           PATH
-            IDENT "i32"
+            PATH_SEGMENT
+              IDENT "i32"
       COMMA ","
       VALUE_PARAM
         PATH_PATTERN
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         COLON ":"
         PATH_TYPE
           PATH
-            IDENT "f64"
+            PATH_SEGMENT
+              IDENT "f64"
       R_PAREN ")"
       THIN_ARROW "->"
       UNIT_TYPE
@@ -644,9 +686,11 @@ FILE
         PATH_PATTERN
           PATH
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
             COLONCOLON "::"
-            IDENT "bar"
+            PATH_SEGMENT
+              IDENT "bar"
         INITIALIZER
           EQ "="
           UNIT_EXPR
@@ -657,15 +701,18 @@ FILE
         LET "let"
         TUPE_STRUCT_PATTERN
           PATH
-            IDENT "S"
+            PATH_SEGMENT
+              IDENT "S"
           L_PAREN "("
           PATH_PATTERN
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
           COMMA ","
           PATH_PATTERN
             PATH
-              IDENT "bar"
+              PATH_SEGMENT
+                IDENT "bar"
           COMMA ","
           DOTDOT ".."
           COMMA ","
@@ -681,9 +728,11 @@ FILE
         STRUCT_PATTERN
           PATH
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
             COLONCOLON "::"
-            IDENT "Bar"
+            PATH_SEGMENT
+              IDENT "Bar"
           L_CURLY "{"
           STRUCT_PATTERN_FIELD
             BINDING_PATTERN
@@ -724,7 +773,8 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "foo"
+            PATH_SEGMENT
+              IDENT "foo"
         INITIALIZER
           EQ "="
           UNIT_EXPR
@@ -766,7 +816,8 @@ FILE
           L_PAREN "("
           PATH_PATTERN
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           R_PAREN ")"
         INITIALIZER
           EQ "="
@@ -780,7 +831,8 @@ FILE
           L_PAREN "("
           PATH_PATTERN
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           COMMA ","
           R_PAREN ")"
         INITIALIZER
@@ -795,11 +847,13 @@ FILE
           L_PAREN "("
           PATH_PATTERN
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           COMMA ","
           PATH_PATTERN
             PATH
-              IDENT "y"
+              PATH_SEGMENT
+                IDENT "y"
           R_PAREN ")"
         INITIALIZER
           EQ "="
@@ -838,12 +892,14 @@ FILE
           MUT "mut"
           PATH_PATTERN
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
         INITIALIZER
           EQ "="
           PATH_EXPR
             PATH
-              IDENT "bar"
+              PATH_SEGMENT
+                IDENT "bar"
         SEMI ";"
       R_CURLY "}"
 
@@ -904,7 +960,8 @@ FILE
       EXPR_STMT
         STRUCT_LITERAL
           PATH
-            IDENT "S"
+            PATH_SEGMENT
+              IDENT "S"
           L_CURLY "{"
           STRUCT_LITERAL_FIELD
             IDENT "foo"
@@ -914,16 +971,19 @@ FILE
             COLON ":"
             PATH_EXPR
               PATH
-                IDENT "baz"
+                PATH_SEGMENT
+                  IDENT "baz"
           COMMA ","
           DOTDOT ".."
           CALL_EXPR
             PATH_EXPR
               PATH
                 PATH
-                  IDENT "Default"
+                  PATH_SEGMENT
+                    IDENT "Default"
                 COLONCOLON "::"
-                IDENT "default"
+                PATH_SEGMENT
+                  IDENT "default"
             L_PAREN "("
             R_PAREN ")"
           R_CURLY "}"
@@ -1035,16 +1095,19 @@ FILE
           LAMBDA_VALUE_PARAM
             PATH_PATTERN
               PATH
-                IDENT "x"
+                PATH_SEGMENT
+                  IDENT "x"
           COMMA ","
           LAMBDA_VALUE_PARAM
             PATH_PATTERN
               PATH
-                IDENT "y"
+                PATH_SEGMENT
+                  IDENT "y"
             COLON ":"
             PATH_TYPE
               PATH
-                IDENT "i32"
+                PATH_SEGMENT
+                  IDENT "i32"
           COMMA ","
           PIPE "|"
           SUM_EXPR
@@ -1062,7 +1125,8 @@ FILE
           THIN_ARROW "->"
           PATH_TYPE
             PATH
-              IDENT "i32"
+              PATH_SEGMENT
+                IDENT "i32"
           BLOCK_EXPR
             L_CURLY "{"
             LITERAL
@@ -1193,18 +1257,21 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "d"
+            PATH_SEGMENT
+              IDENT "d"
         SEMI ";"
       LET_STMT
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "b"
+            PATH_SEGMENT
+              IDENT "b"
         TYPE_ASCRIPTION
           COLON ":"
           PATH_TYPE
             PATH
-              IDENT "bool"
+              PATH_SEGMENT
+                IDENT "bool"
         INITIALIZER
           EQ "="
           LITERAL
@@ -1235,14 +1302,16 @@ FILE
             L_CURLY "{"
             PATH_EXPR
               PATH
-                IDENT "foo"
+                PATH_SEGMENT
+                  IDENT "foo"
             R_CURLY "}"
           ELSE "else"
           BLOCK_EXPR
             L_CURLY "{"
             PATH_EXPR
               PATH
-                IDENT "bar"
+                PATH_SEGMENT
+                  IDENT "bar"
             R_CURLY "}"
       IF_EXPR
         IF "if"
@@ -1313,7 +1382,8 @@ FILE
           IF "if"
           PATH_EXPR
             PATH
-              IDENT "S"
+              PATH_SEGMENT
+                IDENT "S"
           BLOCK_EXPR
             L_CURLY "{"
             R_CURLY "}"
@@ -1326,7 +1396,8 @@ FILE
             L_PAREN "("
             STRUCT_LITERAL
               PATH
-                IDENT "S"
+                PATH_SEGMENT
+                  IDENT "S"
               L_CURLY "{"
               R_CURLY "}"
             R_PAREN ")"
@@ -1338,17 +1409,20 @@ FILE
         LET "let"
         TUPE_STRUCT_PATTERN
           PATH
-            IDENT "Some"
+            PATH_SEGMENT
+              IDENT "Some"
           L_PAREN "("
           PATH_PATTERN
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           R_PAREN ")"
         EQ "="
         CALL_EXPR
           PATH_EXPR
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
           L_PAREN "("
           R_PAREN ")"
         BLOCK_EXPR
@@ -1393,11 +1467,13 @@ FILE
         FOR "for"
         PATH_PATTERN
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         IN "in"
         PATH_EXPR
           PATH
-            IDENT "xs"
+            PATH_SEGMENT
+              IDENT "xs"
         BLOCK_EXPR
           L_CURLY "{"
           R_CURLY "}"
@@ -1424,12 +1500,14 @@ FILE
         MATCH "match"
         PATH_EXPR
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         L_CURLY "{"
         MATCH_ARM
           TUPE_STRUCT_PATTERN
             PATH
-              IDENT "Some"
+              PATH_SEGMENT
+                IDENT "Some"
             L_PAREN "("
             LITERAL_PATTERN
               LITERAL
@@ -1438,7 +1516,8 @@ FILE
           PIPE "|"
           TUPE_STRUCT_PATTERN
             PATH
-              IDENT "Some"
+              PATH_SEGMENT
+                IDENT "Some"
             L_PAREN "("
             LITERAL_PATTERN
               LITERAL
@@ -1449,23 +1528,27 @@ FILE
             L_CURLY "{"
             PATH_EXPR
               PATH
-                IDENT "no_comma"
+                PATH_SEGMENT
+                  IDENT "no_comma"
             R_CURLY "}"
         MATCH_ARM
           TUPE_STRUCT_PATTERN
             PATH
-              IDENT "Some"
+              PATH_SEGMENT
+                IDENT "Some"
             L_PAREN "("
             PATH_PATTERN
               PATH
-                IDENT "x"
+                PATH_SEGMENT
+                  IDENT "x"
             R_PAREN ")"
           GUARD
             IF "if"
             BIT_AND
               PATH_EXPR
                 PATH
-                  IDENT "x"
+                  PATH_SEGMENT
+                    IDENT "x"
               AMPERSAND "&"
               LITERAL
                 NUMBER "3"
@@ -1476,7 +1559,8 @@ FILE
         MATCH_ARM
           PATH_PATTERN
             PATH
-              IDENT "None"
+              PATH_SEGMENT
+                IDENT "None"
           FAT_ARROW "=>"
           LITERAL
             BOOL "false"
@@ -1546,7 +1630,8 @@ FILE
       METHOD_CALL_EXPR
         PATH_EXPR
           PATH
-            IDENT "foo"
+            PATH_SEGMENT
+              IDENT "foo"
         DOT "."
         IDENT "bar"
         TYPE_ARGUMENTS
@@ -1554,7 +1639,8 @@ FILE
           L_ANGLE "<"
           PATH_TYPE
             PATH
-              IDENT "i32"
+              PATH_SEGMENT
+                IDENT "i32"
           R_ANGLE ">"
         L_PAREN "("
         R_PAREN ")"
@@ -1580,7 +1666,8 @@ FILE
         CALL_EXPR
           PATH_EXPR
             PATH
-              IDENT "foo"
+              PATH_SEGMENT
+                IDENT "foo"
           L_PAREN "("
           R_PAREN ")"
         SEMI ";"
@@ -1588,13 +1675,15 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         INITIALIZER
           EQ "="
           CALL_EXPR
             PATH_EXPR
               PATH
-                IDENT "foo"
+                PATH_SEGMENT
+                  IDENT "foo"
             L_PAREN "("
             R_PAREN ")"
         SEMI ";"
@@ -1611,7 +1700,8 @@ FILE
         MATCH "match"
         PATH_EXPR
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         L_CURLY "{"
         MATCH_ARM
           LITERAL_PATTERN
@@ -1645,7 +1735,8 @@ FILE
       CALL_EXPR
         PATH_EXPR
           PATH
-            IDENT "foo"
+            PATH_SEGMENT
+              IDENT "foo"
         L_PAREN "("
         R_PAREN ")"
       R_CURLY "}"
@@ -1665,7 +1756,8 @@ FILE
         FIELD_EXPR
           PATH_EXPR
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           DOT "."
           IDENT "foo"
         SEMI ";"
@@ -1673,7 +1765,8 @@ FILE
         FIELD_EXPR
           PATH_EXPR
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           DOT "."
           NUMBER "92"
         SEMI ";"
@@ -1694,7 +1787,8 @@ FILE
         INDEX_EXPR
           PATH_EXPR
             PATH
-              IDENT "xs"
+              PATH_SEGMENT
+                IDENT "xs"
           L_BRACK "["
           LITERAL
             NUMBER "92"
@@ -1720,7 +1814,8 @@ FILE
             TRY_EXPR
               PATH_EXPR
                 PATH
-                  IDENT "x"
+                  PATH_SEGMENT
+                    IDENT "x"
               QUESTION "?"
             QUESTION "?"
         SEMI ";"
@@ -1744,7 +1839,8 @@ FILE
           AS "as"
           PATH_TYPE
             PATH
-              IDENT "u128"
+              PATH_SEGMENT
+                IDENT "u128"
         SEMI ";"
       R_CURLY "}"
 
@@ -1815,7 +1911,8 @@ FILE
           FOR "for"
           PATH_PATTERN
             PATH
-              IDENT "j"
+              PATH_SEGMENT
+                IDENT "j"
           IN "in"
           RANGE_EXPR
             LITERAL
@@ -1828,7 +1925,8 @@ FILE
         INDEX_EXPR
           PATH_EXPR
             PATH
-              IDENT "x"
+              PATH_SEGMENT
+                IDENT "x"
           L_BRACK "["
           RANGE_EXPR
             LITERAL

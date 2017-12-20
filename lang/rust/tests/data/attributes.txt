@@ -18,7 +18,8 @@ FILE
       R_BRACK "]"
     USE "use"
     PATH
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     SEMI ";"
   EXTERN_CRATE_DECL
     ATTRIBUTE
@@ -76,7 +77,8 @@ FILE
     IMPL "impl"
     PATH_TYPE
       PATH
-        IDENT "X"
+        PATH_SEGMENT
+          IDENT "X"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
@@ -92,5 +94,6 @@ FILE
     EQ "="
     PATH_TYPE
       PATH
-        IDENT "Z"
+        PATH_SEGMENT
+          IDENT "Z"
     SEMI ";"

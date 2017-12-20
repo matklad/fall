@@ -388,7 +388,7 @@ test r"
 type T = <Q as Foo<'f>>::Result;
 "
 
-rule path_segment {
+pub rule path_segment {
   { ident | 'self' | 'super' }
   { type_arguments | <is_in 'type_path'> fn_trait_sugar}?
 }
@@ -1157,7 +1157,9 @@ ast {
 
   node path {
     qualifier path?
+    segment path_segment?
   }
+  node path_segment { }
 
   node use_decl {
     path path?

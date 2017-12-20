@@ -13,7 +13,8 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
     R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -24,7 +25,8 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
     COMMA ","
     R_CURLY "}"
   STRUCT_DEF
@@ -36,7 +38,8 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
     COMMA ","
     STRUCT_FIELD
       VISIBILITY
@@ -45,7 +48,8 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "B"
+          PATH_SEGMENT
+            IDENT "B"
     R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -54,7 +58,8 @@ FILE
     TUPLE_FIELD
       PATH_TYPE
         PATH
-          IDENT "u32"
+          PATH_SEGMENT
+            IDENT "u32"
     R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
@@ -64,7 +69,8 @@ FILE
     TUPLE_FIELD
       PATH_TYPE
         PATH
-          IDENT "u32"
+          PATH_SEGMENT
+            IDENT "u32"
     COMMA ","
     R_PAREN ")"
     SEMI ";"
@@ -75,12 +81,14 @@ FILE
     TUPLE_FIELD
       PATH_TYPE
         PATH
-          IDENT "u32"
+          PATH_SEGMENT
+            IDENT "u32"
     COMMA ","
     TUPLE_FIELD
       PATH_TYPE
         PATH
-          IDENT "String"
+          PATH_SEGMENT
+            IDENT "String"
     R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
@@ -103,7 +111,8 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "union"
+            PATH_SEGMENT
+              IDENT "union"
         INITIALIZER
           EQ "="
           LITERAL

@@ -60,7 +60,8 @@ FILE
           L_PAREN "("
           STRUCT_LITERAL
             PATH
-              IDENT "Foo"
+              PATH_SEGMENT
+                IDENT "Foo"
             L_CURLY "{"
             R_CURLY "}"
           R_PAREN ")"
@@ -92,7 +93,8 @@ FILE
           INDEX_EXPR
             PATH_EXPR
               PATH
-                IDENT "expected"
+                PATH_SEGMENT
+                  IDENT "expected"
             L_BRACK "["
             RANGE_EXPR
               DOTDOT ".."

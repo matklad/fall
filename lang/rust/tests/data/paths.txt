@@ -4,19 +4,24 @@ FILE
     PATH
       PATH
         PATH
-          IDENT "foo"
+          PATH_SEGMENT
+            IDENT "foo"
         COLONCOLON "::"
-        IDENT "bar"
+        PATH_SEGMENT
+          IDENT "bar"
       COLONCOLON "::"
-      IDENT "baz"
+      PATH_SEGMENT
+        IDENT "baz"
     SEMI ";"
   USE_DECL
     USE "use"
     PATH
       PATH
-        SELF "self"
+        PATH_SEGMENT
+          SELF "self"
       COLONCOLON "::"
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -24,13 +29,17 @@ FILE
       PATH
         PATH
           PATH
-            SELF "self"
+            PATH_SEGMENT
+              SELF "self"
           COLONCOLON "::"
-          SUPER "super"
+          PATH_SEGMENT
+            SUPER "super"
         COLONCOLON "::"
-        SUPER "super"
+        PATH_SEGMENT
+          SUPER "super"
       COLONCOLON "::"
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     SEMI ";"
   FN_DEF
     FN "fn"
@@ -43,28 +52,33 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         INITIALIZER
           EQ "="
           PATH_EXPR
             PATH
               PATH
                 COLONCOLON "::"
-                IDENT "Vec"
-                TYPE_ARGUMENTS
-                  COLONCOLON "::"
-                  L_ANGLE "<"
-                  PATH_TYPE
-                    PATH
-                      IDENT "Vec"
-                      TYPE_ARGUMENTS
-                        L_ANGLE "<"
-                        PATH_TYPE
-                          PATH
-                            IDENT "i32"
-                        R_ANGLE ">"
-                  R_ANGLE ">"
+                PATH_SEGMENT
+                  IDENT "Vec"
+                  TYPE_ARGUMENTS
+                    COLONCOLON "::"
+                    L_ANGLE "<"
+                    PATH_TYPE
+                      PATH
+                        PATH_SEGMENT
+                          IDENT "Vec"
+                          TYPE_ARGUMENTS
+                            L_ANGLE "<"
+                            PATH_TYPE
+                              PATH
+                                PATH_SEGMENT
+                                  IDENT "i32"
+                            R_ANGLE ">"
+                    R_ANGLE ">"
               COLONCOLON "::"
-              IDENT "new"
+              PATH_SEGMENT
+                IDENT "new"
         SEMI ";"
       R_CURLY "}"

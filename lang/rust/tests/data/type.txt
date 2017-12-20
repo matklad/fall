@@ -6,9 +6,11 @@ FILE
     PATH_TYPE
       PATH
         PATH
-          IDENT "foo"
+          PATH_SEGMENT
+            IDENT "foo"
         COLONCOLON "::"
-        IDENT "bar"
+        PATH_SEGMENT
+          IDENT "bar"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
@@ -18,13 +20,15 @@ FILE
       AMPERSAND "&"
       PATH_TYPE
         PATH
-          IDENT "Foo"
+          PATH_SEGMENT
+            IDENT "Foo"
     SEMI ";"
   IMPL_DEF
     IMPL "impl"
     PATH_TYPE
       PATH
-        IDENT "T"
+        PATH_SEGMENT
+          IDENT "T"
     MEMBERS
       L_CURLY "{"
       TYPE_DEF
@@ -37,6 +41,7 @@ FILE
         EQ "="
         PATH_TYPE
           PATH
-            IDENT "A"
+            PATH_SEGMENT
+              IDENT "A"
         SEMI ";"
       R_CURLY "}"

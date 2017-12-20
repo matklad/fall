@@ -16,9 +16,11 @@ FILE
     USE "use"
     PATH
       PATH
-        IDENT "foo"
+        PATH_SEGMENT
+          IDENT "foo"
       COLONCOLON "::"
-      IDENT "bar"
+      PATH_SEGMENT
+        IDENT "bar"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -26,11 +28,14 @@ FILE
       PATH
         PATH
           COLONCOLON "::"
-          IDENT "foo"
+          PATH_SEGMENT
+            IDENT "foo"
         COLONCOLON "::"
-        IDENT "bar"
+        PATH_SEGMENT
+          IDENT "bar"
       COLONCOLON "::"
-      IDENT "baz"
+      PATH_SEGMENT
+        IDENT "baz"
     SEMI ";"
   USE_DECL
     USE "use"
@@ -59,7 +64,8 @@ FILE
   USE_DECL
     USE "use"
     PATH
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     ALIAS
       AS "as"
       IDENT "bar"
@@ -67,7 +73,8 @@ FILE
   USE_DECL
     USE "use"
     PATH
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     COLONCOLON "::"
     USE_SPEC
       L_CURLY "{"
@@ -84,7 +91,8 @@ FILE
   USE_DECL
     USE "use"
     PATH
-      IDENT "foo"
+      PATH_SEGMENT
+        IDENT "foo"
     COLONCOLON "::"
     USE_SPEC
       L_CURLY "{"
@@ -98,5 +106,6 @@ FILE
       PUB "pub"
     USE "use"
     PATH
-      IDENT "zos"
+      PATH_SEGMENT
+        IDENT "zos"
     SEMI ";"

@@ -15,12 +15,14 @@ FILE
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
     ERROR ""
     STRUCT_FIELD
       IDENT "b"
       COLON ":"
       PATH_TYPE
         PATH
-          IDENT "A"
+          PATH_SEGMENT
+            IDENT "A"
     R_CURLY "}"

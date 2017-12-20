@@ -19,7 +19,8 @@ FILE
         LET "let"
         PATH_PATTERN
           PATH
-            IDENT "x"
+            PATH_SEGMENT
+              IDENT "x"
         INITIALIZER
           EQ "="
           LITERAL
