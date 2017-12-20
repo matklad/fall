@@ -3,7 +3,7 @@ name = "lang_fall"
 version = "0.1.0"
 
 [dependencies]
-itertools = "0.7"
+itertools = "0.7.4"
 rental = "0.4"
 serde = "1.*"
 regex = "0.2"

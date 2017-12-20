@@ -1,13 +1,10 @@
 [workspace]
 members = [
     "fall/gen", "fall/tree", "fall/parse", "fall/test", "fall/text", "fall/editor",
+
     "lang/fall", "lang/fall/syntax",
     "lang/rust",
     "lang/json",
+
+    "indxr",
 ]
-
-[patch.crates-io]
-itertools = { git = "https://github.com/bluss/rust-itertools.git" }
-
-[profile.release]
-debug = true
