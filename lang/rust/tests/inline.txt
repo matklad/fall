@@ -112,7 +112,7 @@ FILE
 
 ----------------------------------------
 impl Node {}
-impl<'f> ::Debug for Node<'f> where Self: 'static { }
+unsafe impl<'f> ::Debug for Node<'f> where Self: 'static { }
 
 FILE
   IMPL_DEF
@@ -125,6 +125,7 @@ FILE
       L_CURLY "{"
       R_CURLY "}"
   IMPL_DEF
+    UNSAFE "unsafe"
     IMPL "impl"
     TYPE_PARAMETERS
       L_ANGLE "<"

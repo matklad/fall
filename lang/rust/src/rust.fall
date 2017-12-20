@@ -225,7 +225,7 @@ pub rule mod_def {
 }
 
 pub rule impl_def {
-  'impl' <commit>
+  'unsafe'? 'impl' <commit>
   type_parameters?
   {type_reference {'for' type_reference}? }
   where_clause?
@@ -234,7 +234,7 @@ pub rule impl_def {
 
 test r"
 impl Node {}
-impl<'f> ::Debug for Node<'f> where Self: 'static { }
+unsafe impl<'f> ::Debug for Node<'f> where Self: 'static { }
 "
 
 pub rule trait_def {
