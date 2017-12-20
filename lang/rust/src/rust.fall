@@ -490,7 +490,7 @@ type T = &[()];
 "
 
 pub rule fn_pointer_type {
-  'fn' <commit> <in_parens <comma_list anon_value_param>> ret_type
+  linkage? 'fn' <commit> <in_parens <comma_list anon_value_param>> ret_type?
 }
 
 #[type(value_param)]
@@ -498,9 +498,10 @@ pub rule anon_value_param {
   {pattern ':'}? type_reference
 }
 
-test r"
-type F = fn(i32, x: f64) -> ();
-"
+test r#"
+type F = extern "C" fn(i32, x: f64) -> ();
+type F_Unit = fn();
+"#
 
 // END TYPES
 

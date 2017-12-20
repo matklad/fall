@@ -711,7 +711,8 @@ FILE
     SEMI ";"
 
 ----------------------------------------
-type F = fn(i32, x: f64) -> ();
+type F = extern "C" fn(i32, x: f64) -> ();
+type F_Unit = fn();
 
 FILE
   TYPE_DEF
@@ -719,6 +720,9 @@ FILE
     IDENT "F"
     EQ "="
     FN_POINTER_TYPE
+      LINKAGE
+        EXTERN "extern"
+        STRING "\"C\""
       FN "fn"
       L_PAREN "("
       VALUE_PARAM
@@ -742,6 +746,15 @@ FILE
       UNIT_TYPE
         L_PAREN "("
         R_PAREN ")"
+    SEMI ";"
+  TYPE_DEF
+    TYPE "type"
+    IDENT "F_Unit"
+    EQ "="
+    FN_POINTER_TYPE
+      FN "fn"
+      L_PAREN "("
+      R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------
