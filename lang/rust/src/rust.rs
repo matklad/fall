@@ -702,6 +702,60 @@ impl<'f> ::std::fmt::Debug for TraitDef<'f> {
         Ok(())
     }
 }
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Path<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for Path<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == PATH {
+            Some(Path { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> Path<'f> {
+    pub fn qualifier(&self) -> Option<Path<'f>> {
+        rt::AstChildren::new(self.node().children()).next()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for Path<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("Path@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct UseDecl<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for UseDecl<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == USE_DECL {
+            Some(UseDecl { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> UseDecl<'f> {
+    pub fn path(&self) -> Option<Path<'f>> {
+        rt::AstChildren::new(self.node().children()).next()
+    }
+}
+
+impl<'f> ::std::fmt::Debug for UseDecl<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("UseDecl@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
 
 
 

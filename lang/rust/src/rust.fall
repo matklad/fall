@@ -1154,6 +1154,14 @@ ast {
   node struct_def: name_owner {}
   node enum_def: name_owner {}
   node trait_def: name_owner {}
+
+  node path {
+    qualifier path?
+  }
+
+  node use_decl {
+    path path?
+  }
 }
 
 verbatim r##########"
