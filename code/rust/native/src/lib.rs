@@ -5,6 +5,7 @@ extern crate generic_backend;
 extern crate lang_rust;
 
 use lang_rust::editor::RustEditorFile;
+use lang_rust::editor::SymbolsIndex;
 
 declare_editor_file_class! {
     JsRustEditorFile, RustEditorFile

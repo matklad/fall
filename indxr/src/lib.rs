@@ -39,10 +39,12 @@ impl<V: Send + 'static> FileIndex<V> {
         FileIndex { imp }
     }
 
-    pub fn process_files(&self, sink: &Fn(&IndexedFile<V>)) {
+    pub fn process_files(&self, sink: &mut FnMut(&IndexedFile<V>) -> bool) {
         let data = self.imp.data.lock().unwrap();
         for file in data.values() {
-            sink(file)
+            if sink(file) {
+                return
+            }
         }
     }
 }
@@ -59,9 +61,12 @@ pub struct FileIndexImpl<V> {
 }
 
 fn watch<V>(index: &FileIndexImpl<V>) {
+    let initial_indexing_start = ::std::time::Instant::now();
     for path in index.file_set.roots.iter() {
         index.change(path)
     }
+    let elapsed = initial_indexing_start.elapsed();
+    eprintln!("indexing took = {}s", elapsed.as_secs());
     let (tx, rx) = channel();
 
     for path in index.file_set.roots.iter() {

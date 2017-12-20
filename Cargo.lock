@@ -384,6 +384,7 @@ dependencies = [
  "fall_parse 0.1.0",
  "fall_tree 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "indxr 0.1.0",
 ]
 
 [[package]]

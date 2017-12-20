@@ -1,6 +1,7 @@
 extern crate fall_tree;
 extern crate fall_parse;
 extern crate fall_editor;
+extern crate indxr;
 
 mod rust;
 

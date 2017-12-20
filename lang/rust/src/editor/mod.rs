@@ -7,6 +7,9 @@ use *;
 mod actions;
 use self::actions::ACTIONS;
 
+mod symbol_index;
+pub use self::symbol_index::SymbolIndex;
+
 pub struct RustEditorFile {
     file: File
 }

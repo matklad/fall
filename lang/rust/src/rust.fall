@@ -146,7 +146,8 @@ pub rule extern_crate_decl {
 }
 
 pub rule fn_def {
-  linkage? 'fn' <commit> ident
+  'const'? 'unsafe'? linkage?
+  'fn' <commit> ident
   type_parameters?
   value_parameters
   ret_type?
@@ -315,7 +316,7 @@ pub rule type_parameter {
 
 rule type_bounds {
   ':' {
-    type_bound <commit> {'+' | <eof> | <not <not {','|'{'|'where' }>>}
+    type_bound <commit> {'+' | <eof> | <not <not {',' | '{' | 'where' }>>}
   }*
 }
 
@@ -416,7 +417,7 @@ rule type_reference {
 test r"type T = Box<Iterator<Item=T + 'static> + Send>;"
 
 rule any_type {
-  path_type | reference_type
+  path_type | reference_type | pointer_type
 | placeholder_type | unit_type | paren_type | never_type
 | array_type
 | fn_pointer_type
@@ -431,6 +432,11 @@ pub rule reference_type {
   borrow type_reference
 }
 test r"type T = &'static mut X;"
+
+pub rule pointer_type {
+  '*' {'const' | 'mut'} type_reference
+}
+test r"type T = *mut ();"
 
 
 pub rule placeholder_type {
