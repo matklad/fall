@@ -297,15 +297,17 @@ pub rule extern_block {
 }
 
 rule extern_form {
-  fn_def | const_def
+  <inject {outer_attributes visibility?}
+    {fn_def | const_def}>
 }
 
-test r"
+test r#"
 extern {
   static errno: i32;
-  fn foo();
+  #[link_name = "bar"]
+  pub fn foo();
 }
-"
+"#
 
 pub rule type_parameters {
   <in_angles {

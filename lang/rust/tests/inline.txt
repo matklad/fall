@@ -238,7 +238,8 @@ FILE
 ----------------------------------------
 extern {
   static errno: i32;
-  fn foo();
+  #[link_name = "bar"]
+  pub fn foo();
 }
 
 FILE
@@ -256,6 +257,17 @@ FILE
             IDENT "i32"
       SEMI ";"
     FN_DEF
+      ATTRIBUTE
+        HASH "#"
+        L_BRACK "["
+        ATTR_VALUE
+          IDENT "link_name"
+          EQ "="
+          LITERAL
+            STRING "\"bar\""
+        R_BRACK "]"
+      VISIBILITY
+        PUB "pub"
       FN "fn"
       IDENT "foo"
       L_PAREN "("
