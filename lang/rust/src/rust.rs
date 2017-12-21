@@ -629,7 +629,7 @@ impl<'f> rt::AstNode<'f> for FnDef<'f> {
 }
 
 impl<'f> FnDef<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for FnDef<'f> {
@@ -654,7 +654,7 @@ impl<'f> rt::AstNode<'f> for StructDef<'f> {
 }
 
 impl<'f> StructDef<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for StructDef<'f> {
@@ -679,7 +679,7 @@ impl<'f> rt::AstNode<'f> for EnumDef<'f> {
 }
 
 impl<'f> EnumDef<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for EnumDef<'f> {
@@ -704,12 +704,37 @@ impl<'f> rt::AstNode<'f> for TraitDef<'f> {
 }
 
 impl<'f> TraitDef<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for TraitDef<'f> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.write_str("TraitDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TypeDef<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for TypeDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == TYPE_DEF {
+            Some(TypeDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> TypeDef<'f> {
+
+}
+
+impl<'f> ::std::fmt::Debug for TypeDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("TypeDef@")?;
         self.node().range().fmt(f)?;
         Ok(())
     }
@@ -759,7 +784,7 @@ impl<'f> rt::AstNode<'f> for TypeParameter<'f> {
 }
 
 impl<'f> TypeParameter<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for TypeParameter<'f> {
@@ -841,7 +866,7 @@ impl<'f> rt::AstNode<'f> for PathSegment<'f> {
 }
 
 impl<'f> PathSegment<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for PathSegment<'f> {
@@ -896,7 +921,7 @@ impl<'f> rt::AstNode<'f> for UseSpec<'f> {
 }
 
 impl<'f> UseSpec<'f> {
-    
+
 }
 
 impl<'f> ::std::fmt::Debug for UseSpec<'f> {
@@ -921,6 +946,7 @@ impl<'f> NameOwner<'f> for FnDef<'f> {}
 impl<'f> NameOwner<'f> for StructDef<'f> {}
 impl<'f> NameOwner<'f> for EnumDef<'f> {}
 impl<'f> NameOwner<'f> for TraitDef<'f> {}
+impl<'f> NameOwner<'f> for TypeDef<'f> {}
 impl<'f> NameOwner<'f> for TypeParameter<'f> {}
 pub trait TypeParametersOwner<'f>: rt::AstNode<'f> {
     fn type_parameters(&self) -> Option<TypeParameters<'f>> {

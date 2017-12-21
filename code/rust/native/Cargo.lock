@@ -270,6 +270,7 @@ dependencies = [
  "fall_tree 0.1.0",
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "indxr 0.1.0",
+ "ordslice 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -407,6 +408,11 @@ dependencies = [
 [[package]]
 name = "num-traits"
 version = "0.1.41"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "ordslice"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -672,6 +678,7 @@ dependencies = [
 "checksum nix 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "bfb3ddedaa14746434a02041940495bf11325c22f6d36125d3bdd56090d50a79"
 "checksum notify 4.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "5c3812da3098f210a0bb440f9c008471a031aa4c1de07a264fdd75456c95a4eb"
 "checksum num-traits 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "cacfcab5eb48250ee7d0c7896b51a2c5eec99c1feea5f32025635f5ae4b00070"
+"checksum ordslice 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "04e5e6135238d22741190949333b38dbde73662e9849ca0e4420b3ab50380274"
 "checksum proptest 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3cae724d6672fa9c091341a3c7880187f1327128d12ef087cbde28788987b907"
 "checksum quick-error 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "eda5fe9b71976e62bc81b781206aaa076401769b2143379d3eb2118388babac4"
 "checksum quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6e920b65c65f10b2ae65c831a81a073a89edd28c7cce89475bff467ab4167a"

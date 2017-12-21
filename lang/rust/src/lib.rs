@@ -1,6 +1,7 @@
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate ordslice;
 
 extern crate fall_tree;
 extern crate fall_parse;

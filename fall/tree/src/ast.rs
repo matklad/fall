@@ -4,7 +4,7 @@ use {Node};
 use node::NodeChildren;
 
 pub trait AstNode<'f>: Copy {
-    fn wrap(node: Node<'f>) -> Option<Self>;
+    fn wrap(node: Node<'f>) -> Option<Self> where Self: Sized;
 
     fn node(self) -> Node<'f>;
 }

@@ -7,8 +7,12 @@ use *;
 mod actions;
 use self::actions::ACTIONS;
 
+mod file_symbols;
+
 mod symbol_index;
 pub use self::symbol_index::SymbolIndex;
+
+mod line_index;
 
 pub struct RustEditorFile {
     file: File
@@ -62,6 +66,7 @@ impl EditorFileImpl for RustEditorFile {
                 .visit::<FnDef, _>(|nodes, def| process_name_owner(def, nodes))
                 .visit::<StructDef, _>(|nodes, def| process_name_owner(def, nodes))
                 .visit::<EnumDef, _>(|nodes, def| process_name_owner(def, nodes))
+                .visit::<TypeDef, _>(|nodes, def| process_name_owner(def, nodes))
                 .visit::<TraitDef, _>(|nodes, def| process_name_owner(def, nodes)),
         )
     }

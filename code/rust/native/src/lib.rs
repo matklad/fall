@@ -9,7 +9,7 @@ use std::iter;
 
 use neon::vm::{Call, JsResult, Lock};
 use neon::mem::Handle;
-use neon::js::{JsString, JsValue, JsFunction};
+use neon::js::{JsValue, JsFunction};
 use neon::js::class::{JsClass, Class};
 
 use generic_backend::{arg, ret};
@@ -24,8 +24,8 @@ declare_types! {
     class JsIndex for SymbolIndex {
         init(call) {
             let scope = call.scope;
-            let path: PathBuf = arg(scope, &call.arguments, 0)?;
-            let index = SymbolIndex::new(vec![path]);
+            let roots: Vec<PathBuf> = arg(scope, &call.arguments, 0)?;
+            let index = SymbolIndex::new(roots);
             Ok(index)
         }
     }
@@ -33,12 +33,10 @@ declare_types! {
 
 fn create_index(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
-    let path = call.arguments.require(scope, 0)?.check::<JsString>()?;
-
+    let paths = call.arguments.require(scope, 0)?;
     let class: Handle<JsClass<JsIndex>> = JsIndex::class(scope)?;
     let ctor: Handle<JsFunction<JsIndex>> = class.constructor(scope)?;
-    let ctor_args = iter::once(path.upcast());
-    let index = ctor.construct::<_, JsValue, _>(scope, ctor_args)?;
+    let index = ctor.construct::<_, JsValue, _>(scope, iter::once(paths))?;
     Ok(index.upcast())
 }
 
