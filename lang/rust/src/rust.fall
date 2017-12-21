@@ -31,6 +31,8 @@ tokenizer {
   trait 'trait'
   match 'match'
   return 'return'
+  continue 'continue'
+  break 'break'
   in 'in'
   unsafe 'unsafe'
   where 'where'
@@ -603,7 +605,7 @@ fn main() { let &mut foo = bar; }
 #[pratt]
 pub rule expr {
   literal | path_expr | unit_expr | paren_expr | array_literal
-| lambda_expr | return_expr
+| lambda_expr | return_expr | loop_cf_expr
 | block_expr | if_expr | while_expr | loop_expr | for_expr | match_expr
 | block_macro_expr | line_macro_expr
 
@@ -738,6 +740,20 @@ pub rule return_expr {
 
 test r"
 fn main() { return; return (); }
+"
+
+#[atom]
+pub rule loop_cf_expr {
+  {'break'|'continue'} lifetime?
+}
+
+test r"
+fn main() {
+  'l: loop {
+    break;
+    continue 'l;
+  }
+}
 "
 
 

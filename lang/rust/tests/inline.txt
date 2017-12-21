@@ -1301,6 +1301,40 @@ FILE
 
 ----------------------------------------
 fn main() {
+  'l: loop {
+    break;
+    continue 'l;
+  }
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      LOOP_EXPR
+        LIFETIME "\'l"
+        COLON ":"
+        LOOP "loop"
+        BLOCK_EXPR
+          L_CURLY "{"
+          EXPR_STMT
+            LOOP_CF_EXPR
+              BREAK "break"
+            SEMI ";"
+          EXPR_STMT
+            LOOP_CF_EXPR
+              CONTINUE "continue"
+              LIFETIME "\'l"
+            SEMI ";"
+          R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
     {1};
     {1}
     {1;}

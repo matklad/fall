@@ -4,11 +4,28 @@ extern crate neon;
 extern crate generic_backend;
 extern crate lang_rust;
 
+use std::path::PathBuf;
+
+use generic_backend::arg;
+
 use lang_rust::editor::RustEditorFile;
-//use lang_rust::editor::SymbolIndex;
+use lang_rust::editor::SymbolIndex;
 
 declare_editor_file_class! {
     JsRustEditorFile, RustEditorFile
+}
+
+declare_types! {
+    class JsIndex for SymbolIndex {
+        init(call) {
+            let scope = call.scope;
+            let path: PathBuf = arg(scope, &call.arguments, 0);
+            let index = SymbolIndex::new(vec![path]);
+            Ok(index)
+        }
+
+
+    }
 }
 
 register_module!(m, {
