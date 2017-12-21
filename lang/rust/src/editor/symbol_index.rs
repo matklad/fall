@@ -71,7 +71,7 @@ fn fuzzy_match(text: &str, query: &str) -> bool {
     true
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Symbol {
     pub name: String,
     pub range: TextRange,

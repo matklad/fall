@@ -84,22 +84,22 @@ impl Task for RenderTask {
 
 
 register_module!(m, {
-    m.export("parse", |call| generic_backend::parse::<JsFallEditorFile>(call))?;
-    m.export("edit", |call| generic_backend::edit::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("metrics", |call| generic_backend::metrics::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("syntaxTree", |call| generic_backend::syntax_tree::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("extendSelection", |call| generic_backend::extend_selection::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("structure", |call| generic_backend::structure::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("reformat", |call| generic_backend::reformat::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("highlight", |call| generic_backend::highlight::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("diagnostics", |call| generic_backend::diagnostics::<FileWithAnalysis, JsFallEditorFile>(call))?;
+    m.export("parse", generic_backend::parse::<JsFallEditorFile>)?;
+    m.export("edit", generic_backend::edit::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("metrics", generic_backend::metrics::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("syntaxTree", generic_backend::syntax_tree::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("extendSelection", generic_backend::extend_selection::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("structure", generic_backend::structure::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("reformat", generic_backend::reformat::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("highlight", generic_backend::highlight::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("diagnostics", generic_backend::diagnostics::<FileWithAnalysis, JsFallEditorFile>)?;
 
-    m.export("contextActions", |call| generic_backend::context_actions::<FileWithAnalysis, JsFallEditorFile>(call))?;
-    m.export("applyContextAction", |call| generic_backend::apply_context_action::<FileWithAnalysis, JsFallEditorFile>(call))?;
+    m.export("contextActions", generic_backend::context_actions::<FileWithAnalysis, JsFallEditorFile>)?;
+    m.export("applyContextAction", generic_backend::apply_context_action::<FileWithAnalysis, JsFallEditorFile>)?;
 
-    m.export("resolveReference", |call| resolve_reference(call))?;
-    m.export("findUsages", |call| find_usages(call))?;
-    m.export("testAtOffset", |call| test_at_offset(call))?;
-    m.export("renderTest", |call| render_test(call))?;
+    m.export("resolveReference", resolve_reference)?;
+    m.export("findUsages", find_usages)?;
+    m.export("testAtOffset", test_at_offset)?;
+    m.export("renderTest", render_test)?;
     Ok(())
 });
