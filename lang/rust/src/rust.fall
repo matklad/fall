@@ -260,7 +260,7 @@ pub rule members {
 
 
 rule impl_form {
-  fn_def | type_def | const_def
+  fn_def | type_def | const_def | inner_attribute
 }
 
 rule impl_form_first {
@@ -1110,7 +1110,22 @@ pub rule assignment_expr {
 // STATART ATRIBUTES
 
 pub rule attribute {
-  '#' <in_bracks <comma_list attr_value>>
+  '#' attr_body
+}
+
+pub rule inner_attribute {
+  '#' '!'  attr_body
+}
+
+test r"
+#![foo]
+impl () {
+  #![bar]
+}
+"
+
+rule attr_body {
+  <in_bracks <comma_list attr_value>>
 }
 
 test r#"

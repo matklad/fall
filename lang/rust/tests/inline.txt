@@ -2085,6 +2085,36 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
+#![foo]
+impl () {
+  #![bar]
+}
+
+FILE
+  INNER_ATTRIBUTE
+    HASH "#"
+    BANG "!"
+    L_BRACK "["
+    ATTR_VALUE
+      IDENT "foo"
+    R_BRACK "]"
+  IMPL_DEF
+    IMPL "impl"
+    UNIT_TYPE
+      L_PAREN "("
+      R_PAREN ")"
+    MEMBERS
+      L_CURLY "{"
+      INNER_ATTRIBUTE
+        HASH "#"
+        BANG "!"
+        L_BRACK "["
+        ATTR_VALUE
+          IDENT "bar"
+        R_BRACK "]"
+      R_CURLY "}"
+
+----------------------------------------
 #[foo, bar(baz), quux = 92] struct Foo;
 #[cfg(target_os="linux")] mod bar;
 
