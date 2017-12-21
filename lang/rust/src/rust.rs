@@ -629,7 +629,7 @@ impl<'f> rt::AstNode<'f> for FnDef<'f> {
 }
 
 impl<'f> FnDef<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for FnDef<'f> {
@@ -654,7 +654,7 @@ impl<'f> rt::AstNode<'f> for StructDef<'f> {
 }
 
 impl<'f> StructDef<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for StructDef<'f> {
@@ -679,7 +679,7 @@ impl<'f> rt::AstNode<'f> for EnumDef<'f> {
 }
 
 impl<'f> EnumDef<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for EnumDef<'f> {
@@ -704,7 +704,7 @@ impl<'f> rt::AstNode<'f> for TraitDef<'f> {
 }
 
 impl<'f> TraitDef<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for TraitDef<'f> {
@@ -729,7 +729,7 @@ impl<'f> rt::AstNode<'f> for TypeDef<'f> {
 }
 
 impl<'f> TypeDef<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for TypeDef<'f> {
@@ -784,7 +784,7 @@ impl<'f> rt::AstNode<'f> for TypeParameter<'f> {
 }
 
 impl<'f> TypeParameter<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for TypeParameter<'f> {
@@ -866,7 +866,7 @@ impl<'f> rt::AstNode<'f> for PathSegment<'f> {
 }
 
 impl<'f> PathSegment<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for PathSegment<'f> {
@@ -921,7 +921,7 @@ impl<'f> rt::AstNode<'f> for UseSpec<'f> {
 }
 
 impl<'f> UseSpec<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for UseSpec<'f> {

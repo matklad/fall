@@ -1,5 +1,5 @@
 use fall_tree::{File, TextEdit, TextRange};
-use fall_tree::visitor::{process_subtree_bottom_up, visitor};
+use fall_tree::visitor::{process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::hl::{self, Highlights};
 use *;
@@ -8,6 +8,7 @@ mod actions;
 use self::actions::ACTIONS;
 
 mod file_symbols;
+use self::file_symbols::process_symbols;
 
 mod symbol_index;
 pub use self::symbol_index::SymbolIndex;
@@ -51,24 +52,15 @@ impl EditorFileImpl for RustEditorFile {
     }
 
     fn structure(&self) -> Vec<FileStructureNode> {
-        fn process_name_owner<'f, D: NameOwner<'f>>(def: D, nodes: &mut Vec<FileStructureNode>) {
-            if let Some(name_ident) = def.name_ident() {
-                nodes.push(FileStructureNode {
-                    name: name_ident.text().to_string(),
-                    range: def.node().range(),
-                    children: Vec::new(),
-                })
-            }
-        }
-        process_subtree_bottom_up(
-            self.file().root(),
-            visitor(Vec::new())
-                .visit::<FnDef, _>(|nodes, def| process_name_owner(def, nodes))
-                .visit::<StructDef, _>(|nodes, def| process_name_owner(def, nodes))
-                .visit::<EnumDef, _>(|nodes, def| process_name_owner(def, nodes))
-                .visit::<TypeDef, _>(|nodes, def| process_name_owner(def, nodes))
-                .visit::<TraitDef, _>(|nodes, def| process_name_owner(def, nodes)),
-        )
+        let mut nodes = Vec::new();
+        process_symbols(self.file(), &mut|name, node| {
+            nodes.push(FileStructureNode {
+                name: name.to_string(),
+                range: node.range(),
+                children: Vec::new(),
+            })
+        });
+        nodes
     }
 
     fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
