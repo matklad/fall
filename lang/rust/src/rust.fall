@@ -88,7 +88,7 @@ tokenizer {
   caret '^'
   caret_eq '^='
 
-  char r"'(\s*|\S*)'"
+  char r"'[^']'|'\\''|'(\\|\p{XID_Continue}|\{|\})*'"
   lifetime r"'\p{XID_Continue}*"
   bool r"true|false"
   number r"\d+"
@@ -98,7 +98,10 @@ tokenizer {
 }
 
 test r###"
-fn main() { "\"" }
+struct S<'a:'b>;
+fn main() {
+  "\"";
+}
 "###
 
 pub rule file { mod_contents }

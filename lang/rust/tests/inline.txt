@@ -1,6 +1,20 @@
-fn main() { "\"" }
+struct S<'a:'b>;
+fn main() {
+  "\"";
+}
 
 FILE
+  STRUCT_DEF
+    STRUCT "struct"
+    IDENT "S"
+    TYPE_PARAMETERS
+      L_ANGLE "<"
+      LIFETIME_PARAMETER
+        LIFETIME "\'a"
+        COLON ":"
+        LIFETIME "\'b"
+      R_ANGLE ">"
+    SEMI ";"
   FN_DEF
     FN "fn"
     IDENT "main"
@@ -8,8 +22,10 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      LITERAL
-        STRING "\"\\\"\""
+      EXPR_STMT
+        LITERAL
+          STRING "\"\\\"\""
+        SEMI ";"
       R_CURLY "}"
 
 ----------------------------------------

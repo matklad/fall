@@ -289,7 +289,7 @@ pub fn language() -> &'static rt::Language {
             ::fall_parse::LexRule::new(QUESTION, "\\?", None),
             ::fall_parse::LexRule::new(CARET, "\\^", None),
             ::fall_parse::LexRule::new(CARET_EQ, "\\^=", None),
-            ::fall_parse::LexRule::new(CHAR, "\'(\\s*|\\S*)\'", None),
+            ::fall_parse::LexRule::new(CHAR, "\'[^\']\'|\'\\\\\'\'|\'(\\\\|\\p{XID_Continue}|\\{|\\})*\'", None),
             ::fall_parse::LexRule::new(LIFETIME, "\'\\p{XID_Continue}*", None),
             ::fall_parse::LexRule::new(BOOL, "true|false", None),
             ::fall_parse::LexRule::new(NUMBER, "\\d+", None),
