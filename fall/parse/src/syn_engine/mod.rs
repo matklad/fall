@@ -110,7 +110,7 @@ pub(crate) fn salvage_segments(
                         } else {
                             inserted += copy.len()
                         }
-                        TextEditOp::Insert(ref text) => inserted += text.len(),
+                        TextEditOp::Insert(ref text) => inserted += text.as_text().len(),
                     }
                 }
                 start_event += n_events;

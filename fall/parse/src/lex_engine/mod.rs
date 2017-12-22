@@ -52,7 +52,7 @@ pub fn relex<L: Lexer>(
     for op in edit.ops.iter() {
         match *op {
             TextEditOp::Insert(ref buf) => {
-                edit_point += buf.len()
+                edit_point += buf.as_text().len()
             }
             TextEditOp::Copy(range) => {
                 let mut txt = new_text.slice(TextSuffix::from(new_len));
