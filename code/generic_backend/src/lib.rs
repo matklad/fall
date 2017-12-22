@@ -75,7 +75,7 @@ macro_rules! declare_editor_file_class {
                                 let inner: &$t = file;
                                 let edit = $crate::from_vs_edits(
                                     <$t as $crate::fall_editor::EditorFileImpl>::file(inner).text(),
-                                     edits
+                                    edits,
                                 );
                                 $crate::EditorFile::edit(file, &edit)
                             })
