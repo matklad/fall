@@ -1,5 +1,5 @@
 use fall_tree::{Node, NodeType, File, TextEdit, FileEdit, tu};
-use fall_tree::search::{next_sibling, prev_sibling};
+use fall_tree::search::{sibling, Direction};
 use syntax::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 
 pub fn reformat(file: &File) -> TextEdit {
@@ -44,7 +44,7 @@ impl<'r> Spacer<'r> {
     fn apply<'f>(&self, node: Node<'f>, edit: &mut FileEdit<'f>) {
         for &rule in self.rules {
             let (spaces, ws_node, before_ws_node) =
-                match (rule, next_sibling(node), prev_sibling(node)) {
+                match (rule, sibling(node, Direction::Right), sibling(node, Direction::Left)) {
                     (Rule::After(rty, spaces), Some(next), _) if rty == node.ty() => {
                         (spaces, next, node)
                     }

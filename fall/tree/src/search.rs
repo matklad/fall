@@ -118,18 +118,19 @@ pub fn find_covering_node(root: Node, range: TextRange) -> Node {
     common_ancestor(left, right)
 }
 
-pub fn prev_sibling(node: Node) -> Option<Node> {
-    match child_position(node) {
-        Some((parent, idx)) if idx > 0 => parent.children().nth(idx - 1),
-        _ => None
-    }
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub enum Direction {
+    Left, Right
 }
 
-pub fn next_sibling<'f>(node: Node<'f>) -> Option<Node<'f>> {
-    match child_position(node) {
-        Some((parent, idx)) => parent.children().nth(idx + 1),
-        _ => None
-    }
+pub fn sibling(node: Node, dir: Direction) -> Option<Node> {
+    let (parent, idx) = child_position(node)?;
+    let idx = match dir {
+        Direction::Left => idx.checked_sub(1)?,
+        Direction::Right => idx + 1,
+    };
+    parent.children().nth(idx)
 }
 
 pub mod ast {

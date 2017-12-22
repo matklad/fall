@@ -88,3 +88,15 @@ pub fn check_context_action<E: EditorFileImpl>(
         }
     }
 }
+
+pub fn check_no_context_action<E: EditorFileImpl>(
+    action_id: &str,
+    text: &str,
+) {
+    let (before, range) = test_util::extract_range(text, "^");
+    let file = E::parse(&before);
+    let actions = file.context_actions(range);
+    if actions.contains(&action_id) {
+        panic!("Action `{}` is avialable", action_id);
+    }
+}
