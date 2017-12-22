@@ -36,7 +36,7 @@ impl Language {
         let text: TextBuf = text.into();
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
-        let incremental = self.imp.parse(text.as_slice(), &metrics, &mut builder);
+        let incremental = self.imp.parse(text.as_text(), &metrics, &mut builder);
         File::new(self.clone(), text, metrics, incremental, builder)
     }
 
@@ -45,9 +45,9 @@ impl Language {
         let metrics = Metrics::new();
         let mut builder = TreeBuilder::new();
         let incremental = if let Some(incremental) = file.incremental_data() {
-            self.imp.reparse(incremental, edit, new_text.as_slice(), &metrics, &mut builder)
+            self.imp.reparse(incremental, edit, new_text.as_text(), &metrics, &mut builder)
         } else {
-            self.imp.parse(new_text.as_slice(), &metrics, &mut builder)
+            self.imp.parse(new_text.as_text(), &metrics, &mut builder)
         };
         File::new(self.clone(), new_text, metrics, incremental, builder)
     }

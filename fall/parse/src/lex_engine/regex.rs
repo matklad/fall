@@ -45,7 +45,7 @@ fn tokenize_longest_first_wins() {
     ]);
 
     let text: ::fall_tree::TextBuf = "foo foob foobar".into();
-    let tokens: Vec<_> = ::lex_engine::lex(&lexer, text.as_slice())
+    let tokens: Vec<_> = ::lex_engine::lex(&lexer, text.as_text())
         .into_iter()
         .map(|t| t.ty.0)
         .collect();

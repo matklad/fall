@@ -18,7 +18,7 @@ impl FileImpl {
     }
 
     pub fn text(&self) -> Text {
-        self.text.as_slice()
+        self.text.as_text()
     }
 
     pub fn metrics(&self) -> &Metrics {

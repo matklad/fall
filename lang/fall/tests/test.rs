@@ -27,11 +27,11 @@ fn relex_test() {
     let edits: Vec<fn(&mut TextEditBuilder)> = vec![edit1, edit2];
     for edit in edits {
         let edit = {
-            let mut b = TextEditBuilder::new(text.as_slice());
+            let mut b = TextEditBuilder::new(text.as_text());
             edit(&mut b);
             b.build()
         };
-        text = edit.apply(text.as_slice());
+        text = edit.apply(text.as_text());
         eprintln!("text = {}", text);
         file = file.edit(&edit);
         let fresh_file = lang_fall::parse(text.to_string());
@@ -56,11 +56,11 @@ fn reparse_test() {
 
     for edit in edits {
         let edit = {
-            let mut b = TextEditBuilder::new(text.as_slice());
+            let mut b = TextEditBuilder::new(text.as_text());
             edit(&mut b);
             b.build()
         };
-        text = edit.apply(text.as_slice());
+        text = edit.apply(text.as_text());
         file = file.edit(&edit);
         let fresh_file = lang_fall::parse(text.to_string());
         report_diff(&dump_file_ws(&fresh_file), &dump_file_ws(&file));

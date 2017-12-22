@@ -25,7 +25,7 @@ impl<'s> From<Text<'s>> for TextBuf {
 }
 
 impl TextBuf {
-    pub fn as_slice(&self) -> Text {
+    pub fn as_text(&self) -> Text {
         Text {
             owned: &self.data,
             range: TextRange::from_len(tu(0), tu(self.data.len() as u32)),
@@ -37,17 +37,17 @@ impl TextBuf {
     }
 
     pub fn slice(&self, range: TextRange) -> Text {
-        self.as_slice().slice(range)
+        self.as_text().slice(range)
     }
 
     pub fn len(&self) -> TextUnit {
-        self.as_slice().len()
+        self.as_text().len()
     }
 }
 
 impl PartialEq<str> for TextBuf {
     fn eq(&self, other: &str) -> bool {
-        self.as_slice() == other
+        self.as_text() == other
     }
 }
 
@@ -59,7 +59,7 @@ impl PartialEq<TextBuf> for str {
 
 impl<'s> PartialEq<&'s str> for TextBuf {
     fn eq(&self, other: &&'s str) -> bool {
-        self.as_slice() == *other
+        self.as_text() == *other
     }
 }
 
@@ -71,12 +71,12 @@ impl<'s> PartialEq<TextBuf> for &'s str {
 
 impl fmt::Display for TextBuf {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.as_slice().fmt(f)
+        self.as_text().fmt(f)
     }
 }
 
 impl fmt::Debug for TextBuf {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.as_slice().fmt(f)
+        self.as_text().fmt(f)
     }
 }

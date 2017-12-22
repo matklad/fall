@@ -19,7 +19,7 @@ impl TextEdit {
         for s in self.ops.iter() {
             match *s {
                 TextEditOp::Copy(range) => result += &text.slice(range).to_cow(),
-                TextEditOp::Insert(ref i) => result += &i.as_slice().to_cow(),
+                TextEditOp::Insert(ref i) => result += &i.as_text().to_cow(),
             }
         }
 
@@ -101,13 +101,13 @@ mod tests {
     fn test_edits() {
         let text: TextBuf = "Hello, World!".into();
         let edit = {
-            let mut e = TextEditBuilder::new(text.as_slice());
+            let mut e = TextEditBuilder::new(text.as_text());
             e.replace(TextRange::from_len(tu(0), tu(5)), "Goodbye");
             e.insert(tu(7), "cruel ");
             e.delete(TextRange::from_len(tu(12), tu(1)));
             e.build()
         };
-        let new_text = edit.apply(text.as_slice());
+        let new_text = edit.apply(text.as_text());
         assert_eq!(new_text, "Goodbye, cruel World");
     }
 }

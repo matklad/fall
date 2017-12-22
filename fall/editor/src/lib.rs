@@ -84,7 +84,7 @@ pub fn check_context_action<E: EditorFileImpl>(
         None => panic!("Failed to apply `{}` action", action_id),
         Some(edit) => {
             let actual = edit.apply(file.file().text());
-            test_util::report_diff(after.trim(), actual.as_slice().to_cow().trim())
+            test_util::report_diff(after.trim(), actual.as_text().to_cow().trim())
         }
     }
 }

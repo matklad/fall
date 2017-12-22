@@ -187,13 +187,13 @@ fn incremental_reparse_is_equivalent_to_full_parse(
 ) {
     let initial_text = normalize(initial_text);
     let mut current_text = TextBuf::from(initial_text);
-    let mut current_file = lang_fall().parse(current_text.as_slice());
+    let mut current_file = lang_fall().parse(current_text.as_text());
     for e in edits {
-        let e = e.as_text_edit(current_text.as_slice());
-        current_text = e.apply(current_text.as_slice());
+        let e = e.as_text_edit(current_text.as_text());
+        current_text = e.apply(current_text.as_text());
 
         current_file = lang_fall().reparse(&current_file, &e);
-        let fresh_file = lang_fall().parse(current_text.as_slice());
+        let fresh_file = lang_fall().parse(current_text.as_text());
 
         check_equal_files(&fresh_file, &current_file);
     }

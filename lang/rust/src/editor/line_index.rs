@@ -38,7 +38,7 @@ fn test_line_index() {
 
     let text = "hello\nworld";
     let text = TextBuf::from(text);
-    let index = LineIndex::new(text.as_slice());
+    let index = LineIndex::new(text.as_text());
     assert_eq!(index.translate(tu(0)), LineCol { line: 0, col: 0});
     assert_eq!(index.translate(tu(1)), LineCol { line: 0, col: 1});
     assert_eq!(index.translate(tu(5)), LineCol { line: 0, col: 5});
@@ -51,7 +51,7 @@ fn test_line_index() {
 
     let text = "\nhello\nworld";
     let text = TextBuf::from(text);
-    let index = LineIndex::new(text.as_slice());
+    let index = LineIndex::new(text.as_text());
     assert_eq!(index.translate(tu(0)), LineCol { line: 0, col: 0});
     assert_eq!(index.translate(tu(1)), LineCol { line: 1, col: 0});
     assert_eq!(index.translate(tu(2)), LineCol { line: 1, col: 1});
