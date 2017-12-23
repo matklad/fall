@@ -60,7 +60,7 @@ fn range_to_extract(parent: Node, range: TextRange) -> TextRange {
 
 #[cfg(test)]
 mod tests {
-    use fall_editor::check_context_action;
+    use fall_editor::actions::check_context_action;
 
     #[test]
     fn test_extract_whole_seq() {

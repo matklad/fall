@@ -4,12 +4,14 @@ extern crate serde_derive;
 extern crate fall_tree;
 
 use fall_tree::{File, dump_file, TextEdit, TextRange, FileEdit};
-use fall_tree::test_util;
 
 pub mod hl;
+use self::hl::Highlights;
+
 mod extend_selection;
 
-use self::hl::Highlights;
+pub mod actions;
+
 
 #[derive(Serialize, Debug)]
 pub struct FileStructureNode {
@@ -67,36 +69,4 @@ pub trait EditorFileImpl: Sync + 'static {
 
 pub fn gen_syntax_tree(file: &File) -> String {
     dump_file(&file)
-}
-
-pub fn check_context_action<E: EditorFileImpl>(
-    action_id: &str,
-    before: &str,
-    after: &str
-) {
-    let (before, range) = test_util::extract_range(before, "^");
-    let file = E::parse(&before);
-    let actions = file.context_actions(range);
-    if !actions.contains(&action_id) {
-        panic!("Action `{}` is not avialable", action_id);
-    }
-    match file.apply_context_action(range, action_id) {
-        None => panic!("Failed to apply `{}` action", action_id),
-        Some(edit) => {
-            let actual = edit.apply(file.file().text());
-            test_util::report_diff(after.trim(), actual.as_text().to_cow().trim())
-        }
-    }
-}
-
-pub fn check_no_context_action<E: EditorFileImpl>(
-    action_id: &str,
-    text: &str,
-) {
-    let (before, range) = test_util::extract_range(text, "^");
-    let file = E::parse(&before);
-    let actions = file.context_actions(range);
-    if actions.contains(&action_id) {
-        panic!("Action `{}` is avialable", action_id);
-    }
 }

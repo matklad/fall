@@ -1,6 +1,7 @@
-use fall_tree::{File, TextUnit, TextEdit, FileEdit, AstNode, Node};
+use fall_tree::{File, TextUnit, FileEdit, AstNode, Node};
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset, Direction, sibling};
 use fall_tree::search::ast;
+use fall_editor::actions::ActionResult;
 use {NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl, COMMA, WHITESPACE};
 
 
@@ -9,22 +10,6 @@ pub const ACTIONS: &[(&str, fn(&File, TextUnit, bool) -> Option<ActionResult>)] 
     ("Add impl", add_impl),
     ("Swap", swap),
 ];
-
-pub enum ActionResult {
-    Available,
-    Applied(TextEdit),
-}
-
-impl ActionResult {
-    pub fn into_edit(self) -> TextEdit {
-        match self {
-            ActionResult::Available =>
-                panic!("Context action should provide edit when apply is set to true"),
-            ActionResult::Applied(edit) => edit,
-        }
-    }
-}
-
 
 fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
     let use_decl: UseDecl = ast::node_at_offset(file.root(), offset)?;
@@ -43,7 +28,7 @@ fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionRe
 
 #[test]
 fn test_add_use_braces() {
-    use fall_editor::check_context_action;
+    use fall_editor::actions::check_context_action;
 
     check_context_action::<::editor::RustEditorFile>("Add braces", r"
 use foo::^^bar;
@@ -106,7 +91,7 @@ fn add_impl_for<'f, T: NameOwner<'f> + TypeParametersOwner<'f>>(
 
 #[test]
 fn test_add_impl() {
-    use fall_editor::check_context_action;
+    use fall_editor::actions::check_context_action;
 
     check_context_action::<::editor::RustEditorFile>("Add impl", r"
 struct ^^Foo<X, Y: Clone> {}
@@ -162,7 +147,7 @@ fn find_comma<'f>(node: Node<'f>, offset: TextUnit) -> Option<Node<'f>> {
 
 #[test]
 fn test_swap() {
-    use fall_editor::{check_context_action, check_no_context_action};
+    use fall_editor::actions::{check_context_action, check_no_context_action};
 
     check_context_action::<::editor::RustEditorFile>(
         "Swap",

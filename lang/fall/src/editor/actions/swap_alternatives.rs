@@ -51,7 +51,7 @@ fn find_swappable_nodes<'f>(file: &'f File, offset: TextUnit) -> Option<(Node<'f
 
 #[cfg(test)]
 mod tests {
-    use fall_editor::check_context_action;
+    use fall_editor::actions::check_context_action;
 
     #[test]
     fn test_swap_alternatives() {
