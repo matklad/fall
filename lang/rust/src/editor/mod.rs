@@ -1,6 +1,7 @@
 use fall_tree::{File, TextEdit, TextRange};
 use fall_tree::visitor::{process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
+use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
 use *;
 
@@ -65,21 +66,29 @@ impl EditorFileImpl for RustEditorFile {
 
     fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
         let mut result = Vec::new();
-        for &(action_id, action) in ACTIONS.iter() {
+        fall_editor::actions::default_context_actions(
+            self.file(),
+            range,
+            &mut result,
+        );
+        for &(action_id, action) in ACTIONS {
             if action(self.file(), range.start(), false).is_some() {
-                result.push(action_id)
+                result.push(action_id);
             }
         }
         result
     }
 
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
-        for &(action_id, action) in ACTIONS.iter() {
-            if action_id == id {
-                let edit = action(self.file(), range.start(), true)?.into_edit();
-                return Some(edit);
-            }
+        let def = fall_editor::actions::apply_default_context_action(
+            self.file(),
+            range,
+            id,
+        );
+        if let Some(result) = def {
+            return result
         }
-        None
+        let &(_, action) = ACTIONS.iter().find(|&&(aid, _)| aid == id)?;
+        action(self.file(), range.start(), true).map(ActionResult::into_edit)
     }
 }

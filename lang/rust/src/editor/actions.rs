@@ -1,14 +1,12 @@
-use fall_tree::{File, TextUnit, FileEdit, AstNode, Node};
-use fall_tree::search::{find_leaf_at_offset, LeafAtOffset, Direction, sibling};
+use fall_tree::{File, TextUnit, FileEdit, AstNode};
 use fall_tree::search::ast;
 use fall_editor::actions::ActionResult;
-use {NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl, COMMA, WHITESPACE};
+use {NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl};
 
 
 pub const ACTIONS: &[(&str, fn(&File, TextUnit, bool) -> Option<ActionResult>)] = &[
     ("Add braces", add_use_braces),
     ("Add impl", add_impl),
-    ("Swap", swap),
 ];
 
 fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
@@ -104,47 +102,6 @@ impl<X, Y: Clone> Foo<X, Y> {
 ");
 }
 
-checkpoint!(TRAILING_COMMA);
-
-fn swap(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
-    let comma = find_comma(file.root(), offset)?;
-    let left = nonws_sibling(comma, Direction::Left)?;
-    let right = nonws_sibling(comma, Direction::Right)?;
-    if left.ty() != right.ty() {
-        TRAILING_COMMA.pass();
-        return None;
-    }
-
-    if !apply {
-        return Some(ActionResult::Available);
-    }
-    let mut edit = FileEdit::new(file);
-    edit.replace(left, right);
-    edit.replace(right, left);
-    Some(ActionResult::Applied(edit.into_text_edit()))
-}
-
-fn nonws_sibling<'f>(node: Node<'f>, direction: Direction) -> Option<Node<'f>> {
-    let mut node = sibling(node, direction)?;
-    while node.ty() == WHITESPACE {
-        node = sibling(node, direction)?;
-    }
-    Some(node)
-}
-
-fn find_comma<'f>(node: Node<'f>, offset: TextUnit) -> Option<Node<'f>> {
-    match find_leaf_at_offset(node, offset) {
-        LeafAtOffset::None => None,
-        LeafAtOffset::Single(node) => if node.ty() == COMMA { Some(node) } else { None },
-        LeafAtOffset::Between(left, right) => match (left.ty(), right.ty()) {
-            (COMMA, _) => Some(left),
-            (_, COMMA) => Some(right),
-            _ => None,
-        }
-    }
-}
-
-
 #[test]
 fn test_swap() {
     use fall_editor::actions::{check_context_action, check_no_context_action};
@@ -155,10 +112,8 @@ fn test_swap() {
         r"struct Foo<Y: Clone, X> {}",
     );
 
-    TRAILING_COMMA.check(|| {
-        check_no_context_action::<::editor::RustEditorFile>(
-            "Swap",
-            r"struct Foo<X, Y: Clone,^^> {}",
-        );
-    })
+    check_no_context_action::<::editor::RustEditorFile>(
+        "Swap",
+        r"struct Foo<X, Y: Clone,^^> {}",
+    );
 }

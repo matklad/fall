@@ -5,6 +5,7 @@ use fall_tree::search::find_leaf_at_offset;
 use fall_tree::search::ast;
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
 use fall_editor::hl::Highlights;
+use fall_editor::actions::ActionResult;
 use syntax::lang_fall;
 use syntax::TestDef;
 
@@ -47,12 +48,23 @@ impl EditorFileImpl for FileWithAnalysis {
     }
 
     fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
-        self.record_analysis("context_actions", |a| actions::context_actions(a, range))
+        let mut result = Vec::new();
+        ::fall_editor::actions::default_context_actions(self.file(), range, &mut result);
+        for &(action_id, action) in actions::ACTIONS.iter() {
+            if action(self.file(), range, false).is_some() {
+                result.push(action_id);
+            }
+        }
+        result
     }
 
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
-        let edit = self.analyse(|a| actions::apply_context_action(a, range, id));
-        Some(edit)
+        let def = ::fall_editor::actions::apply_default_context_action(self.file(), range, id);
+        if let Some(result) = def {
+            return result;
+        }
+        let &(_, action) = actions::ACTIONS.iter().find(|&&(aid, _)| aid == id)?;
+        action(self.file(), range, true).map(ActionResult::into_edit)
     }
 
     fn reformat(&self) -> TextEdit {

@@ -1,42 +1,35 @@
 use fall_tree::{AstNode, File, Node, TextRange, FileEdit};
 use fall_tree::search::{find_covering_node, ancestors};
 use fall_tree::search::ast;
+use fall_editor::actions::ActionResult;
 use syntax::{Expr, SynRule, SeqExpr, RefExpr};
-use super::ContextAction;
 
+pub fn extract_rule(file: &File, range: TextRange, apply: bool) -> Option<ActionResult> {
+    if range.is_empty() {
+        return None;
+    }
+    let expr = ancestors(find_covering_node(file.root(), range))
+        .find(|&n| is_expression(n))?;
 
-pub struct ExtractRule;
-
-impl ContextAction for ExtractRule {
-    fn id(&self) -> &'static str {
-        "Extract Rule"
+    if RefExpr::wrap(expr).is_some() {
+        return None;
     }
 
-    fn apply<'f>(&self, file: &'f File, range: TextRange) -> Option<FileEdit<'f>> {
-        if range.is_empty() {
-            return None;
-        }
-        let expr = ancestors(find_covering_node(file.root(), range))
-            .find(|&n| is_expression(n));
-        let expr = match expr {
-            None => return None,
-            Some(expr) => expr,
-        };
-        if RefExpr::wrap(expr).is_some() {
-            return None;
-        }
-        let rule = ast::ancestor_exn::<SynRule>(expr).node();
-        let range = range_to_extract(expr, range);
-
-        let new_rule = format!("\n\nrule new_rule {{\n  {}\n}}", file.text().slice(range));
-
-        let mut edit = FileEdit::new(file);
-        edit.replace_substring(expr, range, "new_rule".to_owned());
-        edit.insert_text_after(rule, new_rule);
-
-        Some(edit)
+    if !apply {
+        return Some(ActionResult::Available)
     }
+
+    let rule = ast::ancestor_exn::<SynRule>(expr).node();
+    let range = range_to_extract(expr, range);
+
+    let new_rule = format!("\n\nrule new_rule {{\n  {}\n}}", file.text().slice(range));
+
+    let mut edit = FileEdit::new(file);
+    edit.replace_substring(expr, range, "new_rule".to_owned());
+    edit.insert_text_after(rule, new_rule);
+    Some(ActionResult::Applied(edit.into_text_edit()))
 }
+
 
 fn is_expression(node: Node) -> bool {
     Expr::wrap(node).is_some()
@@ -64,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_extract_whole_seq() {
-        check_context_action::<::FileWithAnalysis>("Extract Rule", r##"
+        check_context_action::<::FileWithAnalysis>("Extract rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { ^bar baz^ }
 "##, r##"
@@ -79,7 +72,7 @@ rule new_rule {
 
     #[test]
     fn test_extract_sub_seq() {
-        check_context_action::<::FileWithAnalysis>("Extract Rule", r##"
+        check_context_action::<::FileWithAnalysis>("Extract rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { foo ^bar baz^ quux }
 "##, r##"

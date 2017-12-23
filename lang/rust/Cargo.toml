@@ -8,7 +8,6 @@ serde_derive = "1.0"
 ordslice = "0.2.0"
 file = "*"
 elapsed = "*"
-checkpoint = { path = "../../checkpoint" }
 fall_tree = { path = "../../fall/tree" }
 fall_parse = { path = "../../fall/parse" }
 fall_editor = { path = "../../fall/editor" }
