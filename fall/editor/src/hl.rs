@@ -28,7 +28,7 @@ pub struct HlVisitor(HlMap);
 impl<'f> Visit<'f> for HlVisitor {
     type Context = Highlights;
 
-    fn visit(&mut self, ctx: &mut Highlights, node: Node<'f>) {
+    fn visit(&mut self, node: Node<'f>, ctx: &mut Highlights) {
         if node.ty() == ERROR_TY {
             let range = if node.range().is_empty() {
                 TextRange::from_len(node.range().start(), tu(1))

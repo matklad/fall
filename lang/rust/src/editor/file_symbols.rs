@@ -11,10 +11,10 @@ pub fn process_symbols<'f>(file: &'f File, f: &mut FnMut(Text<'f>, Node<'f>)) {
     process_subtree_bottom_up(
         file.root(),
         visitor(f)
-            .visit::<FnDef, _>(|f, def| p(def, f))
-            .visit::<StructDef, _>(|f, def| p(def, f))
-            .visit::<EnumDef, _>(|f, def| p(def, f))
-            .visit::<TypeDef, _>(|f, def| p(def, f))
-            .visit::<TraitDef, _>(|f, def| p(def, f)),
+            .visit::<FnDef, _>(|def, f| p(def, f))
+            .visit::<StructDef, _>(|def, f| p(def, f))
+            .visit::<EnumDef, _>(|def, f| p(def, f))
+            .visit::<TypeDef, _>(|def, f| p(def, f))
+            .visit::<TraitDef, _>(|def, f| p(def, f)),
     );
 }

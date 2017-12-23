@@ -9,7 +9,7 @@ pub(crate) fn structure(file: &File) -> Vec<FileStructureNode> {
     process_subtree_bottom_up(
         file.root(),
         visitor(Vec::new())
-            .visit::<SynRule, _>(|nodes, rule| {
+            .visit::<SynRule, _>(|rule, nodes| {
                 if let Some(name) = rule.name() {
                     nodes.push(FileStructureNode {
                         name: name.to_string(),
@@ -18,14 +18,14 @@ pub(crate) fn structure(file: &File) -> Vec<FileStructureNode> {
                     })
                 }
             })
-            .visit::<TokenizerDef, _>(|nodes, tokenizer| {
+            .visit::<TokenizerDef, _>(|tokenizer, nodes| {
                 nodes.push(FileStructureNode {
                     name: "tokenizer".to_owned(),
                     range: tokenizer.node().range(),
                     children: Vec::new(),
                 })
             })
-            .visit::<AstDef, _>(|nodes, ast| {
+            .visit::<AstDef, _>(|ast, nodes| {
                 nodes.push(FileStructureNode {
                     name: "ast".to_owned(),
                     range: ast.node().range(),

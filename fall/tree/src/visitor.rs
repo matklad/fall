@@ -35,7 +35,7 @@ impl<'f, C, V> VisitorBuilder<'f, C, V> {
 impl<'f, C, V> VisitorBuilder<'f, C, V> {
     pub fn visit<T, F>(self, f: F) -> VisitorBuilder<'f, C, AstVisitor<V, F, T>>
         where V: Visit<'f>,
-              F: FnMut(&mut V::Context, T),
+              F: FnMut(T, &mut V::Context),
     {
         VisitorBuilder {
             ctx: self.ctx,
@@ -46,7 +46,7 @@ impl<'f, C, V> VisitorBuilder<'f, C, V> {
 
     pub fn visit_nodes<'n, F>(self, nodes: &'n [NodeType], f: F) -> VisitorBuilder<'f, C, TyVisitor<'n, V, F>>
         where V: Visit<'f>,
-              F: FnMut(&mut V::Context, Node<'f>),
+              F: FnMut(Node<'f>, &mut V::Context),
 
     {
         VisitorBuilder {
@@ -57,7 +57,7 @@ impl<'f, C, V> VisitorBuilder<'f, C, V> {
     }
 
     fn do_visit(&mut self, node: Node<'f>) where V: Visit<'f, Context=C> {
-        self.visitor.visit(&mut self.ctx, node)
+        self.visitor.visit(node, &mut self.ctx)
     }
 }
 
@@ -65,7 +65,7 @@ impl<'f, C, V> VisitorBuilder<'f, C, V> {
 pub trait Visit<'f> {
     type Context;
 
-    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>);
+    fn visit(&mut self, node: Node<'f>, ctx: &mut Self::Context);
 }
 
 
@@ -74,7 +74,7 @@ pub struct EmptyVisitor<C>(PhantomData<C>);
 impl<'f, C> Visit<'f> for EmptyVisitor<C> {
     type Context = C;
 
-    fn visit(&mut self, _ctx: &mut C, _node: Node<'f>) {}
+    fn visit(&mut self, _node: Node<'f>, _ctx: &mut C) {}
 }
 
 
@@ -87,15 +87,15 @@ pub struct AstVisitor<V, F, T> {
 impl<'f, V, F, T> Visit<'f> for AstVisitor<V, F, T>
     where V: Visit<'f>,
           T: AstNode<'f>,
-          F: FnMut(&mut V::Context, T),
+          F: FnMut(T, &mut V::Context),
 {
     type Context = V::Context;
 
-    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>) {
-        self.visitor.visit(ctx, node);
+    fn visit(&mut self, node: Node<'f>, ctx: &mut Self::Context) {
+        self.visitor.visit(node, ctx);
         if let Some(a) = T::wrap(node) {
             let f = &mut self.f;
-            f(ctx, a)
+            f(a, ctx)
         }
     }
 }
@@ -109,15 +109,15 @@ pub struct TyVisitor<'n, V, F> {
 
 impl<'n, 'f, V, F> Visit<'f> for TyVisitor<'n, V, F>
     where V: Visit<'f>,
-          F: FnMut(&mut V::Context, Node<'f>),
+          F: FnMut(Node<'f>, &mut V::Context),
 {
     type Context = V::Context;
 
-    fn visit(&mut self, ctx: &mut Self::Context, node: Node<'f>) {
-        self.visitor.visit(ctx, node);
+    fn visit(&mut self, node: Node<'f>, ctx: &mut Self::Context) {
+        self.visitor.visit(node, ctx);
         if self.nodes.contains(&node.ty()) {
             let f = &mut self.f;
-            f(ctx, node)
+            f(node, ctx)
         }
     }
 }

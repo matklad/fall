@@ -55,10 +55,10 @@ impl<'f> Analysis<'f> {
         process_subtree_bottom_up(
             self.ast().node(),
             visitor(())
-                .visit::<RefExpr, _>(|_, ref_| { self.db.get(query::ResolveRefExpr(ref_)); })
-                .visit::<CallExpr, _>(|_, call| { self.db.get(query::ResolveCall(call)); })
-                .visit::<SynRule, _>(|_, rule| { self.db.get(query::ResolvePrattVariant(rule)); })
-                .visit::<AstNodeDef, _>(|_, rule| { self.db.get(query::AstNodeTraits(rule)); })
+                .visit::<RefExpr, _>(|ref_, _| { self.db.get(query::ResolveRefExpr(ref_)); })
+                .visit::<CallExpr, _>(|call, _| { self.db.get(query::ResolveCall(call)); })
+                .visit::<SynRule, _>(|rule, _| { self.db.get(query::ResolvePrattVariant(rule)); })
+                .visit::<AstNodeDef, _>(|rule, _| { self.db.get(query::AstNodeTraits(rule)); })
         );
         self.db.get(query::UnusedRules);
         self.db.get(query::AllLexRules);

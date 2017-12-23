@@ -12,7 +12,7 @@ impl<'f> db::OnceQExecutor<'f> for super::AllContexts {
         let result = process_subtree_bottom_up(
             db.file().node(),
             visitor(BTreeMap::<Text<'f>, Option<CallExpr<'f>>>::new())
-                .visit::<CallExpr, _>(|contexts, call| {
+                .visit::<CallExpr, _>(|call, contexts| {
                     if let Some(ctx) = call.context_name() {
                         match contexts.entry(ctx) {
                             btree_map::Entry::Occupied(mut occupied) => {

@@ -17,7 +17,7 @@ pub fn descendants_of_type<'f>(node: Node<'f>, ty: NodeType) -> Vec<Node<'f>> {
     process_subtree_bottom_up(
         node,
         visitor(Vec::new())
-            .visit_nodes(&[ty], |nodes, node| nodes.push(node))
+            .visit_nodes(&[ty], |node, nodes| nodes.push(node))
     )
 }
 
@@ -152,7 +152,7 @@ pub mod ast {
         process_subtree_bottom_up(
             node,
             visitor(Vec::new())
-                .visit::<N, _>(|acc, node| acc.push(node))
+                .visit::<N, _>(|node, acc| acc.push(node))
         )
     }
 

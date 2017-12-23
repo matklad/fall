@@ -16,12 +16,12 @@ pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
             (hl::PARAMETER, &[PARAMETER]),
             (hl::ATTRIBUTE, &[ATTRIBUTES])
         ])
-            .visit::<LexRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::LITERAL, hls))
-            .visit::<SynRule, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
-            .visit::<AstNodeDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
-            .visit::<AstTraitDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
-            .visit::<AstClassDef, _>(|hls, rule| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
-            .visit::<RefExpr, _>(|hls, ref_| {
+            .visit::<LexRule, _>(|rule, hls| colorize_child(rule.node(), IDENT, hl::LITERAL, hls))
+            .visit::<SynRule, _>(|rule, hls| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstNodeDef, _>(|rule, hls| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstTraitDef, _>(|rule, hls| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<AstClassDef, _>(|rule, hls| colorize_child(rule.node(), IDENT, hl::FUNCTION, hls))
+            .visit::<RefExpr, _>(|ref_, hls| {
                 let color = match analysis.resolve_reference(ref_) {
                     Some(RefKind::Token(_)) => hl::LITERAL,
                     Some(RefKind::RuleReference { .. }) => hl::FUNCTION,
@@ -30,7 +30,7 @@ pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
                 };
                 colorize_node(ref_.node(), color, hls)
             })
-            .visit::<MethodDef, _>(|hls, method| {
+            .visit::<MethodDef, _>(|method, hls| {
                 let color = match analysis.resolve_method(method) {
                     Some(MethodKind::NodeAccessor(child_kind, _)) => match child_kind {
                         ChildKind::Token(..) => hl::LITERAL,
@@ -40,7 +40,7 @@ pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
                 };
                 colorize_child(method.selector().node(), IDENT, color, hls)
             })
-            .visit::<CallExpr, _>(|hls, call| {
+            .visit::<CallExpr, _>(|call, hls| {
                 let color = match analysis.resolve_call(call) {
                     None | Some(CallKind::RuleCall(..)) => hl::FUNCTION,
                     Some(_) => hl::BUILTIN

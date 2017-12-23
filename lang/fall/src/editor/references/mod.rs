@@ -30,7 +30,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
     process_node(
         node,
         visitor(None)
-            .visit::<RefExpr, _>(|result, ref_expr| {
+            .visit::<RefExpr, _>(|ref_expr, result| {
                 *result = Some(Reference::new(ref_expr.node(), |analysis, node| {
                     let ref_ = RefExpr::wrap(node).unwrap();
                     let target = match analysis.resolve_reference(ref_) {
@@ -45,7 +45,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
                     })
                 }))
             })
-            .visit::<MethodDef, _>(|result, method| {
+            .visit::<MethodDef, _>(|method, result| {
                 *result = Some(Reference::new(method.selector().node(), |analysis, node| {
                     let method = ast::ancestor_exn::<MethodDef>(node);
                     let target = analysis.resolve_method(method)?;
@@ -59,7 +59,7 @@ fn ref_provider<'f>(analysis: &Analysis<'f>, node: Node<'f>) -> Option<Reference
                     })
                 }))
             })
-            .visit_nodes(&[IDENT], |result, ident| {
+            .visit_nodes(&[IDENT], |ident, result| {
                 match ident.parent().and_then(CallExpr::wrap) {
                     Some(call) => {
                         if let Some(CallKind::RuleCall(..)) = analysis.resolve_call(call) {
@@ -82,11 +82,11 @@ fn def_provider<'f>(node: Node<'f>) -> Option<Declaration<'f>> {
     process_node(
         node,
         visitor(None)
-            .visit::<SynRule, _>(|result, node| *result = Some(node.into()))
-            .visit::<LexRule, _>(|result, node| *result = Some(node.into()))
-            .visit::<Parameter, _>(|result, node| *result = Some(node.into()))
-            .visit::<AstNodeDef, _>(|result, node| *result = Some(node.into()))
-            .visit::<AstClassDef, _>(|result, node| *result = Some(node.into()))
+            .visit::<SynRule, _>(|node, result| *result = Some(node.into()))
+            .visit::<LexRule, _>(|node, result| *result = Some(node.into()))
+            .visit::<Parameter, _>(|node, result| *result = Some(node.into()))
+            .visit::<AstNodeDef, _>(|node, result| *result = Some(node.into()))
+            .visit::<AstClassDef, _>(|node, result| *result = Some(node.into()))
     )
 }
 
