@@ -119,11 +119,17 @@ impl<X, Y: Clone> Foo<X, Y> {
 ");
 }
 
+checkpoint!(TRAILING_COMMA);
 
 fn swap(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
     let comma = find_comma(file.root(), offset)?;
     let left = nonws_sibling(comma, Direction::Left)?;
     let right = nonws_sibling(comma, Direction::Right)?;
+    if left.ty() != right.ty() {
+        TRAILING_COMMA.pass();
+        return None;
+    }
+
     if !apply {
         return Some(ActionResult::Available);
     }
@@ -155,16 +161,19 @@ fn find_comma<'f>(node: Node<'f>, offset: TextUnit) -> Option<Node<'f>> {
 
 
 #[test]
-#[ignore]
 fn test_swap() {
     use fall_editor::{check_context_action, check_no_context_action};
 
-    check_context_action::<::editor::RustEditorFile>("Swap", r"
-struct Foo<X,^^ Y: Clone> {}
-", r"
-struct Foo<Y: Clone, X> {}
-");
-    check_no_context_action::<::editor::RustEditorFile>("Swap", r"
-struct Foo<X, Y: Clone,^^> {}
-");
+    check_context_action::<::editor::RustEditorFile>(
+        "Swap",
+        r"struct Foo<X,^^ Y: Clone> {}",
+        r"struct Foo<Y: Clone, X> {}",
+    );
+
+    TRAILING_COMMA.check(|| {
+        check_no_context_action::<::editor::RustEditorFile>(
+            "Swap",
+            r"struct Foo<X, Y: Clone,^^> {}",
+        );
+    })
 }

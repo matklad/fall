@@ -8,3 +8,4 @@ members = [
 
     "indxr",
 ]
+exclude = [ "checkpoint" ]
