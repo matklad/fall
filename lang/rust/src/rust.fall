@@ -1236,7 +1236,7 @@ ast {
 }
 
 verbatim r##########"
-fn whitespace_binder(ty: NodeType, adjacent_tokens: Vec<(NodeType, &str)>, is_leading: bool) -> usize {
+fn whitespace_binder(ty: rt::NodeType, adjacent_tokens: Vec<(rt::NodeType, &str)>, is_leading: bool) -> usize {
     if !is_leading {
         return 0;
     }

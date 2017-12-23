@@ -14,9 +14,7 @@ pub fn generate(analysis: &Analysis) -> Result<String> {
 
 const TEMPLATE: &'static str = r#####"
 use fall_parse::runtime as rt;
-use fall_parse::runtime::*;
-use self::fall_tree::{Text, NodeTypeInfo, Metrics, TextEdit, TreeBuilder};
-pub use self::fall_tree::ERROR;
+pub use self::rt::ERROR;
 
 {% for node_type in node_types %}
 pub const {{ node_type.0 | upper }}: rt::NodeType = rt::NodeType({{ 100 + loop.index0 }});
@@ -24,69 +22,66 @@ pub const {{ node_type.0 | upper }}: rt::NodeType = rt::NodeType({{ 100 + loop.i
 
 
 pub fn language() -> &'static rt::Language {
-    fn create_lexer() -> ::fall_parse::RegexLexer {
-        ::fall_parse::RegexLexer::new(vec![
+    fn create_lexer() -> rt::RegexLexer {
+        rt::RegexLexer::new(vec![
             {% for rule in lex_rules %}
-            ::fall_parse::LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
+            rt::LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
             {% endfor %}
         ])
     }
 
-    fn create_parser_definition() -> ::fall_parse::ParserDefinition {
+    fn create_parser_definition() -> rt::ParserDefinition {
         let parser_json = r##"{{ parser_json }}"##;
 
         ::fall_parse::ParserDefinition {
             node_types: vec![
-                ERROR,
+                rt::ERROR,
                 {% for node_type in node_types %}{{ node_type.0 | upper }}, {% endfor %}
             ],
-            syntactical_rules: serde_json::from_str(parser_json).unwrap(),
+            syntactical_rules: rt::parser_from_str(parser_json),
             {% if has_whitespace_binder %}
                 whitespace_binder,
             {% endif %}
             .. Default::default()
         }
     }
-
+    use self::rt::*;
     lazy_static! {
         static ref LANG: rt::Language = {
-            use fall_parse::{ParserDefinition, parse, reparse};
-            use std::any::Any;
-
-            struct Impl { parser_definition: ParserDefinition, lexer: ::fall_parse::RegexLexer };
+            struct Impl { parser_definition: rt::ParserDefinition, lexer: rt::RegexLexer };
             impl rt::LanguageImpl for Impl {
                 fn parse(
                     &self,
-                    text: Text,
-                    metrics: &Metrics,
-                    builder: &mut TreeBuilder,
-                ) -> Option<Box<Any + Sync + Send>> {
-                    parse(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
+                    text: rt::Text,
+                    metrics: &rt::Metrics,
+                    builder: &mut rt::TreeBuilder,
+                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                    rt::parse(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
                 }
 
                 fn reparse(
                     &self,
-                    incremental_data: &Any,
-                    edit: &TextEdit,
-                    new_text: Text,
-                    metrics: &Metrics,
-                    builder: &mut TreeBuilder,
-                ) -> Option<Box<Any + Sync + Send>> {
-                    reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
+                    incremental_data: &::std::any::Any,
+                    edit: &rt::TextEdit,
+                    new_text: rt::Text,
+                    metrics: &rt::Metrics,
+                    builder: &mut rt::TreeBuilder,
+                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                    rt::reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
                 }
 
-                fn node_type_info(&self, ty: NodeType) -> NodeTypeInfo {
+                fn node_type_info(&self, ty: rt::NodeType) -> rt::NodeTypeInfo {
                     match ty {
-                        ERROR => NodeTypeInfo { name: "ERROR", whitespace_like: false },
+                        ERROR => rt::NodeTypeInfo { name: "ERROR", whitespace_like: false },
                         {% for node_type in node_types %}
-                        {{ node_type.0 | upper }} => NodeTypeInfo { name: "{{ node_type.0 | upper }}", whitespace_like: {{ node_type.1 }} },
+                        {{ node_type.0 | upper }} => rt::NodeTypeInfo { name: "{{ node_type.0 | upper }}", whitespace_like: {{ node_type.1 }} },
                         {% endfor %}
-                        _ => panic!("Unknown NodeType: {:?}", ty)
+                        _ => panic!("Unknown rt::NodeType: {:?}", ty)
                     }
                 }
             }
 
-            Language::new(Impl {
+            rt::Language::new(Impl {
                 parser_definition: create_parser_definition(),
                 lexer: create_lexer()
             })
@@ -101,6 +96,9 @@ pub fn language() -> &'static rt::Language {
 {% endif %}
 
 {% if ast_nodes is defined %}
+#[allow(unused)]
+use self::rt::AstNode;
+
 {% for node in ast_nodes %}
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct {{ node.struct_name }}<'f> { node: rt::Node<'f> }

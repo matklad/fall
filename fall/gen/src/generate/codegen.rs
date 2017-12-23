@@ -355,11 +355,11 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 let node_type = scream(lex_rule.node_type());
                 match arity {
                     Arity::Single =>
-                        ("Text<'f>".to_owned(),
+                        ("rt::Text<'f>".to_owned(),
                          format!("rt::child_of_type_exn(self.node(), {}).text()", node_type)),
 
                     Arity::Optional =>
-                        ("Option<Text<'f>>".to_owned(),
+                        ("Option<rt::Text<'f>>".to_owned(),
                          format!("rt::child_of_type(self.node(), {}).map(|n| n.text())", node_type)),
 
                     Arity::Many => unimplemented!(),
@@ -391,10 +391,10 @@ impl<'a, 'f> Codegen<'a, 'f> {
                         let node_type = scream(lex_rule.node_type());
                         match arity {
                             Arity::Single =>
-                                ("Node<'f>".to_owned(),
+                                ("rt::Node<'f>".to_owned(),
                                  format!("self.node().children().find(|n| n.ty() == {}).unwrap()", node_type)),
                             Arity::Optional =>
-                                ("Option<Node<'f>>".to_owned(),
+                                ("Option<rt::Node<'f>>".to_owned(),
                                  format!("self.node().children().find(|n| n.ty() == {})", node_type)),
                             Arity::Many => unimplemented!(),
                         }
