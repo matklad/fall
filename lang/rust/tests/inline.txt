@@ -788,11 +788,10 @@ FILE
         LET "let"
         WILDCARD_PATTERN
           UNDERSCORE "_"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -821,11 +820,10 @@ FILE
             COLONCOLON "::"
             PATH_SEGMENT
               IDENT "bar"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -847,11 +845,10 @@ FILE
           DOTDOT ".."
           COMMA ","
           R_PAREN ")"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -877,11 +874,10 @@ FILE
           COMMA ","
           DOTDOT ".."
           R_CURLY "}"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -905,11 +901,10 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "foo"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -917,10 +912,9 @@ FILE
           REF "ref"
           MUT "mut"
           IDENT "bar"
-        INITIALIZER
-          EQ "="
-          LITERAL
-            NUMBER "92"
+        EQ "="
+        LITERAL
+          NUMBER "92"
         SEMI ";"
       R_CURLY "}"
 
@@ -949,11 +943,10 @@ FILE
               PATH_SEGMENT
                 IDENT "x"
           R_PAREN ")"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -965,11 +958,10 @@ FILE
                 IDENT "x"
           COMMA ","
           R_PAREN ")"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -985,22 +977,20 @@ FILE
               PATH_SEGMENT
                 IDENT "y"
           R_PAREN ")"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       LET_STMT
         LET "let"
         UNIT_PATTERN
           L_PAREN "("
           R_PAREN ")"
-        INITIALIZER
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       R_CURLY "}"
 
@@ -1024,12 +1014,11 @@ FILE
             PATH
               PATH_SEGMENT
                 IDENT "foo"
-        INITIALIZER
-          EQ "="
-          PATH_EXPR
-            PATH
-              PATH_SEGMENT
-                IDENT "bar"
+        EQ "="
+        PATH_EXPR
+          PATH
+            PATH_SEGMENT
+              IDENT "bar"
         SEMI ";"
       R_CURLY "}"
 
@@ -1394,11 +1383,10 @@ FILE
           LET "let"
           WILDCARD_PATTERN
             UNDERSCORE "_"
-          INITIALIZER
-            EQ "="
-            UNIT_EXPR
-              L_PAREN "("
-              R_PAREN ")"
+          EQ "="
+          UNIT_EXPR
+            L_PAREN "("
+            R_PAREN ")"
           SEMI ";"
         R_CURLY "}"
       R_CURLY "}"
@@ -1436,10 +1424,9 @@ FILE
             PATH
               PATH_SEGMENT
                 IDENT "bool"
-        INITIALIZER
-          EQ "="
-          LITERAL
-            BOOL "true"
+        EQ "="
+        LITERAL
+          BOOL "true"
         SEMI ";"
       R_CURLY "}"
 
@@ -1524,6 +1511,27 @@ FILE
         BLOCK_EXPR
           L_CURLY "{"
           R_CURLY "}"
+      R_CURLY "}"
+
+----------------------------------------
+fn main() {
+  if let
+}
+
+FILE
+  FN_DEF
+    FN "fn"
+    IDENT "main"
+    L_PAREN "("
+    R_PAREN ")"
+    BLOCK_EXPR
+      L_CURLY "{"
+      IF_EXPR
+        IF "if"
+        LET "let"
+        ERROR ""
+        ERROR ""
+        ERROR ""
       R_CURLY "}"
 
 ----------------------------------------
@@ -1841,15 +1849,14 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "x"
-        INITIALIZER
-          EQ "="
-          CALL_EXPR
-            PATH_EXPR
-              PATH
-                PATH_SEGMENT
-                  IDENT "foo"
-            L_PAREN "("
-            R_PAREN ")"
+        EQ "="
+        CALL_EXPR
+          PATH_EXPR
+            PATH
+              PATH_SEGMENT
+                IDENT "foo"
+          L_PAREN "("
+          R_PAREN ")"
         SEMI ";"
       EXPR_STMT
         BLOCK_EXPR

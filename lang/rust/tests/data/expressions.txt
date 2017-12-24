@@ -53,30 +53,29 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "x"
-        INITIALIZER
-          EQ "="
+        EQ "="
+        SUM_EXPR
           SUM_EXPR
-            SUM_EXPR
-              LITERAL
-                NUMBER "1"
-              PLUS "+"
-              PRODUCT_EXPR
-                PRODUCT_EXPR
-                  LITERAL
-                    NUMBER "2"
-                  STAR "*"
-                  LITERAL
-                    NUMBER "3"
-                PERCENT "%"
-                LITERAL
-                  NUMBER "4"
-            MINUS "-"
+            LITERAL
+              NUMBER "1"
+            PLUS "+"
             PRODUCT_EXPR
+              PRODUCT_EXPR
+                LITERAL
+                  NUMBER "2"
+                STAR "*"
+                LITERAL
+                  NUMBER "3"
+              PERCENT "%"
               LITERAL
-                NUMBER "5"
-              SLASH "/"
-              LITERAL
-                NUMBER "6"
+                NUMBER "4"
+          MINUS "-"
+          PRODUCT_EXPR
+            LITERAL
+              NUMBER "5"
+            SLASH "/"
+            LITERAL
+              NUMBER "6"
         SEMI ";"
       EXPR_STMT
         SUM_EXPR
@@ -449,17 +448,16 @@ FILE
         LET "let"
         WILDCARD_PATTERN
           UNDERSCORE "_"
-        INITIALIZER
-          EQ "="
-          SUM_EXPR
-            BLOCK_EXPR
-              L_CURLY "{"
-              LITERAL
-                NUMBER "1"
-              R_CURLY "}"
-            PLUS "+"
+        EQ "="
+        SUM_EXPR
+          BLOCK_EXPR
+            L_CURLY "{"
             LITERAL
               NUMBER "1"
+            R_CURLY "}"
+          PLUS "+"
+          LITERAL
+            NUMBER "1"
         SEMI ";"
       EXPR_STMT
         PAREN_EXPR
@@ -484,17 +482,16 @@ FILE
               PATH
                 PATH_SEGMENT
                   IDENT "x"
-            INITIALIZER
-              EQ "="
-              SUM_EXPR
-                BLOCK_EXPR
-                  L_CURLY "{"
-                  LITERAL
-                    NUMBER "1"
-                  R_CURLY "}"
-                PLUS "+"
+            EQ "="
+            SUM_EXPR
+              BLOCK_EXPR
+                L_CURLY "{"
                 LITERAL
                   NUMBER "1"
+                R_CURLY "}"
+              PLUS "+"
+              LITERAL
+                NUMBER "1"
             SEMI ";"
           R_CURLY "}"
       BLOCK_EXPR
@@ -516,10 +513,9 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "a"
-        INITIALIZER
-          EQ "="
-          LITERAL
-            NUMBER "1"
+        EQ "="
+        LITERAL
+          NUMBER "1"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -527,24 +523,23 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "b"
-        INITIALIZER
-          EQ "="
-          PATH_EXPR
+        EQ "="
+        PATH_EXPR
+          PATH
             PATH
-              PATH
-                PATH_SEGMENT
-                  IDENT "a"
-              COLONCOLON "::"
               PATH_SEGMENT
-                IDENT "b"
-                TYPE_ARGUMENTS
-                  COLONCOLON "::"
-                  L_ANGLE "<"
-                  PATH_TYPE
-                    PATH
-                      PATH_SEGMENT
-                        IDENT "c"
-                  R_ANGLE ">"
+                IDENT "a"
+            COLONCOLON "::"
+            PATH_SEGMENT
+              IDENT "b"
+              TYPE_ARGUMENTS
+                COLONCOLON "::"
+                L_ANGLE "<"
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "c"
+                R_ANGLE ">"
         SEMI ";"
       EXPR_STMT
         LITERAL

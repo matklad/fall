@@ -73,10 +73,6 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "checkpoint"
-version = "0.1.0"
-
-[[package]]
 name = "cslice"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -268,7 +264,6 @@ dependencies = [
 name = "lang_rust"
 version = "0.1.0"
 dependencies = [
- "checkpoint 0.1.0",
  "elapsed 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fall_editor 0.1.0",
  "fall_parse 0.1.0",
@@ -477,6 +472,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "rust_backend"
 version = "0.1.0"
 dependencies = [
+ "fall_tree 0.1.0",
  "generic_backend 0.1.0",
  "lang_rust 0.1.0",
  "neon 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",

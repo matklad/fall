@@ -781,15 +781,12 @@ fn main() {
 "
 
 pub rule let_stmt {
-  'let' <commit> pattern type_ascription? initializer? ';'
+  'let' <commit> pattern type_ascription? {'=' <commit> expr}? ';'
 }
+
 
 pub rule type_ascription {
   ':' type_reference
-}
-
-pub rule initializer {
-  '=' expr
 }
 
 test r"
@@ -831,8 +828,13 @@ test r"
 fn main() { 'w: while true {} }
 "
 
+test r"
+fn main() {
+  if let
+}"
+
 rule block_condition {
-  {'let' <commit> pattern '='}? no_struct_literal_expr
+  {'let' <commit> pattern '='}?  <commit> no_struct_literal_expr
 }
 
 rule no_struct_literal_expr {
@@ -1233,6 +1235,8 @@ ast {
     spec use_spec?
   }
   node use_spec {}
+
+  node let_stmt {}
 }
 
 verbatim r##########"

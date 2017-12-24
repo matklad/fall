@@ -1,7 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { createPlugin, toVsRange } from './common'
+import { createPlugin, toVsRange, toVsEdits } from './common'
 import { log } from 'util'
 import { Uri, SymbolKind } from 'vscode';
 
@@ -26,6 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerDocumentSymbolProvider('rust', plugin.documentSymbolsProvider),
         vscode.languages.registerCodeActionsProvider('rust', plugin.codeActionProvider),
         vscode.languages.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider(backend)),
+        vscode.languages.registerOnTypeFormattingEditProvider('rust', new OnTypeFormattingEditProvider(plugin.getFile), ' '),
     ]
     context.subscriptions.push(...providers)
 }
@@ -59,5 +60,21 @@ class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
             ))
         }
         return result
+    }
+}
+
+class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEditProvider {
+    getFile: any;
+    constructor(getFile) {
+        this.getFile = getFile
+    }
+
+    provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
+        let file = this.getFile(document)
+        if (file == null) return
+        let offset = document.offsetAt(position)
+        let insert = file.call("afterSpaceTyped", offset)
+        if (insert == null) return
+        return [vscode.TextEdit.insert(position, insert)]
     }
 }

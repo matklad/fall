@@ -10,10 +10,9 @@ FILE
         LET "let"
         WILDCARD_PATTERN
           UNDERSCORE "_"
-        INITIALIZER
-          EQ "="
-          LITERAL
-            NUMBER "1"
+        EQ "="
+        LITERAL
+          NUMBER "1"
         SEMI ";"
       LET_STMT
         LET "let"
@@ -21,9 +20,8 @@ FILE
           PATH
             PATH_SEGMENT
               IDENT "x"
-        INITIALIZER
-          EQ "="
-          LITERAL
-            NUMBER "1"
+        EQ "="
+        LITERAL
+          NUMBER "1"
         SEMI ";"
       R_CURLY "}"

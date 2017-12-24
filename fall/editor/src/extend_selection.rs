@@ -1,4 +1,4 @@
-use fall_tree::{TextUnit, TextRange, Node, File, TextSuffix};
+use fall_tree::{TextRange, Node, File, TextSuffix};
 use fall_tree::search::{ancestors, find_leaf_at_offset, find_covering_node};
 
 

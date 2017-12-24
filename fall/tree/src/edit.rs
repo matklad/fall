@@ -27,6 +27,7 @@ impl<'f> FileEdit<'f> {
 
     pub fn replace_substring(&mut self, node: Node<'f>, range: TextRange, replacement: String) {
         assert!(range.is_subrange_of(node.range()));
+//        let node = find_covering_node(node, range);
         let file_text = self.file.text();
         let prefix = file_text.slice(TextRange::from_to(node.range().start(), range.start()));
         let suffix = file_text.slice(TextRange::from_to(range.end(), node.range().end()));

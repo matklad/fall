@@ -5,13 +5,6 @@ use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
 use difference::Changeset;
 
 
-pub fn parse_with_caret(lang: &Language, input: &str, caret: &str) -> (File, TextUnit) {
-    let offset = input.find(caret).expect(
-        &format!("No caret ({}) in\n{}\n", caret, input)
-    );
-    let input = input[..offset].to_string() + &input[offset + caret.len()..];
-    (lang.parse(input), tu(offset as u32))
-}
 
 pub fn extract_range(input: &str, caret: &str) -> (String, TextRange) {
     let left_offset = input.find(caret).expect(
@@ -29,6 +22,20 @@ pub fn extract_range(input: &str, caret: &str) -> (String, TextRange) {
         tu((right_offset - caret.len()) as u32),
     );
     (input, range)
+}
+
+pub fn extract_offset(input: &str, caret: &str) -> (String, TextUnit) {
+    let left_offset = input.find(caret).expect(
+        &format!("No caret ({}) in\n{}\n", caret, input)
+    );
+    let right_offset = left_offset + caret.len();
+    let input = input[..left_offset].to_string() + &input[right_offset..];
+    (input, tu(left_offset as u32))
+}
+
+pub fn parse_with_caret(lang: &Language, input: &str, caret: &str) -> (File, TextUnit) {
+    let (text, offset) = extract_offset(input, caret);
+    (lang.parse(text), offset)
 }
 
 pub fn parse_with_range(lang: &Language, input: &str, caret: &str) -> (File, TextRange) {

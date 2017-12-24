@@ -18,3 +18,4 @@ neon-build = "0.1.22"
 neon = "0.1.22"
 generic_backend = { path = "../../generic_backend" }
 lang_rust = { path = "../../../lang/rust" }
+fall_tree = { path = "../../../fall/tree" }

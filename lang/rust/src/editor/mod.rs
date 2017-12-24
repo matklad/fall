@@ -1,5 +1,7 @@
-use fall_tree::{File, TextEdit, TextRange};
-use fall_tree::visitor::{process_subtree_bottom_up};
+use fall_tree::{File, TextEdit, TextRange, TextUnit, tu, AstNode, TextSuffix};
+use fall_tree::search::{find_leaf_at_offset};
+use fall_tree::search::ast;
+use fall_tree::visitor::process_subtree_bottom_up;
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
@@ -23,6 +25,21 @@ pub struct RustEditorFile {
 impl RustEditorFile {
     fn new(file: File) -> RustEditorFile {
         RustEditorFile { file }
+    }
+
+    pub fn after_space_typed(&self, offset: TextUnit) -> Option<String> {
+        let let_kw = find_leaf_at_offset(self.file.root(), offset - tu(1)).left_biased()?;
+        if let_kw.ty() != LET {
+            return None;
+        }
+        let let_stmt: LetStmt = ast::ancestor(let_kw)?;
+        if let_stmt.node().children().any(|node| node.ty() == SEMI || node.ty() == EQ) {
+            return None;
+        }
+        if self.file.text().slice(TextSuffix::from(let_stmt.node().range().end())).starts_with(";") {
+            return None;
+        }
+        Some(";".into())
     }
 }
 
@@ -107,4 +124,34 @@ impl S {
     let file = RustEditorFile::parse(&text);
     let range = file.extend_selection(range).unwrap();
     assert_eq!(range, TextRange::from_to(tu(15), tu(32)));
+}
+
+#[test]
+fn space_after_let() {
+    fn do_test(expcted_result: Option<&str>, text: &str) {
+        let (text, offset) = ::fall_tree::test_util::extract_offset(text, "^");
+        let file = RustEditorFile::parse(&text);
+        let actual = file.after_space_typed(offset);
+        assert_eq!(actual.as_ref().map(|s| s.as_str()), expcted_result)
+    }
+
+    do_test(Some(";"), r"
+fn main() {
+    let ^
+}");
+
+    do_test(None, r"
+fn main() {
+    if let ^
+}");
+
+    do_test(None, r"
+fn main() {
+    let ^;
+}");
+
+    do_test(None, r"
+fn main() {
+    if let ^x = 92;
+}");
 }

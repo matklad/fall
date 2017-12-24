@@ -116,9 +116,8 @@ export class EditorFile {
 
     structure(): Array<FileStructureNode> { return this.call("structure") }
     reformat(): Array<vscode.TextEdit> {
-        return this.call("reformat").map((op) => {
-            return vscode.TextEdit.replace(toVsRange(this.doc, op.delete), op.insert)
-        })
+        let edits = this.call("reformat")
+        return toVsEdits(this.doc, edits)
     }
 
     highlight(): Array<[[number, number], string]> { return this.call("highlight") }
@@ -358,6 +357,10 @@ export function toVsRange(doc: vscode.TextDocument, range: [number, number]): vs
 
 function fromVsRange(doc: vscode.TextDocument, range: vscode.Range): [number, number] {
     return [doc.offsetAt(range.start), doc.offsetAt(range.end)]
+}
+
+export function toVsEdits(doc: vscode.TextDocument, edits): Array<vscode.TextEdit> {
+    return edits.map((op) => vscode.TextEdit.replace(toVsRange(doc, op.delete), op.insert))
 }
 
 async function openDoc(uri: vscode.Uri) {

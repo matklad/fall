@@ -52,6 +52,7 @@ pub trait EditorFileImpl: Sync + 'static {
     fn highlight(&self) -> Highlights {
         Vec::new()
     }
+
     fn diagnostics(&self) -> Vec<Diagnostic> {
         Vec::new()
     }
@@ -59,6 +60,7 @@ pub trait EditorFileImpl: Sync + 'static {
     fn context_actions(&self, _range: TextRange) -> Vec<&'static str> {
         Vec::new()
     }
+
     fn apply_context_action(&self, _range: TextRange, _id: &str) -> Option<TextEdit> {
         None
     }
