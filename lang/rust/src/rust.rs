@@ -738,6 +738,31 @@ impl<'f> ::std::fmt::Debug for TypeDef<'f> {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ModDef<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for ModDef<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == MOD_DEF {
+            Some(ModDef { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> ModDef<'f> {
+    
+}
+
+impl<'f> ::std::fmt::Debug for ModDef<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("ModDef@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TypeParameters<'f> { node: rt::Node<'f> }
 
 impl<'f> rt::AstNode<'f> for TypeParameters<'f> {
@@ -970,6 +995,7 @@ impl<'f> NameOwner<'f> for StructDef<'f> {}
 impl<'f> NameOwner<'f> for EnumDef<'f> {}
 impl<'f> NameOwner<'f> for TraitDef<'f> {}
 impl<'f> NameOwner<'f> for TypeDef<'f> {}
+impl<'f> NameOwner<'f> for ModDef<'f> {}
 impl<'f> NameOwner<'f> for TypeParameter<'f> {}
 pub trait TypeParametersOwner<'f>: rt::AstNode<'f> {
     fn type_parameters(&self) -> Option<TypeParameters<'f>> {

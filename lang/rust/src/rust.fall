@@ -1214,6 +1214,7 @@ ast {
   node enum_def: name_owner, type_parameters_owner {}
   node trait_def: name_owner {}
   node type_def: name_owner {}
+  node mod_def: name_owner {}
 
   node type_parameters {
     lifetime_parameters lifetime_parameter*

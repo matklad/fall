@@ -1,6 +1,6 @@
 use fall_tree::{File, Node, Text};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
-use {NameOwner, FnDef, StructDef, EnumDef, TypeDef, TraitDef};
+use {NameOwner, FnDef, StructDef, EnumDef, TypeDef, TraitDef, ModDef};
 
 pub fn process_symbols<'f>(file: &'f File, f: &mut FnMut(Text<'f>, Node<'f>)) {
     fn p<'f, T: NameOwner<'f>>(n: T, f: &mut FnMut(Text<'f>, Node<'f>)) {
@@ -15,6 +15,7 @@ pub fn process_symbols<'f>(file: &'f File, f: &mut FnMut(Text<'f>, Node<'f>)) {
             .visit::<StructDef, _>(|def, f| p(def, f))
             .visit::<EnumDef, _>(|def, f| p(def, f))
             .visit::<TypeDef, _>(|def, f| p(def, f))
-            .visit::<TraitDef, _>(|def, f| p(def, f)),
+            .visit::<TraitDef, _>(|def, f| p(def, f))
+            .visit::<ModDef, _>(|def, f| p(def, f)),
     );
 }
