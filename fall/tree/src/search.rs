@@ -105,6 +105,18 @@ impl<'f> LeafAtOffset<'f> {
     }
 }
 
+impl<'f> Iterator for LeafAtOffset<'f> {
+    type Item = Node<'f>;
+
+    fn next(&mut self) -> Option<Node<'f>> {
+        match *self {
+            LeafAtOffset::None => None,
+            LeafAtOffset::Single(node) => { *self = LeafAtOffset::None; Some(node) }
+            LeafAtOffset::Between(left, right) => { *self = LeafAtOffset::Single(right); Some(left) }
+        }
+    }
+}
+
 pub fn find_covering_node(root: Node, range: TextRange) -> Node {
     assert!(range.is_subrange_of(root.range()));
     let (left, right) = match (

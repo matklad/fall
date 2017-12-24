@@ -92,3 +92,19 @@ impl EditorFileImpl for RustEditorFile {
         action(self.file(), range.start(), true).map(ActionResult::into_edit)
     }
 }
+
+#[test]
+fn extend_selection() {
+    use fall_tree::{tu};
+    let (text, range) = ::fall_tree::test_util::extract_range(r"
+impl S {
+
+^^    fn foo() {
+
+    }
+}", "^");
+
+    let file = RustEditorFile::parse(&text);
+    let range = file.extend_selection(range).unwrap();
+    assert_eq!(range, TextRange::from_to(tu(15), tu(32)));
+}
