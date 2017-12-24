@@ -25,7 +25,7 @@ pub fn extract_rule(file: &File, range: TextRange, apply: bool) -> Option<Action
     let new_rule = format!("\n\nrule new_rule {{\n  {}\n}}", file.text().slice(range));
 
     let mut edit = FileEdit::new(file);
-    edit.replace_substring(expr, range, "new_rule".to_owned());
+    edit.replace_substring(range, "new_rule".to_owned());
     edit.insert_text_after(rule, new_rule);
     Some(ActionResult::Applied(edit.into_text_edit()))
 }

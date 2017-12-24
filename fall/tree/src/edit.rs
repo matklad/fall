@@ -1,4 +1,5 @@
 use {TextEdit, TextEditBuilder, Node, File, TextRange};
+use search::find_covering_node;
 
 pub struct FileEdit<'f> {
     file: &'f File,
@@ -25,9 +26,10 @@ impl<'f> FileEdit<'f> {
         self.replaced.push((node, replacement))
     }
 
-    pub fn replace_substring(&mut self, node: Node<'f>, range: TextRange, replacement: String) {
-        assert!(range.is_subrange_of(node.range()));
-//        let node = find_covering_node(node, range);
+    pub fn replace_substring(&mut self, range: TextRange, replacement: String) {
+        let root = self.file.root();
+        assert!(range.is_subrange_of(root.range()));
+        let node = find_covering_node(root, range);
         let file_text = self.file.text();
         let prefix = file_text.slice(TextRange::from_to(node.range().start(), range.start()));
         let suffix = file_text.slice(TextRange::from_to(range.end(), node.range().end()));
