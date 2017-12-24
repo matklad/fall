@@ -6,3 +6,5 @@ authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
 [dependencies]
 walkdir = "2"
 notify = "4.0.3"
+simplelog = "0.4"
+log = "*"

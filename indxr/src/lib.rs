@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate log;
+extern crate simplelog;
 extern crate walkdir;
 extern crate notify;
 
@@ -6,6 +9,7 @@ use std::time::Duration;
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
+use std::fs::File;
 
 use walkdir::WalkDir;
 use notify::{RecommendedWatcher, Watcher, RecursiveMode, DebouncedEvent};
@@ -61,37 +65,47 @@ pub struct FileIndexImpl<V> {
 }
 
 fn watch<V>(index: &FileIndexImpl<V>) {
+    simplelog::WriteLogger::init(
+        simplelog::LogLevelFilter::Info,
+        simplelog::Config::default(),
+        File::create("/home/matklad/log.txt").unwrap()
+    ).unwrap();
+
     let initial_indexing_start = ::std::time::Instant::now();
     for path in index.file_set.roots.iter() {
         index.change(path)
     }
     let elapsed = initial_indexing_start.elapsed();
-    eprintln!("indexing took = {}s", elapsed.as_secs());
+    info!("indexing took = {}s", elapsed.as_secs());
     let (tx, rx) = channel();
 
-    for path in index.file_set.roots.iter() {
+    let watchers = index.file_set.roots.iter().map(|path| {
         let tx = tx.clone();
         let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2)).unwrap();
         watcher.watch(path, RecursiveMode::Recursive).unwrap();
-    }
+        watcher
+    }).collect::<Vec<_>>();
     loop {
         match rx.recv() {
-            Ok(event) => match event {
-                DebouncedEvent::NoticeWrite(path)
-                | DebouncedEvent::NoticeRemove(path)
-                | DebouncedEvent::Create(path)
-                | DebouncedEvent::Write(path)
-                | DebouncedEvent::Remove(path) => {
-                    index.change(&path)
+            Ok(event) => {
+                info!("event: {:?}", event);
+                match event {
+                    DebouncedEvent::NoticeWrite(path)
+                    | DebouncedEvent::NoticeRemove(path)
+                    | DebouncedEvent::Create(path)
+                    | DebouncedEvent::Write(path)
+                    | DebouncedEvent::Remove(path) => {
+                        index.change(&path)
+                    }
+                    DebouncedEvent::Rename(p1, p2) => {
+                        index.change(&p1);
+                        index.change(&p2);
+                    }
+                    _ => continue,
                 }
-                DebouncedEvent::Rename(p1, p2) => {
-                    index.change(&p1);
-                    index.change(&p2);
-                }
-                _ => continue,
             },
             Err(e) => {
-                eprintln!("watch error: {:?}", e);
+                error!("watch error: {:?}", e);
                 continue
             }
         }
