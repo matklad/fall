@@ -332,7 +332,7 @@ rule type_bounds {
 }
 
 pub rule type_bound {
-  lifetime | path_type
+  lifetime | path_type | for_type
 }
 
 pub rule lifetime_parameter {
@@ -342,7 +342,7 @@ pub rule lifetime_parameter {
 }
 
 test r"
-struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
+struct B<'a:, 'b: 'a + 'a, C: 'b + Clone + for<'de> De<'de> +, D:>();
 "
 
 
@@ -432,6 +432,7 @@ rule any_type {
 | placeholder_type | unit_type | paren_type | never_type
 | array_type
 | fn_pointer_type
+| for_type
 }
 
 pub rule path_type {
@@ -507,6 +508,15 @@ test r#"
 type F = extern "C" fn(i32, x: f64) -> ();
 type F_Unit = fn();
 "#
+
+pub rule for_type {
+  'for' <commit> type_parameters type_reference
+}
+
+test r"
+type F = for<'f> T<'f>;
+"
+
 
 // END TYPES
 

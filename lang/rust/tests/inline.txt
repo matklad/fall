@@ -292,7 +292,7 @@ FILE
     R_CURLY "}"
 
 ----------------------------------------
-struct B<'a:, 'b: 'a + 'a, C: 'b + Clone +, D:>();
+struct B<'a:, 'b: 'a + 'a, C: 'b + Clone + for<'de> De<'de> +, D:>();
 
 FILE
   STRUCT_DEF
@@ -322,6 +322,23 @@ FILE
             PATH
               PATH_SEGMENT
                 IDENT "Clone"
+        PLUS "+"
+        TYPE_BOUND
+          FOR_TYPE
+            FOR "for"
+            TYPE_PARAMETERS
+              L_ANGLE "<"
+              LIFETIME_PARAMETER
+                LIFETIME "\'de"
+              R_ANGLE ">"
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "De"
+                  TYPE_ARGUMENTS
+                    L_ANGLE "<"
+                    LIFETIME "\'de"
+                    R_ANGLE ">"
         PLUS "+"
       COMMA ","
       TYPE_PARAMETER
@@ -771,6 +788,31 @@ FILE
       FN "fn"
       L_PAREN "("
       R_PAREN ")"
+    SEMI ";"
+
+----------------------------------------
+type F = for<'f> T<'f>;
+
+FILE
+  TYPE_DEF
+    TYPE "type"
+    IDENT "F"
+    EQ "="
+    FOR_TYPE
+      FOR "for"
+      TYPE_PARAMETERS
+        L_ANGLE "<"
+        LIFETIME_PARAMETER
+          LIFETIME "\'f"
+        R_ANGLE ">"
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "T"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              LIFETIME "\'f"
+              R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------

@@ -95,7 +95,7 @@ pub fn language() -> &'static rt::Language {
                 WHITESPACE, EOL_COMMENT, NODE, CLASS, TRAIT, TOKENIZER, RULE, VERBATIM, AST, PUB, TEST, EQ, PIPE, STAR, QUESTION, DOT, COMMA, COLON, HASH, L_CURLY, R_CURLY, L_SQUARE, R_SQUARE, L_ANGLE, R_ANGLE, L_PAREN, R_PAREN, NUMBER, SIMPLE_STRING, HASH_STRING, IDENT, FALL_FILE, SYN_RULE, PARAMETERS, PARAMETER, REF_EXPR, SEQ_EXPR, BLOCK_EXPR, OPT_EXPR, REP_EXPR, CALL_EXPR, TOKENIZER_DEF, LEX_RULE, TEST_DEF, ATTRIBUTES, ATTRIBUTE, ATTRIBUTE_VALUE, STRING, VERBATIM_DEF, AST_DEF, AST_NODE_DEF, AST_CLASS_DEF, AST_TRAIT_DEF, METHOD_DEF, AST_SELECTOR,
             ],
             syntactical_rules: rt::parser_from_str(parser_json),
-
+            
             .. Default::default()
         }
     }
@@ -304,7 +304,6 @@ impl<'f> ::std::fmt::Debug for LexRule<'f> {
         Ok(())
     }
 }
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SynRule<'f> { node: rt::Node<'f> }
 
@@ -470,7 +469,7 @@ impl<'f> rt::AstNode<'f> for AttributeValue<'f> {
 }
 
 impl<'f> AttributeValue<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for AttributeValue<'f> {
@@ -741,7 +740,7 @@ impl<'f> rt::AstNode<'f> for RefExpr<'f> {
 }
 
 impl<'f> RefExpr<'f> {
-
+    
 }
 
 impl<'f> ::std::fmt::Debug for RefExpr<'f> {

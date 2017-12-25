@@ -42,10 +42,10 @@ impl SymbolIndex {
                 if byte == self.query.as_bytes()[state] {
                     return state + 1;
                 }
-                return self.query.len() + 1;
+                return state;
             }
-            fn can_match(&self, &state: &usize) -> bool {
-                state <= self.query.len()
+            fn can_match(&self, _: &usize) -> bool {
+                true
             }
             fn will_always_match(&self, &state: &usize) -> bool {
                 state == self.query.len()
