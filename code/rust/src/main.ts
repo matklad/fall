@@ -45,6 +45,7 @@ class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
     }
 
     provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): vscode.SymbolInformation[] {
+        log(query)
         let symbols = this.backend.queryIndex(this.index, query)
         let result = []
         for (let [path, symbol] of symbols) {

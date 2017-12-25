@@ -17,6 +17,7 @@ mod symbol_index;
 pub use self::symbol_index::SymbolIndex;
 
 mod line_index;
+mod fst_subseq;
 
 pub struct RustEditorFile {
     file: File

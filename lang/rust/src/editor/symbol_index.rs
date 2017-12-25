@@ -4,11 +4,15 @@ use fst;
 use fst::IntoStreamer;
 use file;
 
-use fall_tree::TextRange;
+use fall_tree::{TextRange, NodeType};
 use indxr::{FileIndex, IndexableFileSet};
 
 use editor::line_index::{LineCol, LineIndex};
+use editor::fst_subseq::FstSubSeq;
 use editor::file_symbols::process_symbols;
+
+use {STRUCT_DEF, ENUM_DEF, TRAIT_DEF, TYPE_DEF};
+
 
 pub struct SymbolIndex {
     index: FileIndex<FileSymbols>,
@@ -25,46 +29,50 @@ impl SymbolIndex {
     }
 
     pub fn query(&self, query: &str) -> Vec<(PathBuf, Symbol)> {
-        #[derive(Clone, Copy)]
-        struct A<'a> { query: &'a String }
-        impl<'a> fst::Automaton for A<'a> {
-            type State = usize;
-            fn start(&self) -> usize {
-                0
-            }
-            fn is_match(&self, &state: &usize) -> bool {
-                state == self.query.len()
-            }
-            fn accept(&self, &state: &usize, byte: u8) -> usize {
-                if state >= self.query.len() {
-                    return state;
-                }
-                if byte == self.query.as_bytes()[state] {
-                    return state + 1;
-                }
-                return state;
-            }
-            fn can_match(&self, _: &usize) -> bool {
-                true
-            }
-            fn will_always_match(&self, &state: &usize) -> bool {
-                state == self.query.len()
-            }
-        }
-
-        let query = query.to_lowercase();
-        let a = A { query: &query };
+        let query = Query::new(query);
 
         let mut result = Vec::new();
         self.index.process_files(&mut |file| {
-            let file_symbols = &file.value;
-            for idx in file_symbols.map.search(a).into_stream().into_values() {
-                let idx = idx as usize;
-                result.push((file.path.clone(), file_symbols.symbols[idx].clone()))
-            }
+            query.process(&file.value, &mut |symbol| {
+                result.push((file.path.clone(), symbol))
+            });
             result.len() > 512
         });
         result
+    }
+}
+
+struct Query {
+    query: String,
+    all_symbols: bool,
+}
+
+impl Query {
+    fn new(query: &str) -> Query {
+        let all_symbols = query.contains("#");
+        let query: String = query.chars()
+            .filter(|&c| c != '#')
+            .flat_map(char::to_lowercase)
+            .collect();
+        Query { query, all_symbols }
+    }
+
+    fn process(&self, file: &FileSymbols, acc: &mut FnMut(Symbol)) {
+        fn is_type(ty: NodeType) -> bool {
+            match ty {
+                STRUCT_DEF | ENUM_DEF | TRAIT_DEF| TYPE_DEF => true,
+                _ => false,
+            }
+        }
+
+        let a = FstSubSeq::new(&self.query);
+        for idx in file.map.search(a).into_stream().into_values() {
+            let idx = idx as usize;
+            let symbol = file.symbols[idx].clone();
+            if self.all_symbols || is_type(symbol.ty) {
+                acc(symbol)
+            }
+        }
     }
 }
 
@@ -81,6 +89,7 @@ impl FileSymbols {
         process_symbols(&file, &mut |name, node| {
             let range = node.range();
             symbols.push(Symbol {
+                ty: node.ty(),
                 name: name.to_string(),
                 range,
                 lc_range: [line_index.translate(range.start()), line_index.translate(range.end())],
@@ -99,6 +108,7 @@ impl FileSymbols {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Symbol {
+    pub ty: NodeType,
     pub name: String,
     pub range: TextRange,
     pub lc_range: [LineCol; 2]

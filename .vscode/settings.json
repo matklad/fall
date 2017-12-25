@@ -1,3 +1,9 @@
 {
-    "rust.workspace_mode": true
+    "files.exclude": {
+        "**/out/": true,
+        "**/node_modules/": true
+    },
+    "search.exclude": {
+        "**/out": true // set this to false to include "out" folder in search results
+    }
 }

@@ -26,6 +26,21 @@
                 "reveal": "always",
                 "panel": "new"
             }
+        },
+        {
+            "label": "npm",
+            "command": "npm",
+            "args": [
+                "run",
+                "compile",
+                "--loglevel",
+                "silent"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}/code/rust"
+            },
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch"
         }
     ]
 }
