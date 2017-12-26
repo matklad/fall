@@ -714,11 +714,19 @@ fn main() {
 
 #[atom]
 pub rule array_literal {
-  <in_bracks <without_restrictions <comma_list expr>>>
+  <in_bracks <without_restrictions {
+    expr {';' expr | ',' <comma_list expr>}?
+  }>>
 }
 
 test r"
-fn main() { [1, 2, 3]; }
+fn main() {
+  [];
+  [1];
+  [2,];
+  [2, 3];
+  [1; 2];
+}
 "
 
 #[atom]

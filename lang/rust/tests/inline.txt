@@ -69,15 +69,17 @@ FILE
           PATH_SEGMENT
             IDENT "x"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "i32"
     R_PAREN ")"
     THIN_ARROW "->"
-    UNIT_TYPE
-      L_PAREN "("
-      R_PAREN ")"
+    TYPE_REFERENCE
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
       UNIT_EXPR
@@ -99,17 +101,19 @@ FILE
       MUT "mut"
       SELF "self"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "Box"
-            TYPE_ARGUMENTS
-              L_ANGLE "<"
-              PATH_TYPE
-                PATH
-                  PATH_SEGMENT
-                    IDENT "Self"
-              R_ANGLE ">"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "Box"
+              TYPE_ARGUMENTS
+                L_ANGLE "<"
+                TYPE_REFERENCE
+                  PATH_TYPE
+                    PATH
+                      PATH_SEGMENT
+                        IDENT "Self"
+                R_ANGLE ">"
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
@@ -133,10 +137,11 @@ unsafe impl<'f> ::Debug for Node<'f> where Self: 'static { }
 FILE
   IMPL_DEF
     IMPL "impl"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Node"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Node"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
@@ -148,26 +153,29 @@ FILE
       LIFETIME_PARAMETER
         LIFETIME "\'f"
       R_ANGLE ">"
-    PATH_TYPE
-      PATH
-        COLONCOLON "::"
-        PATH_SEGMENT
-          IDENT "Debug"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          COLONCOLON "::"
+          PATH_SEGMENT
+            IDENT "Debug"
     FOR "for"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Node"
-          TYPE_ARGUMENTS
-            L_ANGLE "<"
-            LIFETIME "\'f"
-            R_ANGLE ">"
-    WHERE_CLAUSE
-      WHERE "where"
+    TYPE_REFERENCE
       PATH_TYPE
         PATH
           PATH_SEGMENT
-            IDENT "Self"
+            IDENT "Node"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              LIFETIME "\'f"
+              R_ANGLE ">"
+    WHERE_CLAUSE
+      WHERE "where"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "Self"
       COLON ":"
       TYPE_BOUND
         LIFETIME "\'static"
@@ -199,10 +207,11 @@ FILE
             IDENT "Clone"
     WHERE_CLAUSE
       WHERE "where"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "X"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "X"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
@@ -223,10 +232,11 @@ FILE
     CONST "const"
     IDENT "X"
     COLON ":"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "i32"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "i32"
     EQ "="
     LITERAL
       NUMBER "0"
@@ -267,10 +277,11 @@ FILE
       STATIC "static"
       IDENT "errno"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "i32"
       SEMI ";"
     FN_DEF
       ATTRIBUTE
@@ -331,14 +342,15 @@ FILE
               LIFETIME_PARAMETER
                 LIFETIME "\'de"
               R_ANGLE ">"
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "De"
-                  TYPE_ARGUMENTS
-                    L_ANGLE "<"
-                    LIFETIME "\'de"
-                    R_ANGLE ">"
+            TYPE_REFERENCE
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "De"
+                    TYPE_ARGUMENTS
+                      L_ANGLE "<"
+                      LIFETIME "\'de"
+                      R_ANGLE ">"
         PLUS "+"
       COMMA ","
       TYPE_PARAMETER
@@ -393,10 +405,11 @@ FILE
     R_PAREN ")"
     WHERE_CLAUSE
       WHERE "where"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "T"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "T"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
@@ -410,10 +423,11 @@ FILE
             PATH_SEGMENT
               IDENT "Copy"
       COMMA ","
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "Foo"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "Foo"
       COLON ":"
       TYPE_BOUND
         PATH_TYPE
@@ -433,17 +447,19 @@ FILE
     CONST "const"
     IDENT "C"
     COLON ":"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Foo"
-          TYPE_ARGUMENTS
-            L_ANGLE "<"
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "Bar"
-            R_ANGLE ">"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Foo"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "Bar"
+              R_ANGLE ">"
     EQ "="
     PATH_EXPR
       PATH
@@ -454,36 +470,41 @@ FILE
             L_ANGLE "<"
             LIFETIME "\'bar"
             COMMA ","
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "Baz"
+            TYPE_REFERENCE
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "Baz"
             R_ANGLE ">"
     SEMI ";"
   CONST_DEF
     CONST "const"
     IDENT "C"
     COLON ":"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Fn"
-          FN_TRAIT_SUGAR
-            L_PAREN "("
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "i32"
-            COMMA ","
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "i64"
-            R_PAREN ")"
-            THIN_ARROW "->"
-            UNIT_TYPE
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Fn"
+            FN_TRAIT_SUGAR
               L_PAREN "("
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "i32"
+              COMMA ","
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "i64"
               R_PAREN ")"
+              THIN_ARROW "->"
+              TYPE_REFERENCE
+                UNIT_TYPE
+                  L_PAREN "("
+                  R_PAREN ")"
     EQ "="
     PATH_EXPR
       PATH
@@ -499,26 +520,29 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    PATH_TYPE
-      TRAIT_PROJECTION_PATH
-        L_ANGLE "<"
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "Q"
-        AS "as"
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "Foo"
-              TYPE_ARGUMENTS
-                L_ANGLE "<"
-                LIFETIME "\'f"
-                R_ANGLE ">"
-        R_ANGLE ">"
-        COLONCOLON "::"
-        PATH_SEGMENT
-          IDENT "Result"
+    TYPE_REFERENCE
+      PATH_TYPE
+        TRAIT_PROJECTION_PATH
+          L_ANGLE "<"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Q"
+          AS "as"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "Foo"
+                  TYPE_ARGUMENTS
+                    L_ANGLE "<"
+                    LIFETIME "\'f"
+                    R_ANGLE ">"
+          R_ANGLE ">"
+          COLONCOLON "::"
+          PATH_SEGMENT
+            IDENT "Result"
     SEMI ";"
 
 ----------------------------------------
@@ -529,35 +553,38 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Box"
-          TYPE_ARGUMENTS
-            L_ANGLE "<"
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "Iterator"
-                  TYPE_ARGUMENTS
-                    L_ANGLE "<"
-                    IDENT "Item"
-                    EQ "="
-                    PATH_TYPE
-                      PATH
-                        PATH_SEGMENT
-                          IDENT "T"
-                    PLUS "+"
-                    TYPE_BOUND
-                      LIFETIME "\'static"
-                    R_ANGLE ">"
-            PLUS "+"
-            TYPE_BOUND
-              PATH_TYPE
-                PATH
-                  PATH_SEGMENT
-                    IDENT "Send"
-            R_ANGLE ">"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Box"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "Iterator"
+                      TYPE_ARGUMENTS
+                        L_ANGLE "<"
+                        IDENT "Item"
+                        EQ "="
+                        TYPE_REFERENCE
+                          PATH_TYPE
+                            PATH
+                              PATH_SEGMENT
+                                IDENT "T"
+                          PLUS "+"
+                          TYPE_BOUND
+                            LIFETIME "\'static"
+                        R_ANGLE ">"
+                PLUS "+"
+                TYPE_BOUND
+                  PATH_TYPE
+                    PATH
+                      PATH_SEGMENT
+                        IDENT "Send"
+              R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------
@@ -568,26 +595,29 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "X"
-          TYPE_ARGUMENTS
-            L_ANGLE "<"
-            LIFETIME "\'a"
-            COMMA ","
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "Foo"
-            COMMA ","
-            IDENT "Bar"
-            EQ "="
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "Baz"
-            R_ANGLE ">"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "X"
+            TYPE_ARGUMENTS
+              L_ANGLE "<"
+              LIFETIME "\'a"
+              COMMA ","
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "Foo"
+              COMMA ","
+              IDENT "Bar"
+              EQ "="
+              TYPE_REFERENCE
+                PATH_TYPE
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "Baz"
+              R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------
@@ -598,14 +628,16 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    REFERENCE_TYPE
-      AMPERSAND "&"
-      LIFETIME "\'static"
-      MUT "mut"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "X"
+    TYPE_REFERENCE
+      REFERENCE_TYPE
+        AMPERSAND "&"
+        LIFETIME "\'static"
+        MUT "mut"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "X"
     SEMI ";"
 
 ----------------------------------------
@@ -616,12 +648,14 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    POINTER_TYPE
-      STAR "*"
-      MUT "mut"
-      UNIT_TYPE
-        L_PAREN "("
-        R_PAREN ")"
+    TYPE_REFERENCE
+      POINTER_TYPE
+        STAR "*"
+        MUT "mut"
+        TYPE_REFERENCE
+          UNIT_TYPE
+            L_PAREN "("
+            R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------
@@ -632,8 +666,9 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    PLACEHOLDER_TYPE
-      UNDERSCORE "_"
+    TYPE_REFERENCE
+      PLACEHOLDER_TYPE
+        UNDERSCORE "_"
     SEMI ";"
 
 ----------------------------------------
@@ -647,51 +682,59 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    UNIT_TYPE
-      L_PAREN "("
-      R_PAREN ")"
+    TYPE_REFERENCE
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "T"
     EQ "="
-    PAREN_TYPE
-      L_PAREN "("
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
-      R_PAREN ")"
+    TYPE_REFERENCE
+      PAREN_TYPE
+        L_PAREN "("
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "A"
+        R_PAREN ")"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "T"
     EQ "="
-    TUPLE_TYPE
-      L_PAREN "("
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
-      COMMA ","
-      R_PAREN ")"
+    TYPE_REFERENCE
+      TUPLE_TYPE
+        L_PAREN "("
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "A"
+        COMMA ","
+        R_PAREN ")"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "T"
     EQ "="
-    TUPLE_TYPE
-      L_PAREN "("
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
-      COMMA ","
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "B"
-      R_PAREN ")"
+    TYPE_REFERENCE
+      TUPLE_TYPE
+        L_PAREN "("
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "A"
+        COMMA ","
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "B"
+        R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------
@@ -704,8 +747,9 @@ FILE
     L_PAREN "("
     R_PAREN ")"
     THIN_ARROW "->"
-    NEVER_TYPE
-      BANG "!"
+    TYPE_REFERENCE
+      NEVER_TYPE
+        BANG "!"
     BLOCK_EXPR
       L_CURLY "{"
       R_CURLY "}"
@@ -719,28 +763,33 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    ARRAY_TYPE
-      L_BRACK "["
-      UNIT_TYPE
-        L_PAREN "("
-        R_PAREN ")"
-      SEMI ";"
-      LITERAL
-        NUMBER "92"
-      R_BRACK "]"
+    TYPE_REFERENCE
+      ARRAY_TYPE
+        L_BRACK "["
+        TYPE_REFERENCE
+          UNIT_TYPE
+            L_PAREN "("
+            R_PAREN ")"
+        SEMI ";"
+        LITERAL
+          NUMBER "92"
+        R_BRACK "]"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "T"
     EQ "="
-    REFERENCE_TYPE
-      AMPERSAND "&"
-      ARRAY_TYPE
-        L_BRACK "["
-        UNIT_TYPE
-          L_PAREN "("
-          R_PAREN ")"
-        R_BRACK "]"
+    TYPE_REFERENCE
+      REFERENCE_TYPE
+        AMPERSAND "&"
+        TYPE_REFERENCE
+          ARRAY_TYPE
+            L_BRACK "["
+            TYPE_REFERENCE
+              UNIT_TYPE
+                L_PAREN "("
+                R_PAREN ")"
+            R_BRACK "]"
     SEMI ";"
 
 ----------------------------------------
@@ -752,42 +801,47 @@ FILE
     TYPE "type"
     IDENT "F"
     EQ "="
-    FN_POINTER_TYPE
-      LINKAGE
-        EXTERN "extern"
-        STRING "\"C\""
-      FN "fn"
-      L_PAREN "("
-      VALUE_PARAM
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "i32"
-      COMMA ","
-      VALUE_PARAM
-        PATH_PATTERN
-          PATH
-            PATH_SEGMENT
-              IDENT "x"
-        COLON ":"
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "f64"
-      R_PAREN ")"
-      THIN_ARROW "->"
-      UNIT_TYPE
+    TYPE_REFERENCE
+      FN_POINTER_TYPE
+        LINKAGE
+          EXTERN "extern"
+          STRING "\"C\""
+        FN "fn"
         L_PAREN "("
+        VALUE_PARAM
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i32"
+        COMMA ","
+        VALUE_PARAM
+          PATH_PATTERN
+            PATH
+              PATH_SEGMENT
+                IDENT "x"
+          COLON ":"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "f64"
         R_PAREN ")"
+        THIN_ARROW "->"
+        TYPE_REFERENCE
+          UNIT_TYPE
+            L_PAREN "("
+            R_PAREN ")"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "F_Unit"
     EQ "="
-    FN_POINTER_TYPE
-      FN "fn"
-      L_PAREN "("
-      R_PAREN ")"
+    TYPE_REFERENCE
+      FN_POINTER_TYPE
+        FN "fn"
+        L_PAREN "("
+        R_PAREN ")"
     SEMI ";"
 
 ----------------------------------------
@@ -798,21 +852,23 @@ FILE
     TYPE "type"
     IDENT "F"
     EQ "="
-    FOR_TYPE
-      FOR "for"
-      TYPE_PARAMETERS
-        L_ANGLE "<"
-        LIFETIME_PARAMETER
-          LIFETIME "\'f"
-        R_ANGLE ">"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "T"
-            TYPE_ARGUMENTS
-              L_ANGLE "<"
-              LIFETIME "\'f"
-              R_ANGLE ">"
+    TYPE_REFERENCE
+      FOR_TYPE
+        FOR "for"
+        TYPE_PARAMETERS
+          L_ANGLE "<"
+          LIFETIME_PARAMETER
+            LIFETIME "\'f"
+          R_ANGLE ">"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "T"
+                TYPE_ARGUMENTS
+                  L_ANGLE "<"
+                  LIFETIME "\'f"
+                  R_ANGLE ">"
     SEMI ";"
 
 ----------------------------------------
@@ -1211,7 +1267,13 @@ FILE
       R_CURLY "}"
 
 ----------------------------------------
-fn main() { [1, 2, 3]; }
+fn main() {
+  [];
+  [1];
+  [2,];
+  [2, 3];
+  [1; 2];
+}
 
 FILE
   FN_DEF
@@ -1224,14 +1286,41 @@ FILE
       EXPR_STMT
         ARRAY_LITERAL
           L_BRACK "["
+          R_BRACK "]"
+        SEMI ";"
+      EXPR_STMT
+        ARRAY_LITERAL
+          L_BRACK "["
           LITERAL
             NUMBER "1"
+          R_BRACK "]"
+        SEMI ";"
+      EXPR_STMT
+        ARRAY_LITERAL
+          L_BRACK "["
+          LITERAL
+            NUMBER "2"
           COMMA ","
+          R_BRACK "]"
+        SEMI ";"
+      EXPR_STMT
+        ARRAY_LITERAL
+          L_BRACK "["
           LITERAL
             NUMBER "2"
           COMMA ","
           LITERAL
             NUMBER "3"
+          R_BRACK "]"
+        SEMI ";"
+      EXPR_STMT
+        ARRAY_LITERAL
+          L_BRACK "["
+          LITERAL
+            NUMBER "1"
+          SEMI ";"
+          LITERAL
+            NUMBER "2"
           R_BRACK "]"
         SEMI ";"
       R_CURLY "}"
@@ -1265,10 +1354,11 @@ FILE
                 PATH_SEGMENT
                   IDENT "y"
             COLON ":"
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "i32"
+            TYPE_REFERENCE
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "i32"
           COMMA ","
           PIPE "|"
           SUM_EXPR
@@ -1284,10 +1374,11 @@ FILE
           PIPE "|"
           PIPE "|"
           THIN_ARROW "->"
-          PATH_TYPE
-            PATH
-              PATH_SEGMENT
-                IDENT "i32"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i32"
           BLOCK_EXPR
             L_CURLY "{"
             LITERAL
@@ -1462,10 +1553,11 @@ FILE
               IDENT "b"
         TYPE_ASCRIPTION
           COLON ":"
-          PATH_TYPE
-            PATH
-              PATH_SEGMENT
-                IDENT "bool"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "bool"
         EQ "="
         LITERAL
           BOOL "true"
@@ -1851,10 +1943,11 @@ FILE
         TYPE_ARGUMENTS
           COLONCOLON "::"
           L_ANGLE "<"
-          PATH_TYPE
-            PATH
-              PATH_SEGMENT
-                IDENT "i32"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i32"
           R_ANGLE ">"
         L_PAREN "("
         R_PAREN ")"
@@ -2050,10 +2143,11 @@ FILE
           LITERAL
             NUMBER "1"
           AS "as"
-          PATH_TYPE
-            PATH
-              PATH_SEGMENT
-                IDENT "u128"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "u128"
         SEMI ";"
       R_CURLY "}"
 
@@ -2165,9 +2259,10 @@ FILE
     R_BRACK "]"
   IMPL_DEF
     IMPL "impl"
-    UNIT_TYPE
-      L_PAREN "("
-      R_PAREN ")"
+    TYPE_REFERENCE
+      UNIT_TYPE
+        L_PAREN "("
+        R_PAREN ")"
     MEMBERS
       L_CURLY "{"
       INNER_ATTRIBUTE

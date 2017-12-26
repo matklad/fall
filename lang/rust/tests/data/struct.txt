@@ -11,10 +11,11 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "A"
     R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
@@ -23,10 +24,11 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "A"
     COMMA ","
     R_CURLY "}"
   STRUCT_DEF
@@ -36,30 +38,33 @@ FILE
     STRUCT_FIELD
       IDENT "f"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "A"
     COMMA ","
     STRUCT_FIELD
       VISIBILITY
         PUB "pub"
       IDENT "j"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "B"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "B"
     R_CURLY "}"
   STRUCT_DEF
     STRUCT "struct"
     IDENT "E"
     L_PAREN "("
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "u32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "u32"
     R_PAREN ")"
     SEMI ";"
   STRUCT_DEF
@@ -67,10 +72,11 @@ FILE
     IDENT "F"
     L_PAREN "("
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "u32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "u32"
     COMMA ","
     R_PAREN ")"
     SEMI ";"
@@ -79,16 +85,18 @@ FILE
     IDENT "G"
     L_PAREN "("
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "u32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "u32"
     COMMA ","
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "String"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "String"
     R_PAREN ")"
     SEMI ";"
   STRUCT_DEF

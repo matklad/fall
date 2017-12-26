@@ -13,16 +13,18 @@ FILE
     STRUCT_FIELD
       IDENT "a"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "A"
     ERROR ""
     STRUCT_FIELD
       IDENT "b"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "A"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "A"
     R_CURLY "}"

@@ -64,17 +64,19 @@ FILE
                 TYPE_ARGUMENTS
                   COLONCOLON "::"
                   L_ANGLE "<"
-                  PATH_TYPE
-                    PATH
-                      PATH_SEGMENT
-                        IDENT "Vec"
-                        TYPE_ARGUMENTS
-                          L_ANGLE "<"
-                          PATH_TYPE
-                            PATH
-                              PATH_SEGMENT
-                                IDENT "i32"
-                          R_ANGLE ">"
+                  TYPE_REFERENCE
+                    PATH_TYPE
+                      PATH
+                        PATH_SEGMENT
+                          IDENT "Vec"
+                          TYPE_ARGUMENTS
+                            L_ANGLE "<"
+                            TYPE_REFERENCE
+                              PATH_TYPE
+                                PATH
+                                  PATH_SEGMENT
+                                    IDENT "i32"
+                            R_ANGLE ">"
                   R_ANGLE ">"
             COLONCOLON "::"
             PATH_SEGMENT

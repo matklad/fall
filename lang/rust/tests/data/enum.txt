@@ -16,10 +16,11 @@ FILE
       IDENT "Z"
       L_PAREN "("
       TUPLE_FIELD
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "i32"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "i32"
       R_PAREN ")"
     COMMA ","
     ENUM_VARIANT
@@ -28,10 +29,11 @@ FILE
       STRUCT_FIELD
         IDENT "t"
         COLON ":"
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "i32"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "i32"
       COMMA ","
       R_CURLY "}"
     R_CURLY "}"

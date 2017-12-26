@@ -241,17 +241,19 @@ FILE
                   TYPE_ARGUMENTS
                     COLONCOLON "::"
                     L_ANGLE "<"
-                    PATH_TYPE
-                      PATH
-                        PATH_SEGMENT
-                          IDENT "X"
-                          TYPE_ARGUMENTS
-                            L_ANGLE "<"
-                            PATH_TYPE
-                              PATH
-                                PATH_SEGMENT
-                                  IDENT "Y"
-                            R_ANGLE ">"
+                    TYPE_REFERENCE
+                      PATH_TYPE
+                        PATH
+                          PATH_SEGMENT
+                            IDENT "X"
+                            TYPE_ARGUMENTS
+                              L_ANGLE "<"
+                              TYPE_REFERENCE
+                                PATH_TYPE
+                                  PATH
+                                    PATH_SEGMENT
+                                      IDENT "Y"
+                              R_ANGLE ">"
                     R_ANGLE ">"
             SHR ">>"
             LITERAL
@@ -535,10 +537,11 @@ FILE
               TYPE_ARGUMENTS
                 COLONCOLON "::"
                 L_ANGLE "<"
-                PATH_TYPE
-                  PATH
-                    PATH_SEGMENT
-                      IDENT "c"
+                TYPE_REFERENCE
+                  PATH_TYPE
+                    PATH
+                      PATH_SEGMENT
+                        IDENT "c"
                 R_ANGLE ">"
         SEMI ";"
       EXPR_STMT

@@ -17,10 +17,11 @@ FILE
           PATH_SEGMENT
             IDENT "x"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "i32"
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
@@ -35,10 +36,11 @@ FILE
           PATH_SEGMENT
             IDENT "x"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "i32"
     COMMA ","
     R_PAREN ")"
     BLOCK_EXPR
@@ -54,10 +56,11 @@ FILE
           PATH_SEGMENT
             IDENT "x"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "i32"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "i32"
     COMMA ","
     VALUE_PARAM
       PATH_PATTERN
@@ -65,10 +68,11 @@ FILE
           PATH_SEGMENT
             IDENT "z"
       COLON ":"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "String"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "String"
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
@@ -79,19 +83,21 @@ FILE
     L_PAREN "("
     R_PAREN ")"
     THIN_ARROW "->"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "foo"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "foo"
     BLOCK_EXPR
       L_CURLY "{"
       R_CURLY "}"
   IMPL_DEF
     IMPL "impl"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "T"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "T"
     MEMBERS
       L_CURLY "{"
       FN_DEF

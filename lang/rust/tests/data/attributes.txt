@@ -75,10 +75,11 @@ FILE
         IDENT "foo"
       R_BRACK "]"
     IMPL "impl"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "X"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "X"
     MEMBERS
       L_CURLY "{"
       R_CURLY "}"
@@ -92,8 +93,9 @@ FILE
     TYPE "type"
     IDENT "T"
     EQ "="
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Z"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Z"
     SEMI ";"

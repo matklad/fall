@@ -3,32 +3,36 @@ FILE
     TYPE "type"
     IDENT "Foo"
     EQ "="
-    PATH_TYPE
-      PATH
+    TYPE_REFERENCE
+      PATH_TYPE
         PATH
+          PATH
+            PATH_SEGMENT
+              IDENT "foo"
+          COLONCOLON "::"
           PATH_SEGMENT
-            IDENT "foo"
-        COLONCOLON "::"
-        PATH_SEGMENT
-          IDENT "bar"
+            IDENT "bar"
     SEMI ";"
   TYPE_DEF
     TYPE "type"
     IDENT "Bar"
     EQ "="
-    REFERENCE_TYPE
-      AMPERSAND "&"
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "Foo"
+    TYPE_REFERENCE
+      REFERENCE_TYPE
+        AMPERSAND "&"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "Foo"
     SEMI ";"
   IMPL_DEF
     IMPL "impl"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "T"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "T"
     MEMBERS
       L_CURLY "{"
       TYPE_DEF
@@ -39,9 +43,10 @@ FILE
         TYPE "type"
         IDENT "B"
         EQ "="
-        PATH_TYPE
-          PATH
-            PATH_SEGMENT
-              IDENT "A"
+        TYPE_REFERENCE
+          PATH_TYPE
+            PATH
+              PATH_SEGMENT
+                IDENT "A"
         SEMI ";"
       R_CURLY "}"

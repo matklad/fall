@@ -1,10 +1,11 @@
 FILE
   IMPL_DEF
     IMPL "impl"
-    PATH_TYPE
-      PATH
-        PATH_SEGMENT
-          IDENT "Foo"
+    TYPE_REFERENCE
+      PATH_TYPE
+        PATH
+          PATH_SEGMENT
+            IDENT "Foo"
     MEMBERS
       L_CURLY "{"
       FN_DEF
@@ -17,10 +18,11 @@ FILE
               PATH_SEGMENT
                 IDENT "x"
           COLON ":"
-          PATH_TYPE
-            PATH
-              PATH_SEGMENT
-                IDENT "i32"
+          TYPE_REFERENCE
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  IDENT "i32"
         R_PAREN ")"
         BLOCK_EXPR
           L_CURLY "{"

@@ -20,16 +20,18 @@ FILE
       R_ANGLE ">"
     L_PAREN "("
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "U"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "U"
     COMMA ","
     TUPLE_FIELD
-      PATH_TYPE
-        PATH
-          PATH_SEGMENT
-            IDENT "V"
+      TYPE_REFERENCE
+        PATH_TYPE
+          PATH
+            PATH_SEGMENT
+              IDENT "V"
     R_PAREN ")"
     SEMI ";"
   FN_DEF
