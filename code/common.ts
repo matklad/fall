@@ -71,7 +71,7 @@ export function createPlugin(
             let file = currentFile()
             if (editor == null || file == null) return
             editor.selections = editor.selections.map((s) => {
-                let range = file.extendSelection(editor.selection)
+                let range = file.extendSelection(s)
                 return new vscode.Selection(range.start, range.end)
             })
         },
