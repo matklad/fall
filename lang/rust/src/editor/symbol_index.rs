@@ -29,16 +29,23 @@ impl SymbolIndex {
     }
 
     pub fn query(&self, query: &str) -> Vec<(PathBuf, Symbol)> {
-        let query = Query::new(query);
-
+        let mut query = Query::new(query);
         let mut result = Vec::new();
+        self.process_query(&query, &mut result);
+        if result.is_empty() && !query.all_symbols {
+            query.all_symbols = true;
+            self.process_query(&query, &mut result);
+        }
+        result
+    }
+
+    fn process_query(&self, query: &Query, acc: &mut Vec<(PathBuf, Symbol)>) {
         self.index.process_files(&mut |file| {
             query.process(&file.value, &mut |symbol| {
-                result.push((file.path.clone(), symbol))
+                acc.push((file.path.clone(), symbol))
             });
-            result.len() > 512
+            acc.len() > 512
         });
-        result
     }
 }
 

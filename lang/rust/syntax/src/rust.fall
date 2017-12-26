@@ -781,12 +781,16 @@ fn main() {
 #[atom]
 pub rule block_expr {
   <without_restrictions
-    {'unsafe'? <block block_form*>}
+    {'unsafe'? <block <with_skip block_form_first block_form>*>}
   >
 }
 
 rule block_form {
   let_stmt | empty_stmt | mod_form | expr_stmt
+}
+
+rule block_form_first {
+  'let' | ';' | mod_form_first | expr_first
 }
 
 test r"
@@ -818,7 +822,7 @@ pub rule empty_stmt { ';' }
 
 pub rule expr_stmt {
   <enter 'stmt'
-    {expr {prev_is_block | <eof> | ';'}}
+    {expr <commit> {prev_is_block | <eof> | ';'}}
   >
 }
 

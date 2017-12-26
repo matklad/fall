@@ -288,9 +288,19 @@ dependencies = [
  "file 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "fst 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "indxr 0.1.0",
+ "lang_rust_syntax 0.1.0",
  "ordslice 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "lang_rust_syntax"
+version = "0.1.0"
+dependencies = [
+ "fall_parse 0.1.0",
+ "fall_tree 0.1.0",
+ "regex 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
