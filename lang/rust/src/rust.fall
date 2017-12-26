@@ -422,7 +422,7 @@ pub rule alias { 'as' ident }
 
 // START TYPES
 
-rule type_reference {
+pub rule type_reference {
   any_type {'+' type_bound}*
 }
 test r"type T = Box<Iterator<Item=T + 'static> + Send>;"
@@ -1225,6 +1225,8 @@ ast {
   node trait_def: name_owner {}
   node type_def: name_owner {}
   node mod_def: name_owner {}
+  node impl_def {}
+
 
   node type_parameters {
     lifetime_parameters lifetime_parameter*
@@ -1248,6 +1250,8 @@ ast {
   node use_spec {}
 
   node let_stmt {}
+
+  node type_reference {}
 }
 
 verbatim r##########"

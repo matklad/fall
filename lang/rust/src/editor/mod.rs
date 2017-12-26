@@ -1,7 +1,7 @@
 use fall_tree::{File, TextEdit, TextRange, TextUnit, tu, AstNode, TextSuffix};
-use fall_tree::search::{find_leaf_at_offset};
+use fall_tree::search::{find_leaf_at_offset, ancestors};
 use fall_tree::search::ast;
-use fall_tree::visitor::process_subtree_bottom_up;
+use fall_tree::visitor::{visitor, process_node, process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
@@ -42,6 +42,42 @@ impl RustEditorFile {
         }
         Some(";".into())
     }
+
+    pub fn breadcrumbs(&self, offset: TextUnit) -> Vec<String> {
+        let leaf = match find_leaf_at_offset(self.file.root(), offset - tu(1)).left_biased() {
+            Some(leaf) => leaf,
+            None => return Vec::new(),
+        };
+        let mut acc = Vec::new();
+        for node in ancestors(leaf) {
+            fn process_decl<'f, D: NameOwner<'f>>(tag: &str, decl: D, acc: &mut Vec<String>) {
+                if let Some(name) = decl.name() {
+                    acc.push(format!("{} {}", tag, name))
+                }
+            }
+            process_node(
+                node,
+                visitor(&mut acc)
+                    .visit::<StructDef, _>(|def, acc| process_decl("struct", def, acc))
+                    .visit::<EnumDef, _>(|def, acc| process_decl("enum", def, acc))
+                    .visit::<TraitDef, _>(|def, acc| process_decl("trait", def, acc))
+                    .visit::<FnDef, _>(|def, acc| process_decl("fn", def, acc))
+                    .visit::<ImplDef, _>(|def, acc| {
+                        let mut trefs = ast::children_of_type::<TypeReference>(def.node());
+                        let t1 = trefs.next();
+                        let t2 = trefs.next();
+                        match (t1, t2) {
+                            (Some(t1), Some(t2)) => acc.push(format!("impl {} for {}", t1.node().text(), t2.node().text())),
+                            (Some(t1), None) => acc.push(format!("impl {}", t1.node().text())),
+                            _ => ()
+                        }
+                    }),
+            );
+        }
+        acc.reverse();
+        acc
+    }
+
 }
 
 impl EditorFileImpl for RustEditorFile {

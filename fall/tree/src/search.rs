@@ -146,7 +146,7 @@ pub fn sibling(node: Node, dir: Direction) -> Option<Node> {
 }
 
 pub mod ast {
-    use {Node, AstNode, TextUnit};
+    use {Node, AstNode, TextUnit, AstChildren};
     use visitor::{visitor, process_subtree_bottom_up};
     use super::{ancestors, find_leaf_at_offset, LeafAtOffset};
 
@@ -158,6 +158,10 @@ pub mod ast {
 
     pub fn ancestor_exn<'f, T: AstNode<'f>>(node: Node<'f>) -> T {
         ancestor(node).unwrap()
+    }
+
+    pub fn children_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> AstChildren<N> {
+        AstChildren::new(node.children())
     }
 
     pub fn descendants_of_type<'f, N: AstNode<'f>>(node: Node<'f>) -> Vec<N> {

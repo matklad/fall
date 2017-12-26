@@ -58,6 +58,14 @@ fn after_space_typed(call: Call) -> JsResult<JsValue> {
     ret(scope, result)
 }
 
+fn breadcrumbs(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let mut file = call.arguments.require(scope, 0)?.check::<JsRustEditorFile>()?;
+    let offset: TextUnit = arg(scope, &call.arguments, 1)?;
+    let result = file.grab(move |file| file.breadcrumbs(offset));
+    ret(scope, result)
+}
+
 register_module!(m, {
     m.export("parse", generic_backend::parse::<JsRustEditorFile>)?;
     m.export("edit", generic_backend::edit::<RustEditorFile, JsRustEditorFile>)?;
@@ -76,5 +84,7 @@ register_module!(m, {
     m.export("queryIndex", query_index)?;
 
     m.export("afterSpaceTyped", after_space_typed)?;
+
+    m.export("breadcrumbs", breadcrumbs)?;
     Ok(())
 });

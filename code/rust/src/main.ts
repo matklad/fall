@@ -21,6 +21,22 @@ export function activate(context: vscode.ExtensionContext) {
         context.subscriptions.push(cmd)
     }
 
+    let breadcrumbsBar = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Left,
+    )
+    breadcrumbsBar.show()
+
+    context.subscriptions.push(
+        vscode.window.onDidChangeTextEditorSelection((event) => {
+            let doc = event.textEditor.document
+            let file = plugin.getFile(doc)
+            if (file == null) return
+            let position = doc.offsetAt(event.textEditor.selection.active)
+            let crumbs = file.call("breadcrumbs", position)
+            breadcrumbsBar.text = crumbs.join(" $(chevron-right) ")
+        })
+    )
+
     let providers = [
         vscode.workspace.registerTextDocumentContentProvider('fall-rs', plugin.textDocumentContentProvider),
         vscode.languages.registerDocumentSymbolProvider('rust', plugin.documentSymbolsProvider),
