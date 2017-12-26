@@ -6,7 +6,7 @@ extern crate lang_rust;
 use std::path::PathBuf;
 
 use fall_tree::{TextRange, tu};
-use lang_rust::lang_rust;
+use lang_rust::syntax::lang_rust;
 
 fn main() {
     let text = file::get_text(test_data().join("parser.rs_")).unwrap();

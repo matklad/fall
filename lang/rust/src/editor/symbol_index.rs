@@ -11,7 +11,7 @@ use editor::line_index::{LineCol, LineIndex};
 use editor::fst_subseq::FstSubSeq;
 use editor::file_symbols::process_symbols;
 
-use {STRUCT_DEF, ENUM_DEF, TRAIT_DEF, TYPE_DEF};
+use syntax::{STRUCT_DEF, ENUM_DEF, TRAIT_DEF, TYPE_DEF};
 
 
 pub struct SymbolIndex {
@@ -83,7 +83,7 @@ struct FileSymbols {
 
 impl FileSymbols {
     fn new(text: String) -> FileSymbols {
-        let file = ::lang_rust().parse(text);
+        let file = ::syntax::lang_rust().parse(text);
         let line_index = LineIndex::new(file.text());
         let mut symbols = Vec::new();
         process_symbols(&file, &mut |name, node| {

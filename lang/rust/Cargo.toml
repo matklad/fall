@@ -12,4 +12,5 @@ fst = "*"
 fall_tree = { path = "../../fall/tree" }
 fall_parse = { path = "../../fall/parse" }
 fall_editor = { path = "../../fall/editor" }
+lang_rust_syntax =  { path = "./syntax" }
 indxr = { path = "../../indxr" }

@@ -5,7 +5,7 @@ use fall_tree::visitor::{visitor, process_node, process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
-use *;
+use syntax::{LET, SEMI, EQ, TypeReference, FnDef, ImplDef, LetStmt, NameOwner, StructDef, EnumDef, TraitDef};
 
 mod actions;
 use self::actions::ACTIONS;
@@ -82,7 +82,7 @@ impl RustEditorFile {
 
 impl EditorFileImpl for RustEditorFile {
     fn parse(text: &str) -> Self {
-        RustEditorFile::new(lang_rust().parse(text))
+        RustEditorFile::new(::syntax::lang_rust().parse(text))
     }
 
     fn edit(&self, edit: &TextEdit) -> Self {
@@ -120,7 +120,7 @@ impl EditorFileImpl for RustEditorFile {
 
     fn context_actions(&self, range: TextRange) -> Vec<&'static str> {
         let mut result = Vec::new();
-        fall_editor::actions::default_context_actions(
+        ::fall_editor::actions::default_context_actions(
             self.file(),
             range,
             &mut result,
@@ -134,7 +134,7 @@ impl EditorFileImpl for RustEditorFile {
     }
 
     fn apply_context_action(&self, range: TextRange, id: &str) -> Option<TextEdit> {
-        let def = fall_editor::actions::apply_default_context_action(
+        let def = ::fall_editor::actions::apply_default_context_action(
             self.file(),
             range,
             id,

@@ -79,7 +79,7 @@ fn test_grammars_are_fresh() {
     check_by_path("../test/src/sexp.fall", false);
     check_by_path("../test/src/weird.fall", false);
     check_by_path("../test/src/arith.fall", false);
-    check_by_path("../../lang/rust/src/rust.fall", false);
     check_by_path("../../lang/json/src/json.fall", false);
+    check_by_path("../../lang/rust/syntax/src/rust.fall", false);
     check_by_path("../../lang/fall/syntax/src/fall.fall", false);
 }

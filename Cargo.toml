@@ -3,7 +3,7 @@ members = [
     "fall/gen", "fall/tree", "fall/parse", "fall/test", "fall/text", "fall/editor",
 
     "lang/fall", "lang/fall/syntax",
-    "lang/rust",
+    "lang/rust", "lang/rust/syntax",
     "lang/json",
 
     "indxr",

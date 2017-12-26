@@ -1,7 +1,7 @@
 use fall_tree::{File, TextUnit, FileEdit, AstNode};
 use fall_tree::search::ast;
 use fall_editor::actions::ActionResult;
-use {NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl};
+use syntax::{NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl};
 
 
 pub const ACTIONS: &[(&str, fn(&File, TextUnit, bool) -> Option<ActionResult>)] = &[

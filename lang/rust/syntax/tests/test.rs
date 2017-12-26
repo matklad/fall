@@ -1,14 +1,14 @@
 extern crate elapsed;
 extern crate file;
 extern crate fall_tree;
-extern crate lang_rust;
+extern crate lang_rust_syntax;
 
 use std::path::{Path, PathBuf};
 
 use fall_tree::test_util::{check_syntax_ws, check_syntax, check_directory, check_inline_tests};
 use fall_tree::{TextRange, tu, FileEdit};
 use fall_tree::search::ast;
-use lang_rust::{lang_rust, FnDef, NameOwner};
+use lang_rust_syntax::{lang_rust, FnDef, NameOwner};
 
 #[test]
 fn inline_tests() {
