@@ -54,20 +54,21 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      IF_EXPR
-        IF "if"
-        PAREN_EXPR
-          L_PAREN "("
-          STRUCT_LITERAL
-            PATH
-              PATH_SEGMENT
-                IDENT "Foo"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          PAREN_EXPR
+            L_PAREN "("
+            STRUCT_LITERAL
+              PATH
+                PATH_SEGMENT
+                  IDENT "Foo"
+              L_CURLY "{"
+              R_CURLY "}"
+            R_PAREN ")"
+          BLOCK_EXPR
             L_CURLY "{"
             R_CURLY "}"
-          R_PAREN ")"
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
       R_CURLY "}"
 "#)
 }

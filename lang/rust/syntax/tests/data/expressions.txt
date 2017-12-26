@@ -14,8 +14,9 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      LITERAL
-        NUMBER "1"
+      EXPR_STMT
+        LITERAL
+          NUMBER "1"
       R_CURLY "}"
   FN_DEF
     FN "fn"
@@ -36,9 +37,10 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      BLOCK_EXPR
-        L_CURLY "{"
-        R_CURLY "}"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          R_CURLY "}"
       R_CURLY "}"
   FN_DEF
     FN "fn"
@@ -287,13 +289,14 @@ FILE
           ELSE "else"
           BLOCK_EXPR
             L_CURLY "{"
-            IF_EXPR
-              IF "if"
-              LITERAL
-                NUMBER "2"
-              BLOCK_EXPR
-                L_CURLY "{"
-                R_CURLY "}"
+            EXPR_STMT
+              IF_EXPR
+                IF "if"
+                LITERAL
+                  NUMBER "2"
+                BLOCK_EXPR
+                  L_CURLY "{"
+                  R_CURLY "}"
             R_CURLY "}"
       EMPTY_STMT
         SEMI ";"
@@ -309,14 +312,16 @@ FILE
                 NUMBER "2"
               BLOCK_EXPR
                 L_CURLY "{"
-                LITERAL
-                  NUMBER "3"
+                EXPR_STMT
+                  LITERAL
+                    NUMBER "3"
                 R_CURLY "}"
               ELSE "else"
               BLOCK_EXPR
                 L_CURLY "{"
-                LITERAL
-                  NUMBER "4"
+                EXPR_STMT
+                  LITERAL
+                    NUMBER "4"
                 R_CURLY "}"
           PLUS "+"
           LITERAL
@@ -375,20 +380,22 @@ FILE
           BLOCK_EXPR
             L_CURLY "{"
             R_CURLY "}"
-      IF_EXPR
-        IF "if"
-        BLOCK_EXPR
-          L_CURLY "{"
-          STRUCT_LITERAL
-            PATH
-              PATH_SEGMENT
-                IDENT "Foo"
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          BLOCK_EXPR
+            L_CURLY "{"
+            EXPR_STMT
+              STRUCT_LITERAL
+                PATH
+                  PATH_SEGMENT
+                    IDENT "Foo"
+                L_CURLY "{"
+                R_CURLY "}"
+            R_CURLY "}"
+          BLOCK_EXPR
             L_CURLY "{"
             R_CURLY "}"
-          R_CURLY "}"
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
       R_CURLY "}"
   FN_DEF
     FN "fn"
@@ -439,8 +446,9 @@ FILE
             PLUS "+"
             BLOCK_EXPR
               L_CURLY "{"
-              LITERAL
-                NUMBER "1"
+              EXPR_STMT
+                LITERAL
+                  NUMBER "1"
               R_CURLY "}"
           PLUS "+"
           LITERAL
@@ -454,8 +462,9 @@ FILE
         SUM_EXPR
           BLOCK_EXPR
             L_CURLY "{"
-            LITERAL
-              NUMBER "1"
+            EXPR_STMT
+              LITERAL
+                NUMBER "1"
             R_CURLY "}"
           PLUS "+"
           LITERAL
@@ -467,8 +476,9 @@ FILE
           SUM_EXPR
             BLOCK_EXPR
               L_CURLY "{"
-              LITERAL
-                NUMBER "1"
+              EXPR_STMT
+                LITERAL
+                  NUMBER "1"
               R_CURLY "}"
             PLUS "+"
             LITERAL
@@ -488,19 +498,22 @@ FILE
             SUM_EXPR
               BLOCK_EXPR
                 L_CURLY "{"
-                LITERAL
-                  NUMBER "1"
+                EXPR_STMT
+                  LITERAL
+                    NUMBER "1"
                 R_CURLY "}"
               PLUS "+"
               LITERAL
                 NUMBER "1"
             SEMI ";"
           R_CURLY "}"
-      BLOCK_EXPR
-        L_CURLY "{"
-        LITERAL
-          NUMBER "92"
-        R_CURLY "}"
+      EXPR_STMT
+        BLOCK_EXPR
+          L_CURLY "{"
+          EXPR_STMT
+            LITERAL
+              NUMBER "92"
+          R_CURLY "}"
       R_CURLY "}"
   FN_DEF
     FN "fn"

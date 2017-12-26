@@ -82,9 +82,10 @@ FILE
         R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      UNIT_EXPR
-        L_PAREN "("
-        R_PAREN ")"
+      EXPR_STMT
+        UNIT_EXPR
+          L_PAREN "("
+          R_PAREN ")"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1133,32 +1134,33 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      TUPLE_EXPR
-        L_PAREN "("
-        LITERAL
-          NUMBER "1"
-        COMMA ","
-        LITERAL
-          STRING "\"\""
-        COMMA ","
-        LITERAL
-          RAW_STRING "r\"\""
-        COMMA ","
-        LITERAL
-          CHAR "\' \'"
-        COMMA ","
-        LITERAL
-          CHAR "\'hell\'"
-        COMMA ","
-        LITERAL
-          CHAR "\'\'"
-        COMMA ","
-        LITERAL
-          BOOL "true"
-        COMMA ","
-        LITERAL
-          BOOL "false"
-        R_PAREN ")"
+      EXPR_STMT
+        TUPLE_EXPR
+          L_PAREN "("
+          LITERAL
+            NUMBER "1"
+          COMMA ","
+          LITERAL
+            STRING "\"\""
+          COMMA ","
+          LITERAL
+            RAW_STRING "r\"\""
+          COMMA ","
+          LITERAL
+            CHAR "\' \'"
+          COMMA ","
+          LITERAL
+            CHAR "\'hell\'"
+          COMMA ","
+          LITERAL
+            CHAR "\'\'"
+          COMMA ","
+          LITERAL
+            BOOL "true"
+          COMMA ","
+          LITERAL
+            BOOL "false"
+          R_PAREN ")"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1381,8 +1383,9 @@ FILE
                   IDENT "i32"
           BLOCK_EXPR
             L_CURLY "{"
-            LITERAL
-              NUMBER "92"
+            EXPR_STMT
+              LITERAL
+                NUMBER "92"
             R_CURLY "}"
         SEMI ";"
       R_CURLY "}"
@@ -1453,22 +1456,23 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      LOOP_EXPR
-        LIFETIME "\'l"
-        COLON ":"
-        LOOP "loop"
-        BLOCK_EXPR
-          L_CURLY "{"
-          EXPR_STMT
-            LOOP_CF_EXPR
-              BREAK "break"
-            SEMI ";"
-          EXPR_STMT
-            LOOP_CF_EXPR
-              CONTINUE "continue"
-              LIFETIME "\'l"
-            SEMI ";"
-          R_CURLY "}"
+      EXPR_STMT
+        LOOP_EXPR
+          LIFETIME "\'l"
+          COLON ":"
+          LOOP "loop"
+          BLOCK_EXPR
+            L_CURLY "{"
+            EXPR_STMT
+              LOOP_CF_EXPR
+                BREAK "break"
+              SEMI ";"
+            EXPR_STMT
+              LOOP_CF_EXPR
+                CONTINUE "continue"
+                LIFETIME "\'l"
+              SEMI ";"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1490,16 +1494,18 @@ FILE
       EXPR_STMT
         BLOCK_EXPR
           L_CURLY "{"
-          LITERAL
-            NUMBER "1"
+          EXPR_STMT
+            LITERAL
+              NUMBER "1"
           R_CURLY "}"
       EMPTY_STMT
         SEMI ";"
       EXPR_STMT
         BLOCK_EXPR
           L_CURLY "{"
-          LITERAL
-            NUMBER "1"
+          EXPR_STMT
+            LITERAL
+              NUMBER "1"
           R_CURLY "}"
       EXPR_STMT
         BLOCK_EXPR
@@ -1509,19 +1515,20 @@ FILE
               NUMBER "1"
             SEMI ";"
           R_CURLY "}"
-      BLOCK_EXPR
-        UNSAFE "unsafe"
-        L_CURLY "{"
-        LET_STMT
-          LET "let"
-          WILDCARD_PATTERN
-            UNDERSCORE "_"
-          EQ "="
-          UNIT_EXPR
-            L_PAREN "("
-            R_PAREN ")"
-          SEMI ";"
-        R_CURLY "}"
+      EXPR_STMT
+        BLOCK_EXPR
+          UNSAFE "unsafe"
+          L_CURLY "{"
+          LET_STMT
+            LET "let"
+            WILDCARD_PATTERN
+              UNDERSCORE "_"
+            EQ "="
+            UNIT_EXPR
+              L_PAREN "("
+              R_PAREN ")"
+            SEMI ";"
+          R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1585,44 +1592,50 @@ FILE
             BOOL "true"
           BLOCK_EXPR
             L_CURLY "{"
-            PATH_EXPR
-              PATH
-                PATH_SEGMENT
-                  IDENT "foo"
+            EXPR_STMT
+              PATH_EXPR
+                PATH
+                  PATH_SEGMENT
+                    IDENT "foo"
             R_CURLY "}"
           ELSE "else"
           BLOCK_EXPR
             L_CURLY "{"
-            PATH_EXPR
-              PATH
-                PATH_SEGMENT
-                  IDENT "bar"
+            EXPR_STMT
+              PATH_EXPR
+                PATH
+                  PATH_SEGMENT
+                    IDENT "bar"
             R_CURLY "}"
-      IF_EXPR
-        IF "if"
-        LITERAL
-          NUMBER "1"
-        BLOCK_EXPR
-          L_CURLY "{"
-          LITERAL
-            NUMBER "2"
-          R_CURLY "}"
-        ELSE "else"
+      EXPR_STMT
         IF_EXPR
           IF "if"
           LITERAL
-            NUMBER "3"
+            NUMBER "1"
           BLOCK_EXPR
             L_CURLY "{"
-            LITERAL
-              NUMBER "4"
+            EXPR_STMT
+              LITERAL
+                NUMBER "2"
             R_CURLY "}"
           ELSE "else"
-          BLOCK_EXPR
-            L_CURLY "{"
+          IF_EXPR
+            IF "if"
             LITERAL
-              NUMBER "5"
-            R_CURLY "}"
+              NUMBER "3"
+            BLOCK_EXPR
+              L_CURLY "{"
+              EXPR_STMT
+                LITERAL
+                  NUMBER "4"
+              R_CURLY "}"
+            ELSE "else"
+            BLOCK_EXPR
+              L_CURLY "{"
+              EXPR_STMT
+                LITERAL
+                  NUMBER "5"
+              R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1636,15 +1649,16 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      WHILE_EXPR
-        LIFETIME "\'w"
-        COLON ":"
-        WHILE "while"
-        LITERAL
-          BOOL "true"
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
+      EXPR_STMT
+        WHILE_EXPR
+          LIFETIME "\'w"
+          COLON ":"
+          WHILE "while"
+          LITERAL
+            BOOL "true"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1660,12 +1674,13 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      IF_EXPR
-        IF "if"
-        LET "let"
-        ERROR ""
-        ERROR ""
-        ERROR ""
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          LET "let"
+          ERROR ""
+          ERROR ""
+          ERROR ""
       R_CURLY "}"
 
 ----------------------------------------
@@ -1710,30 +1725,31 @@ FILE
           BLOCK_EXPR
             L_CURLY "{"
             R_CURLY "}"
-      IF_EXPR
-        IF "if"
-        LET "let"
-        TUPE_STRUCT_PATTERN
-          PATH
-            PATH_SEGMENT
-              IDENT "Some"
-          L_PAREN "("
-          PATH_PATTERN
+      EXPR_STMT
+        IF_EXPR
+          IF "if"
+          LET "let"
+          TUPE_STRUCT_PATTERN
             PATH
               PATH_SEGMENT
-                IDENT "x"
-          R_PAREN ")"
-        EQ "="
-        CALL_EXPR
-          PATH_EXPR
-            PATH
-              PATH_SEGMENT
-                IDENT "foo"
-          L_PAREN "("
-          R_PAREN ")"
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
+                IDENT "Some"
+            L_PAREN "("
+            PATH_PATTERN
+              PATH
+                PATH_SEGMENT
+                  IDENT "x"
+            R_PAREN ")"
+          EQ "="
+          CALL_EXPR
+            PATH_EXPR
+              PATH
+                PATH_SEGMENT
+                  IDENT "foo"
+            L_PAREN "("
+            R_PAREN ")"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1747,15 +1763,17 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      LOOP_EXPR
-        LIFETIME "\'pool"
-        COLON ":"
-        LOOP "loop"
-        BLOCK_EXPR
-          L_CURLY "{"
-          LITERAL
-            NUMBER "92"
-          R_CURLY "}"
+      EXPR_STMT
+        LOOP_EXPR
+          LIFETIME "\'pool"
+          COLON ":"
+          LOOP "loop"
+          BLOCK_EXPR
+            L_CURLY "{"
+            EXPR_STMT
+              LITERAL
+                NUMBER "92"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1769,20 +1787,21 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      FOR_EXPR
-        FOR "for"
-        PATH_PATTERN
-          PATH
-            PATH_SEGMENT
-              IDENT "x"
-        IN "in"
-        PATH_EXPR
-          PATH
-            PATH_SEGMENT
-              IDENT "xs"
-        BLOCK_EXPR
-          L_CURLY "{"
-          R_CURLY "}"
+      EXPR_STMT
+        FOR_EXPR
+          FOR "for"
+          PATH_PATTERN
+            PATH
+              PATH_SEGMENT
+                IDENT "x"
+          IN "in"
+          PATH_EXPR
+            PATH
+              PATH_SEGMENT
+                IDENT "xs"
+          BLOCK_EXPR
+            L_CURLY "{"
+            R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1802,76 +1821,78 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      MATCH_EXPR
-        MATCH "match"
-        PATH_EXPR
-          PATH
-            PATH_SEGMENT
-              IDENT "x"
-        L_CURLY "{"
-        MATCH_ARM
-          TUPE_STRUCT_PATTERN
+      EXPR_STMT
+        MATCH_EXPR
+          MATCH "match"
+          PATH_EXPR
             PATH
               PATH_SEGMENT
-                IDENT "Some"
-            L_PAREN "("
-            LITERAL_PATTERN
-              LITERAL
-                NUMBER "1"
-            R_PAREN ")"
-          PIPE "|"
-          TUPE_STRUCT_PATTERN
-            PATH
-              PATH_SEGMENT
-                IDENT "Some"
-            L_PAREN "("
-            LITERAL_PATTERN
-              LITERAL
-                NUMBER "2"
-            R_PAREN ")"
-          FAT_ARROW "=>"
-          BLOCK_EXPR
-            L_CURLY "{"
-            PATH_EXPR
+                IDENT "x"
+          L_CURLY "{"
+          MATCH_ARM
+            TUPE_STRUCT_PATTERN
               PATH
                 PATH_SEGMENT
-                  IDENT "no_comma"
-            R_CURLY "}"
-        MATCH_ARM
-          TUPE_STRUCT_PATTERN
-            PATH
-              PATH_SEGMENT
-                IDENT "Some"
-            L_PAREN "("
-            PATH_PATTERN
+                  IDENT "Some"
+              L_PAREN "("
+              LITERAL_PATTERN
+                LITERAL
+                  NUMBER "1"
+              R_PAREN ")"
+            PIPE "|"
+            TUPE_STRUCT_PATTERN
               PATH
                 PATH_SEGMENT
-                  IDENT "x"
-            R_PAREN ")"
-          GUARD
-            IF "if"
-            BIT_AND
-              PATH_EXPR
+                  IDENT "Some"
+              L_PAREN "("
+              LITERAL_PATTERN
+                LITERAL
+                  NUMBER "2"
+              R_PAREN ")"
+            FAT_ARROW "=>"
+            BLOCK_EXPR
+              L_CURLY "{"
+              EXPR_STMT
+                PATH_EXPR
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "no_comma"
+              R_CURLY "}"
+          MATCH_ARM
+            TUPE_STRUCT_PATTERN
+              PATH
+                PATH_SEGMENT
+                  IDENT "Some"
+              L_PAREN "("
+              PATH_PATTERN
                 PATH
                   PATH_SEGMENT
                     IDENT "x"
-              AMPERSAND "&"
-              LITERAL
-                NUMBER "3"
-          FAT_ARROW "=>"
-          LITERAL
-            BOOL "true"
-          COMMA ","
-        MATCH_ARM
-          PATH_PATTERN
-            PATH
-              PATH_SEGMENT
-                IDENT "None"
-          FAT_ARROW "=>"
-          LITERAL
-            BOOL "false"
-          COMMA ","
-        R_CURLY "}"
+              R_PAREN ")"
+            GUARD
+              IF "if"
+              BIT_AND
+                PATH_EXPR
+                  PATH
+                    PATH_SEGMENT
+                      IDENT "x"
+                AMPERSAND "&"
+                LITERAL
+                  NUMBER "3"
+            FAT_ARROW "=>"
+            LITERAL
+              BOOL "true"
+            COMMA ","
+          MATCH_ARM
+            PATH_PATTERN
+              PATH
+                PATH_SEGMENT
+                  IDENT "None"
+            FAT_ARROW "=>"
+            LITERAL
+              BOOL "false"
+            COMMA ","
+          R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1891,35 +1912,34 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      EXPR_STMT
-        BLOCK_MACRO_EXPR
-          BLOCK_MACRO
-            IDENT "block"
-            BANG "!"
-            L_CURLY "{"
-            TT
-              IDENT "foo"
-            TT
-              FAT_ARROW "=>"
-            TT
-              IDENT "bar"
-            R_CURLY "}"
+      MACRO_ITEM
+        BLOCK_MACRO
+          IDENT "block"
+          BANG "!"
+          L_CURLY "{"
+          TT
+            IDENT "foo"
+          TT
+            FAT_ARROW "=>"
+          TT
+            IDENT "bar"
+          R_CURLY "}"
+      MACRO_ITEM
+        LINE_MACRO
+          IDENT "println"
+          BANG "!"
+          L_PAREN "("
+          TT
+            STRING "\"Hello, world\""
+          R_PAREN ")"
+        SEMI ";"
       EXPR_STMT
         LINE_MACRO_EXPR
           LINE_MACRO
-            IDENT "println"
+            IDENT "vec"
             BANG "!"
-            L_PAREN "("
-            TT
-              STRING "\"Hello, world\""
-            R_PAREN ")"
-        SEMI ";"
-      LINE_MACRO_EXPR
-        LINE_MACRO
-          IDENT "vec"
-          BANG "!"
-          L_BRACK "["
-          R_BRACK "]"
+            L_BRACK "["
+            R_BRACK "]"
       R_CURLY "}"
 
 ----------------------------------------
@@ -1933,24 +1953,25 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      METHOD_CALL_EXPR
-        PATH_EXPR
-          PATH
-            PATH_SEGMENT
-              IDENT "foo"
-        DOT "."
-        IDENT "bar"
-        TYPE_ARGUMENTS
-          COLONCOLON "::"
-          L_ANGLE "<"
-          TYPE_REFERENCE
-            PATH_TYPE
-              PATH
-                PATH_SEGMENT
-                  IDENT "i32"
-          R_ANGLE ">"
-        L_PAREN "("
-        R_PAREN ")"
+      EXPR_STMT
+        METHOD_CALL_EXPR
+          PATH_EXPR
+            PATH
+              PATH_SEGMENT
+                IDENT "foo"
+          DOT "."
+          IDENT "bar"
+          TYPE_ARGUMENTS
+            COLONCOLON "::"
+            L_ANGLE "<"
+            TYPE_REFERENCE
+              PATH_TYPE
+                PATH
+                  PATH_SEGMENT
+                    IDENT "i32"
+            R_ANGLE ">"
+          L_PAREN "("
+          R_PAREN ")"
       R_CURLY "}"
 
 ----------------------------------------
@@ -2002,29 +2023,30 @@ FILE
           L_PAREN "("
           R_PAREN ")"
         SEMI ";"
-      MATCH_EXPR
-        MATCH "match"
-        PATH_EXPR
-          PATH
-            PATH_SEGMENT
-              IDENT "x"
-        L_CURLY "{"
-        MATCH_ARM
-          LITERAL_PATTERN
+      EXPR_STMT
+        MATCH_EXPR
+          MATCH "match"
+          PATH_EXPR
+            PATH
+              PATH_SEGMENT
+                IDENT "x"
+          L_CURLY "{"
+          MATCH_ARM
+            LITERAL_PATTERN
+              LITERAL
+                NUMBER "1"
+            FAT_ARROW "=>"
+            BLOCK_EXPR
+              L_CURLY "{"
+              R_CURLY "}"
+          MATCH_ARM
+            UNIT_PATTERN
+              L_PAREN "("
+              R_PAREN ")"
+            FAT_ARROW "=>"
             LITERAL
-              NUMBER "1"
-          FAT_ARROW "=>"
-          BLOCK_EXPR
-            L_CURLY "{"
-            R_CURLY "}"
-        MATCH_ARM
-          UNIT_PATTERN
-            L_PAREN "("
-            R_PAREN ")"
-          FAT_ARROW "=>"
-          LITERAL
-            NUMBER "2"
-        R_CURLY "}"
+              NUMBER "2"
+          R_CURLY "}"
       R_CURLY "}"
 
 ----------------------------------------
@@ -2038,13 +2060,14 @@ FILE
     R_PAREN ")"
     BLOCK_EXPR
       L_CURLY "{"
-      CALL_EXPR
-        PATH_EXPR
-          PATH
-            PATH_SEGMENT
-              IDENT "foo"
-        L_PAREN "("
-        R_PAREN ")"
+      EXPR_STMT
+        CALL_EXPR
+          PATH_EXPR
+            PATH
+              PATH_SEGMENT
+                IDENT "foo"
+          L_PAREN "("
+          R_PAREN ")"
       R_CURLY "}"
 
 ----------------------------------------
