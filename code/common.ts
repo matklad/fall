@@ -70,9 +70,10 @@ export function createPlugin(
             let editor = vscode.window.activeTextEditor
             let file = currentFile()
             if (editor == null || file == null) return
-            let range = file.extendSelection(editor.selection)
-            let newSelection = new vscode.Selection(range.start, range.end)
-            editor.selection = newSelection
+            editor.selections = editor.selections.map((s) => {
+                let range = file.extendSelection(editor.selection)
+                return new vscode.Selection(range.start, range.end)
+            })
         },
         textDocumentContentProvider: textDocumentContentProvider,
         documentSymbolsProvider: new DocumentSymbolProvider(getFile),

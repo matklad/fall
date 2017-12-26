@@ -636,8 +636,8 @@ pub rule expr {
 }
 
 rule expr_first {
-  literal | ident | 'self' | 'super' | '<' | '::' | '(' | '[' | '|'
-| 'return' | '{' | 'if' | 'while' | 'loop' | 'for' | 'match'
+  literal | ident | lifetime | 'self' | 'super' | '<' | '::' | '(' | '[' | '|'
+| 'return' | '{' | 'if' | 'while' | 'loop' | 'for' | 'match' | 'move' | 'continue' | 'break'
 | '&' | '*' | '-' | '!' | '..' | '...'
 }
 

@@ -199,7 +199,6 @@ trait T {
 
     let file = lang_rust().parse(code);
     let full_tics = file.metrics().get("parsing ticks").unwrap();
-    assert!(1000 < full_tics && full_tics < 1500);
 
     let node = file.root();
     let fun = ast::descendants_of_type::<FnDef>(node).pop().unwrap();
@@ -211,7 +210,9 @@ trait T {
     let edit = edit.into_text_edit();
     let file = lang_rust().reparse(&file, &edit);
     let incremental_tics = file.metrics().get("parsing ticks").unwrap();
-    assert!(incremental_tics < 1000, "too many ticks: {}", incremental_tics);
+
+    assert!(800 < full_tics && full_tics < 1200);
+    assert!(incremental_tics < 800, "too many ticks: {}", incremental_tics);
 }
 
 
