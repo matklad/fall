@@ -4,6 +4,9 @@ extern crate serde_derive;
 extern crate ordslice;
 extern crate fst;
 extern crate file;
+#[macro_use]
+extern crate log;
+extern crate simplelog;
 
 extern crate fall_tree;
 extern crate fall_parse;

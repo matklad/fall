@@ -42,7 +42,12 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerDocumentSymbolProvider('rust', plugin.documentSymbolsProvider),
         vscode.languages.registerCodeActionsProvider('rust', plugin.codeActionProvider),
         vscode.languages.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider(backend)),
-        vscode.languages.registerOnTypeFormattingEditProvider('rust', new OnTypeFormattingEditProvider(plugin.getFile), ' '),
+        vscode.languages.registerOnTypeFormattingEditProvider(
+            'rust',
+            new OnTypeFormattingEditProvider(plugin.getFile),
+            ' ',
+            '$'
+        ),
     ]
     context.subscriptions.push(...providers)
 }
@@ -86,12 +91,27 @@ class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEditProvide
         this.getFile = getFile
     }
 
-    provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
+    provideOnTypeFormattingEdits(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        ch: string,
+        options: vscode.FormattingOptions,
+        token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.TextEdit[]> {
         let file = this.getFile(document)
         if (file == null) return
         let offset = document.offsetAt(position)
-        let insert = file.call("afterSpaceTyped", offset)
-        if (insert == null) return
-        return [vscode.TextEdit.insert(position, insert)]
+        if (ch == ' ') {
+            let insert = file.call("afterSpaceTyped", offset)
+            if (insert == null) return
+            return [vscode.TextEdit.insert(position, insert)]
+        }
+        if (ch == '$') {
+            let edits = file.call("expand", offset)
+            console.log(edits)
+            if (edits == null) return
+            log("here")
+            return toVsEdits(document, edits)
+        }
     }
 }

@@ -65,12 +65,6 @@ pub struct FileIndexImpl<V> {
 }
 
 fn watch<V>(index: &FileIndexImpl<V>) {
-    simplelog::WriteLogger::init(
-        simplelog::LogLevelFilter::Info,
-        simplelog::Config::default(),
-        File::create("/home/matklad/log.txt").unwrap()
-    ).unwrap();
-
     let initial_indexing_start = ::std::time::Instant::now();
     for path in index.file_set.roots.iter() {
         index.change(path)

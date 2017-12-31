@@ -228,4 +228,5 @@ pub use self::rust::{
     TypeParameter,
     TypeReference,
     LetStmt,
+    ExprStmt,
 };

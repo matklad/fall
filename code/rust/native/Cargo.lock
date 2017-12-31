@@ -289,9 +289,11 @@ dependencies = [
  "fst 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "indxr 0.1.0",
  "lang_rust_syntax 0.1.0",
+ "log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "ordslice 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "simplelog 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

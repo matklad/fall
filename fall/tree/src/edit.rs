@@ -1,4 +1,4 @@
-use {TextEdit, TextEditBuilder, Node, File, TextRange};
+use {TextEdit, TextEditBuilder, Node, File, TextRange, TextEditOp, tu};
 use search::find_covering_node;
 
 pub struct FileEdit<'f> {
@@ -50,7 +50,13 @@ impl<'f> FileEdit<'f> {
     pub fn into_text_edit(self) -> TextEdit {
         let mut edit_builder = TextEditBuilder::new(self.file.text());
         self.text_edit_for_node(self.file.root(), &mut edit_builder);
-        edit_builder.build()
+        // TODO: :(
+        let mut edit = edit_builder.build();
+        edit.ops.push(TextEditOp::Copy(TextRange::from_len(
+            self.file.text().len(),
+            tu(0),
+        )));
+        edit
     }
 
     fn text_edit_for_node(&self, node: Node<'f>, edit_builder: &mut TextEditBuilder) {

@@ -288,7 +288,7 @@ pub fn language() -> &'static rt::Language {
             rt::LexRule::new(QUESTION, "\\?", None),
             rt::LexRule::new(CARET, "\\^", None),
             rt::LexRule::new(CARET_EQ, "\\^=", None),
-            rt::LexRule::new(CHAR, "\'[^\']\'|\'\\\\\'\'|\'(\\\\|\\p{XID_Continue}|\\{|\\})*\'", None),
+            rt::LexRule::new(CHAR, "\'\\\\\'\'|\'[^\']\'|\'(\\\\|\\p{XID_Continue}|\\{|\\})*\'", None),
             rt::LexRule::new(LIFETIME, "\'\\p{XID_Continue}*", None),
             rt::LexRule::new(BOOL, "true|false", None),
             rt::LexRule::new(NUMBER, "\\d+", None),
@@ -1004,6 +1004,31 @@ impl<'f> LetStmt<'f> {
 impl<'f> ::std::fmt::Debug for LetStmt<'f> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.write_str("LetStmt@")?;
+        self.node().range().fmt(f)?;
+        Ok(())
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ExprStmt<'f> { node: rt::Node<'f> }
+
+impl<'f> rt::AstNode<'f> for ExprStmt<'f> {
+    fn wrap(node: rt::Node<'f>) -> Option<Self> {
+        if node.ty() == EXPR_STMT {
+            Some(ExprStmt { node })
+        } else {
+            None
+        }
+    }
+    fn node(self) -> rt::Node<'f> { self.node }
+}
+
+impl<'f> ExprStmt<'f> {
+    
+}
+
+impl<'f> ::std::fmt::Debug for ExprStmt<'f> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.write_str("ExprStmt@")?;
         self.node().range().fmt(f)?;
         Ok(())
     }

@@ -217,5 +217,6 @@ pub fn to_vs_edits(edit: TextEdit) -> Vec<VsEdit> {
             }
         }
     }
+
     return result;
 }

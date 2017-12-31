@@ -13,7 +13,7 @@ use neon::mem::Handle;
 use neon::js::{JsValue, JsFunction};
 use neon::js::class::{JsClass, Class};
 
-use generic_backend::{arg, ret};
+use generic_backend::{arg, ret, to_vs_edits};
 use fall_tree::TextUnit;
 use lang_rust::editor::RustEditorFile;
 use lang_rust::editor::SymbolIndex;
@@ -58,6 +58,16 @@ fn after_space_typed(call: Call) -> JsResult<JsValue> {
     ret(scope, result)
 }
 
+
+fn expand(call: Call) -> JsResult<JsValue> {
+    let scope = call.scope;
+    let mut file = call.arguments.require(scope, 0)?.check::<JsRustEditorFile>()?;
+    let offset: TextUnit = arg(scope, &call.arguments, 1)?;
+    let edit = file.grab(move |file| file.expand(offset));
+    let result = edit.map(to_vs_edits);
+    ret(scope, result)
+}
+
 fn breadcrumbs(call: Call) -> JsResult<JsValue> {
     let scope = call.scope;
     let mut file = call.arguments.require(scope, 0)?.check::<JsRustEditorFile>()?;
@@ -84,6 +94,7 @@ register_module!(m, {
     m.export("queryIndex", query_index)?;
 
     m.export("afterSpaceTyped", after_space_typed)?;
+    m.export("expand", expand)?;
 
     m.export("breadcrumbs", breadcrumbs)?;
     Ok(())

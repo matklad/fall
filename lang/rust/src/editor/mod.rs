@@ -1,11 +1,11 @@
-use fall_tree::{File, TextEdit, TextRange, TextUnit, tu, AstNode, TextSuffix};
+use fall_tree::{File, TextEdit, TextRange, TextUnit, tu, AstNode, TextSuffix, FileEdit};
 use fall_tree::search::{find_leaf_at_offset, ancestors};
 use fall_tree::search::ast;
 use fall_tree::visitor::{visitor, process_node, process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
-use syntax::{LET, SEMI, EQ, TypeReference, FnDef, ImplDef, LetStmt, NameOwner, StructDef, EnumDef, TraitDef};
+use syntax::{LET, SEMI, EQ, TypeReference, FnDef, ImplDef, LetStmt, NameOwner, StructDef, EnumDef, TraitDef, ExprStmt};
 
 mod actions;
 use self::actions::ACTIONS;
@@ -41,6 +41,25 @@ impl RustEditorFile {
             return None;
         }
         Some(";".into())
+    }
+
+    pub fn expand(&self, offset: TextUnit) -> Option<TextEdit> {
+        let leaf = find_leaf_at_offset(self.file.root(), offset - tu(2))
+            .left_biased()?;
+        let expr: ExprStmt = ast::ancestor(leaf)?;
+        let mut edit = FileEdit::new(&self.file);
+        let text = self.file.text().slice(
+            TextRange::from_to(
+                expr.node().range().start(),
+                expr.node().range().end() - tu(3),
+            ),
+        );
+        edit.replace_substring(
+            TextRange::from_to(expr.node().range().start(), offset),
+            format!("eprintln!(\"{text} = {{:?}}\", {text});", text = text)
+        );
+        let edit = edit.into_text_edit();
+        Some(edit)
     }
 
     pub fn breadcrumbs(&self, offset: TextUnit) -> Vec<String> {

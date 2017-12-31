@@ -88,7 +88,7 @@ tokenizer {
   caret '^'
   caret_eq '^='
 
-  char r"'[^']'|'\\''|'(\\|\p{XID_Continue}|\{|\})*'"
+  char r"'\\''|'[^']'|'(\\|\p{XID_Continue}|\{|\})*'"
   lifetime r"'\p{XID_Continue}*"
   bool r"true|false"
   number r"\d+"
@@ -101,6 +101,7 @@ test r###"
 struct S<'a:'b>;
 fn main() {
   "\"";
+  '\'';
 }
 "###
 
@@ -1262,6 +1263,7 @@ ast {
   node use_spec {}
 
   node let_stmt {}
+  node expr_stmt {}
 
   node type_reference {}
 }
