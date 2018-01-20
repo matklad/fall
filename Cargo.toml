@@ -5,6 +5,7 @@ members = [
     "lang/fall", "lang/fall/syntax",
     "lang/rust", "lang/rust/syntax",
     "lang/json",
+    "lang/bnf",
 
     "indxr",
 ]

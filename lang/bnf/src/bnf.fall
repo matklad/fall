@@ -1,0 +1,63 @@
+tokenizer {
+  #[skip] whitespace r"\s+"
+  arrow '->'
+  pipe '|'
+  terminal r"'[^']+'"
+  nonterminal r"\w+"
+}
+
+pub rule grammar {
+  <with_skip prod_head prod>*
+}
+
+test r"
+  S -> E
+  E -> E '+' T | T
+  T -> T '*' F | F
+  F -> '(' E ')' | 'id'
+"
+
+rule prod_head {
+  nonterminal '->'
+}
+
+pub rule prod {
+  prod_head <commit> prod_body
+}
+
+pub rule prod_body {
+  alt {'|' alt}*
+}
+
+pub rule alt {
+  symbol symbol*
+}
+
+pub rule symbol {
+  nonterminal <not '->'> | terminal
+}
+
+ast {
+  node grammar {
+    productions prod*
+  }
+
+  node prod {
+    head nonterminal
+    alts alt*
+  }
+
+  node alt {
+    symbols symbol*
+  }
+
+  node terminal {
+  }
+
+  node nonterminal {
+  }
+
+  class symbol {
+    terminal nonterminal
+  }
+}

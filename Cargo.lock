@@ -361,6 +361,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "lang_bnf"
+version = "0.1.0"
+dependencies = [
+ "fall_parse 0.1.0",
+ "fall_tree 0.1.0",
+]
+
+[[package]]
 name = "lang_fall"
 version = "0.1.0"
 dependencies = [
