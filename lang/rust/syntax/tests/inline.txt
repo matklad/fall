@@ -1,6 +1,7 @@
 struct S<'a:'b>;
 fn main() {
   "\"";
+  '\'';
 }
 
 FILE
@@ -25,6 +26,10 @@ FILE
       EXPR_STMT
         LITERAL
           STRING "\"\\\"\""
+        SEMI ";"
+      EXPR_STMT
+        LITERAL
+          CHAR "\'\\\'\'"
         SEMI ";"
       R_CURLY "}"
 
