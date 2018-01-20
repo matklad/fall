@@ -1,0 +1,60 @@
+S -> E
+  E -> E '+' T | T
+  T -> T '*' F | F
+  F -> '(' E ')' | 'id'
+
+GRAMMAR
+  PROD
+    NONTERMINAL "S"
+    ARROW "->"
+    PROD_BODY
+      ALT
+        SYMBOL
+          NONTERMINAL "E"
+  PROD
+    NONTERMINAL "E"
+    ARROW "->"
+    PROD_BODY
+      ALT
+        SYMBOL
+          NONTERMINAL "E"
+        SYMBOL
+          TERMINAL "\'+\'"
+        SYMBOL
+          NONTERMINAL "T"
+      PIPE "|"
+      ALT
+        SYMBOL
+          NONTERMINAL "T"
+  PROD
+    NONTERMINAL "T"
+    ARROW "->"
+    PROD_BODY
+      ALT
+        SYMBOL
+          NONTERMINAL "T"
+        SYMBOL
+          TERMINAL "\'*\'"
+        SYMBOL
+          NONTERMINAL "F"
+      PIPE "|"
+      ALT
+        SYMBOL
+          NONTERMINAL "F"
+  PROD
+    NONTERMINAL "F"
+    ARROW "->"
+    PROD_BODY
+      ALT
+        SYMBOL
+          TERMINAL "\'(\'"
+        SYMBOL
+          NONTERMINAL "E"
+        SYMBOL
+          TERMINAL "\')\'"
+      PIPE "|"
+      ALT
+        SYMBOL
+          TERMINAL "\'id\'"
+
+----------------------------------------
