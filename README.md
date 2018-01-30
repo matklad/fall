@@ -3,7 +3,7 @@
 This is a work in progress hobby project. If you are looking for a production ready parser generator for Rust,
 consider [pest](https://github.com/pest-parser/pest), [lalrpop](https://github.com/nikomatsakis/lalrpop) or
 [nom](https://github.com/Geal/nom). If you are looking for a production grade IDE-ready parser generator, take a look
-at [Grammar Kit](https://github.com/JetBrains/Grammar-Kit) or [Papa Carlo](https://github.com/Eliah-Lakhin/papa-carlo).
+at [Grammar Kit](https://github.com/JetBrains/Grammar-Kit) or [Papa Carlo](https://github.com/Eliah-Lakhin/papa-carlo). You might aslo find [tree-sitter](https://github.com/tree-sitter/tree-sitter) to be interesting.
 
 ## Scope
 
