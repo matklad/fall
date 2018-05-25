@@ -9,8 +9,6 @@ ordslice = "0.2.0"
 file = "*"
 elapsed = "*"
 fst = "*"
-log = "0.3"
-simplelog = "*"
 fall_tree = { path = "../../fall/tree" }
 fall_parse = { path = "../../fall/parse" }
 fall_editor = { path = "../../fall/editor" }

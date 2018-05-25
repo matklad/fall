@@ -9,7 +9,6 @@ use std::time::Duration;
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
-use std::fs::File;
 
 use walkdir::WalkDir;
 use notify::{RecommendedWatcher, Watcher, RecursiveMode, DebouncedEvent};
@@ -73,7 +72,7 @@ fn watch<V>(index: &FileIndexImpl<V>) {
     info!("indexing took = {}s", elapsed.as_secs());
     let (tx, rx) = channel();
 
-    let watchers = index.file_set.roots.iter().map(|path| {
+    let _watchers = index.file_set.roots.iter().map(|path| {
         let tx = tx.clone();
         let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2)).unwrap();
         watcher.watch(path, RecursiveMode::Recursive).unwrap();

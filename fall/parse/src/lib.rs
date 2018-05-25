@@ -1,29 +1,56 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
-pub extern crate regex;
+extern crate m_lexer;
+
 pub extern crate fall_tree;
 pub extern crate serde_json;
 
 use std::any::Any;
 use std::collections::HashMap;
 
-use regex::Regex;
-use fall_tree::{Text, Language, NodeType, Metrics, TextEdit, TextUnit, TreeBuilder};
+use fall_tree::{Text, Language, NodeType, Metrics, TextEdit, TextUnit, TreeBuilder, ERROR, tu};
 
 mod lex_engine;
-use lex_engine::Token;
+use lex_engine::{Token, Lexer};
 
 mod syn_engine;
 use syn_engine::Event;
 
 pub struct RegexLexer {
-    rules: Vec<LexRule>,
+    tys: Vec<NodeType>,
+    lexer: m_lexer::Lexer,
 }
 
 impl RegexLexer {
     pub fn new(rules: Vec<LexRule>) -> RegexLexer {
-        RegexLexer { rules }
+        let mut builder = m_lexer::LexerBuilder::new();
+        let mut tys = Vec::new();
+        for rule in rules {
+            tys.push(rule.ty);
+            builder.rule(
+                m_lexer::TokenKind(tys.len() as u32),
+                &rule.re,
+                rule.f.map(|f| {
+                    let f: m_lexer::ExternRule = Box::new(f);
+                    f
+                })
+            )
+        }
+        RegexLexer { tys, lexer: builder.build() }
+    }
+}
+
+impl Lexer for RegexLexer {
+    fn next_token(&self, text: Text) -> Token {
+        let m_token = self.lexer.next_token(text.to_cow().as_ref());
+        let ty = if m_token.kind == m_lexer::ERROR {
+            ERROR
+        } else {
+            self.tys[m_token.kind.0 as usize - 1]
+        };
+        let len = tu(m_token.len as u32);
+        Token { ty, len }
     }
 }
 
@@ -32,7 +59,7 @@ impl RegexLexer {
 /// custom Rust function
 pub struct LexRule {
     pub ty: NodeType,
-    pub re: Regex,
+    pub re: String,
     pub f: Option<CustomLexRule>,
 }
 
@@ -40,8 +67,7 @@ pub type CustomLexRule = fn(&str) -> Option<usize>;
 
 impl LexRule {
     pub fn new(ty: NodeType, re: &str, f: Option<CustomLexRule>) -> LexRule {
-        let re = Regex::new(&format!("^({})", re)).unwrap();
-        LexRule { ty, re, f }
+        LexRule { ty, re: re.to_owned(), f }
     }
 }
 
@@ -254,7 +280,6 @@ pub mod runtime {
 
     pub use {ParserDefinition, RegexLexer, LexRule, parse, reparse};
     pub use serde_json;
-    pub use regex;
     pub use fall_tree;
     pub use fall_tree::{AstNode, AstChildren, Node, NodeType, NodeTypeInfo, Language, LanguageImpl, ERROR, Text, TextEdit, TreeBuilder, Metrics};
     pub use fall_tree::search::{child_of_type, child_of_type_exn};

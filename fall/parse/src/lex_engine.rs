@@ -1,8 +1,6 @@
 use std::cmp::Ordering;
 use fall_tree::{Text, tu, TextSuffix, TextEditOp, TextEdit, TextUnit, NodeType, ERROR};
 
-mod regex;
-
 #[derive(Debug, Copy, Clone)]
 pub struct Token {
     pub ty: NodeType,
