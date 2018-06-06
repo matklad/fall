@@ -3,7 +3,8 @@
 This is a work in progress hobby project. If you are looking for a production ready parser generator for Rust,
 consider [pest](https://github.com/pest-parser/pest), [lalrpop](https://github.com/nikomatsakis/lalrpop) or
 [nom](https://github.com/Geal/nom). If you are looking for a production grade IDE-ready parser generator, take a look
-at [Grammar Kit](https://github.com/JetBrains/Grammar-Kit) or [Papa Carlo](https://github.com/Eliah-Lakhin/papa-carlo). You might aslo find [tree-sitter](https://github.com/tree-sitter/tree-sitter) to be interesting.
+at [Grammar Kit](https://github.com/JetBrains/Grammar-Kit) or [Papa Carlo](https://github.com/Eliah-Lakhin/papa-carlo).
+You might also find [tree-sitter](https://github.com/tree-sitter/tree-sitter) to be interesting.
 
 ## Scope
 
@@ -44,7 +45,7 @@ the whole input.
 
 ### Tree Model
 
-The entry point is `fall_tree/node/mod.rs`. It defines the structure of the syntax tree which roughly looks like this:
+The entry point is `fall/tree/src/node/mod.rs`. It defines the structure of the syntax tree which roughly looks like this:
 
 ```rust
 type NodeType = 32;
@@ -93,7 +94,7 @@ impl RustFunction {
 }
 ```
 
-Such typed wrappers are generated automatically. See `fall_tree/ast.rs` and `fall_tree/visitor.rs` for a generic
+Such typed wrappers are generated automatically. See `fall/tree/src/ast.rs` and `fall/tree/visitor.rs` for a generic
 implementation of this pattern and how it can be used to travers trees in a type-safe manner (imo, this is the most
 beautiful piece of code here so far:) ). It's also interesting that you can create a single typed wrapper around
 *several* node types, which allows to express an arbitrary [non-]hierarchy of node types. See `AstClass` for details.
@@ -103,14 +104,14 @@ beautiful piece of code here so far:) ). It's also interesting that you can crea
 
 By itself, `fall_tree` does not impose any particular way of constructing trees. It should be possible to connect it to
 a hand written, a generated or an external parser. Currently a specific parser generator is the main way to create
-trees. `fall_parse` contains runtime for the parser (currently, parser is mostly interpreted), and `fall_gen`
+trees. `fall/parse` contains runtime for the parser (currently, parser is mostly interpreted), and `fall_/gen`
 contains the corresponding generator, which generates a lexer, a parser and the AST. The parser is roughly a
 "hand-written recursive descent" plus (to be implemented) Pratt parser for expressions. Some call this style
 of parsing PEG.
 
 ### Grammar
 
-To learn the details of the grammar spec, it's best to read the (literalish) [grammar of the fall language itself](./lang/fall/src/fall.fall )
+To learn the details of the grammar spec, it's best to read the (literalish) [grammar of the fall language itself](./lang/fall/syntax/src/fall.fall)
 Other examples are also in the `lang` subdirectory, look for the `*.fall` files.
 
 Here are some interesting highlights of the grammar.
@@ -190,6 +191,30 @@ statically linking in the Rust crate, or by wrapping it into an RPC.
 
 Something works :)
 
+Using fall, I've implemented a more-or-less complete Rust parser (see `lang/rust/syntax`) and a library with various IDE
+features implemented (see `lang/rust`). This library is then used to implement a VS code plugin for rust (see `code/rust`,
+install by running `just code-rust`). Features include
+
+  * extend selection (pressing `ctrl+shift+right` will expand selection precisely, covering larger syntactic structures,
+    and not just braced blocks)
+  * parse-tree based syntax highlighting
+  * breadcrumbs (at the bottom of the screen, current function/impl/mod etc are shown)
+  * file struture (`ctrl+shift+o` shows a list of symbols in files)
+  * navigate to symbol (`ctrl+T` shows the list of symbols in the current project. This is CTAGS done right, with parser
+    instead of regex, and with incremental update on editing. Indexing `rust-lang/rust` repo takes about 30 seconds,
+    using single core).
+  * rudimentary postfix templates (`foo().pd$` expands to `eprintln!("foo() = {:?}", foo)`)
+  * rudimentary code-actions support (`ctrl+.` on a struct defintion suggests adding an `impl` with all generics and
+    lifetimes filled-in)
+
+In general the plugin is definitely unpolished, but is workable. Reliable symbol navigation, breadcrumbs and extend
+selection are particularly useful features! However, if you like them, just use IntelliJ Rust plugin ;)
+
+
+And of course the VS code plugin for `fall` is implemented in `fall` itself. See `lang/fall/syntax` for parser,
+`lang/fall/src/analysis` for "brains", `lang/fall/src/editor` for IDE library and `code/fall` for the actual plugin.
+`just code-fall` installs the plugin.
+
 Here's a screenshoot showing [Rust grammar](https://github.com/matklad/fall/blob/master/lang/rust/src/rust.fall),
 inline test and the resulting syntax tree.
 
@@ -216,5 +241,5 @@ We use [just](https://github.com/casey/just) to automate code generation tasks:
 
 * `update-test-data` -- fixes expected syntax trees in tests after grammar update
 
-* `code` -- builds VS Code extension
+* `code-rust`, `code-fall` -- builds VS Code extension
 

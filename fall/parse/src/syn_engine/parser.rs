@@ -240,6 +240,6 @@ impl<'g> ::std::ops::Index<NodeTypeRef> for Parser<'g> {
     type Output = NodeType;
 
     fn index(&self, index: NodeTypeRef) -> &Self::Output {
-        &self.grammar.node_types[index.0 as usize]
+        &self.grammar.node_types[index]
     }
 }

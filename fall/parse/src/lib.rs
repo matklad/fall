@@ -1,6 +1,9 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate typed_index_derive;
+
 extern crate m_lexer;
 
 pub extern crate fall_tree;
@@ -98,7 +101,8 @@ impl Default for ParserDefinition {
 }
 
 
-#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug, TypedIndex)]
+#[typed_index(NodeType)]
 pub struct NodeTypeRef(pub u32);
 
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
@@ -107,7 +111,8 @@ pub struct Context(pub u32);
 #[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct Arg(pub u32);
 
-#[derive(Copy, Clone, Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug, Eq, PartialEq, Hash, TypedIndex)]
+#[typed_index(Expr)]
 pub struct ExprRef(pub u32);
 
 #[derive(Serialize, Deserialize, Debug)]

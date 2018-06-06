@@ -1,7 +1,7 @@
 // This is the grammar for the Fall parser generator input language.
 // It is itself written in Fall and serves as the primary
 // tutorial / documentation. To get syntax highlighting for this file,
-// use VS Code plugin from the `code` subdirectory.
+// use VS Code plugin from the `code/fall` subdirectory.
 
 // The syntax is Rust inspired.
 
@@ -156,6 +156,7 @@ pub rule block_expr {
   <block { seq_expr? {'|' seq_expr}* }>
 }
 
+// `A?` and `A*` work as expcted
 #[postfix]
 pub rule opt_expr {
   expr '?'
@@ -168,11 +169,6 @@ pub rule rep_expr {
 
 // Another, very powerful construct is to invoke a function
 // using other expressions as arguments.
-// Some predefined functions are
-//
-//   * `<opt arg>`: match `arg` or an empty string,
-//   * `<rep arg>`: match zero, one or more repetitions of `arg`.
-//
 // There are also user-defined functions, such as `block` from above.
 #[atom]
 pub rule call_expr { '<' ident expr* '>' }
@@ -200,6 +196,12 @@ pub rule lex_rule {
   attributes? ident <commit> string string?
 }
 
+// You can specify inine test directly in the grammar.
+// See, for example, the one near `parameter` rule in this file.
+// To run test from a file in VS Code. put cursor on the test, press
+// `cltr+.` for code actions, and select "render test". It make take a while
+// for the first time!
+// See `check_by_path` function to see how runing the tests from cli works.
 pub rule test_def { 'test' <commit> hash_string }
 
 
