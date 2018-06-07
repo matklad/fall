@@ -10,11 +10,11 @@
         "vscode": "^1.18.0"
     },
     "devDependencies": {
-        "neon-cli": "^0.1.22",
-        "typescript": "^2.6.2",
-        "vscode": "^1.1.10",
-        "@types/node": "^6.0.40",
-        "vsce": "^1.31.1"
+        "@types/node": "^6.0.112",
+        "neon-cli": "^0.1.23",
+        "typescript": "^2.9.1",
+        "vsce": "^1.42.0",
+        "vscode": "^1.1.18"
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
