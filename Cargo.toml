@@ -9,4 +9,3 @@ members = [
 
     "indxr",
 ]
-exclude = [ "checkpoint" ]

@@ -1,10 +1,12 @@
 extern crate fall_tree;
-extern crate file;
 extern crate tempdir;
 
-use std::process;
-use std::env;
-use std::path::{PathBuf, Path};
+use std::{
+    process,
+    env,
+    fs,
+    path::{PathBuf, Path},
+};
 
 use tempdir::TempDir;
 
@@ -16,14 +18,14 @@ fn generator_path() -> PathBuf {
 fn check_by_path<T: AsRef<Path>>(grammar_path: T, should_rewrite: bool) {
     let grammar_path = grammar_path.as_ref();
     let generated_path = &grammar_path.with_extension("rs");
-    let grammar_text = file::get_text(grammar_path).unwrap();
+    let grammar_text = fs::read_to_string(grammar_path).unwrap();
 
-    let expected = file::get_text(generated_path).unwrap_or_default();
+    let expected = fs::read_to_string(generated_path).unwrap_or_default();
 
     let generated = {
         let dir = TempDir::new("gen-tests").unwrap();
         let tmp_file = dir.path().join("grammar.fall");
-        file::put_text(&tmp_file, grammar_text).unwrap();
+        fs::write(&tmp_file, grammar_text).unwrap();
 
         let output = process::Command::new(generator_path())
             .arg(&tmp_file)
@@ -42,13 +44,13 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T, should_rewrite: bool) {
                 eprintln!("{}", err);
             }
         }
-        file::get_text(tmp_file.with_extension("rs")).unwrap()
+        fs::read_to_string(tmp_file.with_extension("rs")).unwrap()
     };
 
     if expected != generated {
         if should_rewrite {
             println!("UPDATING {}", grammar_path.display());
-            file::put_text(generated_path, generated)
+            fs::write(generated_path, generated)
                 .unwrap_or_else(|_| panic!("Failed to write result to {}", generated_path.display()));
             return;
         }

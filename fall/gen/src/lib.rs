@@ -3,7 +3,6 @@ extern crate serde_json;
 extern crate serde_derive;
 extern crate regex;
 extern crate tera;
-extern crate file;
 #[macro_use]
 extern crate failure;
 
@@ -11,18 +10,53 @@ extern crate fall_tree;
 extern crate fall_parse;
 extern crate lang_fall;
 
-use std::error::Error;
-use std::io::Write;
-use std::path::{PathBuf, Path};
-use std::fs;
-use std::process::{Command, Stdio};
+use std::{
+    io::Write,
+    path::{PathBuf, Path},
+    fs,
+    process::{Command, Stdio},
+};
+
+use failure::{Error, ResultExt};
 use fall_tree::{File, AstNode};
 
 
 mod util;
 mod generate;
 
-pub fn generate(analysis: &lang_fall::Analysis) -> generate::Result<String> {
+pub type Result<T> = ::std::result::Result<T, Error>;
+
+pub enum Task {
+    Generate(PathBuf),
+    Examples(PathBuf),
+}
+
+fn read_file(path: &Path) -> Result<String> {
+    let text = fs::read_to_string(path).with_context(|_| {
+        format!("path: {}", path.display())
+    })?;
+    Ok(text)
+}
+
+pub fn process(command: Task) -> Result<()> {
+    let mut renderer = TestRenderer;
+    match command {
+        Task::Generate(grammar) => {
+            let input = read_file(&grammar)?;
+            let result = lang_fall::analyse(input).analyse(generate)?;
+            fs::write(grammar.with_extension("rs"), result)?;
+        }
+        Task::Examples(grammar) => {
+            let input = read_file(&grammar)?;
+            let result = renderer.render_all(input, None)?;
+            fs::write(grammar.with_extension("txt"), result)?;
+        }
+    }
+    Ok(())
+}
+
+
+pub fn generate(analysis: &lang_fall::Analysis) -> Result<String> {
     generate::generate(analysis)
 }
 
@@ -42,7 +76,7 @@ impl TestRenderer {
         }
     }
 
-    pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String, Box<Error>> {
+    pub fn render_all(&mut self, grammar: String, test: Option<String>) -> Result<String> {
         let file = lang_fall::analyse(grammar);
         let parser = match file.analyse(generate) {
             Ok(parser) => parser,
@@ -136,7 +170,7 @@ impl TestRenderer {
     }
 }
 
-fn base_directory() -> Result<PathBuf, Box<Error>> {
+fn base_directory() -> Result<PathBuf> {
     let result = ::std::env::temp_dir().join("fall-tests");
     fs::create_dir_all(&result)?;
     fs::create_dir_all(&result.join("src"))?;
@@ -150,10 +184,10 @@ fn fall_dir() -> PathBuf {
 
 fn put_text_if_changed(path: &Path, text: &str) -> ::std::io::Result<()> {
     if path.exists() {
-        let old_text = file::get_text(path)?;
+        let old_text = fs::read_to_string(path)?;
         if old_text == text {
             return Ok(());
         }
     }
-    file::put_text(path, text)
+    fs::write(path, text)
 }
