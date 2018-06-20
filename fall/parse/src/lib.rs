@@ -15,9 +15,11 @@ use std::collections::HashMap;
 use fall_tree::{Text, Language, NodeType, Metrics, TextEdit, TextUnit, TreeBuilder, ERROR, tu};
 
 mod lex_engine;
+
 use lex_engine::{Token, Lexer};
 
 mod syn_engine;
+
 use syn_engine::Event;
 
 pub struct RegexLexer {
@@ -27,18 +29,22 @@ pub struct RegexLexer {
 
 impl RegexLexer {
     pub fn new(rules: Vec<LexRule>) -> RegexLexer {
-        let mut builder = m_lexer::LexerBuilder::new();
         let mut tys = Vec::new();
+        tys.push(ERROR);
+        let mut builder = m_lexer::LexerBuilder::new()
+            .error_token(m_lexer::TokenKind(0));
+
         for rule in rules {
-            tys.push(rule.ty);
-            builder.rule(
-                m_lexer::TokenKind(tys.len() as u32),
+            builder = builder.rule(
+                m_lexer::TokenKind(tys.len() as u16),
                 &rule.re,
                 rule.f.map(|f| {
                     let f: m_lexer::ExternRule = Box::new(f);
                     f
-                })
-            )
+                }),
+            );
+            tys.push(rule.ty);
+
         }
         RegexLexer { tys, lexer: builder.build() }
     }
@@ -47,11 +53,7 @@ impl RegexLexer {
 impl Lexer for RegexLexer {
     fn next_token(&self, text: Text) -> Token {
         let m_token = self.lexer.next_token(text.to_cow().as_ref());
-        let ty = if m_token.kind == m_lexer::ERROR {
-            ERROR
-        } else {
-            self.tys[m_token.kind.0 as usize - 1]
-        };
+        let ty = self.tys[m_token.kind.0 as usize];
         let len = tu(m_token.len as u32);
         Token { ty, len }
     }
@@ -152,7 +154,7 @@ pub enum Expr {
 pub struct PrattTable {
     pub atoms: Vec<ExprRef>,
     pub prefixes: Vec<Prefix>,
-    pub infixes: Vec<Infix>
+    pub infixes: Vec<Infix>,
 }
 
 impl PrattTable {
@@ -223,10 +225,10 @@ pub fn reparse(
         &incremental_data.events,
         &incremental_data.tokens,
         &|t| lang.node_type_info(t.ty).whitespace_like,
-        edit
+        edit,
     );
     let prev = Some((salvaged, incremental_data.events.as_ref()));
-    let events= parser_def.parse(prev, new_text, &tokens, lang, metrics, builder);
+    let events = parser_def.parse(prev, new_text, &tokens, lang, metrics, builder);
     let incremental_data = IncrementalData { tokens, events };
     Some(Box::new(incremental_data))
 }
