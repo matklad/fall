@@ -1293,7 +1293,7 @@ fn whitespace_binder(ty: rt::NodeType, adjacent_tokens: Vec<(rt::NodeType, &str)
 
 fn parse_raw_string(s: &str) -> Option<usize> {
     let quote_start = s.find('"').unwrap();
-    // Who needs more then 25 hashes anyway? :)
+    // Who needs more than 25 hashes anyway? :)
     let q_hashes = concat!('"', "######", "######", "######", "######", "######");
     let closing = &q_hashes[..quote_start];
     s[quote_start + 1..].find(closing).map(|i| i + quote_start + 1 + closing.len())
