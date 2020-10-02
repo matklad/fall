@@ -1,7 +1,7 @@
 use fall_tree::{Text, TextRange, AstNode};
 use fall_tree::search::{children_of_type, child_of_type_exn, child_of_type};
 
-use ::{STRING, IDENT, SIMPLE_STRING, PUB,
+use crate::{STRING, IDENT, SIMPLE_STRING, PUB,
        LexRule, SynRule, VerbatimDef,
        RefExpr, AstClassDef, Attributes, Attribute, TestDef,
        CallExpr};
@@ -127,7 +127,7 @@ impl<'f> AstClassDef<'f> {
         child_of_type(self.node(), IDENT).unwrap().text()
     }
 
-    pub fn variants<'a>(&'a self) -> Box<Iterator<Item=Text<'f>> + 'a> {
+    pub fn variants<'a>(&'a self) -> Box<dyn Iterator<Item=Text<'f>> + 'a> {
         Box::new(children_of_type(self.node(), IDENT).skip(1).map(|it| it.text()))
     }
 }

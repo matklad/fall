@@ -7,11 +7,11 @@ use file;
 use fall_tree::{TextRange, NodeType};
 use indxr::{FileIndex, IndexableFileSet};
 
-use editor::line_index::{LineCol, LineIndex};
-use editor::fst_subseq::FstSubSeq;
-use editor::file_symbols::process_symbols;
+use crate::editor::line_index::{LineCol, LineIndex};
+use crate::editor::fst_subseq::FstSubSeq;
+use crate::editor::file_symbols::process_symbols;
 
-use syntax::{STRUCT_DEF, ENUM_DEF, TRAIT_DEF, TYPE_DEF};
+use crate::syntax::{STRUCT_DEF, ENUM_DEF, TRAIT_DEF, TYPE_DEF};
 
 
 pub struct SymbolIndex {
@@ -64,7 +64,7 @@ impl Query {
         Query { query, all_symbols }
     }
 
-    fn process(&self, file: &FileSymbols, acc: &mut FnMut(Symbol)) {
+    fn process(&self, file: &FileSymbols, acc: &mut dyn FnMut(Symbol)) {
         fn is_type(ty: NodeType) -> bool {
             match ty {
                 STRUCT_DEF | ENUM_DEF | TRAIT_DEF| TYPE_DEF => true,
@@ -85,12 +85,12 @@ impl Query {
 
 struct FileSymbols {
     symbols: Vec<Symbol>,
-    map: fst::Map,
+    map: fst::Map<Vec<u8>>,
 }
 
 impl FileSymbols {
     fn new(text: String) -> FileSymbols {
-        let file = ::syntax::lang_rust().parse(text);
+        let file = crate::syntax::lang_rust().parse(text);
         let line_index = LineIndex::new(file.text());
         let mut symbols = Vec::new();
         process_symbols(&file, &mut |name, node| {

@@ -20,10 +20,10 @@ pub mod test_util;
 mod metrics;
 
 pub use fall_text::*;
-pub use node_type::{NodeType, NodeTypeInfo, ERROR};
-pub use node::{File, Node, TreeBuilder};
-pub use edit::FileEdit;
-pub use lang::{Language, LanguageImpl};
-pub use ast::{AstNode, AstChildren};
-pub use util::{dump_file, dump_file_ws, walk_tree};
-pub use metrics::{Metric, Metrics};
+pub use crate::node_type::{NodeType, NodeTypeInfo, ERROR};
+pub use crate::node::{File, Node, TreeBuilder};
+pub use crate::edit::FileEdit;
+pub use crate::lang::{Language, LanguageImpl};
+pub use crate::ast::{AstNode, AstChildren};
+pub use crate::util::{dump_file, dump_file_ws, walk_tree};
+pub use crate::metrics::{Metric, Metrics};

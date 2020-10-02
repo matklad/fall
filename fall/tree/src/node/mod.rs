@@ -1,6 +1,6 @@
 use std::any::Any;
 
-use {TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
+use crate::{TextEdit, TextBuf, Text, TextRange, NodeType, Language, Metrics};
 
 mod imp;
 mod tree_builder;
@@ -11,7 +11,7 @@ pub use self::tree_builder::TreeBuilder;
 
 pub struct File {
     imp: imp::FileImpl,
-    incremental_data: Option<Box<Any + Sync + Send>>,
+    incremental_data: Option<Box<dyn Any + Sync + Send>>,
 }
 
 impl File {
@@ -19,7 +19,7 @@ impl File {
         lang: Language,
         text: T,
         metrics: Metrics,
-        incremental_data: Option<Box<Any + Sync + Send>>,
+        incremental_data: Option<Box<dyn Any + Sync + Send>>,
         builder: TreeBuilder,
     ) -> File {
         File {
@@ -48,7 +48,7 @@ impl File {
         self.language().reparse(self, edit)
     }
 
-    pub fn incremental_data(&self) -> Option<&(Any + Send + Sync)> {
+    pub fn incremental_data(&self) -> Option<&(dyn Any + Send + Sync)> {
         self.incremental_data.as_ref().map(|r| r.as_ref())
     }
 }

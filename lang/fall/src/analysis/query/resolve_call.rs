@@ -5,12 +5,12 @@ use itertools::Itertools;
 use fall_tree::search::child_of_type_exn;
 use fall_tree::AstNode;
 
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use analysis::query;
-use analysis::{RefKind, CallKind};
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::analysis::query;
+use crate::analysis::{RefKind, CallKind};
 
-use syntax::{CallExpr, Expr, IDENT};
+use crate::syntax::{CallExpr, Expr, IDENT};
 
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
@@ -34,14 +34,14 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
         let mut commit = |d: &mut DiagnosticSink| zero(d, CallKind::Commit);
         let mut eof = |d: &mut DiagnosticSink| zero(d, CallKind::Eof);
 
-        let one = |d: &mut DiagnosticSink, kind: &mut FnMut(&mut DiagnosticSink, Expr<'f>) -> Option<CallKind<'f>>| {
+        let one = |d: &mut DiagnosticSink, kind: &mut dyn FnMut(&mut DiagnosticSink, Expr<'f>) -> Option<CallKind<'f>>| {
             expect_args(d, 1);
             call.args().next().and_then(|arg| kind(d, arg))
         };
         let mut not = |d: &mut DiagnosticSink| one(d, &mut |_, arg| Some(CallKind::Not(arg)));
         let mut is_in = |d: &mut DiagnosticSink| one(d, &mut |d, _| resolve_context(db, d, call).map(CallKind::IsIn));
 
-        let two = |d: &mut DiagnosticSink, kind: &mut FnMut(&mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>| {
+        let two = |d: &mut DiagnosticSink, kind: &mut dyn FnMut(&mut DiagnosticSink, Expr<'f>, Expr<'f>) -> Option<CallKind<'f>>| {
             expect_args(d, 2);
             call.args().next_tuple().and_then(|(arg1, arg2)| kind(d, arg1, arg2))
         };
@@ -80,7 +80,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolveCall<'f> {
             Some(CallKind::PrevIs(Arc::new(args)))
         };
 
-        let build_in: Vec<(&str, &mut FnMut(&mut DiagnosticSink) -> Option<CallKind<'f>>)> = vec![
+        let build_in: Vec<(&str, &mut dyn FnMut(&mut DiagnosticSink) -> Option<CallKind<'f>>)> = vec![
             ("any", &mut any),
             ("commit", &mut commit),
             ("eof", &mut eof),
@@ -142,8 +142,8 @@ fn resolve_context(db: &DB, d: &mut DiagnosticSink, call: CallExpr) -> Option<u3
 mod tests {
     use fall_tree::search::find_leaf_at_offset;
     use fall_tree::search::ast;
-    use analysis::*;
-    use test_util::parse_with_caret;
+    use crate::analysis::*;
+    use crate::test_util::parse_with_caret;
 
     #[test]
     fn test_resolve_no_args() {
@@ -248,7 +248,7 @@ mod tests {
                 .left_biased().unwrap();
             ast::ancestor_exn(leaf)
         };
-        let a = Analysis::new(::ast(&file));
+        let a = Analysis::new(crate::ast(&file));
         let c = a.resolve_call(call);
         f(c, a)
     }

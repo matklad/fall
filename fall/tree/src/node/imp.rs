@@ -1,8 +1,8 @@
 use std::ops::Index;
 
-use {TextBuf, Text, TextRange, NodeType, Language, Metrics};
+use crate::{TextBuf, Text, TextRange, NodeType, Language, Metrics};
 use super::Node;
-use node::tree_builder::{TreeBuilder, NodeData, NodeId};
+use crate::node::tree_builder::{TreeBuilder, NodeData, NodeId};
 
 pub struct FileImpl {
     pub lang: Language,

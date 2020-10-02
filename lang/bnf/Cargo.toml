@@ -1,6 +1,7 @@
 [package]
 name = "lang_bnf"
 version = "0.1.0"
+edition = "2018"
 
 [dependencies]
 fall_tree = { path = "../../fall/tree" }

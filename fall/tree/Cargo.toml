@@ -2,6 +2,7 @@
 name = "fall_tree"
 version = "0.1.0"
 authors = ["Aleksey Kladov <aleksey.kladov@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 fall_text = { path = "../text" }

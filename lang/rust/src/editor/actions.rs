@@ -1,7 +1,7 @@
 use fall_tree::{File, TextUnit, FileEdit, AstNode};
 use fall_tree::search::ast;
 use fall_editor::actions::ActionResult;
-use syntax::{NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl};
+use crate::syntax::{NameOwner, TypeParametersOwner, EnumDef, StructDef, UseDecl};
 
 
 pub const ACTIONS: &[(&str, fn(&File, TextUnit, bool) -> Option<ActionResult>)] = &[
@@ -28,7 +28,7 @@ fn add_use_braces(file: &File, offset: TextUnit, apply: bool) -> Option<ActionRe
 fn test_add_use_braces() {
     use fall_editor::actions::check_context_action;
 
-    check_context_action::<::editor::RustEditorFile>("Add braces", r"
+    check_context_action::<crate::editor::RustEditorFile>("Add braces", r"
 use foo::^^bar;
 ", r"
 use foo::{bar};
@@ -91,7 +91,7 @@ fn add_impl_for<'f, T: NameOwner<'f> + TypeParametersOwner<'f>>(
 fn test_add_impl() {
     use fall_editor::actions::check_context_action;
 
-    check_context_action::<::editor::RustEditorFile>("Add impl", r"
+    check_context_action::<crate::editor::RustEditorFile>("Add impl", r"
 struct ^^Foo<X, Y: Clone> {}
 ", r"
 struct Foo<X, Y: Clone> {}
@@ -106,13 +106,13 @@ impl<X, Y: Clone> Foo<X, Y> {
 fn test_swap() {
     use fall_editor::actions::{check_context_action, check_no_context_action};
 
-    check_context_action::<::editor::RustEditorFile>(
+    check_context_action::<crate::editor::RustEditorFile>(
         "Swap",
         r"struct Foo<X,^^ Y: Clone> {}",
         r"struct Foo<Y: Clone, X> {}",
     );
 
-    check_no_context_action::<::editor::RustEditorFile>(
+    check_no_context_action::<crate::editor::RustEditorFile>(
         "Swap",
         r"struct Foo<X, Y: Clone,^^> {}",
     );

@@ -1,4 +1,4 @@
-use analysis::Analysis;
+use crate::analysis::Analysis;
 
 use fall_tree::{File, TextEdit, TextRange, TextUnit, AstNode};
 use fall_tree::search::find_leaf_at_offset;
@@ -6,8 +6,8 @@ use fall_tree::search::ast;
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode, Diagnostic};
 use fall_editor::hl::Highlights;
 use fall_editor::actions::ActionResult;
-use syntax::lang_fall;
-use syntax::TestDef;
+use crate::syntax::lang_fall;
+use crate::syntax::TestDef;
 
 mod highlighting;
 mod structure;
@@ -15,7 +15,7 @@ mod actions;
 mod formatter;
 mod references;
 
-pub use analysis::FileWithAnalysis;
+pub use crate::analysis::FileWithAnalysis;
 
 impl EditorFileImpl for FileWithAnalysis {
     fn parse(text: &str) -> Self {
@@ -106,7 +106,7 @@ impl FileWithAnalysis {
 fn test_extend_selection() {
     use fall_tree::tu;
 
-    let file = ::analyse(r####"
+    let file = crate::analyse(r####"
 tokenizer { number r"\d+"}
 pub rule foo { bar }
 rule bar { number }

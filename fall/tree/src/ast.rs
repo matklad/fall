@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use {Node};
-use node::NodeChildren;
+use crate::{Node};
+use crate::node::NodeChildren;
 
 pub trait AstNode<'f>: Copy {
     fn wrap(node: Node<'f>) -> Option<Self> where Self: Sized;

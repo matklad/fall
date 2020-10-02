@@ -3,7 +3,7 @@ use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 use fall_editor::{Diagnostic, Severity};
 
 use std::sync::Arc;
-use syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef, AstNodeDef, AstTraitDef};
+use crate::syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef, AstNodeDef, AstTraitDef};
 
 mod diagnostics;
 mod db;
@@ -117,11 +117,10 @@ fn analysis_is_sync() {
 
 #[cfg(test)]
 fn check_diagnostics(code: &str, expected_diagnostics: &str) {
-    use fall_editor::Severity;
     use fall_tree::ERROR;
     use fall_tree::test_util::report_diff;
     use fall_tree::search::subtree;
-    let file = ::analyse(code.to_string());
+    let file = crate::analyse(code.to_string());
 
     for node in subtree(file.file().root()) {
         if node.ty() == ERROR {

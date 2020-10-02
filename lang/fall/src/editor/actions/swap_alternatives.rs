@@ -1,7 +1,7 @@
 use fall_editor::actions::ActionResult;
 use fall_tree::{AstNode, File, Node, TextUnit, FileEdit};
 use fall_tree::search::{find_leaf_at_offset, LeafAtOffset};
-use syntax::{PIPE, BlockExpr};
+use crate::syntax::{PIPE, BlockExpr};
 
 pub fn swap_alternatives(file: &File, offset: TextUnit, apply: bool) -> Option<ActionResult> {
     let (left, right) = find_swappable_nodes(file, offset)?;
@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_swap_alternatives() {
-        check_context_action::<::FileWithAnalysis>("Swap alternatives", r##"
+        check_context_action::<crate::FileWithAnalysis>("Swap alternatives", r##"
 tokenizer { number r"\d+"}
 pub rule foo { bar ^^| baz }
 "##, r##"

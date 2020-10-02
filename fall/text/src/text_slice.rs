@@ -1,4 +1,4 @@
-use ::{Text, TextRange, TextUnit};
+use crate::{Text, TextRange, TextUnit};
 
 pub trait TextSlice: Copy {
     fn into_proper_range(self, text: Text) -> TextRange;

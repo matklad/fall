@@ -1,4 +1,4 @@
-use EditorFileImpl;
+use crate::EditorFileImpl;
 use fall_tree::{File, TextUnit, TextEdit, Node, FileEdit, TextRange};
 use fall_tree::search::{find_leaf_at_offset, Direction, LeafAtOffset, sibling};
 use fall_tree::test_util;

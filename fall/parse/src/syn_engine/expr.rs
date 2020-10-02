@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use fall_tree::{Language, Text, TextUnit};
 
-use {NodeTypeRef, Context, Arg, ExprRef, Expr};
-use lex_engine::Token;
-use syn_engine::parser::{Parser, Pos};
-use syn_engine::Event;
+use crate::{NodeTypeRef, Context, Arg, ExprRef, Expr};
+use crate::lex_engine::Token;
+use crate::syn_engine::parser::{Parser, Pos};
+use crate::syn_engine::Event;
 
 use super::Grammar;
 use super::pratt::parse_pratt;
@@ -156,7 +156,7 @@ pub(crate) fn parse_or<'t, 'g>(
     p: &mut Parser<'g>,
     options: &'g [ExprRef],
     tokens: Pos
-) -> Option<(Pos)> {
+) -> Option<Pos> {
     options.iter().filter_map(|&opt| parse_expr(p, opt, tokens)).next()
 }
 

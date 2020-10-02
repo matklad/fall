@@ -47,6 +47,9 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T, should_rewrite: bool) {
         fs::read_to_string(tmp_file.with_extension("rs")).unwrap()
     };
 
+    let expected = trim_all_ends(expected);
+    let generated = trim_all_ends(generated);
+
     if expected != generated {
         if should_rewrite {
             println!("UPDATING {}", grammar_path.display());
@@ -60,15 +63,24 @@ fn check_by_path<T: AsRef<Path>>(grammar_path: T, should_rewrite: bool) {
     }
 }
 
+fn trim_all_ends(input: String) -> String {
+    input
+        .lines()
+        .map(|line| line.trim_end())
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[test]
 fn test_grammars_are_fresh() {
-    let bootsrap = ::std::env::var("rewrite").unwrap_or_default() == "bootstrap";
+    let bootsrap = std::env::var("rewrite").unwrap_or_default() == "bootstrap";
     if bootsrap {
         check_by_path("../../lang/fall/syntax/src/fall.fall", true);
         return;
     }
 
-    let rewrite_parsers = ::std::env::var("rewrite").unwrap_or_default() == "parsers";
+    let rewrite_parsers = std::env::var("rewrite").unwrap_or_default() == "parsers";
     if rewrite_parsers {
         check_by_path("../test/src/sexp.fall", true);
         check_by_path("../test/src/weird.fall", true);

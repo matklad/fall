@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use fall_tree::{TextUnit, Text, TextSuffix, NodeType, tu};
-use lex_engine::Token;
-use syn_engine::{Grammar, Event};
-use {NodeTypeRef, ExprRef};
+use crate::lex_engine::Token;
+use crate::syn_engine::{Grammar, Event};
+use crate::{NodeTypeRef, ExprRef};
 
 pub(crate) struct Parser<'g> {
     cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
@@ -40,7 +40,7 @@ impl<'g> Parser<'g> {
     pub fn new(
         cache: Option<(HashMap<(TextUnit, ExprRef), (u32, u32, u32)>, &'g [Event])>,
         grammar: &'g Grammar<'g>,
-        is_ws: &Fn(Token) -> bool,
+        is_ws: &dyn Fn(Token) -> bool,
         text: Text<'g>,
         tokens: &'g [Token],
     ) -> (Parser<'g>, Pos) {

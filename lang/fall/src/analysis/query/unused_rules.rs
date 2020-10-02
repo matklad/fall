@@ -2,11 +2,11 @@ use std::collections::HashSet;
 
 use fall_tree::AstNode;
 use fall_tree::search::ast;
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use analysis::query;
-use analysis::{RefKind, CallKind};
-use syntax::{SynRule, CallExpr, RefExpr};
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::analysis::query;
+use crate::analysis::{RefKind, CallKind};
+use crate::syntax::{SynRule, CallExpr, RefExpr};
 
 impl<'f> db::OnceQExecutor<'f> for super::UnusedRules {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) {

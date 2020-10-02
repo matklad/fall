@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use fall_tree::{Text, AstNode};
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use syntax::{AstTraitDef, COLON, IDENT};
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::syntax::{AstTraitDef, COLON, IDENT};
 
 impl<'f> db::OnceQExecutor<'f> for super::AstNodeTraits<'f> {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<Vec<AstTraitDef<'f>>> {

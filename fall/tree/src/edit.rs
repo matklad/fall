@@ -1,5 +1,5 @@
-use {TextEdit, TextEditBuilder, Node, File, TextRange, TextEditOp, tu};
-use search::find_covering_node;
+use crate::{TextEdit, TextEditBuilder, Node, File, TextRange, TextEditOp, tu};
+use crate::search::find_covering_node;
 
 pub struct FileEdit<'f> {
     file: &'f File,

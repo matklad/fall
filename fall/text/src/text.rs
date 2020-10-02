@@ -3,8 +3,8 @@ use std::borrow::Cow;
 
 use serde::{Serialize, Serializer};
 
-use ::{TextRange, TextUnit, TextBuf};
-use text_slice::TextSlice;
+use crate::{TextRange, TextUnit, TextBuf};
+use crate::text_slice::TextSlice;
 
 #[derive(Clone, Copy, Eq)]
 pub struct Text<'f> {

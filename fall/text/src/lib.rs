@@ -11,10 +11,10 @@ mod text_edit;
 mod text_slice;
 pub mod prop;
 
-pub use text_unit::{TextUnit, tu};
-pub use text_range::TextRange;
-pub use text_buf::TextBuf;
-pub use text::Text;
-pub use text_edit::{TextEdit, TextEditOp, TextEditBuilder};
-pub use text_slice::TextSuffix;
+pub use crate::text_unit::{TextUnit, tu};
+pub use crate::text_range::TextRange;
+pub use crate::text_buf::TextBuf;
+pub use crate::text::Text;
+pub use crate::text_edit::{TextEdit, TextEditOp, TextEditBuilder};
+pub use crate::text_slice::TextSuffix;
 

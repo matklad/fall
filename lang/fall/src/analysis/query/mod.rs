@@ -4,7 +4,7 @@ use std::sync::Arc;
 use fall_tree::Text;
 
 use super::db::Query;
-use syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef, AstTraitDef};
+use crate::syntax::{SynRule, LexRule, RefExpr, Parameter, Expr, CallExpr, MethodDef, AstNodeDef, AstClassDef, AstTraitDef};
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub(crate) struct AllLexRules;

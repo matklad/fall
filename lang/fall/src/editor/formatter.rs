@@ -1,6 +1,6 @@
 use fall_tree::{Node, NodeType, File, TextEdit, FileEdit, tu};
 use fall_tree::search::{sibling, Direction};
-use syntax::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
+use crate::syntax::{PIPE, L_ANGLE, R_ANGLE, WHITESPACE};
 
 pub fn reformat(file: &File) -> TextEdit {
     reformat_file(file, FALL_SPACING, WHITESPACE)
@@ -81,7 +81,7 @@ fn reformat_node<'f>(node: Node<'f>, edit: &mut FileEdit<'f>, spacer: &Spacer) {
 
 #[cfg(test)]
 fn test_reformat(before: &str, after: &str) {
-    let file = ::parse(before.trim());
+    let file = crate::parse(before.trim());
     let edit = reformat_file(&file, FALL_SPACING, WHITESPACE);
     let actual = edit.apply(file.text());
     ::fall_tree::test_util::report_diff(after.trim(), &actual.as_text().to_cow());

@@ -13,11 +13,12 @@ use std::sync::{Mutex, Arc};
 use walkdir::WalkDir;
 use notify::{RecommendedWatcher, Watcher, RecursiveMode, DebouncedEvent};
 
-type Mapper<V: Send + 'static> = Box<Fn(&Path) -> Option<V> + Sync + Send>;
+// The V type should be Send + 'static but that can not be enforced on a type alias
+type Mapper<V> = Box<dyn Fn(&Path) -> Option<V> + Sync + Send>;
 
 pub struct IndexableFileSet {
     roots: Vec<PathBuf>,
-    filter: Box<Fn(&Path) -> bool + Sync + Send>,
+    filter: Box<dyn Fn(&Path) -> bool + Sync + Send>,
 }
 
 impl IndexableFileSet {
@@ -42,7 +43,7 @@ impl<V: Send + 'static> FileIndex<V> {
         FileIndex { imp }
     }
 
-    pub fn process_files(&self, sink: &mut FnMut(&IndexedFile<V>) -> bool) {
+    pub fn process_files(&self, sink: &mut dyn FnMut(&IndexedFile<V>) -> bool) {
         let data = self.imp.data.lock().unwrap();
         for file in data.values() {
             if sink(file) {

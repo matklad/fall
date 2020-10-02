@@ -2,7 +2,7 @@ use fall_tree::{AstNode, File, Node, TextRange, FileEdit};
 use fall_tree::search::{find_covering_node, ancestors};
 use fall_tree::search::ast;
 use fall_editor::actions::ActionResult;
-use syntax::{Expr, SynRule, SeqExpr, RefExpr};
+use crate::syntax::{Expr, SynRule, SeqExpr, RefExpr};
 
 pub fn extract_rule(file: &File, range: TextRange, apply: bool) -> Option<ActionResult> {
     if range.is_empty() {
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_extract_whole_seq() {
-        check_context_action::<::FileWithAnalysis>("Extract rule", r##"
+        check_context_action::<crate::FileWithAnalysis>("Extract rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { ^bar baz^ }
 "##, r##"
@@ -72,7 +72,7 @@ rule new_rule {
 
     #[test]
     fn test_extract_sub_seq() {
-        check_context_action::<::FileWithAnalysis>("Extract rule", r##"
+        check_context_action::<crate::FileWithAnalysis>("Extract rule", r##"
 tokenizer { number r"\d+"}
 pub rule foo { foo ^bar baz^ quux }
 "##, r##"

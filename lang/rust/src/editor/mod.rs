@@ -5,7 +5,7 @@ use fall_tree::visitor::{visitor, process_node, process_subtree_bottom_up};
 use fall_editor::{EditorFileImpl, gen_syntax_tree, FileStructureNode};
 use fall_editor::actions::ActionResult;
 use fall_editor::hl::{self, Highlights};
-use syntax::{LET, SEMI, EQ, TypeReference, FnDef, ImplDef, LetStmt, NameOwner, StructDef, EnumDef, TraitDef, ExprStmt};
+use crate::syntax::{LET, SEMI, EQ, TypeReference, FnDef, ImplDef, LetStmt, NameOwner, StructDef, EnumDef, TraitDef, ExprStmt};
 
 mod actions;
 use self::actions::ACTIONS;
@@ -101,7 +101,7 @@ impl RustEditorFile {
 
 impl EditorFileImpl for RustEditorFile {
     fn parse(text: &str) -> Self {
-        RustEditorFile::new(::syntax::lang_rust().parse(text))
+        RustEditorFile::new(crate::syntax::lang_rust().parse(text))
     }
 
     fn edit(&self, edit: &TextEdit) -> Self {

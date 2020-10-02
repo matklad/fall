@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use file;
-use {Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
+use crate::{Language, File, dump_file, dump_file_ws, TextRange, TextUnit, tu};
 use difference::Changeset;
 
 

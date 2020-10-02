@@ -1,4 +1,4 @@
-use ::{NodeType, TextUnit, TextRange, tu};
+use crate::{NodeType, TextUnit, TextRange, tu};
 
 pub struct TreeBuilder {
     nodes: Vec<NodeData>,

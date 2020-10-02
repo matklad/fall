@@ -1,7 +1,7 @@
 use super::{MethodKind, ChildKind, Arity};
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use syntax::{AstSelector, FallFile};
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::syntax::{AstSelector, FallFile};
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolveMethod<'f> {
     fn execute(self, db: &DB<'f>, _: &mut DiagnosticSink) -> Option<MethodKind<'f>> {

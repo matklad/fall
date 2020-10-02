@@ -16,6 +16,7 @@ pub fn language() -> &'static rt::Language {
             rt::LexRule::new(LPAREN, "\\(", None),
             rt::LexRule::new(RPAREN, "\\)", None),
             rt::LexRule::new(ATOM, "\\w+", None),
+
         ])
     }
 
@@ -42,18 +43,18 @@ pub fn language() -> &'static rt::Language {
                     text: rt::Text,
                     metrics: &rt::Metrics,
                     builder: &mut rt::TreeBuilder,
-                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                ) -> Option<Box<dyn std::any::Any + Sync + Send>> {
                     rt::parse(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
                 }
 
                 fn reparse(
                     &self,
-                    incremental_data: &::std::any::Any,
+                    incremental_data: &dyn std::any::Any,
                     edit: &rt::TextEdit,
                     new_text: rt::Text,
                     metrics: &rt::Metrics,
                     builder: &mut rt::TreeBuilder,
-                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                ) -> Option<Box<dyn std::any::Any + Sync + Send>> {
                     rt::reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
                 }
 
@@ -80,6 +81,3 @@ pub fn language() -> &'static rt::Language {
 
     &*LANG
 }
-
-
-
