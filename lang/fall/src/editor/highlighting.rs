@@ -3,8 +3,8 @@ use fall_tree::{Node, NodeType, AstNode};
 use fall_tree::search::child_of_type;
 use fall_tree::visitor::process_subtree_bottom_up;
 
-use analysis::{Analysis, CallKind, RefKind, MethodKind, ChildKind};
-use syntax::*;
+use crate::analysis::{Analysis, CallKind, RefKind, MethodKind, ChildKind};
+use crate::syntax::*;
 
 pub(crate) fn highlight(analysis: &Analysis) -> Highlights {
     process_subtree_bottom_up(
@@ -65,7 +65,7 @@ fn colorize_child(node: Node, child: NodeType, tag: HlTag, spans: &mut Highlight
 
 #[test]
 fn test_highlighting() {
-    let file = ::analyse(r####"
+    let file = crate::analyse(r####"
 tokenizer { number r"\d+"}
 pub rule foo { bar <eof> <abracadabra> }
 rule bar { number <m foo> }

@@ -1,5 +1,5 @@
-use PrattTable;
-use syn_engine::parser::{Parser, Pos};
+use crate::PrattTable;
+use crate::syn_engine::parser::{Parser, Pos};
 use super::expr::{parse_or, parse_expr};
 
 pub(super) fn parse_pratt<'g>(

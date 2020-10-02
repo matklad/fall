@@ -203,7 +203,7 @@ fn normalize(text: &str) -> String {
     if is_blank(text) {
         return String::new();
     }
-    let text = text.trim_right();
+    let text = text.trim_end();
     let n_blank_lines = text.lines().take_while(|&line| is_blank(line)).count();
     let indent = text.lines()
         .skip(n_blank_lines)

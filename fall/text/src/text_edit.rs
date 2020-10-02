@@ -1,4 +1,4 @@
-use ::{TextUnit, TextRange, TextBuf, Text, tu};
+use crate::{TextUnit, TextRange, TextBuf, Text, tu};
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug)]

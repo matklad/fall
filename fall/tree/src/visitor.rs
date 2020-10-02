@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
-use ::search::traversal;
-use {Node, NodeType, AstNode};
+use crate::search::traversal;
+use crate::{Node, NodeType, AstNode};
 
 pub fn visitor<'f, C>(ctx: C) -> VisitorBuilder<'f, C, EmptyVisitor<C>> {
     VisitorBuilder::new(ctx, EmptyVisitor(PhantomData))

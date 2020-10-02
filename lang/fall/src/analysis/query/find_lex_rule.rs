@@ -1,6 +1,6 @@
-use analysis::db::{self, DB};
-use analysis::query;
-use syntax::{LexRule};
+use crate::analysis::db::{self, DB};
+use crate::analysis::query;
+use crate::syntax::{LexRule};
 
 
 impl<'f> db::QExecutor<'f> for super::FindLexRule<'f> {

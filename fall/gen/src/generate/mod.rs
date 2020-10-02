@@ -25,8 +25,7 @@ pub fn language() -> &'static rt::Language {
     fn create_lexer() -> rt::RegexLexer {
         rt::RegexLexer::new(vec![
             {% for rule in lex_rules %}
-            rt::LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %} Some({{ rule.f }}) {% else %} None {% endif %}),
-            {% endfor %}
+            rt::LexRule::new({{ rule.ty | upper }}, {{ rule.re }}, {% if rule.f is string %}Some({{ rule.f }}){% else %}None{% endif %}),{% endfor %}
         ])
     }
 
@@ -55,18 +54,18 @@ pub fn language() -> &'static rt::Language {
                     text: rt::Text,
                     metrics: &rt::Metrics,
                     builder: &mut rt::TreeBuilder,
-                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                ) -> Option<Box<dyn std::any::Any + Sync + Send>> {
                     rt::parse(&LANG, &self.lexer, &self.parser_definition, text, metrics, builder)
                 }
 
                 fn reparse(
                     &self,
-                    incremental_data: &::std::any::Any,
+                    incremental_data: &dyn std::any::Any,
                     edit: &rt::TextEdit,
                     new_text: rt::Text,
                     metrics: &rt::Metrics,
                     builder: &mut rt::TreeBuilder,
-                ) -> Option<Box<::std::any::Any + Sync + Send>> {
+                ) -> Option<Box<dyn std::any::Any + Sync + Send>> {
                     rt::reparse(&LANG, &self.lexer, &self.parser_definition, incremental_data, edit, new_text, metrics, builder)
                 }
 

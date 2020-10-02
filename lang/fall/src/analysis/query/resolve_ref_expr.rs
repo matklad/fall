@@ -1,11 +1,11 @@
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use analysis::query;
-use analysis::RefKind;
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::analysis::query;
+use crate::analysis::RefKind;
 use fall_tree::search::ast;
 use fall_tree::AstNode;
 
-use syntax::{SynRule, CallExpr};
+use crate::syntax::{SynRule, CallExpr};
 
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolveRefExpr<'f> {

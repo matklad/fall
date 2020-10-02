@@ -37,6 +37,6 @@ mod test_util {
     use fall_tree::{File, TextUnit};
 
     pub fn parse_with_caret(text: &str) -> (File, TextUnit) {
-        ::fall_tree::test_util::parse_with_caret(::syntax::lang_fall(), text, "^")
+        ::fall_tree::test_util::parse_with_caret(crate::syntax::lang_fall(), text, "^")
     }
 }

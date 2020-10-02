@@ -2,9 +2,9 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use fall_tree::{Text, AstNode};
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use syntax::LexRule;
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::syntax::LexRule;
 
 impl<'f> db::OnceQExecutor<'f> for super::AllLexRules {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<HashMap<Text<'f>, LexRule<'f>>> {

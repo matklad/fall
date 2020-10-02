@@ -1,7 +1,7 @@
 use proptest::prelude::*;
 use itertools::Itertools;
 
-use ::{TextUnit, TextRange, TextEdit, TextEditOp, Text, tu};
+use crate::{TextUnit, TextRange, TextEdit, TextEditOp, Text, tu};
 
 pub fn arb_text_unit() -> BoxedStrategy<TextUnit> {
     prop::num::u32::ANY.prop_map(TextUnit)

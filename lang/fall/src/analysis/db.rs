@@ -3,7 +3,7 @@ use std::collections::hash_map::{self, HashMap};
 use std::sync::Mutex;
 
 use super::{DiagnosticSink, Diagnostic};
-use syntax::FallFile;
+use crate::syntax::FallFile;
 use super::query;
 
 

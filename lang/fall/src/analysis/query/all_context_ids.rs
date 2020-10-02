@@ -3,9 +3,9 @@ use std::collections::btree_map::{self, BTreeMap};
 
 use fall_tree::{Text, AstNode};
 use fall_tree::visitor::{visitor, process_subtree_bottom_up};
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use syntax::CallExpr;
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::syntax::CallExpr;
 
 impl<'f> db::OnceQExecutor<'f> for super::AllContexts {
     fn execute(self, db: &DB<'f>, d: &mut DiagnosticSink) -> Arc<Vec<Text<'f>>> {

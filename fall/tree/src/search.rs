@@ -1,19 +1,19 @@
-use {Node, NodeType, TextUnit, TextRange};
-use ::visitor::{visitor, process_subtree_bottom_up};
+use crate::{Node, NodeType, TextUnit, TextRange};
+use crate::visitor::{visitor, process_subtree_bottom_up};
 
 pub fn child_of_type(node: Node, ty: NodeType) -> Option<Node> {
     node.children().find(|n| n.ty() == ty)
 }
 
-pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<Iterator<Item=Node<'f>> + 'f> {
+pub fn children_of_type<'f>(node: Node<'f>, ty: NodeType) -> Box<dyn Iterator<Item=Node<'f>> + 'f> {
     Box::new(node.children().filter(move |n| n.ty() == ty))
 }
 
-pub fn subtree<'f>(node: Node<'f>) -> Box<Iterator<Item=Node<'f>> + 'f> {
+pub fn subtree<'f>(node: Node<'f>) -> Box<dyn Iterator<Item=Node<'f>> + 'f> {
     Box::new(node.children().flat_map(subtree).chain(::std::iter::once(node)))
 }
 
-pub fn descendants_of_type<'f>(node: Node<'f>, ty: NodeType) -> Vec<Node<'f>> {
+pub fn descendants_of_type(node: Node, ty: NodeType) -> Vec<Node> {
     process_subtree_bottom_up(
         node,
         visitor(Vec::new())
@@ -146,8 +146,8 @@ pub fn sibling(node: Node, dir: Direction) -> Option<Node> {
 }
 
 pub mod ast {
-    use {Node, AstNode, TextUnit, AstChildren};
-    use visitor::{visitor, process_subtree_bottom_up};
+    use crate::{Node, AstNode, TextUnit, AstChildren};
+    use crate::visitor::{visitor, process_subtree_bottom_up};
     use super::{ancestors, find_leaf_at_offset, LeafAtOffset};
 
     pub fn ancestor<'f, T: AstNode<'f>>(node: Node<'f>) -> Option<T> {
@@ -182,7 +182,7 @@ pub mod ast {
 }
 
 pub mod traversal {
-    use {Node};
+    use crate::{Node};
 
     pub fn bottom_up<'f, F: FnMut(Node<'f>)>(node: Node<'f>, mut f: F)
     {

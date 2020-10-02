@@ -1,8 +1,8 @@
 use fall_tree::{Node, TextUnit, TextRange, AstNode};
 use fall_tree::visitor::{visitor, process_node};
 use fall_tree::search::ast;
-use analysis::{Analysis, RefKind, CallKind, MethodKind, ChildKind};
-use syntax::{RefExpr, CallExpr, MethodDef, SynRule, LexRule, Parameter, AstNodeDef, AstClassDef,
+use crate::analysis::{Analysis, RefKind, CallKind, MethodKind, ChildKind};
+use crate::syntax::{RefExpr, CallExpr, MethodDef, SynRule, LexRule, Parameter, AstNodeDef, AstClassDef,
              IDENT};
 
 mod refdec;
@@ -124,7 +124,7 @@ impl<'f> From<AstClassDef<'f>> for Declaration<'f> {
 fn test_find_refs() {
     use fall_tree::tu;
 
-    let file = ::analyse(r#####"
+    let file = crate::analyse(r#####"
 tokenizer {
   #[skip] whitespace r"\s+"
 

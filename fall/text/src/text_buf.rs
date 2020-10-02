@@ -1,4 +1,4 @@
-use ::{Text, TextRange, tu};
+use crate::{Text, TextRange, tu};
 use std::fmt;
 
 #[derive(Clone)]

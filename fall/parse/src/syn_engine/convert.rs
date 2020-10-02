@@ -1,13 +1,13 @@
 use fall_tree::{NodeType, Text, TextRange, TreeBuilder, tu};
-use lex_engine::Token;
-use syn_engine::Event;
+use crate::lex_engine::Token;
+use crate::syn_engine::Event;
 
 pub(crate) fn convert(
     text: Text,
     tokens: &[Token],
     events: &[Event],
-    is_whitespace: &Fn(NodeType) -> bool,
-    whitespace_binder: &Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
+    is_whitespace: &dyn Fn(NodeType) -> bool,
+    whitespace_binder: &dyn Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
     builder: &mut TreeBuilder,
 ) {
     let events = reshuffle_events(events);
@@ -69,8 +69,8 @@ fn reshuffle_events(events: &[Event]) -> Vec<Event> {
 
 
 struct Convertor<'a> {
-    is_whitespace: &'a Fn(NodeType) -> bool,
-    whitespace_binder: &'a Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
+    is_whitespace: &'a dyn Fn(NodeType) -> bool,
+    whitespace_binder: &'a dyn Fn(NodeType, &[(NodeType, Text)], bool) -> usize,
 }
 
 #[derive(Debug)]

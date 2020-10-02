@@ -1,4 +1,4 @@
-use {File, Node, Language};
+use crate::{File, Node, Language};
 use std::fmt::Write;
 
 pub fn dump_file(f: &File) -> String {

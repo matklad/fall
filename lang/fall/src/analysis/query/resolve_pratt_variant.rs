@@ -1,9 +1,9 @@
 use itertools::Itertools;
 use super::{PratVariant, PrattOp};
 use fall_tree::AstNode;
-use analysis::diagnostics::DiagnosticSink;
-use analysis::db::{self, DB};
-use syntax::Expr;
+use crate::analysis::diagnostics::DiagnosticSink;
+use crate::analysis::db::{self, DB};
+use crate::syntax::Expr;
 
 impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
     fn execute(self, _: &DB<'f>, d: &mut DiagnosticSink) -> Option<PratVariant<'f>> {
@@ -111,7 +111,7 @@ impl<'f> db::OnceQExecutor<'f> for super::ResolvePrattVariant<'f> {
 
 #[cfg(test)]
 mod tests {
-    use analysis::*;
+    use crate::analysis::*;
 
     #[test]
     fn pratt_atom() {

@@ -8,16 +8,16 @@ use lang_fall::{RefKind, CallKind, MethodKind, Analysis, PratVariant, PrattOp, A
 
 use fall_parse as dst;
 
-use util::{scream, camel};
+use crate::util::{scream, camel};
 
 
-pub type Result<T> = ::std::result::Result<T, ::failure::Error>;
+pub type Result<T> = std::result::Result<T, ::failure::Error>;
 
 pub(super) struct Codegen<'a, 'f: 'a> {
     analysis: &'a Analysis<'f>,
     node_types: Vec<(Text<'f>, bool)>,
 
-    expressions: Vec<(dst::Expr)>,
+    expressions: Vec<dst::Expr>,
 }
 
 impl<'a, 'f> Codegen<'a, 'f> {
@@ -49,7 +49,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
 
     pub fn generate(&mut self) -> Result<Context> {
         let mut context = Context::new();
-        context.add("node_types", &self.node_types);
+        context.insert("node_types", &self.node_types);
 
         for _ in self.file().syn_rules() {
             self.expressions.push(dst::Expr::Any) // Placeholder
@@ -59,7 +59,7 @@ impl<'a, 'f> Codegen<'a, 'f> {
             self.expressions[i] = expr;
         }
         let parser = serde_json::to_string(&self.expressions).unwrap();
-        context.add("parser_json", &parser);
+        context.insert("parser_json", &parser);
 
         let lex_rules = self.file().tokenizer_def()
             .ok_or(format_err!("no tokens defined"))?
@@ -70,15 +70,15 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 Ok(CtxLexRule { ty: r.node_type(), re: format!("{:?}", re), f: r.extern_fn() })
             }).collect::<Result<Vec<_>>>()?;
 
-        context.add("lex_rules", &lex_rules);
+        context.insert("lex_rules", &lex_rules);
 
         let verbatim = self.file().verbatim_def().map(|v| v.contents());
-        context.add("verbatim", &verbatim);
-        context.add("has_whitespace_binder", &verbatim.map(|t| t.contains("whitespace_binder")).unwrap_or(false));
+        context.insert("verbatim", &verbatim);
+        context.insert("has_whitespace_binder", &verbatim.map(|t| t.contains("whitespace_binder")).unwrap_or(false));
 
 
         if let Some(ast) = self.file().ast_def() {
-            context.add("ast_nodes", &ast.ast_nodes().map(|node| {
+            context.insert("ast_nodes", &ast.ast_nodes().map(|node| {
                 Ok(CtxAstNode {
                     struct_name: camel(node.name()),
                     node_type_name: scream(node.name()),
@@ -88,14 +88,14 @@ impl<'a, 'f> Codegen<'a, 'f> {
                 })
             }).collect::<Result<Vec<_>>>()?);
 
-            context.add("ast_classes", &ast.ast_classes().map(|class| {
+            context.insert("ast_classes", &ast.ast_classes().map(|class| {
                 CtxAstClass {
                     enum_name: camel(class.name()),
                     variants: class.variants().map(|variant| (scream(variant), camel(variant))).collect(),
                 }
             }).collect::<Vec<_>>());
 
-            context.add("ast_traits", &ast.ast_traits().map(|trait_| {
+            context.insert("ast_traits", &ast.ast_traits().map(|trait_| {
                 Ok(CtxAstTrait {
                     trait_name: camel(trait_.name()),
                     methods: trait_.methods()

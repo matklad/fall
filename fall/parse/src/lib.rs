@@ -16,11 +16,11 @@ use fall_tree::{Text, Language, NodeType, Metrics, TextEdit, TextUnit, TreeBuild
 
 mod lex_engine;
 
-use lex_engine::{Token, Lexer};
+use crate::lex_engine::{Token, Lexer};
 
 mod syn_engine;
 
-use syn_engine::Event;
+use crate::syn_engine::Event;
 
 pub struct RegexLexer {
     tys: Vec<NodeType>,
@@ -158,7 +158,7 @@ pub struct PrattTable {
 }
 
 impl PrattTable {
-    fn infixes<'p>(&'p self, min_prior: u32) -> Box<Iterator<Item=&'p Infix> + 'p> {
+    fn infixes<'p>(&'p self, min_prior: u32) -> Box<dyn Iterator<Item=&'p Infix> + 'p> {
         Box::new(
             self.infixes.iter()
                 .filter(move |ix| ix.priority >= min_prior)
@@ -194,7 +194,7 @@ pub fn parse(
     text: Text,
     metrics: &Metrics,
     builder: &mut TreeBuilder,
-) -> Option<Box<Any + Sync + Send>> {
+) -> Option<Box<dyn Any + Sync + Send>> {
     let tokens: Vec<Token> = metrics.measure_time("lexing", || {
         lex_engine::lex(lexer_def, text)
     });
@@ -209,12 +209,12 @@ pub fn reparse(
     lang: &Language,
     lexer_def: &RegexLexer,
     parser_def: &ParserDefinition,
-    incremental_data: &Any,
+    incremental_data: &dyn Any,
     edit: &TextEdit,
     new_text: Text,
     metrics: &Metrics,
     builder: &mut TreeBuilder,
-) -> Option<Box<Any + Sync + Send>> {
+) -> Option<Box<dyn Any + Sync + Send>> {
     let incremental_data: &IncrementalData = incremental_data.downcast_ref().unwrap();
     let (tokens, relexed_region) = metrics.measure_time("lexing", || {
         lex_engine::relex(lexer_def, &incremental_data.tokens, edit, new_text)
@@ -281,11 +281,11 @@ impl ParserDefinition {
 }
 
 pub mod runtime {
-    pub fn parser_from_str(json: &str) -> Vec<::Expr> {
+    pub fn parser_from_str(json: &str) -> Vec<crate::Expr> {
         ::serde_json::from_str(json).unwrap()
     }
 
-    pub use {ParserDefinition, RegexLexer, LexRule, parse, reparse};
+    pub use crate::{ParserDefinition, RegexLexer, LexRule, parse, reparse};
     pub use serde_json;
     pub use fall_tree;
     pub use fall_tree::{AstNode, AstChildren, Node, NodeType, NodeTypeInfo, Language, LanguageImpl, ERROR, Text, TextEdit, TreeBuilder, Metrics};

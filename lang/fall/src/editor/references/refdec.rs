@@ -1,6 +1,6 @@
 use fall_tree::{Node, File, TextUnit, TextRange, AstNode};
 use fall_tree::search::{ancestors, subtree, find_leaf_at_offset};
-use ::Analysis;
+use crate::Analysis;
 
 #[derive(Eq, PartialEq)]
 pub struct Declaration<'f> {
@@ -39,7 +39,7 @@ impl<'f> Reference<'f> {
 
 pub type DeclarationProvider<'f> = fn(Node<'f>) -> Option<Declaration<'f>>;
 
-pub type ReferenceProvider<'p, 'f> = &'p Fn(Node<'f>) -> Option<Reference<'f>>;
+pub type ReferenceProvider<'p, 'f> = &'p dyn Fn(Node<'f>) -> Option<Reference<'f>>;
 
 pub fn resolve_reference<'p, 'f>(
     analysis: &Analysis<'f>,
