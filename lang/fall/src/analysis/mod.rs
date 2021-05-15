@@ -3,7 +3,11 @@ use fall_tree::visitor::{visitor, process_subtree_bottom_up};
 use fall_editor::{Diagnostic, Severity};
 
 use std::sync::Arc;
+use std::convert::TryFrom;
+
 use crate::syntax::{FallFile, RefExpr, CallExpr, SynRule, MethodDef, AstNodeDef, AstTraitDef};
+
+use self_cell::self_cell;
 
 mod diagnostics;
 mod db;
@@ -75,37 +79,31 @@ impl<'f> Analysis<'f> {
     }
 }
 
-pub struct FileWithAnalysis {
-    rent: rent::R
+self_cell!(
+    pub struct FileWithAnalysis {
+        #[try_from]
+        owner: File,
+
+        #[not_covariant]
+        dependent: Analysis,
+    }
+);
+
+impl<'a> TryFrom<&'a File> for Analysis<'a> {
+    type Error = ();
+
+    fn try_from(file: &'a File) -> Result<Self, Self::Error> {
+        Ok(Analysis::new(FallFile::wrap(file.root()).ok_or(())?))
+    }
 }
 
 impl FileWithAnalysis {
-    pub fn new(file: File) -> FileWithAnalysis {
-        FileWithAnalysis {
-            rent: rent::R::new(Box::new(file), |file| {
-                Analysis::new(FallFile::wrap(file.root()).unwrap())
-            })
-        }
-    }
-
     pub fn file(&self) -> &File {
-        self.rent.head()
+        self.borrow_owner()
     }
 
     pub fn analyse<T, F: FnOnce(&Analysis) -> T>(&self, f: F) -> T {
-        self.rent.rent(|a: &Analysis| f(a))
-    }
-}
-
-rental! {
-    mod rent {
-        use super::*;
-
-        #[rental]
-        pub struct R {
-            file: Box<File>,
-            analysis: Analysis<'file>
-        }
+        self.with_dependent(|_, analysis| f(analysis))
     }
 }
 

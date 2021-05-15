@@ -19,12 +19,12 @@ pub use crate::analysis::FileWithAnalysis;
 
 impl EditorFileImpl for FileWithAnalysis {
     fn parse(text: &str) -> Self {
-        FileWithAnalysis::new(lang_fall().parse(text))
+        FileWithAnalysis::try_from(lang_fall().parse(text)).unwrap()
     }
 
     fn edit(&self, edit: &TextEdit) -> Self {
         let file = self.file().edit(edit);
-        FileWithAnalysis::new(file)
+        FileWithAnalysis::try_from(file).unwrap()
     }
 
     fn file(&self) -> &File {
