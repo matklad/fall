@@ -1,8 +1,6 @@
 extern crate itertools;
 extern crate regex;
 extern crate serde;
-#[macro_use]
-extern crate rental;
 
 extern crate fall_tree;
 extern crate fall_parse;
@@ -22,7 +20,7 @@ pub fn parse<S: Into<String>>(text: S) -> File {
 }
 
 pub fn analyse<S: Into<String>>(text: S) -> FileWithAnalysis {
-    FileWithAnalysis::new(parse(text))
+    FileWithAnalysis::try_from(parse(text)).unwrap()
 }
 
 pub fn ast(file: &File) -> syntax::FallFile {
